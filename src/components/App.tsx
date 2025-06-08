@@ -1,0 +1,270 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import PageLayout from './layout/PageLayout';
+import { Toaster } from './ui/toaster';
+import { toast } from 'sonner';
+import DiscoverWrapper from '@/components/mcp/server/DiscoverWrapper';
+import Home from './Home';
+import { useTranslation } from 'react-i18next';
+import SidebarComponent from './Sidebar';
+import { SidebarProvider, SidebarTrigger } from './ui/sidebar';
+import McpAppsManager from '@/components/mcp/apps/McpAppsManager';
+import LogViewer from '@/components/mcp/log/LogViewer';
+import Rules from '@/components/mcp/rules/Rules';
+import AgentBuild from './agent/build/AgentBuild';
+import DeployedAgents from './agent/use/DeployedAgents';
+import AgentCreate from './agent/build/AgentCreate';
+import AgentChat from './agent/use/AgentChat';
+import AgentSettings from './agent/use/AgentSettings';
+import AgentUse from './agent/use/AgentUse';
+import Settings from './setting/Settings';
+import PackageManagerOverlay from './agent/PackageManagerOverlay';
+import AgentAuthGuard from './agent/AgentAuthGuard';
+import { useServerStore, useAuthStore, useUIStore, initializeStores } from '../lib/stores';
+import { IconProgress } from '@tabler/icons-react';
+
+
+// Lazy load components
+const InvitationCode = React.lazy(() => import('./setup/InvitationCode'));
+
+// Main App component
+const App: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Zustand stores
+  const { 
+    refreshServers
+  } = useServerStore();
+  
+  const { 
+    isActivated, 
+    isAuthenticated,
+    activate,
+    checkAuthStatus,
+    subscribeToAuthChanges
+  } = useAuthStore();
+  
+  const { 
+    packageManagerOverlay,
+    setPackageManagerOverlay
+  } = useUIStore();
+  
+  // Local state for loading and temporary UI states
+  const [isActivationLoading, setIsActivationLoading] = useState<boolean>(true);
+  
+  // Initialize stores and check activation status
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // Initialize all stores
+        await initializeStores();
+        
+        // Check activation status using the auth store
+        await checkAuthStatus();
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+      } finally {
+        setIsActivationLoading(false);
+      }
+    };
+    
+    initializeApp();
+  }, [checkAuthStatus]);
+
+  // Subscribe to authentication changes
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges();
+    
+    return () => {
+      unsubscribe();
+    };
+  }, [subscribeToAuthChanges]);
+
+  // Submit activation code
+  const handleActivate = useCallback(async (code: string) => {
+    try {
+      await activate(code);
+      // Don't show login screen, the activation state will update automatically
+      // setShowLoginAfterActivation(true);
+      return true;
+    } catch (error) {
+      console.error('Activation error:', error);
+      return false;
+    }
+  }, [activate]);
+  
+  
+
+
+  // Subscribe to protocol URL events
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.onProtocolUrl((url) => {
+      handleProtocolUrl(url);
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+  
+  // Check package managers when navigating to agents pages
+  useEffect(() => {
+    const checkPackageManagersForAgents = async () => {
+      // Check if we're on an agents page
+      if (location.pathname.startsWith('/agents')) {
+        try {
+          const result = await window.electronAPI.checkPackageManagers();
+          // Show overlay if either package manager is missing
+          if (!result.pnpm || !result.uv) {
+            setPackageManagerOverlay(true);
+          } else {
+            setPackageManagerOverlay(false);
+          }
+        } catch (error) {
+          console.error('Failed to check package managers:', error);
+        }
+      } else {
+        setPackageManagerOverlay(false);
+      }
+    };
+    
+    checkPackageManagersForAgents();
+  }, [location.pathname, setPackageManagerOverlay]);
+  
+  // Handle package manager installation completion
+  const handlePackageManagerInstallComplete = useCallback(() => {
+    setPackageManagerOverlay(false);
+  }, [setPackageManagerOverlay]);
+  
+  // Handle package manager overlay cancellation
+  const handlePackageManagerCancel = useCallback(() => {
+    setPackageManagerOverlay(false);
+    // Navigate back to previous page or home
+    navigate('/servers');
+  }, [navigate, setPackageManagerOverlay]);
+
+  // Handle protocol URL processing
+  const handleProtocolUrl = useCallback(async (urlString: string) => {
+    const url = new URL(urlString);
+    try {
+      
+      if (url.hostname === 'agent') {
+        const agentId = url.searchParams.get('id');
+        const result = await window.electronAPI.importAgent(agentId);
+        if (result) {
+          // Show success message for agent import
+          toast.success('Agent successfully imported!', {
+            description: 'The shared agent has been added to your deployed agents.',
+            duration: 5000
+          });
+          // Navigate to agents/use page
+          navigate('/agents/use');
+        }
+      } else if (url.hostname === 'auth') {
+        const token = url.searchParams.get('token');
+        const state = url.searchParams.get('state');
+        if (token && state) {
+          await window.electronAPI.handleAuthToken(token, state);
+          // Navigate to settings page
+          navigate('/settings');
+        }
+      }
+    } catch (error) {
+      if (url.hostname === 'agent') {
+        // Show please sign in error
+        toast.error(t('Please sign in to import agents.'));
+        navigate('/settings');
+      }
+    }
+  }, [navigate, t]);
+  
+
+  // Set up a timer to refresh the server list every 2 seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refreshServers();
+    }, 2000);
+    
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, [refreshServers]);
+
+
+  // Loading indicator component to reuse
+  const LoadingIndicator = () => (
+    <div className="flex h-screen items-center justify-center bg-content-light">
+      <div className="text-center">
+        <IconProgress className="h-10 w-10 mx-auto animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">{t('common.loading')}</p>
+      </div>
+    </div>
+  );
+
+  // If activation status is still loading, show loading indicator
+  if (isActivationLoading) {
+    return <LoadingIndicator />;
+  }
+
+  // If not activated, show activation screen
+  if (!isActivated) {
+    return (
+      <div className="bg-content-light h-screen">
+        <React.Suspense fallback={<LoadingIndicator />}>
+          <InvitationCode onActivate={handleActivate} />
+        </React.Suspense>
+      </div>
+    );
+  }
+  
+  // Login is now optional - user can access app without authentication
+
+
+  return (
+    <SidebarProvider defaultOpen={true}>
+      <Toaster />
+      
+      {/* Package Manager Overlay */}
+      <PackageManagerOverlay 
+        isOpen={packageManagerOverlay}
+        onInstallComplete={handlePackageManagerInstallComplete}
+        onCancel={handlePackageManagerCancel}
+      />
+        
+        <SidebarComponent />
+        
+        <main className="flex flex-col flex-1 w-full min-w-0 overflow-hidden">
+        <SidebarTrigger />
+
+        <Routes>
+              {/* Public routes - no authentication required */}
+              <Route element={<PageLayout />}>
+                <Route path="/" element={<Navigate to={isAuthenticated ? "/agents/use" : "/servers"} replace />} />
+                <Route path="/servers" element={<Home />} />
+                <Route path="/servers/add" element={<DiscoverWrapper />} />
+                <Route path="/clients" element={<McpAppsManager />} />
+                <Route path="/logs" element={<LogViewer />} />
+                <Route path="/rules" element={<Rules />} />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
+
+              {/* Agent routes - authentication required */}
+              <Route path="/agents" element={<AgentAuthGuard><PageLayout /></AgentAuthGuard>}>
+                <Route path="build" element={<AgentBuild />} />
+                <Route path="build/edit/:id" element={<AgentCreate />} />
+                <Route path="use" element={<DeployedAgents />} />
+                <Route path="use/:id" element={<AgentUse />}>
+                  <Route path="chat" element={<AgentChat key="chat" />} />
+                  <Route path="settings" element={<AgentSettings key="settings" />} />
+                </Route>
+              </Route>
+
+              <Route path="*" element={<Navigate to="/servers" />} />
+          </Routes>
+        </main>
+    </SidebarProvider>
+  );
+};
+
+export default App;
