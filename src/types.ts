@@ -153,6 +153,7 @@ export interface DeployedAgent {
   instructions: string;
   autoExecuteTool: boolean;
   toolPermissions?: Record<string, MCPAgentToolPermission[]>; // サーバーIDをキーとしたツール権限の配列
+  mcpServerEnabled?: boolean; // MCPサーバとして利用可能にするかどうか
   userId?: string; // エージェントの作成者ID
   originalId: string; // インポート元のオリジナルID
   createdAt: number;

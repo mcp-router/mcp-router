@@ -126,6 +126,13 @@ export class DatabaseMigration {
       description: "Add original_id column to deployedAgents table",
       execute: (db) => this.migrateAddOriginalIdToDeployedAgents(db)
     });
+
+    // DeployedAgent mcp_server_enabled カラム追加
+    this.migrations.push({
+      id: "20250610_add_mcp_server_enabled_to_deployed_agents",
+      description: "Add mcp_server_enabled column to deployedAgents table",
+      execute: (db) => this.migrateAddMcpServerEnabledToDeployedAgents(db)
+    })
   }
 
   /**
@@ -630,6 +637,44 @@ export class DatabaseMigration {
       throw error;
     }
   }
+
+  /**
+   * deployedAgentsテーブルにmcp_server_enabled列を追加するマイグレーション
+   */
+  private migrateAddMcpServerEnabledToDeployedAgents(db: SqliteManager): void {
+    try {
+      // テーブルが存在するか確認
+      const tableExists = db.get(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'deployedAgents'",
+        { }
+      );
+      
+      if (!tableExists) {
+        console.log('deployedAgentsテーブルが存在しないため、このマイグレーションをスキップします');
+        return;
+      }
+      
+      // テーブル情報を取得
+      const tableInfo = db.all(
+        "PRAGMA table_info(deployedAgents)"
+      );
+      
+      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      
+      // mcp_server_enabled列が存在しない場合は追加
+      if (!columnNames.includes('mcp_server_enabled')) {
+        console.log('deployedAgentsテーブルにmcp_server_enabled列を追加します');
+        db.execute("ALTER TABLE deployedAgents ADD COLUMN mcp_server_enabled INTEGER DEFAULT 0");
+        console.log('mcp_server_enabled列の追加が完了しました');
+      } else {
+        console.log('mcp_server_enabled列は既に存在するため、追加をスキップします');
+      }
+    } catch (error) {
+      console.error('mcp_server_enabled列の追加中にエラーが発生しました:', error);
+      throw error;
+    }
+  }
+
 
   /**
    * 既存のプレーンテキストデータを暗号化形式に移行
