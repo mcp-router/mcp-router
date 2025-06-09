@@ -9,6 +9,7 @@ interface BackgroundComponentProps {
   query: string;
   agent: AgentConfig;
   authToken?: string;
+  messages?: any[]; // 事前に読み込まれた履歴メッセージ
   onSessionComplete?: (backgroundSessionKey: string) => void; // セッション完了時のコールバック
   backgroundSessionKey: string; // Background内部のセッションキー
 }
@@ -23,6 +24,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
   query,
   agent,
   authToken,
+  messages: historyMessages = [],
   onSessionComplete,
   backgroundSessionKey
 }) => {
@@ -57,6 +59,34 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
     return tools;
   }, [agent]);
 
+  // 履歴メッセージをinitial messagesとして設定
+  const initialMessages = React.useMemo(() => {
+    const messages: any[] = [];
+    
+    // システムメッセージを追加
+    messages.push({
+      id: 'system-1',
+      role: 'system',
+      content: agent?.instructions || '',
+      parts: [
+        { type: 'text', text: agent?.instructions || '' }
+      ],
+    });
+    
+    // 履歴メッセージを追加（システムメッセージ以外）
+    if (historyMessages && historyMessages.length > 0) {
+      const nonSystemMessages = historyMessages.filter((msg: any) => msg.role !== 'system');
+      messages.push(...nonSystemMessages.map((msg: any) => ({
+        id: msg.id || `${msg.role}-${Date.now()}-${Math.random()}`,
+        role: msg.role,
+        content: msg.content,
+        parts: msg.parts || [{ type: 'text', text: msg.content }]
+      })));
+    }
+    
+    return messages;
+  }, [agent?.instructions, historyMessages]);
+
   // チャット機能の実装
   const { 
     messages,
@@ -69,22 +99,11 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
     body: {
       agentId: getServerAgentId(agent) || agentId || '',
       tools: getEnabledTools,
-      sessionId: chatHistorySessionId
     },
     headers: authToken ? {
       'Authorization': `Bearer ${authToken}`
     } : undefined, // Continue without auth headers if no token
-    initialMessages: [
-      // システムメッセージとしてエージェントの指示（instruction）を追加
-      {
-        id: 'system-1',
-        role: 'system',
-        content: agent?.instructions || '',
-        parts: [
-          { type: 'text', text: agent?.instructions || '' }
-        ],
-      }
-    ],
+    initialMessages,
     onToolCall: async ({toolCall}) => {
       if (agent?.autoExecuteTool) {
         // 自動実行が有効な場合、ツールを即座に実行
@@ -200,7 +219,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
         });
       }
       
-      // Use append method to directly send the message
+      // 新しいメッセージを送信（履歴はinitialMessagesで設定済み）
       try {
         append({
           role: 'user',

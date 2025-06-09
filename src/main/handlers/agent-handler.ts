@@ -151,13 +151,29 @@ export function setupAgentHandlers(): void {
       const authStatus = await status();
       const authToken = authStatus.token;
 
+      // セッションが存在する場合、履歴を読み込む
+      let messages = [];
+      if (sessionId) {
+        try {
+          const session = sessionRepository.getById(sessionId);
+          if (session && session.messages) {
+            messages = session.messages;
+            console.log(`Loaded ${messages.length} messages from session ${sessionId}`);
+          }
+        } catch (error) {
+          console.warn(`Failed to load session messages for ${sessionId}:`, error);
+          // 履歴読み込みに失敗しても続行
+        }
+      }
+
       // Send message to background window to start chat
       backgroundWindow.webContents.send('background-chat:start', {
         sessionId,
         agentId,
         query,
         agent: deployedAgent,
-        authToken
+        authToken,
+        messages // 履歴も含めて送信
       });
 
       return { success: true };
