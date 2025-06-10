@@ -50,7 +50,8 @@ export function setupAgentHandlers(): void {
   ipcMain.handle('agent:import', async (_, shareCode: string) => {
     const sharedData = await agentSharingService.getSharedAgentData(shareCode);
     const deployedAgentData = agentSharingService.convertToDeployedAgent(sharedData);
-    return deployedAgentService.createDeployedAgent(deployedAgentData);
+    const result = deployedAgentService.createDeployedAgent(deployedAgentData);
+    return result;
   });
 
   // エージェントのセットアップ関連のIPC通信ハンドラ
@@ -64,7 +65,8 @@ export function setupAgentHandlers(): void {
     if (!developmentAgent) {
       throw new Error(`開発中エージェントが見つかりません (ID: ${id})`);
     }
-    return deployedAgentService.deployFromDevelopmentAgent(developmentAgent);
+    const result = deployedAgentService.deployFromDevelopmentAgent(developmentAgent);
+    return result;
   });
 
   ipcMain.handle('agent:deployed-list', () => {
@@ -76,11 +78,13 @@ export function setupAgentHandlers(): void {
   });
 
   ipcMain.handle('agent:deployed-update', (_, id: string, config: any) => {
-    return deployedAgentService.updateDeployedAgent(id, config);
+    const result = deployedAgentService.updateDeployedAgent(id, config);
+    return result;
   });
 
   ipcMain.handle('agent:deployed-delete', (_, id: string) => {
-    return deployedAgentService.deleteDeployedAgent(id);
+    const result = deployedAgentService.deleteDeployedAgent(id);
+    return result;
   });
 
   // エージェント固有のツール関連のIPC通信ハンドラ（共有版）

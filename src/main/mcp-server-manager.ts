@@ -24,7 +24,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { parseResourceUri, createResourceUri, createUriVariants } from '../lib/utils/uri-utils';
 import { summarizeResponse } from '../lib/utils/response-utils';
-import { AGENT_TOOLS, AgentToolHandler } from './sample-tools';
+import { AgentToolHandler } from './agent-tools';
 
 // Constants for the Aggregator Server identification in LogService
 const AGGREGATOR_SERVER_ID = 'mcp-router-aggregator';
@@ -79,6 +79,19 @@ export class MCPServerManager {
 
     // Load servers from database
     this.loadServersFromDatabase();
+    
+    // Initialize Agent Tools virtual server
+    this.initAgentToolsServer();
+  }
+  
+  /**
+   * Initialize Agent Tools virtual server
+   */
+  private initAgentToolsServer(): void {
+    const agentServerName = 'Agent Tools';
+
+    // Add Agent Tools to server status map as always running
+    this.serverStatusMap.set(agentServerName, true);
   }
   
   /**
@@ -612,19 +625,19 @@ export class MCPServerManager {
     
     const token = request.params._meta?.token as string | undefined;
     
-    // Check if this is an agent tool
+    // Check if this is an agent tool first (before validation)
     if (serverName === 'Agent Tools') {
       return this.handleAgentToolCall(toolName, request.params.arguments || {}, token);
     }
     
-    // Validate token and get client ID
+    // Validate token and get client ID for regular servers
     const clientId = this.validateTokenAndAccess(token, serverName);
     
     const client = this.clients.get(this.getServerIdByName(serverName));
     if (!client) {
       throw new McpError(ErrorCode.InvalidRequest, `Unknown server: ${serverName}`);
     }
-    
+
     if (!this.serverStatusMap.get(serverName)) {
       throw new McpError(ErrorCode.InvalidRequest, `Server ${serverName} is not running`);
     }
@@ -677,7 +690,7 @@ export class MCPServerManager {
     this.toolNameToServerMap.clear();
     
     // Add sample tools for testing the aggregator
-    this.addSampleTools(allTools);
+    this.addAgentsAsTools(allTools);
     
     // Collect all tools without duplicate detection
     for (const [serverName, client] of this.clients.entries()) {
@@ -740,10 +753,12 @@ export class MCPServerManager {
   /**
    * Add agent tools to the tools list for agent integration
    */
-  private addSampleTools(allTools: any[]): void {
-    // Add agent tools with mapping to a virtual "Agent Tools" server
+  private addAgentsAsTools(allTools: any[]): void {
+    // Add enabled agent tools with mapping to a virtual "Agent Tools" server
     const agentServerName = 'Agent Tools';
-    AGENT_TOOLS.forEach(tool => {
+    const enabledAgentTools = AgentToolHandler.getEnabledAgentTools();
+    
+    enabledAgentTools.forEach(tool => {
       this.toolNameToServerMap.set(tool.name, agentServerName);
       allTools.push(tool);
     });
@@ -1392,32 +1407,8 @@ export class MCPServerManager {
    * Handle agent tool calls
    */
   private async handleAgentToolCall(toolName: string, args: any, token?: string): Promise<any> {
-    // Log agent tool calls for monitoring
-    const logEntry: RequestLogEntry = {
-      timestamp: new Date().toISOString(),
-      requestType: 'CallAgentTool',
-      params: { 
-        toolName, 
-        arguments: args
-      },
-      result: 'success',
-      duration: 0,
-      clientId: token ? this.tokenService.validateToken(token).clientId || 'unknownClient' : 'unknownClient'
-    };
-
-    try {
-      const result = await AgentToolHandler.handleTool(toolName, args);
-      logEntry.response = summarizeResponse(result);
-      logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
-      this.recordRequestLog(logEntry, 'Agent Tools');
-      return result;
-    } catch (error: any) {
-      logEntry.result = 'error';
-      logEntry.errorMessage = error.message;
-      logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
-      this.recordRequestLog(logEntry, 'Agent Tools');
-      throw error;
-    }
+    // No try-catch wrapper to avoid double error wrapping
+    return await AgentToolHandler.handleTool(toolName, args);
   }
 
   /**
