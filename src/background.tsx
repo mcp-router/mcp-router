@@ -21,18 +21,19 @@ const BackgroundChatManager: React.FC = () => {
   React.useEffect(() => {
     // Listen for background chat start messages
     const handleBackgroundChatStart = (data: any) => {
-      const { sessionId, agentId, query, agent, authToken, messages } = data;
+      const { sessionId, agentId, query, agent, authToken, messages, source } = data;
       // sessionId: チャット履歴のsessionId (AgentChatから渡される)
       // backgroundSessionKey: Background内部での管理用キー
       const backgroundSessionKey = `bg-${agentId}-${Date.now()}`;
       
-      console.log('Starting background chat:', { 
-        chatHistorySessionId: sessionId, 
-        backgroundSessionKey, 
-        agentId, 
-        query, 
-        hasAuthToken: !!authToken 
-      });
+      // console.log('Starting background chat:', {
+      //   chatHistorySessionId: sessionId,
+      //   backgroundSessionKey,
+      //   agentId,
+      //   query,
+      //   hasAuthToken: !!authToken,
+      //   source
+      // });
       
       setChatSessions(prev => {
         // Background内部のキーで重複チェック
@@ -48,7 +49,8 @@ const BackgroundChatManager: React.FC = () => {
           query,
           agent,
           authToken,
-          messages // 履歴メッセージを追加
+          messages, // 履歴メッセージを追加
+          source // 呼び出し元を追加
         });
         console.log('Added new background session:', backgroundSessionKey, 'for chat history session:', sessionId);
         return newSessions;
@@ -87,6 +89,7 @@ const BackgroundChatManager: React.FC = () => {
             agent={sessionData.agent}
             authToken={sessionData.authToken}
             messages={sessionData.messages}
+            source={sessionData.source}
             onSessionComplete={handleSessionComplete}
           />
         );

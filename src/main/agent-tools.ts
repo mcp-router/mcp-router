@@ -3,6 +3,7 @@ import { getDeployedAgentService } from '../lib/services/agent';
 import { status } from './auth';
 import { backgroundWindow } from '../main';
 import { getSessionRepository } from '../lib/database/session-repository';
+import { getServerAgentId } from '../lib/utils/agent-utils';
 
 /**
  * Agent tools definitions and handlers for DeployedAgent integration
@@ -121,8 +122,10 @@ export class AgentToolHandler {
       const authToken = authStatus.token;
 
       // Create a new session for each MCP call
+      // Use getServerAgentId to ensure consistency with BackgroundComponent
+      const serverAgentId = getServerAgentId(agentData);
       const session = this.sessionRepository.createSession(
-        agentData.id,
+        serverAgentId,
         [],
         `MCP Call from ${new Date().toISOString()}`
       );
@@ -134,7 +137,8 @@ export class AgentToolHandler {
         query,
         agent: agentData,
         authToken,
-        messages: [] // New session, no history
+        messages: [],
+        source: 'mcp' // Indicate this is from MCP
       });
       
       // Return immediately with status message

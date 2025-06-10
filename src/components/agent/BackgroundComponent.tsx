@@ -10,6 +10,7 @@ interface BackgroundComponentProps {
   agent: AgentConfig;
   authToken?: string;
   messages?: any[]; // 事前に読み込まれた履歴メッセージ
+  source?: string; // 呼び出し元を示す（'mcp' など）
   onSessionComplete?: (backgroundSessionKey: string) => void; // セッション完了時のコールバック
   backgroundSessionKey: string; // Background内部のセッションキー
 }
@@ -25,6 +26,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
   agent,
   authToken,
   messages: historyMessages = [],
+  source,
   onSessionComplete,
   backgroundSessionKey
 }) => {
@@ -139,7 +141,9 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
           agentId,
           finishReason,
           timestamp: Date.now(),
-          canContinue: finishReason === 'stop'
+          canContinue: finishReason === 'stop',
+          source, // 呼び出し元を含める
+          notificationType: finishReason === 'stop' ? 'finish' : null // 正常終了時のみ通知
         });
       }
       
@@ -156,7 +160,9 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
           chatHistorySessionId,
           agentId,
           error: error.message || error.toString(),
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          source, // 呼び出し元を含める
+          notificationType: 'error' // エラー時は必ず通知
         });
       }
       
