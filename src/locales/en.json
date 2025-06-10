@@ -294,6 +294,8 @@
     "autoSave": "Auto Save",
     "autoSaving": "Auto Saving...",
     "autoExecuteTool": "Auto Execute Tool Calls",
+    "mcpServerEnabled": "Enable as MCP Server",
+    "mcpServerEnabledDescription": "Allow this agent to be used as an MCP server by other applications",
     "generate": "Generate",
     "generating": "Generating...",
     "enterMessage": "Enter a message...",

@@ -4,7 +4,8 @@ import { Input } from '../../ui/input';
 import { Textarea } from '../../ui/textarea';
 import { 
     Server,
-    Save
+    Save,
+    Power
 } from 'lucide-react';
 import { Label } from '../../ui/label';
 import { ScrollArea } from '../../ui/scroll-area';
@@ -16,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { isAgentConfigured } from '../../../lib/utils/agent-utils';
 import { McpSettings } from '../build/McpSettings';
 import { useAgentStore } from '../../../lib/stores';
+import { cn } from '../../../lib/utils/tailwind-utils';
 
 interface ServerConfigVariable {
   name: string;
@@ -52,6 +54,7 @@ const AgentSettings: React.FC = () => {
         mcpServers: agent.mcpServers || [],
         toolPermissions: agent.toolPermissions || {},
         autoExecuteTool: agent.autoExecuteTool ?? true,
+        mcpServerEnabled: agent.mcpServerEnabled ?? false,
         createdAt: agent.createdAt || Date.now(),
         updatedAt: agent.updatedAt || Date.now(),
     });
@@ -161,6 +164,7 @@ const AgentSettings: React.FC = () => {
             mcpServers: agent.mcpServers || [],
             toolPermissions: agent.toolPermissions || {},
             autoExecuteTool: agent.autoExecuteTool ?? true,
+            mcpServerEnabled: agent.mcpServerEnabled ?? false,
             createdAt: agent.createdAt || Date.now(),
             updatedAt: agent.updatedAt || Date.now(),
         });
@@ -229,7 +233,7 @@ const AgentSettings: React.FC = () => {
             lastSavedStateRef.current = JSON.stringify({
                 agent: updatedAgent,
                 serverVariables: agentState.serverVariables,
-                serverInstructions: agentState.serverInstructions
+                serverInstructions: agentState.serverInstructions,
             });
             
             // Update current agent state with the saved values
@@ -287,7 +291,7 @@ const AgentSettings: React.FC = () => {
             lastSavedStateRef.current = JSON.stringify({
                 agent: updatedAgent,
                 serverVariables: agentState.serverVariables,
-                serverInstructions: agentState.serverInstructions
+                serverInstructions: agentState.serverInstructions,
             });
             
             // Update current agent state with the saved values
@@ -303,7 +307,7 @@ const AgentSettings: React.FC = () => {
         const currentState = JSON.stringify({
             agent: currentAgent,
             serverVariables: agentState.serverVariables,
-            serverInstructions: agentState.serverInstructions
+            serverInstructions: agentState.serverInstructions,
         });
         
 
@@ -340,7 +344,7 @@ const AgentSettings: React.FC = () => {
             lastSavedStateRef.current = JSON.stringify({
                 agent: currentAgent,
                 serverVariables: agentState.serverVariables,
-                serverInstructions: agentState.serverInstructions
+                serverInstructions: agentState.serverInstructions,
             });
             setIsAutoSavePending(false);
         }
@@ -392,14 +396,35 @@ const AgentSettings: React.FC = () => {
                     <ScrollArea className="h-full overflow-auto">
                         {agent?.mcpServers && agent.mcpServers.length > 0 ? (
                             <div className="space-y-8">
-                                {/* <div className="flex items-center space-x-2">
+                                <div className="group relative flex items-center justify-between p-4 mb-6 rounded-lg border bg-card hover:bg-accent/5 transition-colors">
+                                    <div className="flex items-center space-x-3">
+                                        <div className={cn(
+                                            "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                                            currentAgent.mcpServerEnabled 
+                                                ? "bg-primary/10 text-primary" 
+                                                : "bg-muted text-muted-foreground"
+                                        )}>
+                                            <Power className="h-5 w-5" />
+                                        </div>
+                                        <div className="space-y-0.5">
+                                            <Label 
+                                                htmlFor="mcp-server-enabled" 
+                                                className="text-sm font-medium cursor-pointer"
+                                            >
+                                                {t('agents.mcpServerEnabled', 'Enable as MCP Server')}
+                                            </Label>
+                                            <p className="text-xs text-muted-foreground">
+                                                {t('agents.mcpServerEnabledDescription', 'Allow this agent to be used as an MCP server by other applications')}
+                                            </p>
+                                        </div>
+                                    </div>
                                     <Switch
-                                        id="auto-execute-tool"
-                                        checked={currentAgent.autoExecuteTool}
-                                        onCheckedChange={(checked) => setCurrentAgent(prev => ({ ...prev, autoExecuteTool: checked }))}
+                                        id="mcp-server-enabled"
+                                        checked={currentAgent.mcpServerEnabled ?? false}
+                                        onCheckedChange={(checked) => setCurrentAgent(prev => ({ ...prev, mcpServerEnabled: checked }))}
+                                        className="data-[state=checked]:bg-primary"
                                     />
-                                    <Label htmlFor="auto-execute-tool">{t('agents.autoExecuteTool')}</Label>
-                                </div> */}
+                                </div>
                                 {agent.mcpServers.length > 0 && agent.mcpServers.filter(server => (agentState.serverVariables[server.id]?.length || 0) > 0).length !== 0 && (
                                     agent.mcpServers
                                         .filter(server => (agentState.serverVariables[server.id]?.length || 0) > 0)
@@ -417,7 +442,7 @@ const AgentSettings: React.FC = () => {
                                             )}
                                             
                                             <div className="space-y-5">
-                                                {agentState.serverVariables[server.id]?.map((variable, index) => (
+                                                {agentState.serverVariables[server.id]?.map((variable) => (
                                                     <div key={`${server.id}-${variable.name}`} className="flex flex-col gap-2">
                                                         <Label htmlFor={`var-${server.id}-${variable.name}`}>
                                                             {variable.name}

@@ -299,6 +299,8 @@
     "autoSave": "自動保存",
     "autoSaving": "自動保存中...",
     "autoExecuteTool": "ツール自動実行",
+    "mcpServerEnabled": "MCPサーバーとして有効化",
+    "mcpServerEnabledDescription": "このエージェントを他のアプリケーションからMCPサーバーとして使用できるようにします",
     "generate": "生成",
     "generating": "生成中...",
     "enterMessage": "メッセージを入力...",
