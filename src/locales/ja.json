@@ -216,7 +216,7 @@
     "credits": "クレジット",
     "freeCredits": "無料クレジット",
     "paidCredits": "有料クレジット",
-    "freeCreditsDescription": "招待成功1件につき50クレジット獲得",
+    "freeCreditsDescription": "招待成功1件につき50クレジット獲得。共有したエージェントが使用されるたびに1クレジット獲得。",
     "purchaseCredits": "クレジット購入",
     "refreshCredits": "更新",
     "refreshingCredits": "更新中...",
@@ -288,6 +288,9 @@
     "deployLink": "デプロイリンク",
     "deployConfirmDescription": "エージェント設定を確認し、デプロイオプションを設定してください",
     "publicDeploy": "公開デプロイ（リンクで共有）",
+    "publicDeployDescription": "有効にすると、エージェントは共有リンクで公開されます。共有したエージェントが使用されるたびに1クレジット獲得できます。",
+    "shareOnSocial": "ソーシャルメディアで共有",
+    "tweetAgent": "X (Twitter)で投稿",
     "copy": "コピー",
     "loginRequired": {
       "featureDescription": "この機能を使用するにはログインが必要です。設定からログインするか、限定機能で続行してください。"

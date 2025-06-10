@@ -211,7 +211,7 @@
     "credits": "Credits",
     "freeCredits": "Free Credits",
     "paidCredits": "Paid Credits",
-    "freeCreditsDescription": "Earn 50 credits for each successful invitation",
+    "freeCreditsDescription": "Earn 50 credits for each successful invitation. Get 1 credit each time your shared agents are used.",
     "purchaseCredits": "Purchase Credits",
     "refreshCredits": "Refresh",
     "refreshingCredits": "Refreshing...",
@@ -281,6 +281,9 @@
     "deployLink": "Deploy Link",
     "deployConfirmDescription": "Review the agent settings and configure deployment options",
     "publicDeploy": "Public Deployment (Share with link)",
+    "publicDeployDescription": "When enabled, your agent will be publicly accessible via a share link. You'll earn 1 credit each time someone uses your shared agent.",
+    "shareOnSocial": "Share on Social Media",
+    "tweetAgent": "Post on X (Twitter)",
     "copy": "Copy",
     "loginRequired": {
       "featureDescription": "You need to be logged in to use this feature. Please go to Settings to log in, or continue with limited functionality."

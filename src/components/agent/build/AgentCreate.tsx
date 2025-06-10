@@ -7,10 +7,11 @@ import { Label } from '../../ui/label';
 import { Textarea } from '../../ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog';
 import { toast } from 'sonner';
-import { Save, Rocket, Trash2, RefreshCw, PlayCircle } from 'lucide-react';
+import { Save, Rocket, Trash2, RefreshCw, PlayCircle, Sparkles } from 'lucide-react';
 import AgentChatPlayground from './AgentChatPlayground';
 import AgentSettingsForm from './AgentSettingsForm';
 import { Switch } from '../../ui/switch';
+import { Badge } from '../../ui/badge';
 import { useTranslation } from 'react-i18next';
 import { 
     Breadcrumb, 
@@ -584,17 +585,30 @@ const AgentCreate: React.FC = () => {
                                     rows={3}
                                 />
                             </div>
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <Label htmlFor="public-deploy" className="text-sm font-medium">
-                                        {t('agents.publicDeploy')}
-                                    </Label>
+                            <div className="space-y-3">
+                                <div className="rounded-lg border p-4 space-y-3">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="space-y-1 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <Label htmlFor="public-deploy" className="text-sm font-medium">
+                                                    {t('agents.publicDeploy')}
+                                                </Label>
+                                                <Badge variant="secondary" className="text-xs">
+                                                    <Sparkles className="h-3 w-3 mr-1" />
+                                                    1 credit/use
+                                                </Badge>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground">
+                                                {t('agents.publicDeployDescription')}
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            id="public-deploy"
+                                            checked={isPublicDeploy}
+                                            onCheckedChange={setIsPublicDeploy}
+                                        />
+                                    </div>
                                 </div>
-                                <Switch
-                                    id="public-deploy"
-                                    checked={isPublicDeploy}
-                                    onCheckedChange={setIsPublicDeploy}
-                                />
                             </div>
                         </div>
                     ) : (
@@ -608,6 +622,29 @@ const AgentCreate: React.FC = () => {
                                     </Button>
                                 </div>
                             </div>
+                            {isPublicDeploy && (
+                                <div className="space-y-2">
+                                    <Label>{t('agents.shareOnSocial')}</Label>
+                                    <Button 
+                                        variant="outline" 
+                                        className="w-full gap-2"
+                                        onClick={() => {
+                                            const agentName = currentAgent?.name || 'My Agent';
+                                            const tweetText = encodeURIComponent(
+                                                `🤖 I built my AI agent ${agentName} with MCP Router.\n` +
+                                                `Try it here: ${deployLink}\n` +
+                                                `#AIAgent #MCP_Router`
+                                            );
+                                            window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
+                                        }}
+                                    >
+                                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                                        </svg>
+                                        {t('agents.tweetAgent')}
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     )}
 
