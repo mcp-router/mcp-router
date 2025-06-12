@@ -38,6 +38,12 @@
 - 🛡️ **検証可能なプライバシー** - アプリケーションコードを確認することで、データがローカルに保存されることを検証できます
 - 🤝 **コミュニティ主導** - セキュリティの改善や監査をコミュニティから歓迎します
 
+
+## 📥 インストール
+
+[インストールページ](http://mcp-router.net/install)か[リリースページ](https://github.com/mcp-router/mcp-router/releases)からダウンロード可能です。
+
+
 ## 🚀 機能
 
 ### 📊 一元的なサーバ管理
@@ -60,9 +66,35 @@ Claude、Cline、Windsurf、Cursorなどの人気AIツールやカスタムク�
 
 <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/stats.png" alt="ログと統計" width="600">
 
-## 📥 インストール
+## 🎯 開発ロードマップ
 
-[インストールページ](http://mcp-router.net/install)か[リリースページ](https://github.com/mcp-router/mcp-router/releases)からダウンロード可能です。
+### 🖥️ ヘッドレスモードのサポート
+**目標**: GUI不要の環境でもMCP Routerを活用可能に
+
+- [ ] ヘッドレスモードとGUIでのコードの共通化
+- [ ] CLIインターフェースの提供
+- [ ] コンテナ環境での動作最適化
+
+### 🔧 MCP管理機能の強化
+**目標**: MCPサーバの管理をより柔軟で強力にする
+
+- [ ] 各ツール単位で細かな権限を設定できるようにする
+- [ ] ツール名を任意に変更できる機能を追加
+- [ ] autoStart オプションを設定可能にする
+
+### 🧠 長期記憶（Long-Term Memory）システム
+**目標**: あらゆるMCP呼び出しを永続的に記憶するメカニズムを提供
+
+- [ ] メタ情報のインデックスの実装
+- [ ] ベクトルDBへの保存・検索機能の実装
+- [ ] 複数のベクトルDBプロバイダーのサポート（Pinecone、Weaviate、Qdrant等）
+
+### 🤖 エージェントオーケストレーション
+**目標**: 複数のAIエージェントを協調させる高度な機能
+
+- [ ] OpenAI 互換 API に対応
+- [ ] より使いやすいエージェントのUIを提供
+
 
 ## 🤝 コミュニティ
 
