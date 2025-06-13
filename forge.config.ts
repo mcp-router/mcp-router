@@ -9,7 +9,6 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import { mainConfig } from './webpack.main.config';
 import { rendererConfig } from './webpack.renderer.config';
 import { MakerDMG } from "@electron-forge/maker-dmg";
-import { MakerDeb } from '@eletcton-forge/maker-deb';
 require('dotenv').config();
 
 const config: ForgeConfig = {
@@ -24,23 +23,9 @@ const config: ForgeConfig = {
       appleApiKeyId: process.env.APPLE_API_KEY_ID || '',
       appleApiIssuer: process.env.APPLE_API_ISSUER || '',
     },
-    executableName: 'mcp-router', 
   },
   rebuildConfig: {},
   makers: [
-
-    {
-      name: '@electron-forge/maker-deb',
-      platforms: ['linux'],
-      config: {}
-    },
-
-    {
-      name: '@electron-forge/maker-rpm',
-      platforms: ['linux'],
-      config: {}
-    }	,
-
     new MakerSquirrel({
       name: "MCP-Router",
       authors: "fjm2u",
