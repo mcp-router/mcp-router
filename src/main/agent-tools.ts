@@ -60,8 +60,22 @@ export function createAgentTool(agentName: string, agentDescription: string, age
  * Agent tool handlers for DeployedAgent integration
  */
 export class AgentToolHandler {
-  private static deployedAgentService = getDeployedAgentService();
-  private static sessionRepository = getSessionRepository();
+  private static _deployedAgentService: ReturnType<typeof getDeployedAgentService> | null = null;
+  private static _sessionRepository: ReturnType<typeof getSessionRepository> | null = null;
+
+  private static get deployedAgentService() {
+    if (!this._deployedAgentService) {
+      this._deployedAgentService = getDeployedAgentService();
+    }
+    return this._deployedAgentService;
+  }
+
+  private static get sessionRepository() {
+    if (!this._sessionRepository) {
+      this._sessionRepository = getSessionRepository();
+    }
+    return this._sessionRepository;
+  }
   
   public static async handleTool(toolName: string, args: any): Promise<any> {
     // Handle special query result tools
@@ -117,7 +131,7 @@ export class AgentToolHandler {
         },
         {
           name: 'list_agent_sessions',
-          description: 'List agent sessions. Without filters, returns the most recent sessions sorted by last update time. Can be filtered by status or agent.',
+          description: 'List agent sessions. Without filters, returns the most recent sessions sorted by last update time. Can be filtered by status.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -125,10 +139,6 @@ export class AgentToolHandler {
                 type: 'string',
                 enum: ['pending', 'processing', 'completed', 'failed'],
                 description: 'Filter sessions by status',
-              },
-              agentId: {
-                type: 'string',
-                description: 'Filter sessions by agent ID (optional)',
               },
               limit: {
                 type: 'number',
@@ -182,7 +192,6 @@ export class AgentToolHandler {
       const session = this.sessionRepository.createSession(
         serverAgentId,
         [],
-        `MCP Call from ${new Date().toISOString()}`,
         'mcp', // source
         'pending' // status
       );
@@ -234,11 +243,6 @@ export class AgentToolHandler {
         throw new McpError(ErrorCode.InvalidParams, `Session with ID ${sessionId} not found`);
       }
 
-      // Check if session is from MCP source
-      if (session.source !== 'mcp') {
-        throw new McpError(ErrorCode.InvalidParams, `Session ${sessionId} is not from MCP source`);
-      }
-
       // Extract the last assistant message content if completed
       let resultContent = '';
       if (session.status === 'completed' && session.messages.length > 0) {
@@ -280,7 +284,7 @@ ${session.status === 'completed'
    * Handle listing agent sessions
    */
   private static async handleListSessions(args: any): Promise<any> {
-    const { status, agentId, limit = 10 } = args;
+    const { status, limit = 10 } = args;
 
     try {
       let sessions;
@@ -294,31 +298,22 @@ ${session.status === 'completed'
         
         sessions = this.sessionRepository.getSessionsByStatus(
           status as any,
-          agentId,
+          undefined, // No agent filtering
           { limit: Math.min(limit, 100) }
         );
       } else {
-        // Get all sessions for agent if agentId is provided, or recent sessions
-        if (agentId) {
-          sessions = this.sessionRepository.getSessionsByAgent(
-            agentId,
-            { limit: Math.min(limit, 100) }
-          );
-        } else {
-          // Get all recent MCP sessions regardless of status
-          sessions = this.sessionRepository.getRecentSessions({
-            limit: Math.min(limit, 100),
-            source: 'mcp', // Only get MCP sessions
-            orderBy: 'updated_at',
-            order: 'DESC'
-          });
-        }
+        // Get all recent sessions regardless of status
+        sessions = this.sessionRepository.getRecentSessions({
+          limit: Math.min(limit, 100),
+          // Don't filter by source to show all sessions
+          orderBy: 'updated_at',
+          order: 'DESC'
+        });
       }
 
       const sessionList = sessions.sessions
         .map(session => ({
           sessionId: session.id,
-          agentId: session.agentId,
           status: session.status,
           createdAt: new Date(session.createdAt).toISOString(),
           updatedAt: new Date(session.updatedAt).toISOString(),
@@ -328,12 +323,11 @@ ${session.status === 'completed'
         content: [
           {
             type: 'text',
-            text: `Found ${sessionList.length} MCP sessions:
+            text: `Found ${sessionList.length} sessions:
 
 ${sessionList.length > 0 
   ? sessionList.map(session => 
       `• Session ID: ${session.sessionId}
-  Agent ID: ${session.agentId}
   Status: ${session.status}
   Created: ${session.createdAt}
   Updated: ${session.updatedAt}`

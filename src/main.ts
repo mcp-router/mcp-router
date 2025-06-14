@@ -201,7 +201,7 @@ function setupTrayUpdateTimer(mcpServerManager: MCPServerManager, intervalMs = 5
 async function initDatabase(): Promise<void> {
   try {
     const databaseMigration = getDatabaseMigration();
-    await databaseMigration.runMigrations();
+    databaseMigration.runMigrations();
   } catch (error) {
     console.error('データベースマイグレーション中にエラーが発生しました:', error);
   }
