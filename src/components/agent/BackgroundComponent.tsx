@@ -134,38 +134,34 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
     },
     onFinish: async (_message, { finishReason }) => {      
       // ストリーム終了をメインプロセスに送信
-      if (window.electronAPI?.sendChatStreamEnd) {
-        window.electronAPI.sendChatStreamEnd({
-          backgroundSessionKey,
-          chatHistorySessionId,
-          agentId,
-          finishReason,
-          timestamp: Date.now(),
-          canContinue: finishReason === 'stop',
-          source, // 呼び出し元を含める
-          notificationType: finishReason === 'stop' ? 'finish' : null // 正常終了時のみ通知
-        });
-      }
+      window.electronAPI.sendChatStreamEnd({
+        backgroundSessionKey,
+        chatHistorySessionId,
+        agentId,
+        finishReason,
+        timestamp: Date.now(),
+        canContinue: finishReason === 'stop',
+        source, // 呼び出し元を含める
+        notificationType: finishReason === 'stop' ? 'finish' : null // 正常終了時のみ通知
+      });
       
       // セッション保存フラグを設定（実際の保存はuseEffectで行う）
       if (finishReason === 'stop') {
         setShouldSaveSession(true);
       }
     },
-    onError: (error) => {
+    onError: async (error) => {
       // ストリームエラーをメインプロセスに送信
-      if (window.electronAPI?.sendChatStreamError) {
-        window.electronAPI.sendChatStreamError({
-          backgroundSessionKey,
-          chatHistorySessionId,
-          agentId,
-          error: error.message || error.toString(),
-          timestamp: Date.now(),
-          source, // 呼び出し元を含める
-          notificationType: 'error' // エラー時は必ず通知
-        });
-      }
-      
+      window.electronAPI.sendChatStreamError({
+        backgroundSessionKey,
+        chatHistorySessionId,
+        agentId,
+        error: error.message || error.toString(),
+        timestamp: Date.now(),
+        source, // 呼び出し元を含める
+        notificationType: 'error' // エラー時は必ず通知
+      });
+
       // エラー発生時はセッションから削除
       if (onSessionComplete) {
         onSessionComplete(backgroundSessionKey);
@@ -211,27 +207,28 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
 
   // queryが変更された時にメッセージを送信（一度だけ）
   useEffect(() => {
-    if (query && query.trim() && isInitialized && query !== processedQueryRef.current) {
-      processedQueryRef.current = query;
-      
-      // ストリーム開始をメインプロセスに送信
-      if (window.electronAPI?.sendChatStreamStart) {
-        window.electronAPI.sendChatStreamStart({
-          backgroundSessionKey,
-          chatHistorySessionId,
-          agentId,
-          query,
-          timestamp: Date.now()
-        });
-      }
-      
-      // 新しいメッセージを送信（履歴はinitialMessagesで設定済み）
-      try {
-        append({
-          role: 'user',
-          content: query
-        });
-      } catch (error) {
+    const handleQuery = async () => {
+      if (query && query.trim() && isInitialized && query !== processedQueryRef.current) {
+        processedQueryRef.current = query;
+        
+        // ストリーム開始をメインプロセスに送信
+        if (window.electronAPI?.sendChatStreamStart) {
+          window.electronAPI.sendChatStreamStart({
+            backgroundSessionKey,
+            chatHistorySessionId,
+            agentId,
+            query,
+            timestamp: Date.now()
+          });
+        }
+        
+        // 新しいメッセージを送信（履歴はinitialMessagesで設定済み）
+        try {
+          append({
+            role: 'user',
+            content: query
+          });
+        } catch (error) {
         // エラーをメインプロセスに送信
         if (window.electronAPI?.sendChatStreamError) {
           window.electronAPI.sendChatStreamError({
@@ -243,12 +240,15 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
           });
         }
         
-        // エラー発生時はセッションから削除
-        if (onSessionComplete) {
-          onSessionComplete(backgroundSessionKey);
+          // エラー発生時はセッションから削除
+          if (onSessionComplete) {
+            onSessionComplete(backgroundSessionKey);
+          }
         }
       }
-    }
+    };
+    
+    handleQuery();
   }, [query, isInitialized]); // Remove append from dependencies to avoid infinite loop
 
   // 初期化フラグをセット
@@ -274,7 +274,6 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
               chatHistorySessionId,
               messages
             );
-            console.log('Updated local session messages:', chatHistorySessionId);
           }
           
           // 保存完了後、フラグをリセット
@@ -287,7 +286,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
         } catch (error) {
           console.error('Local session save failed:', error);
           setShouldSaveSession(false);
-          
+
           // セッション保存エラーもメインプロセスに送信
           if (window.electronAPI?.sendChatStreamError) {
             window.electronAPI.sendChatStreamError({

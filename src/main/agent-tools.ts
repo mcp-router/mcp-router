@@ -64,6 +64,15 @@ export class AgentToolHandler {
   private static sessionRepository = getSessionRepository();
   
   public static async handleTool(toolName: string, args: any): Promise<any> {
+    // Handle special query result tools
+    if (toolName === 'get_agent_query_result') {
+      return this.handleGetQueryResult(args);
+    }
+    
+    if (toolName === 'list_agent_sessions') {
+      return this.handleListSessions(args);
+    }
+    
     // Find agent by formatted tool name
     const agents = this.deployedAgentService.getDeployedAgents();
     const agent = agents.find(a => {
@@ -86,9 +95,55 @@ export class AgentToolHandler {
     try {
       const agents = this.deployedAgentService.getDeployedAgents();
       
-      return agents
+      const agentTools = agents
         .filter(agent => agent.mcpServerEnabled)
         .map(agent => createAgentTool(agent.name, agent.description, agent.purpose));
+      
+      // Add query result tools
+      const queryResultTools: AgentTool[] = [
+        {
+          name: 'get_agent_query_result',
+          description: 'Retrieve the result of a specific agent query by session ID. Use this to get the response from a previously submitted agent query.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              sessionId: {
+                type: 'string',
+                description: 'The session ID returned when the query was submitted',
+              },
+            },
+            required: ['sessionId'],
+          },
+        },
+        {
+          name: 'list_agent_sessions',
+          description: 'List agent sessions. Without filters, returns the most recent sessions sorted by last update time. Can be filtered by status or agent.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              status: {
+                type: 'string',
+                enum: ['pending', 'processing', 'completed', 'failed'],
+                description: 'Filter sessions by status',
+              },
+              agentId: {
+                type: 'string',
+                description: 'Filter sessions by agent ID (optional)',
+              },
+              limit: {
+                type: 'number',
+                description: 'Maximum number of sessions to return (default: 10, max: 100)',
+                minimum: 1,
+                maximum: 100,
+                default: 10,
+              },
+            },
+            required: [],
+          },
+        },
+      ];
+      
+      return [...agentTools, ...queryResultTools];
     } catch (error: any) {
       console.error('Failed to get enabled agent tools:', error);
       return [];
@@ -127,7 +182,9 @@ export class AgentToolHandler {
       const session = this.sessionRepository.createSession(
         serverAgentId,
         [],
-        `MCP Call from ${new Date().toISOString()}`
+        `MCP Call from ${new Date().toISOString()}`,
+        'mcp', // source
+        'pending' // status
       );
 
       // Send message to background window to start chat (fire and forget)
@@ -160,5 +217,139 @@ export class AgentToolHandler {
     }
   }
 
+  /**
+   * Handle getting query result by session ID
+   */
+  private static async handleGetQueryResult(args: any): Promise<any> {
+    const { sessionId } = args;
 
+    if (!sessionId || typeof sessionId !== 'string') {
+      throw new McpError(ErrorCode.InvalidParams, 'sessionId is required and must be a string');
+    }
+
+    try {
+      const session = this.sessionRepository.getSessionWithResults(sessionId);
+      
+      if (!session) {
+        throw new McpError(ErrorCode.InvalidParams, `Session with ID ${sessionId} not found`);
+      }
+
+      // Check if session is from MCP source
+      if (session.source !== 'mcp') {
+        throw new McpError(ErrorCode.InvalidParams, `Session ${sessionId} is not from MCP source`);
+      }
+
+      // Extract the last assistant message content if completed
+      let resultContent = '';
+      if (session.status === 'completed' && session.messages.length > 0) {
+        const assistantMessages = session.messages.filter((msg: any) => msg.role === 'assistant');
+        if (assistantMessages.length > 0) {
+          const lastAssistantMessage = assistantMessages[assistantMessages.length - 1];
+          resultContent = lastAssistantMessage.content || 'No content in response';
+        } else {
+          resultContent = 'No assistant response found';
+        }
+      }
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Status: ${session.status}
+
+${session.status === 'completed' 
+  ? `Result:\n${resultContent}`
+  : session.status === 'failed' 
+    ? 'Query failed'
+    : session.status === 'processing'
+      ? 'Still processing'
+      : 'Pending'
+}`,
+          },
+        ],
+      };
+    } catch (error: any) {
+      if (error instanceof McpError || (error.code !== undefined && typeof error.code === 'number')) {
+        throw error;
+      }
+      throw new McpError(ErrorCode.InternalError, `Failed to get query result: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Handle listing agent sessions
+   */
+  private static async handleListSessions(args: any): Promise<any> {
+    const { status, agentId, limit = 10 } = args;
+
+    try {
+      let sessions;
+      
+      if (status) {
+        // Validate status
+        const validStatuses = ['pending', 'processing', 'completed', 'failed'];
+        if (!validStatuses.includes(status)) {
+          throw new McpError(ErrorCode.InvalidParams, `Invalid status. Must be one of: ${validStatuses.join(', ')}`);
+        }
+        
+        sessions = this.sessionRepository.getSessionsByStatus(
+          status as any,
+          agentId,
+          { limit: Math.min(limit, 100) }
+        );
+      } else {
+        // Get all sessions for agent if agentId is provided, or recent sessions
+        if (agentId) {
+          sessions = this.sessionRepository.getSessionsByAgent(
+            agentId,
+            { limit: Math.min(limit, 100) }
+          );
+        } else {
+          // Get all recent MCP sessions regardless of status
+          sessions = this.sessionRepository.getRecentSessions({
+            limit: Math.min(limit, 100),
+            source: 'mcp', // Only get MCP sessions
+            orderBy: 'updated_at',
+            order: 'DESC'
+          });
+        }
+      }
+
+      const sessionList = sessions.sessions
+        .map(session => ({
+          sessionId: session.id,
+          agentId: session.agentId,
+          status: session.status,
+          createdAt: new Date(session.createdAt).toISOString(),
+          updatedAt: new Date(session.updatedAt).toISOString(),
+        }));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Found ${sessionList.length} MCP sessions:
+
+${sessionList.length > 0 
+  ? sessionList.map(session => 
+      `• Session ID: ${session.sessionId}
+  Agent ID: ${session.agentId}
+  Status: ${session.status}
+  Created: ${session.createdAt}
+  Updated: ${session.updatedAt}`
+    ).join('\n\n')
+  : 'No sessions found matching the criteria.'
+}
+
+${sessions.hasMore ? `\nMore sessions available. Use cursor-based pagination if needed.` : ''}`,
+          },
+        ],
+      };
+    } catch (error: any) {
+      if (error instanceof McpError || (error.code !== undefined && typeof error.code === 'number')) {
+        throw error;
+      }
+      throw new McpError(ErrorCode.InternalError, `Failed to list sessions: ${error.message || 'Unknown error'}`);
+    }
+  }
 }

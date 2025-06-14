@@ -7,11 +7,9 @@ import { Message } from '@ai-sdk/react';
 interface ChatSession {
   id: string;
   agentId: string;
-  title?: string;
   lastMessage?: string;
   createdAt: number;
   updatedAt?: number;
-  messageCount?: number;
   messages?: any[]; // Messages from @ai-sdk/react (stored locally in database)
 }
 

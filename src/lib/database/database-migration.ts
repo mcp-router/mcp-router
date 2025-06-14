@@ -132,7 +132,14 @@ export class DatabaseMigration {
       id: "20250610_add_mcp_server_enabled_to_deployed_agents",
       description: "Add mcp_server_enabled column to deployedAgents table",
       execute: (db) => this.migrateAddMcpServerEnabledToDeployedAgents(db)
-    })
+    });
+
+    // ChatSessions テーブルの更新: status/source追加、title/message_count削除
+    this.migrations.push({
+      id: "20250614_update_chat_sessions_schema",
+      description: "Update chat_sessions table: add status/source columns, remove title/message_count columns",
+      execute: (db) => this.migrateUpdateChatSessionsSchema(db)
+    });
   }
 
   /**
@@ -675,6 +682,88 @@ export class DatabaseMigration {
     }
   }
 
+
+  /**
+   * chat_sessionsテーブルのスキーマを更新するマイグレーション
+   * - status列とsource列を追加
+   * - title列とmessage_count列を削除
+   */
+  private migrateUpdateChatSessionsSchema(db: SqliteManager): void {
+    try {
+      // テーブルが存在するか確認
+      const tableExists = db.get(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'chat_sessions'",
+        { }
+      );
+      
+      if (!tableExists) {
+        return;
+      }
+      
+      // テーブル情報を取得
+      const tableInfo = db.all(
+        "PRAGMA table_info(chat_sessions)"
+      );
+      
+      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      
+      // SQLiteでは直接カラムを削除できないため、新しいテーブルを作成してデータを移行する
+      db.transaction(() => {
+        // 新しいテーブル構造を作成
+        // 注: DEFAULT 'pending' は新規作成時のデフォルト値。既存データの移行では 'completed' を使用
+        db.execute(`
+          CREATE TABLE chat_sessions_new (
+            id TEXT PRIMARY KEY,
+            agent_id TEXT NOT NULL,
+            messages TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            source TEXT NOT NULL DEFAULT 'ui',
+            FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE CASCADE
+          )
+        `);
+        
+        // 既存のデータを新しいテーブルにコピー
+        // status と source カラムが既に存在する場合はそれを使用、存在しない場合はデフォルト値を使用
+        const hasStatus = columnNames.includes('status');
+        const hasSource = columnNames.includes('source');
+        
+        let selectColumns = 'id, agent_id, messages, created_at, updated_at';
+        if (hasStatus) {
+          selectColumns += ', status';
+        } else {
+          // 既存のセッションは既に完了していると見なす
+          selectColumns += ", 'completed' as status";
+        }
+        if (hasSource) {
+          selectColumns += ', source';
+        } else {
+          selectColumns += ", 'ui' as source";
+        }
+        
+        db.execute(`
+          INSERT INTO chat_sessions_new (id, agent_id, messages, created_at, updated_at, status, source)
+          SELECT ${selectColumns}
+          FROM chat_sessions
+        `);
+        
+        // 古いテーブルを削除
+        db.execute('DROP TABLE chat_sessions');
+        
+        // 新しいテーブルを元の名前にリネーム
+        db.execute('ALTER TABLE chat_sessions_new RENAME TO chat_sessions');
+        
+        // インデックスを再作成
+        db.execute('CREATE INDEX IF NOT EXISTS idx_chat_sessions_agent_id ON chat_sessions(agent_id)');
+        db.execute('CREATE INDEX IF NOT EXISTS idx_chat_sessions_created_at ON chat_sessions(created_at)');
+        db.execute('CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status)');
+      });
+    } catch (error) {
+      console.error('chat_sessionsテーブルのスキーマ更新中にエラーが発生しました:', error);
+      throw error;
+    }
+  }
 
   /**
    * 既存のプレーンテキストデータを暗号化形式に移行

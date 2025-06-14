@@ -7,10 +7,8 @@ import { Skeleton } from '../../ui/skeleton';
 
 interface ChatSession {
   id: string;
-  title?: string;
   lastMessage?: string;
   createdAt: number; // Unix timestamp
-  messageCount?: number;
 }
 
 interface ChatSessionsProps {

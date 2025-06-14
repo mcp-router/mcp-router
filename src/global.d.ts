@@ -113,7 +113,7 @@ declare global {
       // Session Messages (Local Database)
       fetchSessionMessages: (sessionId: string) => Promise<any[]>;
       getSessions: (agentId: string, options?: any) => Promise<{sessions: any[], hasMore: boolean, nextCursor?: string}>;
-      createSession: (agentId: string, initialMessages?: any[], title?: string) => Promise<any>;
+      createSession: (agentId: string, initialMessages?: any[]) => Promise<any>;
       updateSessionMessages: (sessionId: string, messages: any[]) => Promise<any>;
       deleteSession: (sessionId: string) => Promise<boolean>;
       

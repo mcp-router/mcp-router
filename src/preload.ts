@@ -130,8 +130,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('agent:fetch-session-messages', sessionId),
   getSessions: (agentId: string, options?: any) => 
     ipcRenderer.invoke('agent:get-sessions', agentId, options),
-  createSession: (agentId: string, initialMessages?: any[], title?: string) => 
-    ipcRenderer.invoke('agent:create-session', agentId, initialMessages, title),
+  createSession: (agentId: string, initialMessages?: any[]) => 
+    ipcRenderer.invoke('agent:create-session', agentId, initialMessages),
   updateSessionMessages: (sessionId: string, messages: any[]) => 
     ipcRenderer.invoke('agent:update-session-messages', sessionId, messages),
   deleteSession: (sessionId: string) => 

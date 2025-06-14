@@ -213,8 +213,22 @@ export function setupAgentHandlers(): void {
   });
 
   // チャットストリーム関連のIPC通信ハンドラ
-  ipcMain.handle('agent:chat-stream-start', async (_) => {
+  ipcMain.handle('agent:chat-stream-start', async (_, streamData) => {
     try {
+      // セッションステータスをprocessingに更新
+      if (streamData.chatHistorySessionId) {
+        try {
+          sessionRepository.updateSessionStatus(streamData.chatHistorySessionId, 'processing');
+        } catch (error) {
+          console.error('Failed to update session status to processing:', error);
+        }
+      }
+      
+      // メインウィンドウにストリーム開始を通知
+      if (mainWindow) {
+        mainWindow.webContents.send('chat-stream:start', streamData);
+      }
+      
       return { success: true };
     } catch (error) {
       console.error('Chat stream start failed:', error);
@@ -243,6 +257,15 @@ export function setupAgentHandlers(): void {
       // メインウィンドウにストリーム終了を通知
       if (mainWindow) {
         mainWindow.webContents.send('chat-stream:end', endData);
+      }
+      
+      // セッションステータスをcompletedに更新
+      if (endData.chatHistorySessionId && endData.notificationType === 'finish') {
+        try {
+          sessionRepository.updateSessionStatus(endData.chatHistorySessionId, 'completed');
+        } catch (error) {
+          console.error('Failed to update session status to completed:', error);
+        }
       }
       
       // notificationTypeが'finish'の場合のみ通知を表示
@@ -283,6 +306,15 @@ export function setupAgentHandlers(): void {
 
   ipcMain.handle('agent:chat-stream-error', async (_, errorData) => {
     try {
+      // セッションステータスをfailedに更新
+      if (errorData.chatHistorySessionId) {
+        try {
+          sessionRepository.updateSessionStatus(errorData.chatHistorySessionId, 'failed');
+        } catch (error) {
+          console.error('Failed to update session status to failed:', error);
+        }
+      }
+      
       // メインウィンドウにストリームエラーを通知
       if (mainWindow) {
         mainWindow.webContents.send('chat-stream:error', errorData);
@@ -349,9 +381,9 @@ export function setupAgentHandlers(): void {
     }
   });
 
-  ipcMain.handle('agent:create-session', async (_, agentId: string, initialMessages: any[] = [], title?: string) => {
+  ipcMain.handle('agent:create-session', async (_, agentId: string, initialMessages: any[] = []) => {
     try {
-      const session = sessionRepository.createSession(agentId, initialMessages, title);
+      const session = sessionRepository.createSession(agentId, initialMessages);
       return session;
     } catch (error) {
       console.error(`Failed to create session for agent (ID: ${agentId}):`, error);
@@ -371,6 +403,7 @@ export function setupAgentHandlers(): void {
       throw error;
     }
   });
+
 
   ipcMain.handle('agent:delete-session', async (_, sessionId: string) => {
     try {
