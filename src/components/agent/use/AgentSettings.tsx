@@ -356,22 +356,27 @@ const AgentSettings: React.FC = () => {
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <h2 className="text-lg font-medium">{t('agents.settings')}</h2>
+                        {/* Configuration status */}
+                        <div className="flex items-center">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                agentState.configurationComplete 
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                                    : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                            }`}>
+                                {agentState.configurationComplete ? t('agents.status.configured') : t('agents.status.unconfigured')}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex gap-2 items-center">
                         {/* Auto-save indicator */}
                         {isAutoSavePending && (
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center space-x-1 mr-3">
                                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                                 <span className="text-xs text-muted-foreground">
                                     {t('agents.autoSaving', 'Auto-saving...')}
                                 </span>
                             </div>
                         )}
-                    </div>
-                    <div className="flex gap-2 items-center">
-                        <div className="flex items-center space-x-1 mr-3">
-                            <span className={`text-sm ${agentState.configurationComplete ? 'text-green-600' : 'text-amber-600'}`}>
-                                {agentState.configurationComplete ? t('agents.status.configured') : t('agents.status.unconfigured')}
-                            </span>
-                        </div>
                         
                         {/* Manual save button */}
                         <Button

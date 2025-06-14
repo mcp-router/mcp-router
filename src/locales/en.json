@@ -308,8 +308,8 @@
     "serverSetup": "Server Setup",
     "settings": "Settings",
     "tabs": {
-      "basic": "Basic",
-      "advanced": "Advanced Settings"
+      "basic": "General",
+      "advanced": "Advanced"
     },
     "instructions": "Agent Instructions",
     "instructionsDesc": "Enter instructions to guide the agent's behavior",
