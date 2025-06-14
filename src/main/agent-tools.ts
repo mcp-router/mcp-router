@@ -341,7 +341,7 @@ ${sessionList.length > 0
   : 'No sessions found matching the criteria.'
 }
 
-${sessions.hasMore ? `\nMore sessions available. Use cursor-based pagination if needed.` : ''}`,
+${sessions.hasMore ? `\nMore sessions available.` : ''}`,
           },
         ],
       };
