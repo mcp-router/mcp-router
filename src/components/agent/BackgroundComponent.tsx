@@ -264,7 +264,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
           if (!chatHistorySessionId) {
             // 新しいセッションを作成
             const session = await window.electronAPI.createSession(
-              getServerAgentId(agent) || agentId,
+              agent.id || agentId,
               messages
             );
             console.log('Created new local session:', session.id);

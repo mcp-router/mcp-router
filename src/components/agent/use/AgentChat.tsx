@@ -6,7 +6,7 @@ import { cn } from '../../../lib/utils/tailwind-utils';
 import { Message } from '@ai-sdk/react';
 import ChatInterface from '../build/ChatInterface';
 import ChatSessions from './ChatSessions';
-import { isAgentConfigured, getServerAgentId } from '../../../lib/utils/agent-utils';
+import { isAgentConfigured } from '../../../lib/utils/agent-utils';
 import { useAgentStore } from '../../../lib/stores';
 
 
@@ -98,7 +98,7 @@ const AgentChat: React.FC = () => {
     // 初回ロード時とagentIdが変更された時にセッション一覧を取得（認証がある場合のみ）
     useEffect(() => {
         if (agent?.id && authToken) {
-            fetchChatSessions(getServerAgentId(agent));
+            fetchChatSessions(agent.id);
         }
         // If no auth token, sessions will not be loaded but chat can still work
     }, [agent?.id, authToken, fetchChatSessions]);
@@ -127,7 +127,7 @@ const AgentChat: React.FC = () => {
             
             // セッション一覧を再取得して最新状態にする（認証がある場合のみ）
             if (agent?.id && authToken) {
-                await fetchChatSessions(getServerAgentId(agent));
+                await fetchChatSessions(agent.id);
             }
         } catch (err) {
             console.error('Failed to delete session:', err);
@@ -292,7 +292,7 @@ const AgentChat: React.FC = () => {
                     if (authToken) {
                         const wasNewSession = !currentSessionId;
                         setTimeout(async () => {
-                            await fetchChatSessions(getServerAgentId(agent));
+                            await fetchChatSessions(agent.id);
                             
                             // If this was a new session, auto-select the most recent session
                             if (wasNewSession) {

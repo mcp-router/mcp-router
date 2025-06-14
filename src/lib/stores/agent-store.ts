@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { AgentConfig, DeployedAgent } from '../../types';
 import { AgentChatMessage } from '../types/agent-api';
-import { getServerAgentId } from '../utils/agent-utils';
 import { Message } from '@ai-sdk/react';
 
 interface ChatSession {
@@ -437,7 +436,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     const { hasMoreSessions, nextCursor, isLoadingMoreSessions, currentDeployedAgent, fetchChatSessions } = get();
     
     if (hasMoreSessions && nextCursor && !isLoadingMoreSessions && currentDeployedAgent) {
-      fetchChatSessions(getServerAgentId(currentDeployedAgent), nextCursor, true);
+      fetchChatSessions(currentDeployedAgent.id, nextCursor, true);
     }
   },
 
