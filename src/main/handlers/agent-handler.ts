@@ -87,24 +87,23 @@ export function setupAgentHandlers(): void {
     return result;
   });
 
-  // エージェント固有のツール関連のIPC通信ハンドラ（共有版）
-  ipcMain.handle('agent:get-server-tools', async (_, id: string, isDev = false) => {
+  // 特定のMCPサーバーのツールを取得するIPC通信ハンドラ
+  ipcMain.handle('agent:get-mcp-server-tools', async (_, agentId: string, serverId: string, isDev = false) => {
     try {
       // まずデプロイ済みエージェントを確認
-      const deployedAgent = deployedAgentService.getDeployedAgentById(id);
+      const deployedAgent = deployedAgentService.getDeployedAgentById(agentId);
       
       if (deployedAgent && !isDev) {
         // デプロイ済みエージェントの場合
-        const tools = await deployedAgentService.getAgentServerTools(id);
-        return { success: true, tools };
+        const result = await deployedAgentService.getAgentMCPServerTools(agentId, serverId);
+        return { success: true, tools: result };
       } else {
         // 開発中エージェントの場合
-        const tools = await developmentAgentService.getAgentServerTools(id);
-        return { success: true, tools };
+        const result = await developmentAgentService.getAgentMCPServerTools(agentId, serverId);
+        return { success: true, tools: result };
       }
     } catch (error) {
-      console.error('エージェント固有のツール取得中にエラーが発生しました:', error);
-      return { success: false, error: error.message, tools: {} };
+      return { success: false, error: error.message, tools: [] };
     }
   });
 

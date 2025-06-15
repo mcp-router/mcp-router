@@ -215,20 +215,17 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
   }
 
   /**
-   * 開発中エージェントのMCPサーバから利用可能なツールを取得する
+   * 特定のMCPサーバーのツールを取得する
    */
-  public async getAgentServerTools(id: string): Promise<Record<string, (MCPTool & { enabled?: boolean })[]>> {
-    try {
-      const agentInstance = this.getAgentInstance(id);
-      if (!agentInstance) {
-        throw new Error(`開発中エージェントが見つかりません (ID: ${id})`);
-      }
-
-      return await agentInstance.getServerTools();
-    } catch (error) {
-      logError(`開発中エージェント (ID: ${id}) のサーバツール取得中にエラーが発生しました`, error);
-      return {};
+  public async getAgentMCPServerTools(agentId: string, serverId: string): Promise<(MCPTool & { enabled?: boolean })[]> {
+    const agentInstance = this.getAgentInstance(agentId);
+    if (!agentInstance) {
+      throw new Error(`開発中エージェントが見つかりません (ID: ${agentId})`);
     }
+
+    // Let the exception propagate to the handler
+    const tools = await agentInstance.getMCPServerTools(serverId);
+    return tools;
   }
 
   /**

@@ -100,8 +100,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateDeployedAgent: (id: string, config: any) => ipcRenderer.invoke('agent:deployed-update', id, config),
   deleteDeployedAgent: (id: string) => ipcRenderer.invoke('agent:deployed-delete', id),
   
-  // Agent Tool Permissions
-  getAgentServerTools: (id: string, isDev: boolean) => ipcRenderer.invoke('agent:get-server-tools', id, isDev),
+  // Agent Tool Management
+  getAgentMCPServerTools: (agentId: string, serverId: string, isDev?: boolean) => 
+    ipcRenderer.invoke('agent:get-mcp-server-tools', agentId, serverId, isDev),
   executeAgentTool: (agentId: string, toolName: string, args: Record<string, any>) => 
     ipcRenderer.invoke('agent:execute-tools', agentId, toolName, args),
   

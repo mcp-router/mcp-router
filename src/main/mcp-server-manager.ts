@@ -25,6 +25,7 @@ import {
 import { parseResourceUri, createResourceUri, createUriVariants } from '../lib/utils/uri-utils';
 import { summarizeResponse } from '../lib/utils/response-utils';
 import { AgentToolHandler } from './agent-tools';
+import {logError} from "../lib/utils/error-handler";
 
 // Constants for the Aggregator Server identification in LogService
 const AGGREGATOR_SERVER_ID = 'mcp-router-aggregator';
@@ -517,7 +518,7 @@ export class MCPServerManager {
 
     try {
       // Use the shared utility function for connecting to MCP servers
-      const client = await connectToMCPServer(
+      const result = await connectToMCPServer(
         {
           id: server.id,
           name: server.name,
@@ -534,12 +535,14 @@ export class MCPServerManager {
         "mcp-router"
       );
       
-      // Update server status if connection failed
-      if (!client) {
+      // Update server status based on connection result
+      if (result.status === 'error') {
         server.status = 'error';
+        logError(`Failed to connect to server ${server.name}: ${result.error}`);
+        return null;
       }
       
-      return client;
+      return result.client;
     } catch (error) {
       server.status = 'error';
       return null;

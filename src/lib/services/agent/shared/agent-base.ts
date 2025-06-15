@@ -130,10 +130,4 @@ export abstract class AgentBase {
     
     return false;
   }
-
-  /**
-   * エージェントのサーバツールを取得する（抽象メソッド）
-   * 各エージェントタイプで実装する
-   */
-  public abstract getServerTools(): Promise<Record<string, (MCPTool & { enabled?: boolean })[]>>;
 }

@@ -100,8 +100,8 @@ declare global {
           updates?: ServerPackageUpdates, 
         }>;
 
-      // Agent Tool Permissions
-      getAgentServerTools: (id: string, isDev: boolean) => Promise<{success: boolean, tools: any}>;
+      // Agent Tool Management
+      getAgentMCPServerTools: (agentId: string, serverId: string, isDev?: boolean) => Promise<{success: boolean, tools: any[], error?: string}>;
       executeAgentTool: (agentId: string, toolName: string, args: Record<string, any>) => Promise<{success: boolean, result?: any, error?: string}>;
       
       // Background Chat

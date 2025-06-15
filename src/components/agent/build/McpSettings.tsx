@@ -43,6 +43,10 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
     const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
     const [isLoadingTools, setIsLoadingTools] = useState(false);
     
+    // Error modal state
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
+    
     // Server form fields
     const [serverName, setServerName] = useState('');
     const [commandType, setCommandType] = useState<'pnpm dlx' | 'uvx'>('pnpm dlx');
@@ -95,14 +99,22 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
         
         try {
             const agentId = agent.id;
-            const response = await window.electronAPI.getAgentServerTools(agentId, isDev)
-            
+            const response = await window.electronAPI.getAgentMCPServerTools(agentId, serverId, isDev);
             if (response && response.success) {
-                setServerTools(response.tools);
+                setServerTools(prev => ({ ...prev, [serverId]: response.tools }));
                 setIsToolDialogOpen(true);
+            } else if (response && response.error) {
+                // Display error in modal
+                setErrorMessage(response.error);
+                setIsErrorModalOpen(true);
+            } else {
+                setErrorMessage("Error fetching tools");
+                setIsErrorModalOpen(true);
             }
         } catch (error) {
-            toast.error("Error fetching tools");
+            console.error("Error fetching tools:", error);
+            setErrorMessage(error instanceof Error ? error.message : "Error fetching tools");
+            setIsErrorModalOpen(true);
         } finally {
             setIsLoadingTools(false);
         }
@@ -723,6 +735,29 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
                             }}
                         >
                             {t('agents.mcpSettings.saveButtonText')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Error Modal */}
+            <Dialog open={isErrorModalOpen} onOpenChange={setIsErrorModalOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {t('common.error')}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 max-h-[400px] overflow-y-auto">
+                        <p className="text-sm break-words whitespace-pre-wrap">
+                            {errorMessage}
+                        </p>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            onClick={() => setIsErrorModalOpen(false)}
+                        >
+                            {t('common.close')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

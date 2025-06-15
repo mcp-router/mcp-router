@@ -3,7 +3,21 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { getUserShellEnv } from '../get-env';
-import { logError } from './error-handler';
+import { logError, logInfo } from './error-handler';
+
+/**
+ * Helper function to prefix each line with a given string
+ */
+function prefixLines(text: string, prefix: string): string {
+  return text.split('\n').map(line => prefix + line).join('\n');
+}
+
+/**
+ * Result type for MCP server connection
+ */
+export type MCPConnectionResult = 
+  | { status: 'success'; client: Client }
+  | { status: 'error'; error: string };
 
 /**
  * Server configuration interface for MCP servers
@@ -24,12 +38,12 @@ export interface IMCPServerConfig {
  * Creates an MCP client and connects to the specified server
  * @param server Server configuration
  * @param clientName Name for the client
- * @returns Connected MCP client or null if connection failed
+ * @returns Result object with status and either client or error message
  */
 export async function connectToMCPServer(
   server: IMCPServerConfig,
   clientName = "mcp-client"
-): Promise<Client | null> {
+): Promise<MCPConnectionResult> {
   try {
     // Create MCP client
     const client = new Client(
@@ -107,16 +121,47 @@ export async function connectToMCPServer(
           ...server.env,
           ...userEnvs
         },
+        stderr: "pipe"
       });
-      await client.connect(transport);
+      
+      let stderrOutput = '';
+      
+      try {
+        logInfo('connecting to the MCP server...');
+        
+        const connectionPromise = client.connect(transport);
+        
+        transport?.stderr?.on('data', (chunk) => {
+          stderrOutput += chunk.toString();
+        });
+        
+        await connectionPromise;
+        
+        logInfo('connected to the MCP server');
+      } catch (error) {
+        logError('could not connect to the MCP server', error);
+        if (stderrOutput) {
+          logError('Stderr output:', stderrOutput);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Return stderr output directly if available, otherwise use the error message
+        if (stderrOutput) {
+          throw new Error(stderrOutput);
+        } else {
+          throw error;
+        }
+      }
     } else {
       throw new Error(`Unknown server type: ${server.serverType}`);
     }
     
-    return client;
+    return { status: 'success', client };
   } catch (error) {
-    logError(`Failed to connect to MCP server: ${error.message}`, error);
-    return null;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logError(`Failed to connect to MCP server: ${errorMessage}`, error);
+    return { status: 'error', error: errorMessage };
   }
 }
 

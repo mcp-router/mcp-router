@@ -2,7 +2,7 @@ import { AgentConfig, MCPServerConfig, MCPTool, MCPAgentToolPermission } from '.
 import { AgentBase, BaseAgentInfo } from '../shared/agent-base';
 import { logError, logInfo } from '../../../utils/error-handler';
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { connectToMCPServer, fetchServerTools, fetchServerResources, readServerResource } from '../../../utils/mcp-client-util';
+import { connectToMCPServer, fetchServerTools, fetchServerResources, readServerResource, substituteArgsParameters } from '../../../utils/mcp-client-util';
 
 /**
  * サーバー情報を表す型
@@ -11,6 +11,7 @@ type ServerInfo = {
   config: MCPServerConfig;
   client?: Client;
   status: 'running' | 'starting' | 'stopping' | 'stopped' | 'error';
+  lastError?: string;
 };
 
 /**
@@ -150,26 +151,65 @@ export class DevelopmentAgent extends AgentBase {
       return false;
     }
 
-    const status = this.serverInfoMap.get(serverId)?.status;
-    if (status === 'running' || status === 'starting') {
-      return true;
+    const serverInfo = this.serverInfoMap.get(serverId);
+    if (!serverInfo) {
+      logError(`サーバ情報が見つかりません (ID: ${serverId})`);
+      return false;
     }
 
-    this.serverInfoMap.get(serverId)!.status = 'starting';
+    // 既に起動中または起動処理中の場合は true を返す
+    if (serverInfo.status === 'running') {
+      // クライアントが存在するか確認
+      if (serverInfo.client) {
+        return true;
+      }
+      // クライアントが無い場合は再接続を試みる
+      logInfo(`サーバ "${server.name}" (ID: ${serverId}) のクライアントが無いため再接続します`);
+    } else if (serverInfo.status === 'starting') {
+      // 起動処理中の場合は完了を待つ
+      logInfo(`サーバ "${server.name}" (ID: ${serverId}) は既に起動処理中です`);
+      // 最大10秒待機
+      const maxWaitTime = 10000;
+      const checkInterval = 100;
+      let waited = 0;
+      
+      while (waited < maxWaitTime) {
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+        waited += checkInterval;
+        
+        const currentStatus = this.serverInfoMap.get(serverId)?.status;
+        if (currentStatus === 'running') {
+          return true;
+        } else if (currentStatus === 'error' || currentStatus === 'stopped') {
+          break;
+        }
+      }
+      
+      if (this.serverInfoMap.get(serverId)?.status === 'running') {
+        return true;
+      }
+    }
+
+    serverInfo.status = 'starting';
 
     try {
-      const client = await this.connectToServer(serverId);
-      if (client) {
-        this.serverInfoMap.get(serverId)!.client = client;
-        this.serverInfoMap.get(serverId)!.status = 'running';
+      const result = await this.connectToServer(serverId);
+      if (result.client) {
+        serverInfo.client = result.client;
+        serverInfo.status = 'running';
+        logInfo(`サーバ "${server.name}" (ID: ${serverId}) を起動しました`);
         return true;
       } else {
-        this.serverInfoMap.get(serverId)!.status = 'error';
-        logError(`サーバ "${server.name}" (ID: ${serverId}) への接続に失敗しました`);
+        serverInfo.status = 'error';
+        if (result.error) {
+          serverInfo.lastError = result.error;
+          logError(result.error);
+        }
         return false;
       }
     } catch (error) {
-      this.serverInfoMap.get(serverId)!.status = 'error';
+      serverInfo.status = 'error';
+      serverInfo.lastError = error instanceof Error ? error.message : String(error);
       logError(`サーバ "${server.name}" (ID: ${serverId}) への接続中にエラーが発生しました`, error);
       return false;
     }
@@ -178,21 +218,24 @@ export class DevelopmentAgent extends AgentBase {
 
   /**
    * サーバーに接続する
+   * @returns { client, error } - 成功時はclientを、失敗時はerrorメッセージを返す
    */
-  private async connectToServer(serverId: string): Promise<Client | null> {
+  private async connectToServer(serverId: string): Promise<{ client: Client | null; error?: string }> {
     const server = this.findServerConfig(serverId);
     if (!server) {
-      return null;
+      return { client: null, error: `Server configuration not found (ID: ${serverId})` };
     }
 
     try {
-      const client = await connectToMCPServer(
+      const result = await connectToMCPServer(
         {
           id: server.id,
           name: server.name,
           serverType: server.serverType,
           command: server.command,
-          args: server.args,
+          args: server.args ? 
+            substituteArgsParameters(server.args, server.env || {}, server.inputParams || {}) :
+            undefined,
           remoteUrl: server.remoteUrl,
           bearerToken: server.bearerToken,
           env: server.env,
@@ -201,14 +244,17 @@ export class DevelopmentAgent extends AgentBase {
         `mcp-router-agent`
       );
 
-      if (!client) {
+      if (result.status === 'error') {
         this.serverInfoMap.get(serverId)!.status = 'error';
+        logError(`サーバー "${server.name}" への接続に失敗しました: ${result.error}`);
+        return { client: null, error: result.error }; // Return raw error message
       }
 
-      return client;
+      return { client: result.client };
     } catch (error) {
       this.serverInfoMap.get(serverId)!.status = 'error';
-      return null;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return { client: null, error: errorMessage }; // Return raw error message
     }
   }
 
@@ -329,76 +375,46 @@ export class DevelopmentAgent extends AgentBase {
   }
 
   /**
-   * エージェントのMCPサーバから利用可能なツールを取得する（抽象メソッドの実装）
+   * 特定のMCPサーバーのツールを取得する（単一サーバーのみ）
    */
-  public async getServerTools(): Promise<Record<string, (MCPTool & { enabled?: boolean })[]>> {
-    try {
-      await this.synchronizeToolPermissions();
-
-      const result: Record<string, (MCPTool & { enabled?: boolean })[]> = {};
-      const permissionsToUpdate: Record<string, MCPAgentToolPermission[]> = {};
-
-      for (const server of this.config.mcpServers) {
-        try {
-          logInfo(`サーバ "${server.name}" (ID: ${server.id}) からツールを取得中...`);
-
-          let tools: MCPTool[] = [];
-
-          const status = this.serverInfoMap.get(server.id)?.status;
-          if (status !== 'running') {
-            logInfo(`サーバ "${server.name}" (ID: ${server.id}) を起動中！`);
-            await this.startServer(server.id);
-          }
-          tools = await this.fetchServerTools(server.id);
-
-          if (tools && tools.length > 0) {
-            let currentPermissions: Record<string, MCPAgentToolPermission[]> = {};
-
-            if (this.config.toolPermissions) {
-              currentPermissions = this.config.toolPermissions;
-            }
-
-            const serverPermissions = currentPermissions[server.id] || [];
-            const updatedServerPermissions: MCPAgentToolPermission[] = [];
-
-            const toolsWithPermissions = tools.map((tool: MCPTool) => {
-              const existingPermission = serverPermissions.find(p => p.toolName === tool.name);
-
-              const toolPermission: MCPAgentToolPermission = {
-                toolName: tool.name,
-                inputSchema: tool.inputSchema,
-                description: tool.description || existingPermission?.description || tool.name || '',
-                enabled: existingPermission ? existingPermission.enabled : true
-              };
-
-              updatedServerPermissions.push(toolPermission);
-
-              const toolWithPermission: MCPTool & { enabled?: boolean } = {
-                ...tool,
-                enabled: toolPermission.enabled
-              };
-
-              return toolWithPermission;
-            });
-
-            permissionsToUpdate[server.id] = updatedServerPermissions;
-            result[server.id] = toolsWithPermissions;
-          }
-        } catch (error) {
-          logError(`サーバ "${server.name}" (ID: ${server.id}) からのツール取得中にエラーが発生しました`, error);
-        }
-      }
-
-      if (Object.keys(permissionsToUpdate).length > 0) {
-        await this.updateToolPermissions(permissionsToUpdate);
-      }
-
-      logInfo(`エージェント ${this.getLogIdentifier()} のサーバツールを取得しました`);
-      return result;
-    } catch (error) {
-      logError(`エージェント (ID: ${this.id}) のサーバツール取得中にエラーが発生しました`, error);
-      return {};
+  public async getMCPServerTools(serverId: string): Promise<(MCPTool & { enabled?: boolean })[]> {
+    const server = this.findServerConfig(serverId);
+    if (!server) {
+      throw new Error(`Server configuration not found (ID: ${serverId})`);
     }
+
+    // サーバーが起動していない場合は起動
+    const serverInfo = this.serverInfoMap.get(serverId);
+    if (!serverInfo || serverInfo.status !== 'running') {
+      const started = await this.startServer(serverId);
+      if (!started) {
+        // Get the error message from the last connection attempt
+        const updatedServerInfo = this.serverInfoMap.get(serverId);
+        const errorMessage = updatedServerInfo?.lastError || `Failed to start server "${server.name}"`;
+        throw new Error(errorMessage);
+      }
+    }
+
+    // ツールを取得
+    const tools = await this.fetchServerTools(serverId);
+    if (!tools || tools.length === 0) {
+      return [];
+    }
+
+    // 権限情報を取得
+    const currentPermissions = this.config.toolPermissions || {};
+    const serverPermissions = currentPermissions[serverId] || [];
+
+    // 権限情報を付与して返す
+    const toolsWithPermissions = tools.map((tool: MCPTool) => {
+      const existingPermission = serverPermissions.find(p => p.toolName === tool.name);
+      return {
+        ...tool,
+        enabled: existingPermission ? existingPermission.enabled : true
+      };
+    });
+
+    return toolsWithPermissions;
   }
 
   /**
@@ -416,6 +432,7 @@ export class DevelopmentAgent extends AgentBase {
 
       const existingServerIds = new Set(this.config.mcpServers.map(server => server.id));
 
+      // 存在しないサーバーのツール権限を削除
       for (const serverId of Object.keys(updatedToolPermissions)) {
         if (!existingServerIds.has(serverId)) {
           delete updatedToolPermissions[serverId];
@@ -423,10 +440,20 @@ export class DevelopmentAgent extends AgentBase {
         }
       }
 
+      // 各サーバーのツール情報を取得（必要な場合のみ起動）
       for (const server of this.config.mcpServers) {
         const serverId = server.id;
+        const serverInfo = this.serverInfoMap.get(serverId);
+        
+        // サーバーが既に起動済みで、ツール権限が既に存在する場合はスキップ
+        if (serverInfo?.status === 'running' && 
+            updatedToolPermissions[serverId] && 
+            updatedToolPermissions[serverId].length > 0) {
+          logInfo(`サーバー (ID: ${serverId}) は既に起動済みで、ツール権限も存在するためスキップします`);
+          continue;
+        }
 
-        logInfo(`サーバー (ID: ${serverId}) を起動してツール情報を取得します`);
+        logInfo(`サーバー (ID: ${serverId}) のツール情報を取得します`);
         const success = await this.startServer(serverId);
         if (!success) {
           logError(`サーバー (ID: ${serverId}) を起動できなかったため、ツール情報を更新できません`);
@@ -526,14 +553,38 @@ export class DevelopmentAgent extends AgentBase {
       return undefined;
     }
 
+    // まず、既に起動済みのサーバーから検索
     for (const server of this.config.mcpServers) {
-      const success = await this.startServer(server.id);
-      if (!success) continue;
+      const serverInfo = this.serverInfoMap.get(server.id);
+      if (serverInfo?.status === 'running' && serverInfo.client) {
+        try {
+          const tools = await this.fetchServerTools(server.id);
+          if (tools.some(tool => tool.name === toolName)) {
+            logInfo(`ツール "${toolName}" をサーバー "${server.name}" (ID: ${server.id}) で見つけました`);
+            return server.id;
+          }
+        } catch (error) {
+          logError(`サーバー (ID: ${server.id}) からのツール検索中にエラーが発生しました`, error);
+        }
+      }
+    }
 
-      const tools = await this.fetchServerTools(server.id);
+    // 起動済みサーバーで見つからなかった場合、未起動のサーバーを起動して検索
+    for (const server of this.config.mcpServers) {
+      const serverInfo = this.serverInfoMap.get(server.id);
+      if (serverInfo?.status !== 'running') {
+        const success = await this.startServer(server.id);
+        if (!success) continue;
 
-      if (tools.some(tool => tool.name === toolName)) {
-        return server.id;
+        try {
+          const tools = await this.fetchServerTools(server.id);
+          if (tools.some(tool => tool.name === toolName)) {
+            logInfo(`ツール "${toolName}" をサーバー "${server.name}" (ID: ${server.id}) で見つけました`);
+            return server.id;
+          }
+        } catch (error) {
+          logError(`サーバー (ID: ${server.id}) からのツール検索中にエラーが発生しました`, error);
+        }
       }
     }
 
@@ -545,6 +596,7 @@ export class DevelopmentAgent extends AgentBase {
    */
   public async callTool(toolName: string, args: Record<string, any>): Promise<any> {
     try {
+      // findServerForToolが既にサーバーを起動している
       const serverId = await this.findServerForTool(toolName);
       if (!serverId) {
         throw new Error(`ツール "${toolName}" を提供できるサーバーが見つかりません`);
@@ -555,14 +607,28 @@ export class DevelopmentAgent extends AgentBase {
         throw new Error(`ツール "${toolName}" はこのエージェントでは許可されていません`);
       }
 
-      const success = await this.startServer(serverId);
-      if (!success) {
-        throw new Error(`サーバー (ID: ${serverId}) を開始できませんでした`);
-      }
-
+      // findServerForToolが既にサーバーを起動しているため、再度起動する必要はない
+      // ただし、クライアントが存在するか確認
       const client = this.serverInfoMap.get(serverId)?.client;
       if (!client) {
-        throw new Error(`サーバー (ID: ${serverId}) に接続できませんでした`);
+        // クライアントがない場合のみ再起動を試みる
+        const success = await this.startServer(serverId);
+        if (!success) {
+          throw new Error(`サーバー (ID: ${serverId}) を開始できませんでした`);
+        }
+        
+        const newClient = this.serverInfoMap.get(serverId)?.client;
+        if (!newClient) {
+          throw new Error(`サーバー (ID: ${serverId}) に接続できませんでした`);
+        }
+        
+        const result = await newClient.callTool({
+          name: toolName,
+          arguments: args
+        });
+        
+        logInfo(`エージェント ${this.getLogIdentifier()} がツール "${toolName}" を呼び出しました`);
+        return result;
       }
 
       const result = await client.callTool({
