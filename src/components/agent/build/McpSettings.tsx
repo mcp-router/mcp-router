@@ -355,7 +355,13 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
                 remoteUrl: undefined,
                 bearerToken: undefined,
                 autoStart: editingServer?.autoStart || false,
-                disabled: editingServer?.disabled || false
+                disabled: editingServer?.disabled || false,
+                inputParams: editingServer?.inputParams, // Preserve inputParams from existing server
+                description: editingServer?.description, // Preserve description
+                latestVersion: editingServer?.latestVersion, // Preserve latestVersion
+                verificationStatus: editingServer?.verificationStatus, // Preserve verificationStatus
+                version: editingServer?.version, // Preserve version
+                toolPermissions: editingServer?.toolPermissions // Preserve toolPermissions
             };
             if (dialogMode === 'create') {
                 setAgent(prev => ({ ...prev, mcpServers: [...prev.mcpServers, serverConfig] }));
