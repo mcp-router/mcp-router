@@ -7,6 +7,7 @@
 import * as semver from 'semver';
 import { run, commandExists } from '../get-env';
 import { installPNPM, installUV } from './install-package-manager';
+import {logError} from "./error-handler";
 
 /**
  * Extract the package name without version from a package specifier
@@ -88,6 +89,25 @@ export interface ServerPackageUpdates {
 
 
 /**
+ * Validate if a string is a valid version format
+ * @param version Version string to validate
+ * @returns True if the version is valid
+ */
+function isValidVersion(version: string): boolean {
+  if (!version || version.trim() === '') {
+    return false;
+  }
+  
+  // Check if it's a valid semver or Python-style version
+  // Semver: 1.2.3, 1.2.3-alpha.1, etc.
+  // Python: 1.2.3, 1.2.3a1, 1.2.3.dev0, etc.
+  const semverPattern = /^\d+\.\d+\.\d+(?:-[\w\.]+)?(?:\+[\w\.]+)?$/;
+  const pythonPattern = /^\d+(?:\.\d+)*(?:[a-zA-Z]+\d*)?(?:\.dev\d+)?$/;
+  
+  return semverPattern.test(version) || pythonPattern.test(version);
+}
+
+/**
  * Get the latest version of a package using the specified package manager
  * @param packageName Package name without version
  * @param packageManager The package manager to use (pnpm or uvx)
@@ -101,10 +121,18 @@ async function getLatestVersion(
   if (packageManager === 'pnpm') {
     try {
       const result = await run('pnpm', ['view', packageName, 'version']);
-      return result.trim();
+      const version = result.trim();
+      
+      // Validate the version format
+      if (!isValidVersion(version)) {
+        console.error(`Invalid version format received for ${packageName}: ${version}`);
+        throw new Error(`Invalid version format: ${version}`);
+      }
+      
+      return version;
     } catch (error) {
       console.error(`Failed to get version for ${packageName} using pnpm:`, error);
-      return '';
+      throw error;
     }
   } else {
     // Try progressively more reliable methods to get package version information
@@ -112,44 +140,57 @@ async function getLatestVersion(
       // Method 1: Try the "show" command first if the package is already installed
       try {
         const showResult = await run('uv', ['pip', 'show', packageName]);
-        console.log(`Show result for ${packageName}:`, showResult);
-        
         // Package found - parse the version
         if (!showResult.includes("WARNING: Package(s) not found")) {
           // Extract version from output format like "Version: x.y.z"
           const versionMatch = showResult.match(/Version:\s*([^\s]+)/);
           if (versionMatch && versionMatch[1]) {
-            return versionMatch[1].trim();
+            const version = versionMatch[1].trim();
+            
+            // Validate the version format
+            if (!isValidVersion(version)) {
+              console.error(`Invalid version format from uv show: ${version}`);
+              throw new Error(`Invalid version format: ${version}`);
+            }
+            
+            return version;
           }
         }
       } catch (showError) {
-        console.log(`'uv pip show' command failed: ${showError}. Trying next method.`);
+        logError(`'uv pip show' command failed: ${showError}. Trying next method.`);
       }
       
       // Method 2: If show command didn't work, try dry-run install method
       try {
         const dryRunResult = await run('uv', ['pip', 'install', packageName, '--dry-run']);
-        console.log(`Dry run result for ${packageName}:`, dryRunResult);
-        
+
         // Find the line that contains the package name and version
         // Format: " + packageName==version"
         const lines = dryRunResult.split('\n');
         for (const line of lines) {
           const packageMatch = line.match(new RegExp(`\\s+\\+\\s+(${packageName})\\s*==\\s*([\\d\\.]+(?:\\.[\\d]+)*)`));
           if (packageMatch && packageMatch[2]) {
-            return packageMatch[2].trim();
+            const version = packageMatch[2].trim();
+            
+            // Validate the version format
+            if (!isValidVersion(version)) {
+              console.error(`Invalid version format from uv dry-run: ${version}`);
+              throw new Error(`Invalid version format: ${version}`);
+            }
+            
+            return version;
           }
         }
       } catch (dryRunError) {
-        console.log(`'uv pip install --dry-run' command failed: ${dryRunError}. Trying next method.`);
-      }      
+        logError(`'uv pip install --dry-run' command failed: ${dryRunError}. Trying next method.`);
+      }
       // If we still couldn't get a version
-      console.error(`Could not determine version for ${packageName}`);
-      return '';
+      const errorMsg = `Could not determine version for ${packageName}`;
+      throw new Error(errorMsg);
       
     } catch (error) {
       console.error(`Failed to get version information for ${packageName}: ${error}`);
-      return '';
+      throw error;
     }
   }
 }
@@ -301,14 +342,11 @@ export async function resolvePackageVersion(
     const latestVersion = await getLatestVersion(packageName, packageManager);
 
     // Return the package with the exact version
-    if (latestVersion) {
-        return `${packageName}@${latestVersion}`;
-    }
-    return packageSpec;
+    return `${packageName}@${latestVersion}`;
   } catch (error) {
     console.error(`Failed to resolve package version for ${packageSpec}:`, error);
-    // Return original package spec if we couldn't resolve the version
-    return packageSpec;
+    // Throw error instead of silently returning original spec
+    throw new Error(`Failed to resolve version for ${packageSpec}: ${(error as Error).message}`);
   }
 }
 
@@ -342,6 +380,7 @@ export async function resolvePackageVersionsInArgs(
     return argsString.replace(packageArg, resolvedPackage);
   } catch (error) {
     console.error(`Failed to resolve package version in args: ${argsString}`, error);
-    return argsString;
+    // Re-throw the error instead of silently returning original args
+    throw error;
   }
 }
