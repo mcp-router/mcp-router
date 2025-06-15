@@ -7,7 +7,7 @@ import { Textarea } from '../../ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog';
 import { Badge } from '../../ui/badge';
 import { toast } from 'sonner';
-import { Server, Plus, X, Edit, Trash2, Wrench, RefreshCw } from 'lucide-react';
+import { Server, Plus, X, Edit, Trash2, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { 
   Select, 
@@ -170,13 +170,10 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
     // アップデート関連 state
     const [packagesWithUpdates, setPackagesWithUpdates] = useState<Record<string, boolean>>({});
     const [updatingPackages, setUpdatingPackages] = useState<Record<string, boolean>>({});
-    const [checkingUpdates, setCheckingUpdates] = useState<Record<string, boolean>>({});
 
     // 更新状況を確認
     const checkForUpdates = async (server: MCPServerConfig) => {
         try {
-            setCheckingUpdates(prev => ({ ...prev, [server.id]: true }));
-            
             const argsList = server.command === 'pnpm' ? server.args.filter(arg => arg !== 'dlx') : server.args;
             const response = await window.electronAPI.checkMcpServerPackageUpdates(argsList, server.command as 'pnpm' | 'uvx');
             
@@ -185,22 +182,17 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
                     ...prev,
                     [server.id]: !!response.updates && Object.keys(response.updates).length > 0
                 }));
-                toast.success(t('agents.mcpSettings.updateFound', { name: server.name }));
                 return response.updates;
             } else {
                 setPackagesWithUpdates(prev => ({
                     ...prev,
                     [server.id]: false
                 }));
-                toast.info(t('agents.mcpSettings.noUpdateAvailable', { name: server.name }));
             }
             return null;
         } catch (error) {
             console.error('Failed to check for updates:', error);
-            toast.error(t('agents.mcpSettings.updateCheckFailed'));
             return null;
-        } finally {
-            setCheckingUpdates(prev => ({ ...prev, [server.id]: false }));
         }
     };
 
@@ -221,42 +213,60 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
             // パッケージの更新情報から最新バージョンを取得
             const updates = updateResult.updates.packages;
             
-            // 更新対象のサーバーの引数を更新
-            const updatedMcpServers = agent.mcpServers.map(s => {
-                if (s.id === server.id) {
-                    // 引数をコピー
-                    const updatedArgs = [...s.args];
-                    
-                    // 各パッケージの更新を適用
-                    updates.forEach(update => {
-                        if (update.updateAvailable && update.latestVersion) {
-                            // 更新が必要なパッケージと一致する引数を検索して置換
-                            const packageName = update.packageName;
-                            const latestVersion = update.latestVersion;
-                            
-                            for (let i = 0; i < updatedArgs.length; i++) {
-                                const arg = updatedArgs[i];
-                                // パッケージ名に一致する引数を検索（バージョン指定の有無にかかわらず）
-                                if (arg.includes(packageName) && (arg === packageName || arg.startsWith(`${packageName}@`))) {
-                                    // 最新バージョンに置き換え
-                                    updatedArgs[i] = `${packageName}@${latestVersion}`;
-                                    break;
-                                }
+            // 編集ダイアログが開いている場合は、フォームのargs値を更新
+            if (dialogMode === 'edit' && editingServer && editingServer.id === server.id) {
+                const updatedArgs = args.split(/\s+/).filter(arg => arg);
+                
+                // 各パッケージの更新を適用
+                updates.forEach(update => {
+                    if (update.updateAvailable && update.latestVersion) {
+                        const packageName = update.packageName;
+                        const latestVersion = update.latestVersion;
+                        
+                        for (let i = 0; i < updatedArgs.length; i++) {
+                            const arg = updatedArgs[i];
+                            if (arg.includes(packageName) && (arg === packageName || arg.startsWith(`${packageName}@`))) {
+                                updatedArgs[i] = `${packageName}@${latestVersion}`;
+                                break;
                             }
                         }
-                    });
-                    
-                    // 更新された引数を持つサーバー設定を返す
-                    return { ...s, args: updatedArgs };
-                }
-                return s;
-            });
+                    }
+                });
+                
+                setArgs(updatedArgs.join(' '));
+                toast.success(t('agents.mcpSettings.updateApplied'));
+            } else {
+                // 通常のリストからの更新（このケースは今回削除されたが、念のため残す）
+                const updatedMcpServers = agent.mcpServers.map(s => {
+                    if (s.id === server.id) {
+                        const updatedArgs = [...s.args];
+                        
+                        updates.forEach(update => {
+                            if (update.updateAvailable && update.latestVersion) {
+                                const packageName = update.packageName;
+                                const latestVersion = update.latestVersion;
+                                
+                                for (let i = 0; i < updatedArgs.length; i++) {
+                                    const arg = updatedArgs[i];
+                                    if (arg.includes(packageName) && (arg === packageName || arg.startsWith(`${packageName}@`))) {
+                                        updatedArgs[i] = `${packageName}@${latestVersion}`;
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                        
+                        return { ...s, args: updatedArgs };
+                    }
+                    return s;
+                });
+                
+                setAgent(prev => ({
+                    ...prev,
+                    mcpServers: updatedMcpServers
+                }));
+            }
             
-            // エージェントの設定を更新
-            setAgent(prev => ({
-                ...prev,
-                mcpServers: updatedMcpServers
-            }));
             // 更新後は更新可能フラグをオフにする
             setPackagesWithUpdates(prev => ({
                 ...prev,
@@ -301,6 +311,9 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
             setEnvKeys(Object.keys(server.env || {}));
             setRequiredParams(server.required || []);
             setServerSetupInstructions(server.setupInstructions || '');
+            
+            // 編集ダイアログを開いた時に自動でアップデートをチェック
+            checkForUpdates(server);
         }
         if (mode === 'create') {
             setRequiredParams([]);
@@ -380,41 +393,6 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
                                             <span className="font-medium">{server.name}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
-                                            {/* 更新確認ボタン - 常に表示 */}
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => checkForUpdates(server)}
-                                                disabled={checkingUpdates[server.id] || updatingPackages[server.id]}
-                                                title={t('agents.mcpSettings.checkUpdates')}
-                                                className="flex items-center gap-1"
-                                            >
-                                                {checkingUpdates[server.id] ? (
-                                                    <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                                                ) : (
-                                                    <>
-                                                        <RefreshCw className="h-4 w-4" />
-                                                    </>
-                                                )}
-                                            </Button>
-                                            
-                                            {/* 更新ボタン - 更新可能な場合のみ表示 */}
-                                            {packagesWithUpdates[server.id] && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleUpdatePackage(server)}
-                                                    disabled={updatingPackages[server.id] || checkingUpdates[server.id]}
-                                                    title={t('agents.mcpSettings.updatePackage')}
-                                                    className="flex items-center gap-1"
-                                                >
-                                                    {updatingPackages[server.id] ? (
-                                                        <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                                                    ) : (
-                                                        <>{t('agents.mcpSettings.updateAvailable')}</>
-                                                    )}
-                                                </Button>
-                                            )}
                                             <Button 
                                                 variant="ghost" 
                                                 size="sm"
@@ -459,7 +437,7 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
                         )}
                     </DialogHeader>
                     
-                    <div className="space-y-4 py-4">                        
+                    <div className="space-y-4 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="serverName">{t('agents.mcpSettings.serverName')}</Label>
@@ -508,18 +486,35 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
                                     {t('agents.mcpSettings.args')} <span className="text-destructive">*</span>
                                 </Label>
                             </div>
-                            <Input
-                                id="args"
-                                value={args}
-                                onChange={(e) => {
-                                    setArgs(e.target.value);
-                                    if (validationErrors.args) {
-                                        setValidationErrors({...validationErrors, args: undefined});
-                                    }
-                                }}
-                                placeholder={"@modelcontextprotocol/server-puppeteer"}
-                                className={validationErrors.args ? "border-destructive" : ""}
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    id="args"
+                                    value={args}
+                                    onChange={(e) => {
+                                        setArgs(e.target.value);
+                                        if (validationErrors.args) {
+                                            setValidationErrors({...validationErrors, args: undefined});
+                                        }
+                                    }}
+                                    placeholder={"@modelcontextprotocol/server-puppeteer"}
+                                    className={validationErrors.args ? "border-destructive flex-1" : "flex-1"}
+                                />
+                                {dialogMode === 'edit' && editingServer && packagesWithUpdates[editingServer.id] && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => handleUpdatePackage(editingServer)}
+                                        disabled={updatingPackages[editingServer.id]}
+                                        className="flex items-center gap-2"
+                                    >
+                                        {updatingPackages[editingServer.id] ? (
+                                            <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                                        ) : (
+                                            <>{t('common.update')}</>
+                                        )}
+                                    </Button>
+                                )}
+                            </div>
                             {validationErrors.args ? (
                                 <p className="text-xs text-destructive">{validationErrors.args}</p>
                             ) : (

@@ -368,7 +368,10 @@
       "serverCreated": "MCP server \"{{name}}\" has been added",
       "serverUpdated": "MCP server \"{{name}}\" has been updated",
       "serverCreateFailed": "Failed to create MCP server",
-      "serverUpdateFailed": "Failed to update MCP server"
+      "serverUpdateFailed": "Failed to update MCP server",
+      "checkingForUpdates": "Checking for updates...",
+      "updateApplied": "Update applied successfully",
+      "applyUpdate": "Apply Update"
     },
     "serverVariables": {
       "parameters": "Parameters",

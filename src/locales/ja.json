@@ -378,7 +378,10 @@
       "serverCreated": "MCPサーバ \"{{name}}\" が追加されました",
       "serverUpdated": "MCPサーバ \"{{name}}\" が更新されました",
       "serverCreateFailed": "MCPサーバの作成に失敗しました",
-      "serverUpdateFailed": "MCPサーバの更新に失敗しました"
+      "serverUpdateFailed": "MCPサーバの更新に失敗しました",
+      "checkingForUpdates": "アップデートを確認中...",
+      "updateApplied": "アップデートが適用されました",
+      "applyUpdate": "アップデートを適用"
     },
     "errors": {
       "fetchFailed": "エージェント一覧の取得に失敗しました",
