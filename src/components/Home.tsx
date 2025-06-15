@@ -275,10 +275,6 @@ const Home: React.FC = () => {
                     {isExpanded && (
                         <ServerDetails
                           server={server}
-                          onUpdateServer={updateServerConfig}
-                          onRemoveServer={(_id) => openRemoveDialog(server, {} as React.MouseEvent)}
-                          onStartServer={startServer}
-                          onStopServer={stopServer}
                         />
                     )}
                   </div>

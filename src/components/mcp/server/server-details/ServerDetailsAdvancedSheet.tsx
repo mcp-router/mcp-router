@@ -7,49 +7,36 @@ import { Button } from "@/components/ui/button";
 import ServerDetailsLocal from './ServerDetailsLocal';
 import ServerDetailsRemote from './ServerDetailsRemote';
 import ServerDetailsEnvironment from './ServerDetailsEnvironment';
+import { useServerEditingStore } from '@/lib/stores/server-editing-store';
 
 interface ServerDetailsAdvancedSheetProps {
   server: MCPServer;
-  isOpen: boolean;
-  isLoading: boolean;
-  setIsOpen: (isOpen: boolean) => void;
-  editedCommand: string;
-  editedArgs: string[];
-  editedBearerToken: string;
-  envPairs: {key: string, value: string}[];
-  setEditedCommand: (command: string) => void;
-  setEditedArgs: (args: string[]) => void;
-  setEditedBearerToken: (token: string) => void;
-  updateArg: (index: number, value: string) => void;
-  removeArg: (index: number) => void;
-  addArg: () => void;
-  updateEnvPair: (index: number, field: 'key' | 'value', value: string) => void;
-  removeEnvPair: (index: number) => void;
-  addEnvPair: () => void;
   handleSave: () => void;
 }
 
 const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
   server,
-  isOpen,
-  isLoading,
-  setIsOpen,
-  editedCommand,
-  editedArgs,
-  editedBearerToken,
-  envPairs,
-  setEditedCommand,
-  setEditedArgs,
-  setEditedBearerToken,
-  updateArg,
-  removeArg,
-  addArg,
-  updateEnvPair,
-  removeEnvPair,
-  addEnvPair,
   handleSave
 }) => {
   const { t } = useTranslation();
+  const {
+    isAdvancedEditing: isOpen,
+    isLoading,
+    editedCommand,
+    editedArgs,
+    editedBearerToken,
+    envPairs,
+    setIsAdvancedEditing: setIsOpen,
+    setEditedCommand,
+    setEditedArgs,
+    setEditedBearerToken,
+    updateArg,
+    removeArg,
+    addArg,
+    updateEnvPair,
+    removeEnvPair,
+    addEnvPair
+  } = useServerEditingStore();
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>

@@ -3,6 +3,7 @@ export { useServerStore, useServerById, useServersByStatus, useIsServerUpdating 
 export { useAuthStore, useIsLoggedIn, useIsActivated, useAuthToken, useUserId } from './auth-store';
 export { useAgentStore, useCurrentAgent, useCurrentSession, useSessionsByAgent } from './agent-store';
 export { useUIStore, useToasts, useDialog, useGlobalLoading, useTheme } from './ui-store';
+export { useServerEditingStore } from './server-editing-store';
 
 // Store initialization utility
 export const initializeStores = async () => {

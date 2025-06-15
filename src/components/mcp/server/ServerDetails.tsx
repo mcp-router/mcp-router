@@ -13,6 +13,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { toast } from "sonner";
+import { useServerStore } from '@/lib/stores/server-store';
+import { useServerEditingStore } from '@/lib/stores/server-editing-store';
 
 // Import sub-components
 import ServerDetailsLocal from '@/components/mcp/server/server-details/ServerDetailsLocal';
@@ -25,27 +27,35 @@ import ServerDetailsInputParams from '@/components/mcp/server/server-details/Ser
 
 interface ServerDetailsProps {
   server: MCPServer;
-  onUpdateServer: (id: string, config: any) => void;
-  onRemoveServer: (id: string) => void;
-  onStartServer: (id: string) => void;
-  onStopServer: (id: string) => void;
 }
 
 const ServerDetails: React.FC<ServerDetailsProps> = ({
   server,
-  onUpdateServer,
-  onRemoveServer,
-  onStartServer,
-  onStopServer
 }) => {
   const { t } = useTranslation();
-  const [isAdvancedEditing, setIsAdvancedEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const [editedCommand, setEditedCommand] = useState(server.command || '');
-  const [editedArgs, setEditedArgs] = useState<string[]>(server.args || []);
-  const [editedBearerToken, setEditedBearerToken] = useState(server.bearerToken || '');
-  const [envPairs, setEnvPairs] = useState<{key: string, value: string}[]>([]);
+  const { updateServerConfig } = useServerStore();
+  const {
+    isAdvancedEditing,
+    isLoading,
+    editedCommand,
+    editedArgs,
+    editedBearerToken,
+    envPairs,
+    setIsAdvancedEditing,
+    setIsLoading,
+    setEditedCommand,
+    setEditedArgs,
+    setEditedBearerToken,
+    setEnvPairs,
+    updateArg,
+    removeArg,
+    addArg,
+    updateEnvPair,
+    removeEnvPair,
+    addEnvPair,
+    initializeFromServer,
+    reset
+  } = useServerEditingStore();
   const [inputParamValues, setInputParamValues] = useState<Record<string, string>>({});
   const [initialInputParamValues, setInitialInputParamValues] = useState<Record<string, string>>({});
   const [isDirty, setIsDirty] = useState(false);
@@ -63,13 +73,16 @@ const ServerDetails: React.FC<ServerDetailsProps> = ({
     }
   }, [server.id]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, [reset]);
+
   const handleAdvancedEdit = () => {
     // For advanced editing, prepare all the detailed configuration values
-    setEditedCommand(server.command || '');
-    setEditedArgs(server.args || []);
-    setEnvPairs(
-      Object.entries(server.env || {}).map(([key, value]) => ({ key, value: String(value) }))
-    );
+    initializeFromServer(server);
     setIsAdvancedEditing(true);
   };
   
@@ -85,33 +98,6 @@ const ServerDetails: React.FC<ServerDetailsProps> = ({
     });
   };
 
-  const addEnvPair = () => {
-    setEnvPairs([...envPairs, { key: '', value: '' }]);
-  };
-
-  const addArg = () => {
-    setEditedArgs([...editedArgs, '']);
-  };
-
-  const removeArg = (index: number) => {
-    setEditedArgs(editedArgs.filter((_, i) => i !== index));
-  };
-
-  const updateArg = (index: number, value: string) => {
-    const newArgs = [...editedArgs];
-    newArgs[index] = value;
-    setEditedArgs(newArgs);
-  };
-
-  const removeEnvPair = (index: number) => {
-    setEnvPairs(envPairs.filter((_, i) => i !== index));
-  };
-
-  const updateEnvPair = (index: number, field: 'key' | 'value', value: string) => {
-    const newPairs = [...envPairs];
-    newPairs[index][field] = value;
-    setEnvPairs(newPairs);
-  };
 
   const handleSaveParams = async () => {
     setIsLoading(true);
@@ -140,7 +126,7 @@ const ServerDetails: React.FC<ServerDetailsProps> = ({
         args: server.args
       };
       
-      await onUpdateServer(server.id, updatedConfig);
+      await updateServerConfig(server.id, updatedConfig);
       setInitialInputParamValues(inputParamValues); // 保存後に初期値を更新
       setIsDirty(false);
       toast.success(t('serverDetails.updateSuccess'));
@@ -176,7 +162,7 @@ const ServerDetails: React.FC<ServerDetailsProps> = ({
         updatedConfig.bearerToken = editedBearerToken;
       }
       
-      await onUpdateServer(server.id, updatedConfig);
+      await updateServerConfig(server.id, updatedConfig);
       setIsAdvancedEditing(false);
       toast.success(t('serverDetails.updateSuccess'));
     } catch (error) {
@@ -251,22 +237,6 @@ const ServerDetails: React.FC<ServerDetailsProps> = ({
       {/* Advanced Edit Sheet */}
       <ServerDetailsAdvancedSheet 
         server={server}
-        isOpen={isAdvancedEditing}
-        isLoading={isLoading}
-        setIsOpen={setIsAdvancedEditing}
-        editedCommand={editedCommand}
-        editedArgs={editedArgs}
-        editedBearerToken={editedBearerToken}
-        envPairs={envPairs}
-        setEditedCommand={setEditedCommand}
-        setEditedArgs={setEditedArgs}
-        setEditedBearerToken={setEditedBearerToken}
-        updateArg={updateArg}
-        removeArg={removeArg}
-        addArg={addArg}
-        updateEnvPair={updateEnvPair}
-        removeEnvPair={removeEnvPair}
-        addEnvPair={addEnvPair}
         handleSave={handleSaveAdvanced}
       />
     </div>
