@@ -143,7 +143,7 @@ export class DevelopmentAgent extends AgentBase {
   /**
    * 特定のエージェント用MCPサーバを開始する
    */
-  public async startServer(serverId: string, maxRetries = 3): Promise<boolean> {
+  public async startServer(serverId: string): Promise<boolean> {
     const server = this.findServerConfig(serverId);
     if (!server) {
       logError(`サーバが見つかりません (ID: ${serverId})`);
@@ -155,55 +155,26 @@ export class DevelopmentAgent extends AgentBase {
       return true;
     }
 
-    return await this.connectToServerWithRetry(serverId, maxRetries);
-  }
-
-  /**
-   * サーバー接続を再試行ロジックで行う
-   */
-  private async connectToServerWithRetry(serverId: string, maxRetries: number): Promise<boolean> {
-    const server = this.findServerConfig(serverId);
-    if (!server) {
-      return false;
-    }
-
     this.serverInfoMap.get(serverId)!.status = 'starting';
 
-    let retryCount = 0;
-    while (retryCount < maxRetries) {
-      try {
-        const client = await this.connectToServer(serverId);
-        if (client) {
-          this.serverInfoMap.get(serverId)!.client = client;
-          this.serverInfoMap.get(serverId)!.status = 'running';
-          return true;
-        }
-
-        retryCount++;
-        if (retryCount >= maxRetries) {
-          this.serverInfoMap.get(serverId)!.status = 'error';
-          logError(`サーバ "${server.name}" (ID: ${serverId}) への接続が最大試行回数を超えました`);
-          return false;
-        }
-
-        logInfo(`サーバ "${server.name}" (ID: ${serverId}) への接続を再試行します (${retryCount}/${maxRetries})`);
-        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
-      } catch (error) {
-        retryCount++;
-        logError(`サーバ "${server.name}" (ID: ${serverId}) への接続中にエラーが発生しました (試行 ${retryCount}/${maxRetries})`, error);
-
-        if (retryCount >= maxRetries) {
-          this.serverInfoMap.get(serverId)!.status = 'error';
-          return false;
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+    try {
+      const client = await this.connectToServer(serverId);
+      if (client) {
+        this.serverInfoMap.get(serverId)!.client = client;
+        this.serverInfoMap.get(serverId)!.status = 'running';
+        return true;
+      } else {
+        this.serverInfoMap.get(serverId)!.status = 'error';
+        logError(`サーバ "${server.name}" (ID: ${serverId}) への接続に失敗しました`);
+        return false;
       }
+    } catch (error) {
+      this.serverInfoMap.get(serverId)!.status = 'error';
+      logError(`サーバ "${server.name}" (ID: ${serverId}) への接続中にエラーが発生しました`, error);
+      return false;
     }
-
-    this.serverInfoMap.get(serverId)!.status = 'error';
-    return false;
   }
+
 
   /**
    * サーバーに接続する
