@@ -180,15 +180,21 @@ export function substituteArgsParameters(
   return args.map(arg => {
     let result = arg;
     
-    // Replace parameter placeholders
+    // Replace parameter placeholders - support both {PARAM} and ${PARAM} formats
     Object.entries(inputParams).forEach(([paramName, paramDef]) => {
       const paramValue = env[paramName] || paramDef.default || '';
+      // Replace ${PARAM} format
       result = result.replace(new RegExp(`\\$\\{${paramName}\\}`, 'g'), paramValue);
+      // Replace {PARAM} format
+      result = result.replace(new RegExp(`\\{${paramName}\\}`, 'g'), paramValue);
     });
     
-    // Replace environment variable placeholders
+    // Replace environment variable placeholders - support both {PARAM} and ${PARAM} formats
     Object.entries(env).forEach(([envName, envValue]) => {
+      // Replace ${PARAM} format
       result = result.replace(new RegExp(`\\$\\{${envName}\\}`, 'g'), envValue);
+      // Replace {PARAM} format
+      result = result.replace(new RegExp(`\\{${envName}\\}`, 'g'), envValue);
     });
     
     return result;

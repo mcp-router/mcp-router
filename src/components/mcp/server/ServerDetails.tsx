@@ -131,16 +131,10 @@ const ServerDetails: React.FC<ServerDetailsProps> = ({
         });
       }
       
-      // Also update env variables to include all parameter values
-      const updatedEnv = { ...(server.env || {}) };
-      Object.entries(inputParamValues).forEach(([key, value]) => {
-        updatedEnv[key] = value;
-      });
-      
       // Create base config with updated parameters
       const updatedConfig: any = {
         inputParams: updatedInputParams,
-        env: updatedEnv,
+        env: server.env,
         name: server.name,
         command: server.command,
         args: server.args

@@ -61,9 +61,12 @@ const ServerSettingsForm: React.FC<ServerSettingsFormProps> = ({
           const varName = match[1];
           // Check if it's not already in envVars
           if (!envVars.some(v => v.name === varName)) {
+            // Get value from inputParams if exists
+            const inputParam = server.inputParams?.[varName];
             argVars.push({
               name: varName,
-              value: '',
+              value: inputParam?.default || '',
+              description: inputParam?.description,
               required: server.required?.includes(varName)
             });
           }
@@ -104,15 +107,29 @@ const ServerSettingsForm: React.FC<ServerSettingsFormProps> = ({
       const updatedServers = selectedServers.map(server => {
         const serverVars = serverVariables[server.id] ?? [];
         const updatedEnv = server.env ? { ...server.env } : {};
+        const updatedInputParams = server.inputParams ? { ...server.inputParams } : {};
         
-        // Update env values
+        // Separate env variables and input params
         serverVars.forEach(variable => {
-          updatedEnv[variable.name] = variable.value;
+          // Check if this variable is from args (input param)
+          const isFromArgs = server.args?.some(arg => arg === `{${variable.name}}`);
+          
+          if (isFromArgs) {
+            // Update inputParams for arg placeholders
+            updatedInputParams[variable.name] = {
+              default: variable.value,
+              description: variable.description || ''
+            };
+          } else {
+            // Update env for actual environment variables
+            updatedEnv[variable.name] = variable.value;
+          }
         });
         
         return {
           ...server,
           env: updatedEnv,
+          inputParams: updatedInputParams,
           setupInstructions: serverInstructions[server.id] || server.setupInstructions
         };
       });

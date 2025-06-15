@@ -227,15 +227,14 @@ export class DevelopmentAgent extends AgentBase {
     }
 
     try {
+      const args = substituteArgsParameters(server.args, server.env || {}, server.inputParams || {});
       const result = await connectToMCPServer(
         {
           id: server.id,
           name: server.name,
           serverType: server.serverType,
           command: server.command,
-          args: server.args ? 
-            substituteArgsParameters(server.args, server.env || {}, server.inputParams || {}) :
-            undefined,
+          args: args,
           remoteUrl: server.remoteUrl,
           bearerToken: server.bearerToken,
           env: server.env,
