@@ -1,7 +1,8 @@
 import process from 'node:process';
 import { execa } from 'execa';
 import stripAnsi from 'strip-ansi';
-import { userInfo, homedir } from 'node:os';
+import { userInfo } from 'node:os';
+import {logInfo} from "./utils/error-handler";
 
 const DELIMITER = '_ENV_DELIMITER_';
 
@@ -40,7 +41,7 @@ export async function commandExists(cmd: string): Promise<boolean> {
  */
 export async function run(cmd: string, args: string[] = [], useShell = false) {
   const cmdDisplay = useShell ? cmd : `${cmd} ${args.join(' ')}`;
-  // console.log(`\n> ${cmdDisplay}, useShell: ${useShell}\n`);
+  logInfo(`\n> ${cmdDisplay}, useShell: ${useShell}\n`);
   
   try {
     // If useShellEnv is true, get and merge user's shell environment
