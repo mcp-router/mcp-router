@@ -7,7 +7,7 @@ import { Badge } from '../../ui/badge';
 import { Label } from '../../ui/label';
 import { Textarea } from '../../ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog';
-import { Download } from 'lucide-react';
+import { Download, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { useAgentStore } from '../../../lib/stores';
@@ -64,6 +64,37 @@ const DeployedAgents: React.FC = () => {
         setIsImportDialogOpen(true);
     };
     
+    // Import sample agents
+    const handleImportSampleAgents = async () => {
+        try {
+            // Hardcoded sample agent IDs
+            const sampleAgentIds = [
+                'https://mcprouter.net/agent/7ffd3833-0f54-4f74-bbf0-89972e46cde1',
+            ];
+            
+            let importedCount = 0;
+            for (const agentId of sampleAgentIds) {
+                try {
+                    const agent = await window.electronAPI.importAgent(agentId);
+                    addDeployedAgent(agent);
+                    importedCount++;
+                } catch (error) {
+                    console.error(`Failed to import agent ${agentId}:`, error);
+                }
+            }
+            
+            if (importedCount > 0) {
+                toast.success(`Imported ${importedCount} sample agents`);
+                refreshAgents();
+            } else {
+                toast.error('Failed to import sample agents');
+            }
+        } catch (error) {
+            console.error('Failed to import sample agents:', error);
+            toast.error('Failed to import sample agents');
+        }
+    };
+    
     return (
         <div className="container">
             <div className="flex justify-between items-center mb-6">
@@ -89,10 +120,10 @@ const DeployedAgents: React.FC = () => {
                             {t('agents.goToBuild')}
                         </Button>
                         <Button 
-                            onClick={handleOpenImportDialog}
+                            onClick={handleImportSampleAgents}
                         >
-                            <Download className="mr-2 h-4 w-4" />
-                            {t('agents.import')}
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            {t('agents.importSampleAgents')}
                         </Button>
                     </div>
                 </div>

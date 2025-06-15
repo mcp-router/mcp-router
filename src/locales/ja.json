@@ -298,6 +298,7 @@
     "importAgent": "エージェントのインポート",
     "importDescription": "共有コードを入力して、エージェントをインポートします",
     "importCodePlaceholder": "共有コードを貼り付けてください",
+    "importSampleAgents": "サンプルエージェントをインポート",
     "update": "更新",
     "autoSave": "自動保存",
     "autoSaving": "自動保存中...",

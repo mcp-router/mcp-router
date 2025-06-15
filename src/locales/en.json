@@ -291,6 +291,7 @@
     "importAgent": "Import Agent",
     "importDescription": "Import an agent using a share code",
     "importCodePlaceholder": "Paste share code here",
+    "importSampleAgents": "Import Sample Agents",
     "update": "Update",
     "share": "Share",
     "deploy": "Deploy",
