@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useOutletContext, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AgentConfig, DeployedAgent } from '../../../types';
 import { AlertCircle } from 'lucide-react';
 import { cn } from '../../../lib/utils/tailwind-utils';
@@ -20,6 +21,7 @@ const AgentChat: React.FC = () => {
     }>();
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useTranslation();
     
     // Zustand store
     const {
@@ -564,10 +566,9 @@ const AgentChat: React.FC = () => {
                         className="max-w-md text-center p-6 bg-card border rounded-lg shadow-lg cursor-pointer hover:bg-card/80 transition-colors"
                     >
                         <AlertCircle className="h-16 w-16 text-warning mx-auto mb-4" />
-                        <h3 className="text-xl font-bold mb-2">設定が未完了です</h3>
+                        <h3 className="text-xl font-bold mb-2">{t('agents.chat.configurationIncomplete')}</h3>
                         <p className="text-muted-foreground mb-4">
-                            このエージェントは設定が完了していないため、使用できません。
-                            設定を完了してからご利用ください。
+                            {t('agents.chat.configurationIncompleteDescription')}
                         </p>
                     </div>
                 </div>

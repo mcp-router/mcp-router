@@ -413,7 +413,9 @@
       "toolExecutionRequest": "Tool execution request",
       "executeToolConfirm": "Execute tool \"{{toolName}}\"?",
       "enterMessage": "Enter message...",
-      "send": "Send"
+      "send": "Send",
+      "configurationIncomplete": "Configuration incomplete",
+      "configurationIncompleteDescription": "This agent cannot be used because its configuration is not complete. Please complete the configuration before using it."
     }
   },
   "mcpApps": {

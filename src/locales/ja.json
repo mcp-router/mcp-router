@@ -417,7 +417,9 @@
       "toolExecutionRequest": "ツール実行リクエスト",
       "executeToolConfirm": "ツール \"{{toolName}}\" を実行しますか？",
       "enterMessage": "メッセージを入力...",
-      "send": "送信"
+      "send": "送信",
+      "configurationIncomplete": "設定が未完了です",
+      "configurationIncompleteDescription": "このエージェントは設定が完了していないため、使用できません。設定を完了してからご利用ください。"
     }
   },
   "mcpApps": {
