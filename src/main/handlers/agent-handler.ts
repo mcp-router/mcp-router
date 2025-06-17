@@ -223,8 +223,8 @@ export function setupAgentHandlers(): void {
         }
       }
       
-      // メインウィンドウにストリーム開始を通知
-      if (mainWindow) {
+      // メインウィンドウにストリーム開始を通知（MCPソースはスキップ）
+      if (mainWindow && streamData.source !== 'mcp') {
         mainWindow.webContents.send('chat-stream:start', streamData);
       }
       
@@ -237,8 +237,8 @@ export function setupAgentHandlers(): void {
 
   ipcMain.handle('agent:chat-stream-chunk', async (_, chunkData) => {
     try {
-      // メインウィンドウにストリームチャンクを転送
-      if (mainWindow) {
+      // メインウィンドウにストリームチャンクを転送（MCPソースはスキップ）
+      if (mainWindow && chunkData.source !== 'mcp') {
         mainWindow.webContents.send('chat-stream:chunk', chunkData);
       }
       return { success: true };
@@ -253,8 +253,8 @@ export function setupAgentHandlers(): void {
       // バックグラウンドウィンドウからのストリーム終了を受信
       // console.log('Chat stream ended:', endData);
       
-      // メインウィンドウにストリーム終了を通知
-      if (mainWindow) {
+      // メインウィンドウにストリーム終了を通知（MCPソースはスキップ）
+      if (mainWindow && endData.source !== 'mcp') {
         mainWindow.webContents.send('chat-stream:end', endData);
       }
       
@@ -314,8 +314,8 @@ export function setupAgentHandlers(): void {
         }
       }
       
-      // メインウィンドウにストリームエラーを通知
-      if (mainWindow) {
+      // メインウィンドウにストリームエラーを通知（MCPソースはスキップ）
+      if (mainWindow && errorData.source !== 'mcp') {
         mainWindow.webContents.send('chat-stream:error', errorData);
       }
       

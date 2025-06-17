@@ -187,7 +187,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
             agentId,
             finishReason: 'stop',
             timestamp: Date.now(),
-            canContinue: false
+            canContinue: false,
+            source // 呼び出し元を含める
           });
         }
         
@@ -218,7 +219,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
             chatHistorySessionId,
             agentId,
             query,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            source // 呼び出し元を含める
           });
         }
         
@@ -236,7 +238,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
             chatHistorySessionId,
             agentId,
             error: error.message || error.toString(),
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            source // 呼び出し元を含める
           });
         }
         
@@ -294,7 +297,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
               chatHistorySessionId,
               agentId,
               error: `Session save failed: ${error.message || error.toString()}`,
-              timestamp: Date.now()
+              timestamp: Date.now(),
+              source // 呼び出し元を含める
             });
           }
           
@@ -349,7 +353,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
                 agentId,
                 chunk: message.content,
                 messageId: message.id,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                source // 呼び出し元を含める
               });
               
               // 送信済みメッセージとして記録
@@ -389,7 +394,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
               timestamp: Date.now(),
               isToolInvocation: true,
               completeMessage: message, // 完全なメッセージを送信
-              isCompleteMessage: true
+              isCompleteMessage: true,
+              source // 呼び出し元を含める
             });
           }
         }
@@ -397,7 +403,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
     });
     
     previousMessagesRef.current = [...messages];
-  }, [messages, backgroundSessionKey, chatHistorySessionId, agentId]);
+  }, [messages, backgroundSessionKey, chatHistorySessionId, agentId, source]);
 
   // デバッグ用ログ
   // useEffect(() => {
