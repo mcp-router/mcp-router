@@ -4,6 +4,8 @@ import { Trash2, Plus, MoreHorizontal, Loader2 } from 'lucide-react';
 import { cn } from '../../../lib/utils/tailwind-utils';
 import { getDateInstance } from '../../../lib/utils/date-utils';
 import { Skeleton } from '../../ui/skeleton';
+import { Tooltip, TooltipTrigger, TooltipContent } from '../../ui/tooltip';
+import { useTranslation } from 'react-i18next';
 
 interface ChatSession {
   id: string;
@@ -41,6 +43,7 @@ const ChatSessions: React.FC<ChatSessionsProps> = ({
   onDeleteSession,
   deletingSessions = new Set(),
 }) => {
+  const { t } = useTranslation();
   // 日時をフォーマット
   const formatDateTime = (timestamp: number) => {
     const date = getDateInstance(timestamp);
@@ -61,14 +64,21 @@ const ChatSessions: React.FC<ChatSessionsProps> = ({
       <div className="flex items-center p-3">
         {/* Label and New Button */}
         <div className="flex items-center gap-2 shrink-0 mr-3">
-          <Button
-            size="sm"
-            onClick={onNewSession}
-            className="h-7 text-xs"
-            variant="outline"
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                onClick={onNewSession}
+                className="h-7 text-xs"
+                variant="outline"
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('agents.sessions.newSession')}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         {/* Horizontal Sessions List */}
@@ -143,7 +153,7 @@ const ChatSessions: React.FC<ChatSessionsProps> = ({
                     onClick={onLoadMore}
                     disabled={isLoadingMore}
                     className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground shrink-0"
-                    title={isLoadingMore ? "読み込み中" : "もっと見る"}
+                    title={isLoadingMore ? t('agents.sessions.loading') : t('agents.sessions.loadMore')}
                   >
                     {isLoadingMore ? (
                       <div className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />

@@ -6,6 +6,7 @@ import { Button } from '../../ui/button';
 import { toast } from 'sonner';
 import { useAgentStore } from '../../../lib/stores';
 import { Settings, Trash2, RefreshCw } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
 import { 
     Breadcrumb, 
     BreadcrumbItem, 
@@ -179,20 +180,34 @@ const AgentUse: React.FC = () => {
                 </div>
                 <div className="flex gap-2 shrink-0 ml-4">
                     {!isSettingsPage && (
-                        <Button 
-                            onClick={navigateToSettings}
-                            className="gap-2"
-                        >
-                            <Settings className="h-4 w-4" />
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button 
+                                    onClick={navigateToSettings}
+                                    className="gap-2"
+                                >
+                                    <Settings className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{t('common.settings')}</p>
+                            </TooltipContent>
+                        </Tooltip>
                     )}
-                    <Button 
-                        variant="destructive"
-                        onClick={() => setIsDeleteDialogOpen(true)}
-                        className="gap-2"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button 
+                                variant="destructive"
+                                onClick={() => setIsDeleteDialogOpen(true)}
+                                className="gap-2"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{t('common.delete')}</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
 

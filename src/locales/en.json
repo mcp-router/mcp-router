@@ -6,6 +6,8 @@
     "back": "Back",
     "save": "Save",
     "saving": "Saving...",
+    "saved": "Saved",
+    "noChanges": "No changes",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -420,6 +422,11 @@
       "send": "Send",
       "configurationIncomplete": "Configuration incomplete",
       "configurationIncompleteDescription": "This agent cannot be used because its configuration is not complete. Please complete the configuration before using it."
+    },
+    "sessions": {
+      "newSession": "Start new session",
+      "loading": "Loading",
+      "loadMore": "Load more"
     }
   },
   "mcpApps": {
