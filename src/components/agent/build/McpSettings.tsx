@@ -146,7 +146,6 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
                 ...prev,
                 toolPermissions: updatedToolPermissions
             }));
-            toast.success(t('agents.mcpSettings.toolPermissionsUpdateSuccess'));
             
             const updatedTools = { ...serverTools };
             if (updatedTools[serverId]) {
@@ -374,13 +373,11 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
             };
             if (dialogMode === 'create') {
                 setAgent(prev => ({ ...prev, mcpServers: [...prev.mcpServers, serverConfig] }));
-                toast.success(t('agents.mcpSettings.serverCreated', { name: serverName }));
             } else {
                 setAgent(prev => ({
                     ...prev,
                     mcpServers: prev.mcpServers.map(s => s.id === serverConfig.id ? serverConfig : s)
                 }));
-                toast.success(t('agents.mcpSettings.serverUpdated', { name: serverName }));
             }
             resetServerForm();
             setIsServerDialogOpen(false);
