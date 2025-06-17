@@ -18,6 +18,7 @@ import { isAgentConfigured } from '../../../lib/utils/agent-utils';
 import { McpSettings } from '../build/McpSettings';
 import { useAgentStore } from '../../../lib/stores';
 import { cn } from '../../../lib/utils/tailwind-utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
 
 interface ServerConfigVariable {
   name: string;
@@ -37,12 +38,13 @@ type AgentConfigWithoutId = Omit<AgentConfig, 'id'>;
 const AgentSettings: React.FC = () => {
     const { t } = useTranslation();
     const { agent } = useOutletContext<{ agent: DeployedAgent }>();
-    const [isAutoSavePending, setIsAutoSavePending] = useState(false);
-    const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
-    const lastSavedStateRef = useRef<string>('');
-    
     // Zustand store
     const { updateDeployedAgent } = useAgentStore();
+    
+    // Track if there are unsaved changes
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const lastSavedStateRef = useRef<string>('');
     
     // 現在のエージェントの状態（編集中の値）
     const [currentAgent, setCurrentAgent] = useState<AgentConfig>({
@@ -183,6 +185,7 @@ const AgentSettings: React.FC = () => {
 
     // Handle variable value change
     const handleVariableChange = (serverId: string, varName: string, value: string) => {
+        // Update server variables in agentState
         updateAgentState({
             serverVariables: {
                 ...agentState.serverVariables,
@@ -191,25 +194,54 @@ const AgentSettings: React.FC = () => {
                 ) || []
             }
         });
+        
+        // Also update the currentAgent's mcpServers to ensure changes are saved
+        setCurrentAgent(prev => {
+            const updatedServers = prev.mcpServers.map(server => {
+                if (server.id === serverId) {
+                    const updatedEnv = { ...server.env };
+                    
+                    // Update the environment variable value
+                    const serverVars = agentState.serverVariables[serverId] || [];
+                    const variable = serverVars.find(v => v.name === varName);
+                    
+                    if (variable && (variable.type === 'env' || !variable.type)) {
+                        updatedEnv[varName] = value;
+                    }
+                    
+                    return {
+                        ...server,
+                        env: updatedEnv
+                    };
+                }
+                return server;
+            });
+            
+            return {
+                ...prev,
+                mcpServers: updatedServers
+            };
+        });
     };
 
     // Manual save function
     const manualSave = useCallback(async () => {
-        if (!agent) return;
+        if (!agent || isSaving) return;
 
+        setIsSaving(true);
         try {
             // Update MCP servers with new values
             const updatedServers = currentAgent.mcpServers.map((server: MCPServerConfig) => {
                 const serverVars = agentState.serverVariables[server.id] || [];
                 
-                const updatedEnv: Record<string, string> = {};
+                // Start with existing env values
+                const updatedEnv: Record<string, string> = { ...server.env };
                 
                 serverVars
                     .filter(variable => variable.type === 'env' || !variable.type)
                     .forEach(variable => {
-                        if (variable.value !== undefined && variable.value !== null) {
-                            updatedEnv[variable.name] = variable.value;
-                        }
+                        // Update or add the variable value
+                        updatedEnv[variable.name] = variable.value || '';
                     });
                 
                 return {
@@ -229,80 +261,25 @@ const AgentSettings: React.FC = () => {
             // Update the Zustand store to reflect changes
             updateDeployedAgent(agent.id, updatedAgent);
             
-            // Update lastSavedState to current state after successful save
+            // Update current agent state with the saved values
+            setCurrentAgent(updatedAgent);
+            updateAgentState({ configurationComplete: isAgentConfigured(updatedAgent) });
+            
+            // Update saved state and clear unsaved changes flag
             lastSavedStateRef.current = JSON.stringify({
                 agent: updatedAgent,
                 serverVariables: agentState.serverVariables,
                 serverInstructions: agentState.serverInstructions,
             });
-            
-            // Update current agent state with the saved values
-            setCurrentAgent(updatedAgent);
-            updateAgentState({ configurationComplete: isAgentConfigured(updatedAgent) });
-            
-            // Clear auto-save pending state and timer
-            if (autoSaveTimerRef.current) {
-                clearTimeout(autoSaveTimerRef.current);
-                autoSaveTimerRef.current = null;
-            }
-            setIsAutoSavePending(false);
+            setHasUnsavedChanges(false);
         } catch (error) {
             console.error('Manual save failed:', error);
+        } finally {
+            setIsSaving(false);
         }
-    }, [agent, currentAgent, agentState, updateDeployedAgent]);
+    }, [agent, currentAgent, agentState, updateDeployedAgent, isSaving]);
 
-    // Auto-save function - saves silently without toast notifications
-    const autoSave = useCallback(async () => {
-        if (!agent) return;
-
-        try {
-            // Update MCP servers with new values
-            const updatedServers = currentAgent.mcpServers.map((server: MCPServerConfig) => {
-                const serverVars = agentState.serverVariables[server.id] || [];
-                
-                const updatedEnv: Record<string, string> = {};
-                
-                serverVars
-                    .filter(variable => variable.type === 'env' || !variable.type)
-                    .forEach(variable => {
-                        if (variable.value !== undefined && variable.value !== null) {
-                            updatedEnv[variable.name] = variable.value;
-                        }
-                    });
-                
-                return {
-                    ...server,
-                    env: updatedEnv,
-                    setupInstructions: agentState.serverInstructions[server.id] || server.setupInstructions
-                };
-            });
-
-            const updatedAgent = {
-                ...currentAgent,
-                mcpServers: updatedServers,
-            };
-
-            await window.electronAPI.updateDeployedAgent(agent.id, updatedAgent);
-            
-            // Update the Zustand store to reflect changes
-            updateDeployedAgent(agent.id, updatedAgent);
-            
-            // Update lastSavedState to current state after successful save
-            lastSavedStateRef.current = JSON.stringify({
-                agent: updatedAgent,
-                serverVariables: agentState.serverVariables,
-                serverInstructions: agentState.serverInstructions,
-            });
-            
-            // Update current agent state with the saved values
-            setCurrentAgent(updatedAgent);
-            updateAgentState({ configurationComplete: isAgentConfigured(updatedAgent) });
-        } catch (error) {
-            console.error('Auto-save failed:', error);
-        }
-    }, [agent, currentAgent, agentState, updateDeployedAgent]);
-
-    // Auto-save effect - triggers save 5 seconds after last change
+    // Check for unsaved changes
     useEffect(() => {
         const currentState = JSON.stringify({
             agent: currentAgent,
@@ -310,35 +287,14 @@ const AgentSettings: React.FC = () => {
             serverInstructions: agentState.serverInstructions,
         });
         
-
-        // Check if state has actually changed
-        if (currentState !== lastSavedStateRef.current) {
-            // Clear existing timer
-            if (autoSaveTimerRef.current) {
-                clearTimeout(autoSaveTimerRef.current);
-            }
-
-            // Show auto-save pending indicator
-            setIsAutoSavePending(true);
-
-            // Set new timer for auto-save (5 seconds after last change)
-            autoSaveTimerRef.current = setTimeout(async () => {
-                await autoSave();
-                setIsAutoSavePending(false);
-                autoSaveTimerRef.current = null;
-            }, 5000);
+        if (lastSavedStateRef.current && currentState !== lastSavedStateRef.current) {
+            setHasUnsavedChanges(true);
+        } else {
+            setHasUnsavedChanges(false);
         }
+    }, [currentAgent, agentState]);
 
-        // Cleanup timer on unmount
-        return () => {
-            if (autoSaveTimerRef.current) {
-                clearTimeout(autoSaveTimerRef.current);
-                setIsAutoSavePending(false);
-            }
-        };
-    }, [currentAgent, agentState, autoSave]);
-
-    // Initialize lastSavedState on mount
+    // Initialize saved state on mount
     useEffect(() => {
         if (agent) {
             lastSavedStateRef.current = JSON.stringify({
@@ -346,7 +302,7 @@ const AgentSettings: React.FC = () => {
                 serverVariables: agentState.serverVariables,
                 serverInstructions: agentState.serverInstructions,
             });
-            setIsAutoSavePending(false);
+            setHasUnsavedChanges(false);
         }
     }, [agent]); // Only run when agent changes (initial load)
 
@@ -368,25 +324,26 @@ const AgentSettings: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex gap-2 items-center">
-                        {/* Auto-save indicator */}
-                        {isAutoSavePending && (
-                            <div className="flex items-center space-x-1 mr-3">
-                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                                <span className="text-xs text-muted-foreground">
-                                    {t('agents.autoSaving', 'Auto-saving...')}
-                                </span>
-                            </div>
-                        )}
-                        
-                        {/* Manual save button */}
-                        <Button
-                            size="sm"
-                            onClick={manualSave}
-                            disabled={!isAutoSavePending}
-                            className="h-8 w-8 p-0"
-                        >
-                            <Save className="h-4 w-4" />
-                        </Button>
+                        {/* Save button */}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    size="sm"
+                                    onClick={manualSave}
+                                    disabled={!hasUnsavedChanges || isSaving}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    {isSaving ? (
+                                        <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                                    ) : (
+                                        <Save className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{isSaving ? t('common.saving', 'Saving...') : (hasUnsavedChanges ? t('common.save') : t('common.noChanges', 'No changes'))}</p>
+                            </TooltipContent>
+                        </Tooltip>
                     </div>
                 </div>
             </div>

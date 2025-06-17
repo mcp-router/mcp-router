@@ -315,17 +315,19 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
         setDialogMode(mode);
         resetServerForm();
         if (mode === 'edit' && server) {
-            setEditingServer(server);
-            setServerName(server.name);
-            setCommandType(server.command === 'pnpm' ? 'pnpm dlx' : 'uvx');
-            const argString = server.args?.filter(arg => arg !== 'dlx').join(' ') || '';
+            // Find the current server from agent.mcpServers to get the latest env values
+            const currentServer = agent.mcpServers.find(s => s.id === server.id) || server;
+            setEditingServer(currentServer);
+            setServerName(currentServer.name);
+            setCommandType(currentServer.command === 'pnpm' ? 'pnpm dlx' : 'uvx');
+            const argString = currentServer.args?.filter(arg => arg !== 'dlx').join(' ') || '';
             setArgs(argString);
-            setEnvKeys(Object.keys(server.env || {}));
-            setRequiredParams(server.required || []);
-            setServerSetupInstructions(server.setupInstructions || '');
+            setEnvKeys(Object.keys(currentServer.env || {}));
+            setRequiredParams(currentServer.required || []);
+            setServerSetupInstructions(currentServer.setupInstructions || '');
             
             // 編集ダイアログを開いた時に自動でアップデートをチェック
-            checkForUpdates(server);
+            checkForUpdates(currentServer);
         }
         if (mode === 'create') {
             setRequiredParams([]);
@@ -338,7 +340,14 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
         setIsLoading(true);
         try {
             const envObject: Record<string, string> = {};
-            envKeys.forEach(key => { if (key.trim()) envObject[key] = editingServer?.env?.[key] || ''; });
+            // Preserve existing env values from the current agent state
+            const currentServer = agent.mcpServers.find(s => s.id === editingServer?.id);
+            envKeys.forEach(key => { 
+                if (key.trim()) {
+                    // First check if there's a value in the current server state, then fall back to editingServer
+                    envObject[key] = currentServer?.env?.[key] || editingServer?.env?.[key] || '';
+                }
+            });
             const packageManager = commandType === 'pnpm dlx' ? 'pnpm' : 'uvx';
             const response = await window.electronAPI.resolvePackageVersionsInArgs(args, packageManager);
             const resolvedArgs = response && response.success ? response.resolvedArgs : args;
