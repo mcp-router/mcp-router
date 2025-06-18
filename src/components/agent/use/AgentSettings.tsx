@@ -19,6 +19,7 @@ import { McpSettings } from '../build/McpSettings';
 import { useAgentStore } from '../../../lib/stores';
 import { cn } from '../../../lib/utils/tailwind-utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
+import { toast } from 'sonner';
 
 interface ServerConfigVariable {
   name: string;
@@ -272,6 +273,9 @@ const AgentSettings: React.FC = () => {
                 serverInstructions: agentState.serverInstructions,
             });
             setHasUnsavedChanges(false);
+            
+            // Show success toast
+            toast.success(t('agents.settingsSaved'));
         } catch (error) {
             console.error('Manual save failed:', error);
         } finally {
