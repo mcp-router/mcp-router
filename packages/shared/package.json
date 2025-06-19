@@ -1,15 +1,14 @@
 {
-  "name": "@electron-monorepo/shared",
-  "version": "1.0.0",
+  "name": "@mcp-router/shared",
+  "version": "0.4.9",
+  "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "lint": "eslint . --ext .ts,.js",
-    "lint:fix": "eslint . --ext .ts,.js --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "typescript": "^5.8.3"

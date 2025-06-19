@@ -1,6 +1,13 @@
 import type { ModuleOptions } from 'webpack';
 
 export const rules: Required<ModuleOptions>['rules'] = [
+  // Add support for JSON files (i18n dictionaries)
+  // {
+  //   test: /\.json$/,
+  //   type: 'javascript/auto',
+  //   include: /src\/locales/,
+  //   use: [{ loader: 'json-loader' }]
+  // },
   // Add support for native node modules
   {
     // We're specifying native_modules in the test because the asset relocator loader generates a
@@ -27,5 +34,10 @@ export const rules: Required<ModuleOptions>['rules'] = [
         transpileOnly: true,
       },
     },
+  },
+  // Add support for image files
+  {
+    test: /\.(png|jpe?g|gif|svg|ico)$/i,
+    type: 'asset/resource',
   },
 ];

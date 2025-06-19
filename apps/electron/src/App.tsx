@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { TRPCProvider } from '@electron-monorepo/frontend';
-import { Home } from './Home';
+import App from './components/App';
+import { HashRouter } from 'react-router-dom';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <TRPCProvider>
-      <Home />
-    </TRPCProvider>
+    <HashRouter>
+      <App />
+    </HashRouter>
   </React.StrictMode>
 );

@@ -1,21 +1,19 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "jsx": "react",
     "target": "ES6",
-    "allowJs": true,
     "module": "commonjs",
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "noImplicitAny": true,
-    "sourceMap": true,
     "baseUrl": ".",
     "outDir": "dist",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "composite": true,
     "paths": {
-      "*": ["node_modules/*"]
-    },
-    "typeRoots": ["./node_modules/@types", "./src"]
+      "@/*": ["./src/*"],
+      "@mcp-router/shared": ["../../packages/shared/src"]
+    }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../../packages/shared" }
+  ]
 }
