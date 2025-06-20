@@ -40,7 +40,6 @@
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@tabler/icons-react": "^3.34.0",
-    "@tailwindcss/line-clamp": "^0.4.4",
     "@types/better-sqlite3": "^7.6.13",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.6",
@@ -76,7 +75,6 @@
     "tailwind-merge": "^3.3.0",
     "tailwindcss": "^4.1.8",
     "tar-fs": "^3.0.9",
-    "tw-animate-css": "^1.3.4",
     "update-electron-app": "^3.1.1",
     "uuid": "^11.1.0",
     "zustand": "^5.0.5"

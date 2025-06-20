@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog';
 import { Textarea } from '../../ui/textarea';
+import { Checkbox } from '../../ui/checkbox';
 
 /**
  * Get sample data for preview display based on current language
@@ -314,11 +315,9 @@ const ToolParameterSection: React.FC<ToolParameterSectionProps> = ({
                   <td className="py-2 px-4 font-mono text-sm">{prop.type}</td>
                   <td className="py-2 px-4">{prop.description}</td>
                   <td className="py-2 px-4">
-                    <input 
-                      type="checkbox" 
+                    <Checkbox 
                       checked={ruleValue.required.includes(name)}
-                      onChange={() => toggleRequired(name)}
-                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                      onCheckedChange={() => toggleRequired(name)}
                     />
                   </td>
                   <td className="py-2 px-4">

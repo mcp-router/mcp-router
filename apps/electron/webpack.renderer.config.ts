@@ -11,14 +11,7 @@ rules.push({
     { loader: 'css-loader' },
     {
       loader: 'postcss-loader',
-      options: {
-        postcssOptions: {
-          plugins: [
-            require('@tailwindcss/postcss'), // Use the Tailwind CSS PostCSS plugin
-            require('autoprefixer'), // Autoprefixer for browser compatibility
-          ],
-        },
-      },
+      // PostCSS plugins are defined in postcss.config.mjs
     },
   ],
 });
