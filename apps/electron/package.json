@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",
+    "@mcp-router/database": "workspace:*",
     "@mcp-router/shared": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -40,14 +41,10 @@
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@tabler/icons-react": "^3.34.0",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.6",
-    "@types/uuid": "^10.0.0",
     "ai": "^4.3.16",
-    "better-sqlite3": "^11.10.0",
     "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
@@ -72,7 +69,6 @@
     "remark-gfm": "^4.0.1",
     "semver": "^7.7.2",
     "sonner": "^2.0.5",
-    "tailwind-merge": "^3.3.0",
     "tailwindcss": "^4.1.8",
     "tar-fs": "^3.0.9",
     "update-electron-app": "^3.1.1",
@@ -96,6 +92,8 @@
     "@types/express": "^5.0.3",
     "@types/semver": "^7.7.0",
     "@types/tar-fs": "^2.0.4",
+    "@types/uuid": "^10.0.0",
+    "@types/webpack": "^5.28.5",
     "@vercel/webpack-asset-relocator-loader": "1.7.3",
     "autoprefixer": "^10.4.21",
     "css-loader": "^6.11.0",
@@ -109,6 +107,7 @@
     "style-loader": "^3.3.4",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "webpack": "^5.99.9"
   }
 }

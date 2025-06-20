@@ -1,6 +1,4 @@
-import type IForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
-
-const ForkTsCheckerWebpackPlugin: typeof IForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 // Disable type checking during development
 const isProduction = process.env.NODE_ENV === 'production';

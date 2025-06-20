@@ -6,8 +6,9 @@
     "declaration": true,
     "declarationMap": true,
     "composite": true,
-    "noEmit": false
+    "noEmit": false,
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts", "src/**/*.json"],
   "exclude": ["node_modules", "dist"]
 }

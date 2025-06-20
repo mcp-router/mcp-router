@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertCircle, ExternalLink } from 'lucide-react';
 import { Button } from './button';
-import { parseErrorMessage } from '../../lib/utils/error-message-utils';
+import { parseErrorMessage } from '@mcp-router/shared';
 
 interface EnhancedErrorDisplayProps {
   error: Error;

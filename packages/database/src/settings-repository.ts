@@ -1,6 +1,6 @@
-import { Singleton } from '../utils/singleton';
+import { Singleton } from './utils/singleton';
 import { SqliteManager, getSqliteManager } from './sqlite-manager';
-import { AppSettings, DEFAULT_APP_SETTINGS } from '../types/settings-types';
+import { AppSettings, DEFAULT_APP_SETTINGS } from '@mcp-router/shared';
 
 /**
  * アプリケーション設定を管理するリポジトリ

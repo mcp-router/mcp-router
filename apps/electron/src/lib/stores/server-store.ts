@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { MCPServer, MCPServerConfig } from '../../types';
+import { MCPServer, MCPServerConfig } from '@mcp-router/shared';
 
 interface ServerState {
   // Server data

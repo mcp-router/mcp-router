@@ -1,6 +1,6 @@
 import { getSqliteManager, SqliteManager } from './sqlite-manager';
 import { getServerRepository } from './server-repository';
-import { TokenScope } from '../types/token-types';
+import { TokenScope } from '@mcp-router/shared';
 import { safeStorage } from 'electron';
 
 /**
@@ -204,7 +204,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(servers)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // server_type列が存在しない場合は追加
       if (!columnNames.includes('server_type')) {
@@ -241,7 +241,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(servers)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // remote_url列が存在しない場合は追加
       if (!columnNames.includes('remote_url')) {
@@ -278,7 +278,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(servers)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // bearer_token列が存在しない場合は追加
       if (!columnNames.includes('bearer_token')) {
@@ -315,7 +315,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(servers)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // input_params列が存在しない場合は追加
       if (!columnNames.includes('input_params')) {
@@ -352,7 +352,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(servers)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // description列が存在しない場合は追加
       if (!columnNames.includes('description')) {
@@ -389,7 +389,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(servers)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // version列が存在しない場合は追加
       if (!columnNames.includes('version')) {
@@ -426,7 +426,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(servers)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // latest_version列が存在しない場合は追加
       if (!columnNames.includes('latest_version')) {
@@ -463,7 +463,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(servers)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // verification_status列が存在しない場合は追加
       if (!columnNames.includes('verification_status')) {
@@ -500,7 +500,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(servers)"
       );
 
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
 
       // required_params列が存在しない場合は追加
       if (!columnNames.includes('required_params')) {
@@ -544,7 +544,7 @@ export class DatabaseMigration {
         );
         
         // スコープカラムが存在しない場合は追加
-        if (!tableInfo.some((column: { name: string }) => column.name === 'scopes')) {
+        if (!tableInfo.some((column: any) => column.name === 'scopes')) {
           db.execute("ALTER TABLE tokens ADD COLUMN scopes TEXT DEFAULT '[]'");
           console.log("トークンテーブルにスコープカラムを追加しました");
         } else {
@@ -629,7 +629,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(deployedAgents)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // original_id列が存在しない場合は追加
       if (!columnNames.includes('original_id')) {
@@ -666,7 +666,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(deployedAgents)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // mcp_server_enabled列が存在しない場合は追加
       if (!columnNames.includes('mcp_server_enabled')) {
@@ -704,7 +704,7 @@ export class DatabaseMigration {
         "PRAGMA table_info(chat_sessions)"
       );
       
-      const columnNames = tableInfo.map((col: {name: string}) => col.name);
+      const columnNames = tableInfo.map((col: any) => col.name);
       
       // status列が存在しない場合は追加
       if (!columnNames.includes('status')) {

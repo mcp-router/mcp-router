@@ -1,9 +1,8 @@
 import { BaseRepository } from './base-repository';
 import { SqliteManager, getSqliteManager } from './sqlite-manager';
-import { MCPServer, MCPServerConfig } from '../../types';
+import { MCPServer, MCPServerConfig } from '@mcp-router/shared';
 import { v4 as uuidv4 } from 'uuid';
-import { logError, logInfo } from '../utils/error-handler';
-import { decryptStringSync, encryptObjectSync, decryptObjectSync, encryptStringSync } from '../utils/encryption-utils';
+import { decryptStringSync, encryptObjectSync, decryptObjectSync, encryptStringSync } from './utils/encryption-utils';
 
 /**
  * サーバ情報用リポジトリクラス
@@ -125,7 +124,7 @@ export class ServerRepository extends BaseRepository<MCPServer> {
         disabled: !!row.disabled,
         serverType: row.server_type || 'local',
         remoteUrl: remoteUrl || undefined,
-        bearerToken: bearerToken,
+        bearerToken: bearerToken || undefined,
         inputParams: inputParams,
         description: row.description || undefined,
         version: row.version || undefined,
@@ -227,7 +226,7 @@ export class ServerRepository extends BaseRepository<MCPServer> {
       
       return server;
     } catch (error) {
-      logError('サーバの追加中にエラーが発生しました', error);
+      console.error('サーバの追加中にエラーが発生しました:', error);
       throw error;
     }
   }
@@ -240,7 +239,7 @@ export class ServerRepository extends BaseRepository<MCPServer> {
     try {
       return this.getAll();
     } catch (error) {
-      logError('サーバ情報の取得中にエラーが発生しました', error);
+      console.error('サーバ情報の取得中にエラーが発生しました:', error);
       throw error;
     }
   }
@@ -254,7 +253,7 @@ export class ServerRepository extends BaseRepository<MCPServer> {
     try {
       return this.getById(id);
     } catch (error) {
-      logError(`ID: ${id} のサーバ情報の取得中にエラーが発生しました`, error);
+      console.error(`ID: ${id} のサーバ情報の取得中にエラーが発生しました:`, error);
       throw error;
     }
   }
@@ -359,7 +358,7 @@ export class ServerRepository extends BaseRepository<MCPServer> {
       this.db.execute(sql, row);      
       return updatedServer;
     } catch (error) {
-      logError(`ID: ${id} のサーバ情報の更新中にエラーが発生しました`, error);
+      console.error(`ID: ${id} のサーバ情報の更新中にエラーが発生しました:`, error);
       throw error;
     }
   }
@@ -379,12 +378,12 @@ export class ServerRepository extends BaseRepository<MCPServer> {
       const result = this.delete(id);
       
       if (result) {
-        logInfo(`サーバ "${server.name}" が削除されました (ID: ${id})`);
+        console.log(`サーバ "${server.name}" が削除されました (ID: ${id})`);
       }
       
       return result;
     } catch (error) {
-      logError(`ID: ${id} のサーバ情報の削除中にエラーが発生しました`, error);
+      console.error(`ID: ${id} のサーバ情報の削除中にエラーが発生しました:`, error);
       throw error;
     }
   }

@@ -7,8 +7,7 @@ import {
   ClientStats,
   ServerStats,
   RequestTypeStats
-} from '../types/log-types';
-import { getTimestamp } from '../utils/date-utils';
+} from '@mcp-router/shared';
 
 /**
  * リクエストログ用リポジトリクラス
@@ -159,7 +158,7 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
    */
   public async addRequestLog(entry: RequestLogEntryInput): Promise<RequestLogEntry> {
     try {
-      const timestamp = getTimestamp();
+      const timestamp = Date.now();
       
       // 完全なエントリを作成して追加
       const logEntry: RequestLogEntry = {
@@ -270,13 +269,13 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
       
       // 時間範囲フィルタリング
       if (startDate) {
-        const startTime = getTimestamp(startDate);
+        const startTime = startDate.getTime();
         sql += ' AND timestamp >= :startTime';
         params.startTime = startTime;
       }
       
       if (endDate) {
-        const endTime = getTimestamp(new Date(endDate.getTime() + 24 * 60 * 60 * 1000 - 1)); // 終了日の23:59:59
+        const endTime = new Date(endDate.getTime() + 24 * 60 * 60 * 1000 - 1).getTime(); // 終了日の23:59:59
         sql += ' AND timestamp <= :endTime';
         params.endTime = endTime;
       }

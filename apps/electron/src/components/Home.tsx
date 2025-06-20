@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import ServerDetailsRemoveDialog from '@/components/mcp/server/server-details/ServerDetailsRemoveDialog';
-import { MCPServer } from '../types';
+import { MCPServer } from '@mcp-router/shared';
 import { ScrollArea } from './ui/scroll-area';
 import { Badge } from './ui/badge';
 import { Switch } from './ui/switch';
 import { IconSearch, IconServer, IconChevronDown, IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '../lib/utils/tailwind-utils';
+import { cn } from '@mcp-router/shared';
 import { Trash } from 'lucide-react';
 import { toast } from "sonner";
 import { useServerStore } from '../lib/stores';

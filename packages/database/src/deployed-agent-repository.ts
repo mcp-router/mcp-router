@@ -1,8 +1,7 @@
-import { DeployedAgent } from '../../types';
+import { DeployedAgent } from '@mcp-router/shared';
 import { BaseRepository } from './base-repository';
 import { SqliteManager, getSqliteManager } from './sqlite-manager';
 import { v4 as uuidv4 } from 'uuid';
-import { logError, logInfo } from '../utils/error-handler';
 
 /**
  * Repository for managing deployed agents
@@ -139,7 +138,7 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
             this.ensureTableExists();
             return this.getAll();
         } catch (error) {
-            logError('Error retrieving deployed agents', error);
+            console.error('Error retrieving deployed agents:', error);
             throw error;
         }
     }
@@ -153,7 +152,7 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
         try {
             return this.getById(id);
         } catch (error) {
-            logError(`Error retrieving deployed agent with ID: ${id}`, error);
+            console.error(`Error retrieving deployed agent with ID: ${id}:`, error);
             throw error;
         }
     }
@@ -177,7 +176,7 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
 
             return this.add(deployedAgent);
         } catch (error) {
-            logError('Error creating deployed agent', error);
+            console.error('Error creating deployed agent:', error);
             throw error;
         }
     }
@@ -192,7 +191,7 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
         try {
             return this.update(id, data);
         } catch (error) {
-            logError(`Error updating deployed agent with ID: ${id}`, error);
+            console.error(`Error updating deployed agent with ID: ${id}:`, error);
             throw error;
         }
     }
@@ -206,7 +205,7 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
         try {
             return this.delete(id);
         } catch (error) {
-            logError(`Error deleting deployed agent with ID: ${id}`, error);
+            console.error(`Error deleting deployed agent with ID: ${id}:`, error);
             throw error;
         }
     }
@@ -233,10 +232,10 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
               updatedAt: Date.now()
           });
           
-          logInfo(`Agent "${sourceAgent.name}" has been deployed (ID: ${newDeployedAgent.id})`);
+          console.log(`Agent "${sourceAgent.name}" has been deployed (ID: ${newDeployedAgent.id})`);
           return newDeployedAgent;
         } catch (error) {
-            logError(`Error deploying agent with ID: ${sourceAgent.id}`, error);
+            console.error(`Error deploying agent with ID: ${sourceAgent.id}:`, error);
             throw error;
         }
     }

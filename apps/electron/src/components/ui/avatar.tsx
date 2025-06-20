@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
 
-import { cn } from "@/lib/utils/tailwind-utils"
+import { cn } from "@mcp-router/shared"
 
 function Avatar({
   className,

@@ -1,5 +1,5 @@
 import { ipcMain, Notification } from 'electron';
-import { AgentConfig } from '../../types';
+import { AgentConfig } from '@mcp-router/shared';
 import { 
   getDevelopmentAgentService, 
   getDeployedAgentService, 
@@ -7,7 +7,7 @@ import {
 } from '../../lib/services/agent';
 import { backgroundWindow, mainWindow } from '../../main';
 import { status } from '../auth';
-import { getSessionRepository } from '../../lib/database/session-repository';
+import { getSessionRepository } from '@mcp-router/database';
 
 /**
  * エージェント関連のIPC通信ハンドラをセットアップ

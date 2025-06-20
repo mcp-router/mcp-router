@@ -1,5 +1,5 @@
 import { DeployedAgent as DeployedAgentType, MCPTool } from '../../../../types';
-import { getDeployedAgentRepository } from '../../../database/deployed-agent-repository';
+import { getDeployedAgentRepository } from '@mcp-router/database';
 import { DeployedAgent } from './deployed-agent';
 import { logError, logInfo } from '../../../utils/error-handler';
 import { Singleton } from '../../../utils/singleton';

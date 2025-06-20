@@ -1,5 +1,5 @@
 import { AgentConfig, MCPServerConfig, MCPTool, MCPAgentToolPermission } from '../../../../types';
-import { getAgentRepository } from '../../../database/agent-repository';
+import { getAgentRepository } from '@mcp-router/database';
 import { getServerService } from '../../server-service';
 import { DevelopmentAgent } from './development-agent';
 import { v4 as uuidv4 } from 'uuid';

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils/tailwind-utils"
+import { cn } from "@mcp-router/shared"
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (

@@ -1,8 +1,7 @@
 import { BaseRepository } from './base-repository';
 import { SqliteManager, getSqliteManager } from './sqlite-manager';
-import { AgentConfig } from '../../types';
+import { AgentConfig } from '@mcp-router/shared';
 import { v4 as uuidv4 } from 'uuid';
-import { logError, logInfo } from '../utils/error-handler';
 
 /**
  * エージェント情報用リポジトリクラス
@@ -141,11 +140,11 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
       // リポジトリに追加
       this.add(agent);
       
-      logInfo(`エージェント "${agent.name}" が追加されました (ID: ${id})`);
+      console.log(`エージェント "${agent.name}" が追加されました (ID: ${id})`);
       
       return agent;
     } catch (error) {
-      logError('エージェントの追加中にエラーが発生しました', error);
+      console.error('エージェントの追加中にエラーが発生しました:', error);
       throw error;
     }
   }
@@ -158,7 +157,7 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
     try {
       return this.getAll();
     } catch (error) {
-      logError('エージェント情報の取得中にエラーが発生しました', error);
+      console.error('エージェント情報の取得中にエラーが発生しました:', error);
       throw error;
     }
   }
@@ -172,7 +171,7 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
     try {
       return this.getById(id);
     } catch (error) {
-      logError(`ID: ${id} のエージェント情報の取得中にエラーが発生しました`, error);
+      console.error(`ID: ${id} のエージェント情報の取得中にエラーが発生しました:`, error);
       throw error;
     }
   }
@@ -227,7 +226,7 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
       
       return updatedAgent;
     } catch (error) {
-      logError(`ID: ${id} のエージェント情報の更新中にエラーが発生しました`, error);
+      console.error(`ID: ${id} のエージェント情報の更新中にエラーが発生しました:`, error);
       throw error;
     }
   }
@@ -247,12 +246,12 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
       const result = this.delete(id);
       
       if (result) {
-        logInfo(`エージェント "${agent.name}" が削除されました (ID: ${id})`);
+        console.log(`エージェント "${agent.name}" が削除されました (ID: ${id})`);
       }
       
       return result;
     } catch (error) {
-      logError(`ID: ${id} のエージェント情報の削除中にエラーが発生しました`, error);
+      console.error(`ID: ${id} のエージェント情報の削除中にエラーが発生しました:`, error);
       throw error;
     }
   }

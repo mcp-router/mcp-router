@@ -8,11 +8,15 @@ coverage/
 .nyc_output/
 junit.xml
 
-# Next.js & Build outputs
+# Next.js
 .next/
 out/
-build/
-dist/
+
+# Build outputs
+/build/
+/dist/
+**/dist/
+**/build/
 
 # Production
 *.production
@@ -42,10 +46,12 @@ pnpm-debug.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+tsconfig.tsbuildinfo
 
 # Electron
 /apps/electron/out/
 /apps/electron/dist/
+.webpack/
 
 # IDE
 .vscode/
@@ -64,9 +70,11 @@ temp/
 *.tmp
 *.temp
 
-# Lock files (keep only pnpm-lock.yaml)
+# Package manager files
 package-lock.json
 yarn.lock
+.yarn/
+.pnpm-store/
 
 # Turborepo
 .turbo/

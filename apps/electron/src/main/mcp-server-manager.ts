@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
-import { MCPServer, MCPServerConfig, MCPTool } from '../types';
+import { MCPServer, MCPServerConfig, MCPTool } from '@mcp-router/shared';
 import { getServerService, ServerService } from '../lib/services/server-service';
 import { applyDisplayRules, applyRulesToInputSchema } from '../lib/utils/rule-utils';
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";

@@ -1,7 +1,7 @@
 import { AppSettings } from '../types/settings-types';
 import { BaseService } from './base-service';
 import { Singleton } from '../utils/singleton';
-import { SettingsRepository, getSettingsRepository } from '../database/settings-repository';
+import { SettingsRepository, getSettingsRepository } from '@mcp-router/database';
 
 /**
  * アプリケーション設定を管理するサービス

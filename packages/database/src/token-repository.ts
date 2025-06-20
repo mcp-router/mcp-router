@@ -1,6 +1,6 @@
 import { BaseRepository } from './base-repository';
 import { SqliteManager, getSqliteManager } from './sqlite-manager';
-import { Token, TokenScope } from '../types/token-types';
+import { Token, TokenScope } from '@mcp-router/shared';
 
 /**
  * トークン用リポジトリクラス

@@ -1,8 +1,8 @@
 import { BaseService } from './base-service';
-import { MCPServer, MCPServerConfig } from '../../types';
+import { MCPServer, MCPServerConfig } from '@mcp-router/shared';
 import { logInfo } from '../utils/error-handler';
 import { Singleton } from '../utils/singleton';
-import { ServerRepository, getServerRepository } from '../database/server-repository';
+import { ServerRepository, getServerRepository } from '@mcp-router/database';
 import { getTokenService } from './token-service';
 
 /**

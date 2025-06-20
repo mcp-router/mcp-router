@@ -1,4 +1,4 @@
-import { APIMCPServer, PaginatedResponse } from '../types';
+import { APIMCPServer, PaginatedResponse } from '@mcp-router/shared';
 import { API_BASE_URL } from '../main';
 
 // Use dynamic import for ESM-only modules

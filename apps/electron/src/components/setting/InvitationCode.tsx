@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import { Clipboard, CheckCircle2, Users, TrendingUp, Sparkles, Share2, Lock } from 'lucide-react';
 import { Label } from '../ui/label';
-import { cn } from '@/lib/utils/tailwind-utils';
+import { cn } from '@mcp-router/shared';
 import { Badge } from '../ui/badge';
 import { Alert, AlertDescription } from '../ui/alert';
 

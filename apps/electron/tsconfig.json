@@ -7,13 +7,17 @@
     "outDir": "dist",
     "jsx": "react-jsx",
     "composite": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@mcp-router/shared": ["../../packages/shared/src"]
+      "@mcp-router/shared": ["../../packages/shared/src"],
+      "@mcp-router/database": ["../../packages/database/src"]
     }
   },
   "include": ["src/**/*"],
   "references": [
-    { "path": "../../packages/shared" }
+    { "path": "../../packages/shared" },
+    { "path": "../../packages/database" }
   ]
 }

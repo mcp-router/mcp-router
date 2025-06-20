@@ -1,8 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import enTranslation from '../locales/en.json';
-import jaTranslation from '../locales/ja.json';
+import { enTranslation, jaTranslation } from '@mcp-router/shared';
 
 // Initialize i18next
 i18n

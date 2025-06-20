@@ -1,7 +1,7 @@
 import { Token, TokenGenerateOptions, TokenValidationResult, TokenScope } from '../types/token-types';
 import { BaseService } from './base-service';
 import { Singleton } from '../utils/singleton';
-import { TokenRepository, getTokenRepository } from '../database/token-repository';
+import { TokenRepository, getTokenRepository } from '@mcp-router/database';
 import crypto from 'crypto';
 
 /**

@@ -13,7 +13,7 @@ import started from "electron-squirrel-startup";
 import { listMcpApps, updateAppServerAccess, addApp, unifyAppConfig, deleteCustomApp } from './lib/services/mcp-apps-service';
 import { updateElectronApp } from 'update-electron-app';
 import { machineIdSync } from 'node-machine-id';
-import { getDatabaseMigration } from './lib/database/database-migration';
+import { getDatabaseMigration } from '@mcp-router/database';
 import { validateClientId, isAppActivated, saveInvitationInfo, generateNewInvitation } from './main/viral';
 import { setApplicationMenu } from './main/menu';
 import { createTray, updateTrayContextMenu } from './main/tray';

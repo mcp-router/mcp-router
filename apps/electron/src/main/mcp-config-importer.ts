@@ -1,6 +1,6 @@
 import { promises as fsPromises } from 'fs';
 import { getServerService } from '../lib/services/server-service';
-import { MCPServerConfig } from '../types';
+import { MCPServerConfig } from '@mcp-router/shared';
 import { 
   claudeConfig, 
   clineConfig, 
