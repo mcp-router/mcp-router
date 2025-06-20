@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
 // Interface for filter state
 export interface FilterState {
@@ -19,8 +19,8 @@ const defaultFilters: FilterState = {
   showFilters: false,
   startDate: new Date(Date.now() - 24 * 60 * 60 * 1000 * 7), // 7 days ago
   endDate: new Date(),
-  requestType: '',
-  responseStatus: '',
+  requestType: "",
+  responseStatus: "",
   offset: 0,
   limit: 50,
   selectedClientId: undefined,
@@ -39,49 +39,52 @@ export const useFilterState = (initialFilters?: Partial<FilterState>) => {
 
   // Show/hide filters
   const setShowFilters = useCallback((show: boolean) => {
-    setState(prev => ({ ...prev, showFilters: show }));
+    setState((prev) => ({ ...prev, showFilters: show }));
   }, []);
 
   // Set date range
   const setDateRange = useCallback((startDate?: Date, endDate?: Date) => {
-    setState(prev => ({ ...prev, startDate, endDate }));
+    setState((prev) => ({ ...prev, startDate, endDate }));
   }, []);
 
   // Set request type
   const setRequestType = useCallback((requestType: string) => {
-    setState(prev => ({ ...prev, requestType, offset: 0 }));
+    setState((prev) => ({ ...prev, requestType, offset: 0 }));
   }, []);
 
   // Set response status
   const setResponseStatus = useCallback((responseStatus: string) => {
-    setState(prev => ({ ...prev, responseStatus, offset: 0 }));
+    setState((prev) => ({ ...prev, responseStatus, offset: 0 }));
   }, []);
 
   // Set pagination
   const setPagination = useCallback((offset: number, limit?: number) => {
-    setState(prev => ({ 
-      ...prev, 
+    setState((prev) => ({
+      ...prev,
       offset,
-      limit: limit !== undefined ? limit : prev.limit
+      limit: limit !== undefined ? limit : prev.limit,
     }));
   }, []);
 
   // Set client selection
-  const setSelectedClient = useCallback((clientId?: string, clientName?: string) => {
-    setState(prev => ({ 
-      ...prev, 
-      selectedClientId: clientId,
-      selectedClientName: clientName,
-      offset: 0
-    }));
-  }, []);
+  const setSelectedClient = useCallback(
+    (clientId?: string, clientName?: string) => {
+      setState((prev) => ({
+        ...prev,
+        selectedClientId: clientId,
+        selectedClientName: clientName,
+        offset: 0,
+      }));
+    },
+    [],
+  );
 
   // Clear all filters
   const clearFilters = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
-      requestType: '',
-      responseStatus: '',
+      requestType: "",
+      responseStatus: "",
       startDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
       endDate: new Date(),
       offset: 0,
@@ -90,7 +93,7 @@ export const useFilterState = (initialFilters?: Partial<FilterState>) => {
 
   // Trigger a refresh
   const refresh = useCallback(() => {
-    setState(prev => ({ ...prev, refreshTrigger: prev.refreshTrigger + 1 }));
+    setState((prev) => ({ ...prev, refreshTrigger: prev.refreshTrigger + 1 }));
   }, []);
 
   return {

@@ -13,21 +13,21 @@ import { app } from "electron";
 export function handleDatabaseError(
   operation: string,
   error: any,
-  defaultReturnValue?: any
+  defaultReturnValue?: any,
 ): never | any {
   console.error(`[Database Error] ${operation}:`, error);
-  
+
   // スタックトレースがある場合はログに記録
   if (error.stack) {
     console.error(`[Database Error] スタックトレース:`, error.stack);
   }
-  
+
   // デフォルト値が指定されている場合は返す
   if (arguments.length >= 3) {
     console.warn(`[Database Recovery] ${operation}: デフォルト値を返します`);
     return defaultReturnValue;
   }
-  
+
   // デフォルト値がない場合は例外を再スロー
   throw error;
 }
@@ -40,12 +40,12 @@ export function handleDatabaseError(
  */
 export function logInfo(message: string, data?: any): void {
   if (!app.isPackaged) {
-    console.log(`[INFO] ${message}`, data || '');
+    console.log(`[INFO] ${message}`, data || "");
   }
 }
 
 export function logError(message: string, error?: any): void {
   if (!app.isPackaged) {
-  console.error(`[ERROR] ${message}`, error || '');
+    console.error(`[ERROR] ${message}`, error || "");
   }
 }

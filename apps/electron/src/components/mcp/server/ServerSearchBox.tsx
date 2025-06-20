@@ -1,6 +1,6 @@
-import React from 'react';
-import { IconSearch } from '@tabler/icons-react';
-import { useTranslation } from 'react-i18next';
+import React from "react";
+import { IconSearch } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 interface ServerSearchBoxProps {
   searchTerm: string;
@@ -11,10 +11,10 @@ interface ServerSearchBoxProps {
 const ServerSearchBox: React.FC<ServerSearchBoxProps> = ({
   searchTerm,
   onSearchChange,
-  placeholderKey = 'discoverServers.searchPlaceholder'
+  placeholderKey = "discoverServers.searchPlaceholder",
 }) => {
   const { t } = useTranslation();
-  
+
   return (
     <div className="mb-4 relative">
       <div className="relative">

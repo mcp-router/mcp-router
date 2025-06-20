@@ -6,12 +6,12 @@
  * Client type categories
  */
 export enum ClientType {
-  API = 'API Client',
-  WEB = 'Web Client',
-  MOBILE = 'Mobile Client',
-  SERVER = 'Server Client',
-  CLI = 'CLI Client',
-  UNKNOWN = 'Other Client'
+  API = "API Client",
+  WEB = "Web Client",
+  MOBILE = "Mobile Client",
+  SERVER = "Server Client",
+  CLI = "CLI Client",
+  UNKNOWN = "Other Client",
 }
 
 /**
@@ -30,26 +30,39 @@ export interface CategorizedClient {
  * @param clientName The client name string
  * @returns The identified client type
  */
-export const determineClientType = (clientId: string, clientName?: string): ClientType => {
+export const determineClientType = (
+  clientId: string,
+  clientName?: string,
+): ClientType => {
   // Use both name and ID for more accurate classification
-  const identifier = ((clientName || '') + clientId).toLowerCase();
-  
+  const identifier = ((clientName || "") + clientId).toLowerCase();
+
   // Classification rules based on common patterns
-  if (identifier.includes('api') || identifier.includes('sdk')) {
+  if (identifier.includes("api") || identifier.includes("sdk")) {
     return ClientType.API;
-  } else if (identifier.includes('web') || identifier.includes('browser')) {
+  } else if (identifier.includes("web") || identifier.includes("browser")) {
     return ClientType.WEB;
-  } else if (identifier.includes('mobile') || identifier.includes('android') || 
-            identifier.includes('ios') || identifier.includes('app')) {
+  } else if (
+    identifier.includes("mobile") ||
+    identifier.includes("android") ||
+    identifier.includes("ios") ||
+    identifier.includes("app")
+  ) {
     return ClientType.MOBILE;
-  } else if (identifier.includes('server') || identifier.includes('backend') || 
-            identifier.includes('service')) {
+  } else if (
+    identifier.includes("server") ||
+    identifier.includes("backend") ||
+    identifier.includes("service")
+  ) {
     return ClientType.SERVER;
-  } else if (identifier.includes('cli') || identifier.includes('console') || 
-            identifier.includes('terminal')) {
+  } else if (
+    identifier.includes("cli") ||
+    identifier.includes("console") ||
+    identifier.includes("terminal")
+  ) {
     return ClientType.CLI;
   }
-  
+
   return ClientType.UNKNOWN;
 };
 
@@ -61,21 +74,27 @@ export const determineClientType = (clientId: string, clientName?: string): Clie
  * @returns A display name for the client
  */
 export const generateClientDisplayName = (
-  clientId: string, 
-  clientName?: string, 
-  clientType?: ClientType
+  clientId: string,
+  clientName?: string,
+  clientType?: ClientType,
 ): string => {
-  if (clientName && clientName !== 'unknown-client' && clientName.trim() !== '') {
+  if (
+    clientName &&
+    clientName !== "unknown-client" &&
+    clientName.trim() !== ""
+  ) {
     // If valid name is provided, use it
     return clientName;
   }
-  
+
   // Create a type-based prefix
-  const typePrefix = clientType ? clientType.toString().split(' ')[0].toLowerCase() : 'client';
-  
+  const typePrefix = clientType
+    ? clientType.toString().split(" ")[0].toLowerCase()
+    : "client";
+
   // Use shortened ID (first 6 chars)
   const shortId = clientId.substring(0, Math.min(6, clientId.length));
-  
+
   return `${typePrefix}-${shortId}`;
 };
 
@@ -85,14 +104,17 @@ export const generateClientDisplayName = (
  * @param clientName The client name string
  * @returns A categorized client object
  */
-export const categorizeClient = (clientId: string, clientName?: string): CategorizedClient => {
+export const categorizeClient = (
+  clientId: string,
+  clientName?: string,
+): CategorizedClient => {
   const type = determineClientType(clientId, clientName);
-  
+
   return {
     id: clientId,
-    name: clientName || '',
+    name: clientName || "",
     type: type,
-    displayName: generateClientDisplayName(clientId, clientName, type)
+    displayName: generateClientDisplayName(clientId, clientName, type),
   };
 };
 
@@ -102,22 +124,22 @@ export const categorizeClient = (clientId: string, clientName?: string): Categor
  * @returns Map of client types to arrays of categorized clients
  */
 export const groupClientsByType = (
-  clients: Array<{id: string, name: string}>
+  clients: Array<{ id: string; name: string }>,
 ): Map<ClientType, CategorizedClient[]> => {
   const groupedClients = new Map<ClientType, CategorizedClient[]>();
-  
+
   // Initialize all client type groups
-  Object.values(ClientType).forEach(type => {
+  Object.values(ClientType).forEach((type) => {
     groupedClients.set(type, []);
   });
-  
+
   // Categorize and group each client
-  clients.forEach(client => {
+  clients.forEach((client) => {
     const categorized = categorizeClient(client.id, client.name);
     const typeGroup = groupedClients.get(categorized.type) || [];
     typeGroup.push(categorized);
     groupedClients.set(categorized.type, typeGroup);
   });
-  
+
   return groupedClients;
 };

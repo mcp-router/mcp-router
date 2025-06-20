@@ -1,18 +1,18 @@
-import { DeployedAgentService } from './deployed/deployed-agent-service';
-import { DevelopmentAgentService } from './development/development-agent-service';
-import { AgentSharingService } from './shared/agent-sharing-service';
+import { DeployedAgentService } from "./deployed/deployed-agent-service";
+import { DevelopmentAgentService } from "./development/development-agent-service";
+import { AgentSharingService } from "./shared/agent-sharing-service";
 
 // 開発中エージェント関連
-export { DevelopmentAgent } from './development/development-agent';
-export { DevelopmentAgentService } from './development/development-agent-service';
+export { DevelopmentAgent } from "./development/development-agent";
+export { DevelopmentAgentService } from "./development/development-agent-service";
 
 // デプロイ済みエージェント関連
-export { DeployedAgent } from './deployed/deployed-agent';
-export { DeployedAgentService } from './deployed/deployed-agent-service';
+export { DeployedAgent } from "./deployed/deployed-agent";
+export { DeployedAgentService } from "./deployed/deployed-agent-service";
 
 // 共有機能
-export { AgentBase, BaseAgentInfo } from './shared/agent-base';
-export { AgentSharingService } from './shared/agent-sharing-service';
+export { AgentBase, BaseAgentInfo } from "./shared/agent-base";
+export { AgentSharingService } from "./shared/agent-sharing-service";
 
 // 便利な統一エクスポート関数
 
@@ -45,8 +45,9 @@ export function getAgentSharingService() {
 export function deployDevelopmentAgent(developmentAgent: any): any {
   const sharingService = getAgentSharingService();
   const deployedService = getDeployedAgentService();
-  
-  const deployedAgentData = sharingService.convertDevelopmentToDeployed(developmentAgent);
+
+  const deployedAgentData =
+    sharingService.convertDevelopmentToDeployed(developmentAgent);
   return deployedService.deployFromDevelopmentAgent(deployedAgentData);
 }
 
@@ -58,7 +59,7 @@ export function deployDevelopmentAgent(developmentAgent: any): any {
 export async function importSharedAgent(shareUrl: string): Promise<any> {
   const sharingService = getAgentSharingService();
   const deployedService = getDeployedAgentService();
-  
+
   const sharedData = await sharingService.getSharedAgentData(shareUrl);
   const deployedAgentData = sharingService.convertToDeployedAgent(sharedData);
   return deployedService.createDeployedAgent(deployedAgentData);

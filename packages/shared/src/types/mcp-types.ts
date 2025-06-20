@@ -6,7 +6,7 @@ export interface MCPServerConfig {
   autoStart?: boolean;
   disabled?: boolean;
   description?: string;
-  serverType: 'local' | 'remote' | 'remote-streamable';
+  serverType: "local" | "remote" | "remote-streamable";
   command?: string;
   args?: string[];
   remoteUrl?: string;
@@ -14,7 +14,7 @@ export interface MCPServerConfig {
   inputParams?: Record<string, { default: string; description: string }>;
   required?: string[];
   latestVersion?: string;
-  verificationStatus?: 'verified' | 'unverified';
+  verificationStatus?: "verified" | "unverified";
   version?: string;
   toolPermissions?: MCPServerToolPermissions;
 }
@@ -44,7 +44,7 @@ export interface MCPPrompt {
 
 export interface MCPServer extends MCPServerConfig {
   id: string;
-  status: 'running' | 'starting' | 'stopping' | 'stopped' | 'error';
+  status: "running" | "starting" | "stopping" | "stopped" | "error";
   logs?: string[];
   // Properties for the MCP Test Page
   tools?: MCPTool[];
@@ -69,10 +69,10 @@ export interface AgentConfig {
 
 // エージェント固有のツール権限
 export interface MCPAgentToolPermission {
-  toolName: string;    // ツール名
+  toolName: string; // ツール名
   description: string; // ツールの説明
-  inputSchema?: any;   // ツールのスキーマ情報
-  enabled: boolean;    // 権限状態
+  inputSchema?: any; // ツールのスキーマ情報
+  enabled: boolean; // 権限状態
 }
 
 // デプロイされたエージェント関連の型定義
@@ -121,7 +121,7 @@ export interface LocalMCPServer {
   envs?: Record<string, string>;
   iconUrl?: string;
   tags?: string[];
-  verificationStatus?: 'verified' | 'unverified';
+  verificationStatus?: "verified" | "unverified";
   inputParams?: Record<string, { default: string; description: string }>;
   latestVersion?: string;
   version?: string;

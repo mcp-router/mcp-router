@@ -1,8 +1,17 @@
-import { DeployedAgent as DeployedAgentType, MCPServerConfig, MCPTool, MCPAgentToolPermission } from '../../../../types';
-import { AgentBase, BaseAgentInfo } from '../shared/agent-base';
-import { logError, logInfo } from '../../../utils/error-handler';
+import {
+  DeployedAgent as DeployedAgentType,
+  MCPServerConfig,
+  MCPTool,
+  MCPAgentToolPermission,
+} from "../../../../types";
+import { AgentBase, BaseAgentInfo } from "../shared/agent-base";
+import { logError, logInfo } from "../../../utils/error-handler";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { connectToMCPServer, fetchServerTools, substituteArgsParameters } from '../../../utils/mcp-client-util';
+import {
+  connectToMCPServer,
+  fetchServerTools,
+  substituteArgsParameters,
+} from "../../../utils/mcp-client-util";
 
 /**
  * サーバー情報を表す型
@@ -10,7 +19,7 @@ import { connectToMCPServer, fetchServerTools, substituteArgsParameters } from '
 type LightServerInfo = {
   config: MCPServerConfig;
   client?: Client;
-  status: 'running' | 'stopped' | 'error';
+  status: "running" | "stopped" | "error";
   lastError?: string;
 };
 
@@ -31,18 +40,18 @@ export class DeployedAgent extends AgentBase {
     const normalizedConfig: BaseAgentInfo = {
       ...config,
       createdAt: config.createdAt || Date.now(),
-      updatedAt: config.updatedAt || Date.now()
+      updatedAt: config.updatedAt || Date.now(),
     };
-    
+
     super(normalizedConfig);
     this.userId = config.userId;
-    
+
     // サーバー情報の初期化
     if (this.config.mcpServers && this.config.mcpServers.length > 0) {
       for (const server of this.config.mcpServers) {
         this.serverInfoMap.set(server.id, {
           config: server,
-          status: 'stopped'
+          status: "stopped",
         });
       }
     }
@@ -54,7 +63,7 @@ export class DeployedAgent extends AgentBase {
   public getDeployedConfig(): DeployedAgentType {
     return {
       ...this.config,
-      userId: this.userId
+      userId: this.userId,
     } as DeployedAgentType;
   }
 
@@ -63,14 +72,17 @@ export class DeployedAgent extends AgentBase {
    * @param newConfig 新しい設定（部分的）
    * @param syncToolPermissions ツール権限を同期するかどうか
    */
-  public async updateConfig(newConfig: Partial<DeployedAgentType>, syncToolPermissions = true): Promise<DeployedAgentType> {
+  public async updateConfig(
+    newConfig: Partial<DeployedAgentType>,
+    syncToolPermissions = true,
+  ): Promise<DeployedAgentType> {
     // MCPサーバーの構成に変更があるかチェック
     let serversChanged = false;
-    
+
     if (newConfig.mcpServers !== undefined) {
       serversChanged = this.hasServerConfigChanged(
         this.config.mcpServers || [],
-        newConfig.mcpServers
+        newConfig.mcpServers,
       );
     }
 
@@ -79,7 +91,7 @@ export class DeployedAgent extends AgentBase {
       ...this.config,
       ...newConfig,
       updatedAt: Date.now(),
-      createdAt: this.config.createdAt
+      createdAt: this.config.createdAt,
     };
 
     // サーバー情報が変更された場合、サーバーマップを再初期化
@@ -90,7 +102,9 @@ export class DeployedAgent extends AgentBase {
 
     // MCP サーバー構成が変更された場合、またはリクエストされた場合にツール権限を同期
     if ((serversChanged || syncToolPermissions) && this.config.mcpServers) {
-      logInfo(`デプロイ済みエージェント ${this.getLogIdentifier()} のMCPサーバー構成変更検出: ${serversChanged ? '変更あり' : '変更なし'}`);
+      logInfo(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} のMCPサーバー構成変更検出: ${serversChanged ? "変更あり" : "変更なし"}`,
+      );
       await this.synchronizeToolPermissions();
     }
 
@@ -105,7 +119,7 @@ export class DeployedAgent extends AgentBase {
       for (const server of this.config.mcpServers) {
         this.serverInfoMap.set(server.id, {
           config: server,
-          status: 'stopped'
+          status: "stopped",
         });
       }
     }
@@ -127,13 +141,15 @@ export class DeployedAgent extends AgentBase {
     }
 
     // 既に接続済みの場合
-    if (serverInfo.status === 'running' && serverInfo.client) {
+    if (serverInfo.status === "running" && serverInfo.client) {
       return null; // 成功
     }
 
     // エラー状態の場合はリトライ
-    if (serverInfo.status === 'error') {
-      logInfo(`サーバー "${server.name}" (ID: ${serverId}) がエラー状態のため再接続を試みます`);
+    if (serverInfo.status === "error") {
+      logInfo(
+        `サーバー "${server.name}" (ID: ${serverId}) がエラー状態のため再接続を試みます`,
+      );
     }
 
     try {
@@ -143,32 +159,44 @@ export class DeployedAgent extends AgentBase {
           name: server.name,
           serverType: server.serverType,
           command: server.command,
-          args: server.args ?
-            substituteArgsParameters(server.args, server.env || {}, server.inputParams || {}) :
-            undefined,
+          args: server.args
+            ? substituteArgsParameters(
+                server.args,
+                server.env || {},
+                server.inputParams || {},
+              )
+            : undefined,
           remoteUrl: server.remoteUrl,
           bearerToken: server.bearerToken,
           env: server.env,
-          inputParams: server.inputParams
+          inputParams: server.inputParams,
         },
-        `mcp-router-deployed-agent`
+        `mcp-router-deployed-agent`,
       );
 
-      if (result.status === 'success') {
+      if (result.status === "success") {
         serverInfo.client = result.client;
-        serverInfo.status = 'running';
-        logInfo(`デプロイ済みエージェント ${this.getLogIdentifier()} がサーバー "${server.name}" (ID: ${serverId}) に接続しました`);
+        serverInfo.status = "running";
+        logInfo(
+          `デプロイ済みエージェント ${this.getLogIdentifier()} がサーバー "${server.name}" (ID: ${serverId}) に接続しました`,
+        );
         return null; // 成功
       } else {
-        serverInfo.status = 'error';
+        serverInfo.status = "error";
         serverInfo.lastError = result.error;
-        logError(`デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー "${server.name}" への接続に失敗しました: ${result.error}`);
+        logError(
+          `デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー "${server.name}" への接続に失敗しました: ${result.error}`,
+        );
         return result.error; // Return raw error message
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logError(`デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー "${server.name}" (ID: ${serverId}) への接続中にエラーが発生しました`, error);
-      serverInfo.status = 'error';
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logError(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー "${server.name}" (ID: ${serverId}) への接続中にエラーが発生しました`,
+        error,
+      );
+      serverInfo.status = "error";
       serverInfo.lastError = errorMessage;
       return errorMessage; // Return raw error message
     }
@@ -186,13 +214,16 @@ export class DeployedAgent extends AgentBase {
     try {
       const tools = await fetchServerTools(serverInfo.client);
 
-      return tools.map(tool => ({
+      return tools.map((tool) => ({
         name: tool.name,
-        description: tool.description || '',
-        inputSchema: tool.parameters || tool.inputSchema || undefined
+        description: tool.description || "",
+        inputSchema: tool.parameters || tool.inputSchema || undefined,
       }));
     } catch (error) {
-      logError(`デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー (${serverId}) からのツール取得中にエラーが発生しました`, error);
+      logError(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー (${serverId}) からのツール取得中にエラーが発生しました`,
+        error,
+      );
       return [];
     }
   }
@@ -200,7 +231,9 @@ export class DeployedAgent extends AgentBase {
   /**
    * ツール名からそのツールを提供できるサーバーを検索する
    */
-  public async findServerForTool(toolName: string): Promise<string | undefined> {
+  public async findServerForTool(
+    toolName: string,
+  ): Promise<string | undefined> {
     if (!this.config.mcpServers || this.config.mcpServers.length === 0) {
       return undefined;
     }
@@ -208,15 +241,20 @@ export class DeployedAgent extends AgentBase {
     // まず、既に接続済みのサーバーから検索
     for (const server of this.config.mcpServers) {
       const serverInfo = this.serverInfoMap.get(server.id);
-      if (serverInfo?.status === 'running' && serverInfo.client) {
+      if (serverInfo?.status === "running" && serverInfo.client) {
         try {
           const tools = await this.fetchServerTools(server.id);
-          if (tools.some(tool => tool.name === toolName)) {
-            logInfo(`ツール "${toolName}" をサーバー "${server.name}" (ID: ${server.id}) で見つけました`);
+          if (tools.some((tool) => tool.name === toolName)) {
+            logInfo(
+              `ツール "${toolName}" をサーバー "${server.name}" (ID: ${server.id}) で見つけました`,
+            );
             return server.id;
           }
         } catch (error) {
-          logError(`サーバー (ID: ${server.id}) からのツール検索中にエラーが発生しました`, error);
+          logError(
+            `サーバー (ID: ${server.id}) からのツール検索中にエラーが発生しました`,
+            error,
+          );
         }
       }
     }
@@ -224,7 +262,7 @@ export class DeployedAgent extends AgentBase {
     // 接続済みサーバーで見つからなかった場合、未接続のサーバーに接続して検索
     for (const server of this.config.mcpServers) {
       const serverInfo = this.serverInfoMap.get(server.id);
-      if (serverInfo?.status !== 'running') {
+      if (serverInfo?.status !== "running") {
         const errorMessage = await this.connectToServer(server.id);
         if (errorMessage) {
           logError(`ツール検索時のサーバー接続エラー: ${errorMessage}`);
@@ -233,12 +271,17 @@ export class DeployedAgent extends AgentBase {
 
         try {
           const tools = await this.fetchServerTools(server.id);
-          if (tools.some(tool => tool.name === toolName)) {
-            logInfo(`ツール "${toolName}" をサーバー "${server.name}" (ID: ${server.id}) で見つけました`);
+          if (tools.some((tool) => tool.name === toolName)) {
+            logInfo(
+              `ツール "${toolName}" をサーバー "${server.name}" (ID: ${server.id}) で見つけました`,
+            );
             return server.id;
           }
         } catch (error) {
-          logError(`サーバー (ID: ${server.id}) からのツール検索中にエラーが発生しました`, error);
+          logError(
+            `サーバー (ID: ${server.id}) からのツール検索中にエラーが発生しました`,
+            error,
+          );
         }
       }
     }
@@ -249,18 +292,25 @@ export class DeployedAgent extends AgentBase {
   /**
    * MCPツールを呼び出す
    */
-  public async callTool(toolName: string, args: Record<string, any>): Promise<any> {
+  public async callTool(
+    toolName: string,
+    args: Record<string, any>,
+  ): Promise<any> {
     try {
       // findServerForToolが既にサーバーに接続している
       const serverId = await this.findServerForTool(toolName);
       if (!serverId) {
-        throw new Error(`ツール "${toolName}" を提供できるサーバーが見つかりません`);
+        throw new Error(
+          `ツール "${toolName}" を提供できるサーバーが見つかりません`,
+        );
       }
 
       // ツールの権限をチェック
       const isEnabled = this.getToolPermission(serverId, toolName);
       if (!isEnabled) {
-        throw new Error(`ツール "${toolName}" はこのエージェントでは許可されていません`);
+        throw new Error(
+          `ツール "${toolName}" はこのエージェントでは許可されていません`,
+        );
       }
 
       // findServerForToolが既にサーバーに接続しているため、再度接続する必要はない
@@ -272,30 +322,39 @@ export class DeployedAgent extends AgentBase {
         if (errorMessage) {
           throw new Error(`サーバー (ID: ${serverId}) に接続できませんでした`);
         }
-        
+
         const updatedServerInfo = this.serverInfoMap.get(serverId);
         if (!updatedServerInfo?.client) {
-          throw new Error(`サーバー (ID: ${serverId}) のクライアントが利用できません`);
+          throw new Error(
+            `サーバー (ID: ${serverId}) のクライアントが利用できません`,
+          );
         }
-        
+
         const result = await updatedServerInfo.client.callTool({
           name: toolName,
-          arguments: args
+          arguments: args,
         });
-        
-        logInfo(`デプロイ済みエージェント ${this.getLogIdentifier()} がツール "${toolName}" を呼び出しました`);
+
+        logInfo(
+          `デプロイ済みエージェント ${this.getLogIdentifier()} がツール "${toolName}" を呼び出しました`,
+        );
         return result;
       }
 
       const result = await serverInfo.client.callTool({
         name: toolName,
-        arguments: args
+        arguments: args,
       });
 
-      logInfo(`デプロイ済みエージェント ${this.getLogIdentifier()} がツール "${toolName}" を呼び出しました`);
+      logInfo(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} がツール "${toolName}" を呼び出しました`,
+      );
       return result;
     } catch (error) {
-      logError(`デプロイ済みエージェント ${this.getLogIdentifier()} のツール呼び出し中にエラーが発生しました`, error);
+      logError(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} のツール呼び出し中にエラーが発生しました`,
+        error,
+      );
       throw error;
     }
   }
@@ -313,7 +372,7 @@ export class DeployedAgent extends AgentBase {
 
       for (const server of this.config.mcpServers) {
         const serverInfo = this.serverInfoMap.get(server.id);
-        if (serverInfo?.status === 'running' && serverInfo.client) {
+        if (serverInfo?.status === "running" && serverInfo.client) {
           connectedServers.push(server.id);
         } else {
           unconnectedServers.push(server);
@@ -325,14 +384,19 @@ export class DeployedAgent extends AgentBase {
         try {
           const tools = await this.fetchServerTools(serverId);
           if (tools && tools.length > 0) {
-            const enabledTools = tools.filter(tool => this.getToolPermission(serverId, tool.name));
+            const enabledTools = tools.filter((tool) =>
+              this.getToolPermission(serverId, tool.name),
+            );
             if (enabledTools.length > 0) {
               result[serverId] = enabledTools;
             }
           }
         } catch (error) {
           const server = this.findServerConfig(serverId);
-          logError(`デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー "${server?.name}" (ID: ${serverId}) からのツール取得中にエラーが発生しました`, error);
+          logError(
+            `デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー "${server?.name}" (ID: ${serverId}) からのツール取得中にエラーが発生しました`,
+            error,
+          );
         }
       }
 
@@ -341,25 +405,35 @@ export class DeployedAgent extends AgentBase {
         try {
           const errorMessage = await this.connectToServer(server.id);
           if (errorMessage) {
-            logError(`利用可能ツール取得時のサーバー接続エラー: ${errorMessage}`);
+            logError(
+              `利用可能ツール取得時のサーバー接続エラー: ${errorMessage}`,
+            );
             continue;
           }
 
           const tools = await this.fetchServerTools(server.id);
           if (tools && tools.length > 0) {
-            const enabledTools = tools.filter(tool => this.getToolPermission(server.id, tool.name));
+            const enabledTools = tools.filter((tool) =>
+              this.getToolPermission(server.id, tool.name),
+            );
             if (enabledTools.length > 0) {
               result[server.id] = enabledTools;
             }
           }
         } catch (error) {
-          logError(`デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー "${server.name}" (ID: ${server.id}) からのツール取得中にエラーが発生しました`, error);
+          logError(
+            `デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー "${server.name}" (ID: ${server.id}) からのツール取得中にエラーが発生しました`,
+            error,
+          );
         }
       }
 
       return result;
     } catch (error) {
-      logError(`デプロイ済みエージェント ${this.getLogIdentifier()} の利用可能ツール取得中にエラーが発生しました`, error);
+      logError(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} の利用可能ツール取得中にエラーが発生しました`,
+        error,
+      );
       return {};
     }
   }
@@ -367,7 +441,9 @@ export class DeployedAgent extends AgentBase {
   /**
    * 特定のMCPサーバーのツールを取得する（単一サーバーのみ）
    */
-  public async getMCPServerTools(serverId: string): Promise<(MCPTool & { enabled?: boolean })[]> {
+  public async getMCPServerTools(
+    serverId: string,
+  ): Promise<(MCPTool & { enabled?: boolean })[]> {
     const server = this.findServerConfig(serverId);
     if (!server) {
       throw new Error(`Server configuration not found (ID: ${serverId})`);
@@ -375,7 +451,7 @@ export class DeployedAgent extends AgentBase {
 
     // サーバーに接続（必要な場合のみ）
     const serverInfo = this.serverInfoMap.get(serverId);
-    if (!serverInfo || serverInfo.status !== 'running' || !serverInfo.client) {
+    if (!serverInfo || serverInfo.status !== "running" || !serverInfo.client) {
       const errorMessage = await this.connectToServer(serverId);
       if (errorMessage) {
         throw new Error(errorMessage);
@@ -389,9 +465,9 @@ export class DeployedAgent extends AgentBase {
     }
 
     // 権限情報を付与して返す
-    const toolsWithPermissions = tools.map(tool => ({
+    const toolsWithPermissions = tools.map((tool) => ({
       ...tool,
-      enabled: this.getToolPermission(serverId, tool.name)
+      enabled: this.getToolPermission(serverId, tool.name),
     }));
 
     return toolsWithPermissions;
@@ -407,61 +483,80 @@ export class DeployedAgent extends AgentBase {
           try {
             serverInfo.client.close();
             serverInfo.client = undefined;
-            serverInfo.status = 'stopped';
+            serverInfo.status = "stopped";
           } catch (error) {
-            logError(`デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー (ID: ${serverId}) のクライアント切断中にエラーが発生しました`, error);
+            logError(
+              `デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー (ID: ${serverId}) のクライアント切断中にエラーが発生しました`,
+              error,
+            );
           }
         }
       }
 
-      logInfo(`デプロイ済みエージェント ${this.getLogIdentifier()} の全サーバー接続を閉じました`);
+      logInfo(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} の全サーバー接続を閉じました`,
+      );
     } catch (error) {
-      logError(`デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー接続切断中にエラーが発生しました`, error);
+      logError(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} のサーバー接続切断中にエラーが発生しました`,
+        error,
+      );
     }
   }
 
   /**
    * サーバーの接続状態を取得する
    */
-  public getServerStatus(serverId: string): 'running' | 'stopped' | 'error' | undefined {
+  public getServerStatus(
+    serverId: string,
+  ): "running" | "stopped" | "error" | undefined {
     return this.serverInfoMap.get(serverId)?.status;
   }
 
   /**
    * 全サーバーの接続状態を取得する
    */
-  public getAllServerStatuses(): Record<string, 'running' | 'stopped' | 'error'> {
-    const statuses: Record<string, 'running' | 'stopped' | 'error'> = {};
-    
+  public getAllServerStatuses(): Record<
+    string,
+    "running" | "stopped" | "error"
+  > {
+    const statuses: Record<string, "running" | "stopped" | "error"> = {};
+
     for (const [serverId, serverInfo] of this.serverInfoMap) {
       statuses[serverId] = serverInfo.status;
     }
-    
+
     return statuses;
   }
-
-
 
   /**
    * ツール権限を同期する（デプロイ済み版簡易実装）
    */
   private async synchronizeToolPermissions(): Promise<void> {
     try {
-      logInfo(`デプロイ済みエージェント ${this.getLogIdentifier()} のツール権限を同期中...`);
+      logInfo(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} のツール権限を同期中...`,
+      );
 
       let updatedToolPermissions: Record<string, MCPAgentToolPermission[]> = {};
 
       if (this.config.toolPermissions) {
-        updatedToolPermissions = JSON.parse(JSON.stringify(this.config.toolPermissions));
+        updatedToolPermissions = JSON.parse(
+          JSON.stringify(this.config.toolPermissions),
+        );
       }
 
-      const existingServerIds = new Set(this.config.mcpServers.map(server => server.id));
+      const existingServerIds = new Set(
+        this.config.mcpServers.map((server) => server.id),
+      );
 
       // 存在しないサーバーの権限を削除
       for (const serverId of Object.keys(updatedToolPermissions)) {
         if (!existingServerIds.has(serverId)) {
           delete updatedToolPermissions[serverId];
-          logInfo(`サーバー (ID: ${serverId}) が存在しないため、ツール権限を削除しました`);
+          logInfo(
+            `サーバー (ID: ${serverId}) が存在しないため、ツール権限を削除しました`,
+          );
         }
       }
 
@@ -469,19 +564,25 @@ export class DeployedAgent extends AgentBase {
       for (const server of this.config.mcpServers) {
         const serverId = server.id;
         const serverInfo = this.serverInfoMap.get(serverId);
-        
+
         // サーバーが既に接続済みで、ツール権限が既に存在する場合はスキップ
-        if (serverInfo?.status === 'running' && 
-            updatedToolPermissions[serverId] && 
-            updatedToolPermissions[serverId].length > 0) {
-          logInfo(`サーバー (ID: ${serverId}) は既に接続済みで、ツール権限も存在するためスキップします`);
+        if (
+          serverInfo?.status === "running" &&
+          updatedToolPermissions[serverId] &&
+          updatedToolPermissions[serverId].length > 0
+        ) {
+          logInfo(
+            `サーバー (ID: ${serverId}) は既に接続済みで、ツール権限も存在するためスキップします`,
+          );
           continue;
         }
 
         logInfo(`サーバー (ID: ${serverId}) のツール権限を同期中...`);
         const errorMessage = await this.connectToServer(serverId);
         if (errorMessage) {
-          logError(`サーバー (ID: ${serverId}) に接続できなかったため、ツール権限を更新できません`);
+          logError(
+            `サーバー (ID: ${serverId}) に接続できなかったため、ツール権限を更新できません`,
+          );
           continue;
         }
 
@@ -489,31 +590,48 @@ export class DeployedAgent extends AgentBase {
           const tools = await this.fetchServerTools(serverId);
 
           if (tools && tools.length > 0) {
-            const currentServerPermissions = updatedToolPermissions[serverId] || [];
+            const currentServerPermissions =
+              updatedToolPermissions[serverId] || [];
 
-            const updatedServerPermissions = tools.map(tool => {
-              const existingPermission = currentServerPermissions.find(p => p.toolName === tool.name);
+            const updatedServerPermissions = tools.map((tool) => {
+              const existingPermission = currentServerPermissions.find(
+                (p) => p.toolName === tool.name,
+              );
 
               return {
                 toolName: tool.name,
                 inputSchema: tool.inputSchema,
-                description: tool.description || existingPermission?.description || tool.name || '',
-                enabled: existingPermission ? existingPermission.enabled : true
+                description:
+                  tool.description ||
+                  existingPermission?.description ||
+                  tool.name ||
+                  "",
+                enabled: existingPermission ? existingPermission.enabled : true,
               };
             });
 
             updatedToolPermissions[serverId] = updatedServerPermissions;
-            logInfo(`サーバー (ID: ${serverId}) のツール権限を更新しました (${updatedServerPermissions.length} ツール)`);
+            logInfo(
+              `サーバー (ID: ${serverId}) のツール権限を更新しました (${updatedServerPermissions.length} ツール)`,
+            );
           }
         } catch (error) {
-          logError(`サーバー (ID: ${serverId}) からのツール取得中にエラーが発生しました`, error);
+          logError(
+            `サーバー (ID: ${serverId}) からのツール取得中にエラーが発生しました`,
+            error,
+          );
         }
       }
 
       this.config.toolPermissions = updatedToolPermissions;
-      logInfo(`デプロイ済みエージェント ${this.getLogIdentifier()} のツール権限同期が完了しました`);
+      logInfo(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} のツール権限同期が完了しました`,
+      );
     } catch (error) {
-      logError(`デプロイ済みエージェント ${this.getLogIdentifier()} のツール権限同期中にエラーが発生しました`, error);
+      logError(
+        `デプロイ済みエージェント ${this.getLogIdentifier()} のツール権限同期中にエラーが発生しました`,
+        error,
+      );
     }
   }
 }

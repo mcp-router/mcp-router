@@ -1,7 +1,7 @@
-import { BaseRepository } from './base-repository';
-import { SqliteManager, getSqliteManager } from './sqlite-manager';
-import { AgentConfig } from '@mcp-router/shared';
-import { v4 as uuidv4 } from 'uuid';
+import { BaseRepository } from "./base-repository";
+import { SqliteManager, getSqliteManager } from "./sqlite-manager";
+import { AgentConfig } from "@mcp-router/shared";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * エージェント情報用リポジトリクラス
@@ -13,7 +13,7 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
    * @param db SqliteManagerインスタンス
    */
   constructor(db: SqliteManager) {
-    super(db, 'agents');
+    super(db, "agents");
   }
 
   /**
@@ -41,13 +41,18 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
       `);
 
       // インデックスの作成
-      this.db.execute(`CREATE INDEX IF NOT EXISTS idx_agents_name ON ${this.tableName} (name)`);
+      this.db.execute(
+        `CREATE INDEX IF NOT EXISTS idx_agents_name ON ${this.tableName} (name)`,
+      );
     } catch (error) {
-      console.error('エージェントテーブルの初期化中にエラーが発生しました:', error);
+      console.error(
+        "エージェントテーブルの初期化中にエラーが発生しました:",
+        error,
+      );
       throw error;
     }
   }
-  
+
   /**
    * DBの行をエンティティに変換
    */
@@ -57,43 +62,43 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
       return {
         id: row.id,
         name: row.name,
-        purpose: row.purpose || '',
-        description: row.description || '',
-        instructions: row.instructions || '',
-        mcpServers: JSON.parse(row.mcp_servers || '[]'),
-        toolPermissions: JSON.parse(row.tool_permissions || '{}'),
+        purpose: row.purpose || "",
+        description: row.description || "",
+        instructions: row.instructions || "",
+        mcpServers: JSON.parse(row.mcp_servers || "[]"),
+        toolPermissions: JSON.parse(row.tool_permissions || "{}"),
         autoExecuteTool: Boolean(row.auto_execute_tool),
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       };
     } catch (error) {
-      console.error('エージェントデータの変換中にエラーが発生しました:', error);
+      console.error("エージェントデータの変換中にエラーが発生しました:", error);
       throw error;
     }
   }
-  
+
   /**
    * エンティティをDBの行に変換
    */
   protected mapEntityToRow(entity: AgentConfig): Record<string, any> {
     try {
       const now = Date.now();
-      
+
       // DB行オブジェクトを構築
       return {
         id: entity.id,
         name: entity.name,
         mcp_servers: JSON.stringify(entity.mcpServers || []),
         tool_permissions: JSON.stringify(entity.toolPermissions || {}),
-        purpose: entity.purpose || '',
-        description: entity.description || '',
-        instructions: entity.instructions || '',
+        purpose: entity.purpose || "",
+        description: entity.description || "",
+        instructions: entity.instructions || "",
         auto_execute_tool: entity.autoExecuteTool ? 1 : 0,
         created_at: entity.createdAt || now,
-        updated_at: now
+        updated_at: now,
       };
     } catch (error) {
-      console.error('エージェントデータの変換中にエラーが発生しました:', error);
+      console.error("エージェントデータの変換中にエラーが発生しました:", error);
       throw error;
     }
   }
@@ -101,7 +106,10 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
   /**
    * エンティティをDBの行に変換（更新用、タイムスタンプを指定可能）
    */
-  private mapEntityToRowForUpdate(entity: AgentConfig, createdAt: number): Record<string, any> {
+  private mapEntityToRowForUpdate(
+    entity: AgentConfig,
+    createdAt: number,
+  ): Record<string, any> {
     try {
       // DB行オブジェクトを構築
       return {
@@ -109,19 +117,19 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
         name: entity.name,
         mcp_servers: JSON.stringify(entity.mcpServers || []),
         tool_permissions: JSON.stringify(entity.toolPermissions || {}),
-        purpose: entity.purpose || '',
-        description: entity.description || '',
-        instructions: entity.instructions || '',
+        purpose: entity.purpose || "",
+        description: entity.description || "",
+        instructions: entity.instructions || "",
         auto_execute_tool: entity.autoExecuteTool ? 1 : 0,
         created_at: createdAt,
-        updated_at: Date.now()
+        updated_at: Date.now(),
       };
     } catch (error) {
-      console.error('エージェントデータの変換中にエラーが発生しました:', error);
+      console.error("エージェントデータの変換中にエラーが発生しました:", error);
       throw error;
     }
   }
-  
+
   /**
    * エージェント情報を追加する
    * @param agentConfig エージェント設定情報
@@ -130,25 +138,25 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
   public addAgent(agentConfig: AgentConfig): AgentConfig {
     try {
       const id = agentConfig.id || uuidv4();
-      
+
       // Agentオブジェクトを作成
       const agent: AgentConfig = {
         ...agentConfig,
         id,
       };
-      
+
       // リポジトリに追加
       this.add(agent);
-      
+
       console.log(`エージェント "${agent.name}" が追加されました (ID: ${id})`);
-      
+
       return agent;
     } catch (error) {
-      console.error('エージェントの追加中にエラーが発生しました:', error);
+      console.error("エージェントの追加中にエラーが発生しました:", error);
       throw error;
     }
   }
-  
+
   /**
    * 全てのエージェント情報を取得する
    * @returns エージェント情報の配列
@@ -157,11 +165,11 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
     try {
       return this.getAll();
     } catch (error) {
-      console.error('エージェント情報の取得中にエラーが発生しました:', error);
+      console.error("エージェント情報の取得中にエラーが発生しました:", error);
       throw error;
     }
   }
-  
+
   /**
    * 指定されたIDのエージェント情報を取得する
    * @param id エージェントID
@@ -171,66 +179,91 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
     try {
       return this.getById(id);
     } catch (error) {
-      console.error(`ID: ${id} のエージェント情報の取得中にエラーが発生しました:`, error);
+      console.error(
+        `ID: ${id} のエージェント情報の取得中にエラーが発生しました:`,
+        error,
+      );
       throw error;
     }
   }
-  
+
   /**
    * エージェント情報を更新する
    * @param id エージェントID
    * @param config 更新するエージェント設定情報
    * @returns 更新されたエージェント情報（存在しない場合はundefined）
    */
-  public updateAgent(id: string, config: Partial<AgentConfig>): AgentConfig | undefined {
+  public updateAgent(
+    id: string,
+    config: Partial<AgentConfig>,
+  ): AgentConfig | undefined {
     try {
       // 既存のエージェント情報を取得
       const existingAgent = this.getById(id);
       if (!existingAgent) {
         return undefined;
       }
-      
+
       // 既存のcreatedAtを取得
-      const createdAtResult = this.db.get<{created_at: number}>(
+      const createdAtResult = this.db.get<{ created_at: number }>(
         `SELECT created_at FROM ${this.tableName} WHERE id = :id`,
-        { id }
+        { id },
       );
       const createdAt = createdAtResult?.created_at || Date.now();
-      
+
       // 更新するフィールドを設定
       const updatedAgent: AgentConfig = {
         ...existingAgent,
         name: config.name !== undefined ? config.name : existingAgent.name,
-        mcpServers: config.mcpServers !== undefined ? config.mcpServers : existingAgent.mcpServers,
-        purpose: config.purpose !== undefined ? config.purpose : existingAgent.purpose,
-        description: config.description !== undefined ? config.description : existingAgent.description,
-        instructions: config.instructions !== undefined ? config.instructions : existingAgent.instructions,
-        toolPermissions: config.toolPermissions !== undefined ? config.toolPermissions : existingAgent.toolPermissions,
-        autoExecuteTool: config.autoExecuteTool !== undefined ? config.autoExecuteTool : existingAgent.autoExecuteTool
+        mcpServers:
+          config.mcpServers !== undefined
+            ? config.mcpServers
+            : existingAgent.mcpServers,
+        purpose:
+          config.purpose !== undefined ? config.purpose : existingAgent.purpose,
+        description:
+          config.description !== undefined
+            ? config.description
+            : existingAgent.description,
+        instructions:
+          config.instructions !== undefined
+            ? config.instructions
+            : existingAgent.instructions,
+        toolPermissions:
+          config.toolPermissions !== undefined
+            ? config.toolPermissions
+            : existingAgent.toolPermissions,
+        autoExecuteTool:
+          config.autoExecuteTool !== undefined
+            ? config.autoExecuteTool
+            : existingAgent.autoExecuteTool,
       };
-      
+
       // 行データを生成
       const row = this.mapEntityToRowForUpdate(updatedAgent, createdAt);
-      
+
       // SET句を生成
       const setClauses = Object.keys(row)
-        .filter(key => key !== 'id') // IDは更新しない
-        .map(key => `${key} = :${key}`)
-        .join(', ');
-      
+        .filter((key) => key !== "id") // IDは更新しない
+        .map((key) => `${key} = :${key}`)
+        .join(", ");
+
       // SQL文を構築
       const sql = `UPDATE ${this.tableName} SET ${setClauses} WHERE id = :id`;
-      
+
       // クエリを実行
       this.db.execute(sql, row);
-      
+
       return updatedAgent;
     } catch (error) {
-      console.error(`ID: ${id} のエージェント情報の更新中にエラーが発生しました:`, error);
+      console.error(
+        `ID: ${id} のエージェント情報の更新中にエラーが発生しました:`,
+        error,
+      );
       throw error;
     }
   }
-  
+
   /**
    * エージェント情報を削除する
    * @param id エージェントID
@@ -242,16 +275,21 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
       if (!agent) {
         return false;
       }
-      
+
       const result = this.delete(id);
-      
+
       if (result) {
-        console.log(`エージェント "${agent.name}" が削除されました (ID: ${id})`);
+        console.log(
+          `エージェント "${agent.name}" が削除されました (ID: ${id})`,
+        );
       }
-      
+
       return result;
     } catch (error) {
-      console.error(`ID: ${id} のエージェント情報の削除中にエラーが発生しました:`, error);
+      console.error(
+        `ID: ${id} のエージェント情報の削除中にエラーが発生しました:`,
+        error,
+      );
       throw error;
     }
   }
@@ -265,7 +303,7 @@ let instance: AgentRepository | null = null;
 export function getAgentRepository(): AgentRepository {
   if (!instance) {
     // SqliteManagerのインスタンスを取得
-    const db = getSqliteManager('mcprouter');
+    const db = getSqliteManager("mcprouter");
     instance = new AgentRepository(db);
   }
   return instance;

@@ -1,15 +1,23 @@
-import { Token, TokenGenerateOptions, TokenValidationResult, TokenScope } from '../types/token-types';
-import { BaseService } from './base-service';
-import { Singleton } from '../utils/singleton';
-import { TokenRepository, getTokenRepository } from '@mcp-router/database';
-import crypto from 'crypto';
+import {
+  Token,
+  TokenGenerateOptions,
+  TokenValidationResult,
+  TokenScope,
+} from "../types/token-types";
+import { BaseService } from "./base-service";
+import { Singleton } from "../utils/singleton";
+import { TokenRepository, getTokenRepository } from "@mcp-router/database";
+import crypto from "crypto";
 
 /**
  * アクセストークンを管理するサービス
  */
-export class TokenService extends BaseService<Token, string> implements Singleton<TokenService> {
+export class TokenService
+  extends BaseService<Token, string>
+  implements Singleton<TokenService>
+{
   private static instance: TokenService | null = null;
-  
+
   /**
    * シングルトンインスタンスを取得
    */
@@ -19,9 +27,9 @@ export class TokenService extends BaseService<Token, string> implements Singleto
     }
     return TokenService.instance;
   }
-  
+
   private repository: TokenRepository;
-  
+
   /**
    * コンストラクタ
    */
@@ -29,12 +37,12 @@ export class TokenService extends BaseService<Token, string> implements Singleto
     super();
     this.repository = getTokenRepository();
   }
-  
+
   /**
    * エンティティ名を取得
    */
   protected getEntityName(): string {
-    return 'トークン';
+    return "トークン";
   }
 
   /**
@@ -44,7 +52,7 @@ export class TokenService extends BaseService<Token, string> implements Singleto
     try {
       const now = Math.floor(Date.now() / 1000);
       const clientId = options.clientId;
-      
+
       // 同じクライアントIDのトークンが存在する場合は削除
       const clientTokens = this.repository.getTokensByClientId(clientId);
       if (clientTokens.length > 0) {
@@ -52,24 +60,30 @@ export class TokenService extends BaseService<Token, string> implements Singleto
       }
 
       // より強固なランダム値を生成（24バイト = 192ビット）
-      const randomBytes = crypto.randomBytes(24).toString('base64')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, ''); // URL安全なBase64形式に変換
-      
+      const randomBytes = crypto
+        .randomBytes(24)
+        .toString("base64")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=/g, ""); // URL安全なBase64形式に変換
+
       const token: Token = {
         id: "mcpr_" + randomBytes,
         clientId,
         issuedAt: now,
         serverIds: options.serverIds || [],
-        scopes: options.scopes || [TokenScope.MCP_SERVER_MANAGEMENT, TokenScope.LOG_MANAGEMENT, TokenScope.APPLICATION]
+        scopes: options.scopes || [
+          TokenScope.MCP_SERVER_MANAGEMENT,
+          TokenScope.LOG_MANAGEMENT,
+          TokenScope.APPLICATION,
+        ],
       };
 
       // トークンを永続化
       this.repository.saveToken(token);
       return token;
     } catch (error) {
-      return this.handleError('トークン生成', error);
+      return this.handleError("トークン生成", error);
     }
   }
 
@@ -83,18 +97,18 @@ export class TokenService extends BaseService<Token, string> implements Singleto
       if (!token) {
         return {
           isValid: false,
-          error: 'Token not found'
+          error: "Token not found",
         };
       }
 
       return {
         isValid: true,
-        clientId: token.clientId
+        clientId: token.clientId,
       };
     } catch (error) {
-      return this.handleError('トークン検証', error, {
+      return this.handleError("トークン検証", error, {
         isValid: false,
-        error: `検証中にエラーが発生しました: ${error.message}`
+        error: `検証中にエラーが発生しました: ${error.message}`,
       });
     }
   }
@@ -107,7 +121,7 @@ export class TokenService extends BaseService<Token, string> implements Singleto
       const validation = this.validateToken(tokenId);
       return validation.isValid ? validation.clientId! : null;
     } catch (error) {
-      this.handleError('クライアントID取得', error);
+      this.handleError("クライアントID取得", error);
       return null;
     }
   }
@@ -130,7 +144,11 @@ export class TokenService extends BaseService<Token, string> implements Singleto
     try {
       return this.repository.deleteClientTokens(clientId);
     } catch (error) {
-      return this.handleError(`クライアント${clientId}のトークン削除`, error, 0);
+      return this.handleError(
+        `クライアント${clientId}のトークン削除`,
+        error,
+        0,
+      );
     }
   }
 
@@ -141,7 +159,7 @@ export class TokenService extends BaseService<Token, string> implements Singleto
     try {
       return this.repository.listTokens();
     } catch (error) {
-      return this.handleError('一覧取得', error, []);
+      return this.handleError("一覧取得", error, []);
     }
   }
 
@@ -156,18 +174,21 @@ export class TokenService extends BaseService<Token, string> implements Singleto
       }
       return token.serverIds.includes(serverId);
     } catch (error) {
-      return this.handleError('サーバアクセス権限確認', error, false);
+      return this.handleError("サーバアクセス権限確認", error, false);
     }
   }
 
   /**
    * トークンのサーバアクセス権限を更新
    */
-  public updateTokenServerAccess(tokenId: string, serverIds: string[]): boolean {
+  public updateTokenServerAccess(
+    tokenId: string,
+    serverIds: string[],
+  ): boolean {
     try {
       return this.repository.updateTokenServerIds(tokenId, serverIds);
     } catch (error) {
-      return this.handleError('サーバアクセス権限更新', error, false);
+      return this.handleError("サーバアクセス権限更新", error, false);
     }
   }
 
@@ -182,7 +203,7 @@ export class TokenService extends BaseService<Token, string> implements Singleto
       }
       return token.scopes?.includes(requiredScope) || false;
     } catch (error) {
-      return this.handleError('スコープ権限確認', error, false);
+      return this.handleError("スコープ権限確認", error, false);
     }
   }
 
@@ -195,12 +216,12 @@ export class TokenService extends BaseService<Token, string> implements Singleto
       if (!token) {
         return false;
       }
-      
+
       token.scopes = scopes;
       this.repository.saveToken(token);
       return true;
     } catch (error) {
-      return this.handleError('スコープ更新', error, false);
+      return this.handleError("スコープ更新", error, false);
     }
   }
 }

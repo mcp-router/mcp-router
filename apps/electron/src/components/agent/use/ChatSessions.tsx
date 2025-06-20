@@ -1,11 +1,11 @@
-import React from 'react';
-import { Button } from '../../ui/button';
-import { Trash2, Plus, MoreHorizontal, Loader2 } from 'lucide-react';
-import { cn } from '../../../lib/utils/tailwind-utils';
-import { getDateInstance } from '../../../lib/utils/date-utils';
-import { Skeleton } from '../../ui/skeleton';
-import { Tooltip, TooltipTrigger, TooltipContent } from '../../ui/tooltip';
-import { useTranslation } from 'react-i18next';
+import React from "react";
+import { Button } from "../../ui/button";
+import { Trash2, Plus, MoreHorizontal, Loader2 } from "lucide-react";
+import { cn } from "../../../lib/utils/tailwind-utils";
+import { getDateInstance } from "../../../lib/utils/date-utils";
+import { Skeleton } from "../../ui/skeleton";
+import { Tooltip, TooltipTrigger, TooltipContent } from "../../ui/tooltip";
+import { useTranslation } from "react-i18next";
 
 interface ChatSession {
   id: string;
@@ -48,14 +48,14 @@ const ChatSessions: React.FC<ChatSessionsProps> = ({
   const formatDateTime = (timestamp: number) => {
     const date = getDateInstance(timestamp);
     const now = getDateInstance();
-    const diffInHours = now.diff(date, 'hour');
+    const diffInHours = now.diff(date, "hour");
 
     if (diffInHours < 24) {
-      return date.format('HH:mm');
+      return date.format("HH:mm");
     } else if (diffInHours < 24 * 7) {
-      return date.format('M/D');
+      return date.format("M/D");
     } else {
-      return date.format('YYYY/M/D');
+      return date.format("YYYY/M/D");
     }
   };
 
@@ -76,7 +76,7 @@ const ChatSessions: React.FC<ChatSessionsProps> = ({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{t('agents.sessions.newSession')}</p>
+              <p>{t("agents.sessions.newSession")}</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -102,8 +102,7 @@ const ChatSessions: React.FC<ChatSessionsProps> = ({
               <div className="text-xs text-red-500">{error}</div>
             </div>
           ) : sessions.length === 0 ? (
-            <div>
-            </div>
+            <div></div>
           ) : (
             <div className="overflow-x-auto">
               <div className="flex items-center gap-2 min-w-max">
@@ -114,10 +113,10 @@ const ChatSessions: React.FC<ChatSessionsProps> = ({
                       key={session.id}
                       className={cn(
                         "group flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors border whitespace-nowrap shrink-0",
-                        currentSessionId === session.id 
-                          ? "bg-primary/10 border-primary/20" 
+                        currentSessionId === session.id
+                          ? "bg-primary/10 border-primary/20"
                           : "hover:bg-muted/50 border-transparent",
-                        isDeleting && "opacity-50"
+                        isDeleting && "opacity-50",
                       )}
                       onClick={() => !isDeleting && onSessionSelect(session.id)}
                     >
@@ -145,7 +144,7 @@ const ChatSessions: React.FC<ChatSessionsProps> = ({
                     </div>
                   );
                 })}
-                
+
                 {/* Load More Button */}
                 {hasMore && (
                   <Button
@@ -153,7 +152,11 @@ const ChatSessions: React.FC<ChatSessionsProps> = ({
                     onClick={onLoadMore}
                     disabled={isLoadingMore}
                     className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground shrink-0"
-                    title={isLoadingMore ? t('agents.sessions.loading') : t('agents.sessions.loadMore')}
+                    title={
+                      isLoadingMore
+                        ? t("agents.sessions.loading")
+                        : t("agents.sessions.loadMore")
+                    }
                   >
                     {isLoadingMore ? (
                       <div className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />

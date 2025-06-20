@@ -1,13 +1,20 @@
-import React from 'react';
-import { MCPServer } from '../../../../types';
-import { useTranslation } from 'react-i18next';
-import { Settings2, Check, RefreshCw } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from "@/components/ui/sheet";
+import React from "react";
+import { MCPServer } from "../../../../types";
+import { useTranslation } from "react-i18next";
+import { Settings2, Check, RefreshCw } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import ServerDetailsLocal from './ServerDetailsLocal';
-import ServerDetailsRemote from './ServerDetailsRemote';
-import ServerDetailsEnvironment from './ServerDetailsEnvironment';
-import { useServerEditingStore } from '@/lib/stores/server-editing-store';
+import ServerDetailsLocal from "./ServerDetailsLocal";
+import ServerDetailsRemote from "./ServerDetailsRemote";
+import ServerDetailsEnvironment from "./ServerDetailsEnvironment";
+import { useServerEditingStore } from "@/lib/stores/server-editing-store";
 
 interface ServerDetailsAdvancedSheetProps {
   server: MCPServer;
@@ -16,7 +23,7 @@ interface ServerDetailsAdvancedSheetProps {
 
 const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
   server,
-  handleSave
+  handleSave,
 }) => {
   const { t } = useTranslation();
   const {
@@ -35,7 +42,7 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     addArg,
     updateEnvPair,
     removeEnvPair,
-    addEnvPair
+    addEnvPair,
   } = useServerEditingStore();
 
   return (
@@ -44,17 +51,17 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
         <SheetHeader className="pb-4 border-b">
           <SheetTitle className="text-xl font-bold flex items-center gap-2">
             <Settings2 className="h-5 w-5 text-primary" />
-            {t('serverDetails.advancedConfiguration')}
+            {t("serverDetails.advancedConfiguration")}
           </SheetTitle>
           <SheetDescription>
-            {t('serverDetails.advancedConfigurationDescription')}
+            {t("serverDetails.advancedConfigurationDescription")}
           </SheetDescription>
         </SheetHeader>
-        
+
         <div className="py-6 space-y-6">
           {/* Use appropriate component based on server type */}
-          {server.serverType === 'local' ? (
-            <ServerDetailsLocal 
+          {server.serverType === "local" ? (
+            <ServerDetailsLocal
               server={server}
               isEditing={true}
               editedCommand={editedCommand}
@@ -66,16 +73,16 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
               addArg={addArg}
             />
           ) : (
-            <ServerDetailsRemote 
+            <ServerDetailsRemote
               server={server}
               isEditing={true}
               editedBearerToken={editedBearerToken}
               setEditedBearerToken={setEditedBearerToken}
             />
           )}
-          
+
           {/* Environment Variables (common for both server types) */}
-          <ServerDetailsEnvironment 
+          <ServerDetailsEnvironment
             server={server}
             isEditing={true}
             envPairs={envPairs}
@@ -84,21 +91,26 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
             addEnvPair={addEnvPair}
           />
         </div>
-        
+
         <SheetFooter className="flex justify-between sm:justify-between border-t pt-4">
-          <Button variant="ghost" onClick={() => setIsOpen(false)} disabled={isLoading} className="gap-2">
-            {t('common.cancel')}
+          <Button
+            variant="ghost"
+            onClick={() => setIsOpen(false)}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            {t("common.cancel")}
           </Button>
           <Button onClick={handleSave} disabled={isLoading} className="gap-2">
             {isLoading ? (
               <>
                 <RefreshCw className="h-4 w-4 animate-spin" />
-                {t('common.saving')}
+                {t("common.saving")}
               </>
             ) : (
               <>
                 <Check className="h-4 w-4" />
-                {t('common.save')}
+                {t("common.save")}
               </>
             )}
           </Button>

@@ -1,9 +1,9 @@
 // Helper functions for streaming API calls
 export const streamResponseHandler = async (
-  response: Response, 
-  onChunk: (chunk: string) => void, 
+  response: Response,
+  onChunk: (chunk: string) => void,
   onError: (error: Error) => void,
-  onComplete?: () => void
+  onComplete?: () => void,
 ) => {
   try {
     // Check if response is ok
@@ -12,14 +12,14 @@ export const streamResponseHandler = async (
     }
 
     if (!response.body) {
-      throw new Error('Response body is null');
+      throw new Error("Response body is null");
     }
 
     // Process the stream
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let done = false;
-    let accumulatedContent = '';
+    let accumulatedContent = "";
 
     while (!done) {
       const { value, done: streamDone } = await reader.read();
@@ -36,8 +36,8 @@ export const streamResponseHandler = async (
       onComplete();
     }
   } catch (error) {
-    if ((error as Error).name !== 'AbortError') {
-      console.error('Stream processing error:', error);
+    if ((error as Error).name !== "AbortError") {
+      console.error("Stream processing error:", error);
       onError(error as Error);
     }
   }

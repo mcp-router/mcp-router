@@ -7,16 +7,18 @@
  * @param uri The resource URI to parse (format: resource://serverName/path)
  * @returns Parsed components or null if invalid format
  */
-export function parseResourceUri(uri: string): { serverName: string; path: string } | null {
+export function parseResourceUri(
+  uri: string,
+): { serverName: string; path: string } | null {
   const match = uri.match(/^resource:\/\/([^\/]+)\/(.+)$/);
-  
+
   if (!match) {
     return null;
   }
-  
+
   return {
     serverName: match[1],
-    path: match[2]
+    path: match[2],
   };
 }
 
@@ -38,31 +40,31 @@ export function createResourceUri(serverName: string, path: string): string {
  * @returns Array of URI formats to try
  */
 export function createUriVariants(
-  serverName: string, 
-  path: string, 
-  originalProtocol?: string
-): Array<{ uri: string, description: string }> {
+  serverName: string,
+  path: string,
+  originalProtocol?: string,
+): Array<{ uri: string; description: string }> {
   const uriFormats = [];
-  
+
   // 1. Try with original protocol if available
   if (originalProtocol) {
     uriFormats.push({
       uri: `${originalProtocol}${path}`,
-      description: 'original protocol'
+      description: "original protocol",
     });
   }
-  
+
   // 2. Try with the raw path as is
   uriFormats.push({
     uri: path,
-    description: 'original path'
+    description: "original path",
   });
-  
+
   // 3. Try with resource:// prefix
   uriFormats.push({
     uri: `resource://${path}`,
-    description: 'resource:// prefix'
+    description: "resource:// prefix",
   });
-  
+
   return uriFormats;
 }

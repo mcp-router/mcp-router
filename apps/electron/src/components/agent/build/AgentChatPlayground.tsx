@@ -1,14 +1,21 @@
-import { FC, useEffect, useState, useMemo } from 'react';
-import { useChat } from '@ai-sdk/react';
-import { Button } from '../../ui/button';
-import { Settings, X } from 'lucide-react';
-import { toast } from 'sonner';
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '../../ui/breadcrumb';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
-import { AgentConfig, MCPServerConfig } from '../../../types';
-import { useTranslation } from 'react-i18next';
-import ChatInterface from './ChatInterface';
-import ServerSettingsForm from './ServerSettingsForm';
+import { FC, useEffect, useState, useMemo } from "react";
+import { useChat } from "@ai-sdk/react";
+import { Button } from "../../ui/button";
+import { Settings, X } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "../../ui/breadcrumb";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
+import { AgentConfig, MCPServerConfig } from "../../../types";
+import { useTranslation } from "react-i18next";
+import ChatInterface from "./ChatInterface";
+import ServerSettingsForm from "./ServerSettingsForm";
 
 interface AgentChatPlaygroundProps {
   agent?: AgentConfig;
@@ -16,14 +23,18 @@ interface AgentChatPlaygroundProps {
   onUpdateAgent?: (updatedAgent: Partial<AgentConfig>) => void;
 }
 
-const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest, onUpdateAgent }) => {
+const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({
+  agent,
+  onCloseTest,
+  onUpdateAgent,
+}) => {
   const [isSettingsView, setIsSettingsView] = useState(false);
   const [selectedServers, setSelectedServers] = useState<MCPServerConfig[]>([]);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
-  
+
   // Get authentication token from Electron API
   useEffect(() => {
     const fetchAuthToken = async () => {
@@ -33,7 +44,7 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
           setAuthToken(status.token);
         }
       } catch (error) {
-        console.error('Error fetching authentication token:', error);
+        console.error("Error fetching authentication token:", error);
       }
     };
 
@@ -48,27 +59,33 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
   // Extract tools data from the selected servers and agent configuration
   const getEnabledTools = useMemo(() => {
     if (!agent || !selectedServers || selectedServers.length === 0) return [];
-    
-    const toolsList: { name: string; description?: string; inputSchema?: any }[] = [];
-    
+
+    const toolsList: {
+      name: string;
+      description?: string;
+      inputSchema?: any;
+    }[] = [];
+
     // If agent has toolPermissions defined, extract enabled tools
     if (agent.toolPermissions) {
       // Iterate over server permissions
-      Object.entries(agent.toolPermissions).forEach(([serverId, toolsArray]) => {        
-        if (Array.isArray(toolsArray)) {
-            toolsArray.forEach(tool => {
+      Object.entries(agent.toolPermissions).forEach(
+        ([serverId, toolsArray]) => {
+          if (Array.isArray(toolsArray)) {
+            toolsArray.forEach((tool) => {
               if (tool.enabled) {
                 toolsList.push({
                   name: tool.toolName,
                   inputSchema: tool.inputSchema,
-                  description: tool.description || '',
+                  description: tool.description || "",
                 });
               }
             });
-        }
-      });
+          }
+        },
+      );
     }
-    
+
     return toolsList;
   }, [agent, selectedServers]);
 
@@ -81,50 +98,59 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
     error,
     data,
     addToolResult,
-    stop
+    stop,
   } = useChat({
-    api: 'https://mcp-router.net/api/agent/chat/use',
+    api: "https://mcp-router.net/api/agent/chat/use",
     body: {
-      agentId: agent?.id || '',
+      agentId: agent?.id || "",
       tools: getEnabledTools,
-      sessionId: sessionId || undefined
+      sessionId: sessionId || undefined,
     },
-    headers: authToken ? {
-      'Authorization': `Bearer ${authToken}`
-    } : undefined, // Continue without auth headers if no token available
+    headers: authToken
+      ? {
+          Authorization: `Bearer ${authToken}`,
+        }
+      : undefined, // Continue without auth headers if no token available
     initialMessages: [
       // システムメッセージとしてエージェントの指示（instruction）を追加
       {
-        id: 'system-1',
-        role: 'system',
-        content: agent?.instructions || '',
-        parts: [
-          { type: 'text', text: agent?.instructions || '' }
-        ],
-      }
+        id: "system-1",
+        role: "system",
+        content: agent?.instructions || "",
+        parts: [{ type: "text", text: agent?.instructions || "" }],
+      },
     ],
-    onToolCall: async ({toolCall}) => {
+    onToolCall: async ({ toolCall }) => {
       if (agent?.autoExecuteTool) {
         // 自動実行が有効な場合、ツールを即座に実行
         try {
-          const result = await window.electronAPI.executeAgentTool(agent.id, toolCall.toolName, toolCall.args as any);
-          
+          const result = await window.electronAPI.executeAgentTool(
+            agent.id,
+            toolCall.toolName,
+            toolCall.args as any,
+          );
+
           if (result.success) {
             addToolResult({
               toolCallId: toolCall.toolCallId,
-              result: result.result
+              result: result.result,
             });
           } else {
             addToolResult({
               toolCallId: toolCall.toolCallId,
-              result: { error: result.error || 'Tool execution failed' }
+              result: { error: result.error || "Tool execution failed" },
             });
           }
         } catch (error) {
-          console.error('Auto tool execution error:', error);
+          console.error("Auto tool execution error:", error);
           addToolResult({
             toolCallId: toolCall.toolCallId,
-            result: { error: error instanceof Error ? error.message : 'Auto tool execution failed' }
+            result: {
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Auto tool execution failed",
+            },
           });
         }
       }
@@ -132,10 +158,10 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
     },
     onFinish: (message, options) => {
       // stopの場合のみロード状態を終了
-      if (options.finishReason === 'stop') {
+      if (options.finishReason === "stop") {
         setIsLoading(false);
       }
-    }
+    },
   });
 
   // カスタムのhandleSubmitを作成
@@ -167,29 +193,38 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
   };
 
   // Function to handle tool call confirmations from the UI
-  const handleToolConfirmation = async (toolCallId: string, toolName: string, args: any, confirmed: boolean) => {
+  const handleToolConfirmation = async (
+    toolCallId: string,
+    toolName: string,
+    args: any,
+    confirmed: boolean,
+  ) => {
     if (confirmed) {
       try {
         // Execute the tool
-        const result = await window.electronAPI.executeAgentTool(agent!.id, toolName, args);
-        
+        const result = await window.electronAPI.executeAgentTool(
+          agent!.id,
+          toolName,
+          args,
+        );
+
         if (!result.success) {
-          throw new Error(result.error || 'Tool execution failed');
+          throw new Error(result.error || "Tool execution failed");
         }
-        
+
         // Send the result back to the LLM
         addToolResult({
           toolCallId,
-          result: result.result
+          result: result.result,
         });
-        
       } catch (error) {
-        console.error('Tool execution error:', error);
+        console.error("Tool execution error:", error);
         // For errors, we still need to provide a result, but it will contain the error information
-        const errorMessage = error instanceof Error ? error.message : 'Tool execution failed';
+        const errorMessage =
+          error instanceof Error ? error.message : "Tool execution failed";
         addToolResult({
           toolCallId,
-          result: { error: errorMessage }
+          result: { error: errorMessage },
         });
         toast.error(`Tool execution failed: ${errorMessage}`);
       }
@@ -197,7 +232,7 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
       // User denied - return as a result with error information
       addToolResult({
         toolCallId,
-        result: { error: 'User denied tool execution' }
+        result: { error: "User denied tool execution" },
       });
     }
   };
@@ -207,14 +242,14 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
     if (onUpdateAgent) {
       // Send the update to the parent component
       onUpdateAgent(updatedConfig);
-      
+
       // If we have mcpServers in the update, also update our local state
       if (updatedConfig.mcpServers) {
         setSelectedServers(updatedConfig.mcpServers);
       }
-      
+
       // Show success message
-      toast.success(t('agents.settingsUpdated'));
+      toast.success(t("agents.settingsUpdated"));
     }
   };
 
@@ -229,8 +264,8 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
   // エラーが発生した場合はトーストを表示
   useEffect(() => {
     if (error) {
-      toast.error(t('agents.errors.chatError'));
-      console.error('Chat error:', error);
+      toast.error(t("agents.errors.chatError"));
+      console.error("Chat error:", error);
     }
   }, [error]);
 
@@ -244,19 +279,17 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <button 
+                    <button
                       onClick={toggleSettingsView}
                       className="hover:underline flex items-center focus:outline-none"
                     >
-                      {agent?.name || t('agents.title')}
+                      {agent?.name || t("agents.title")}
                     </button>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    {t('common.settings')}
-                  </BreadcrumbPage>
+                  <BreadcrumbPage>{t("common.settings")}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -271,9 +304,7 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
                   <X className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
-                {t('common.close')}
-              </TooltipContent>
+              <TooltipContent>{t("common.close")}</TooltipContent>
             </Tooltip>
           </div>
 
@@ -295,7 +326,9 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbPage>{agent?.name || t('agents.title')}</BreadcrumbPage>
+                  <BreadcrumbPage>
+                    {agent?.name || t("agents.title")}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -312,9 +345,7 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
                     <Settings className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  {t('common.settings')}
-                </TooltipContent>
+                <TooltipContent>{t("common.settings")}</TooltipContent>
               </Tooltip>
               {onCloseTest && (
                 <Tooltip>
@@ -328,9 +359,7 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
                       <X className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    {t('common.close')}
-                  </TooltipContent>
+                  <TooltipContent>{t("common.close")}</TooltipContent>
                 </Tooltip>
               )}
             </div>
@@ -343,7 +372,7 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({ agent, onCloseTest,
               input={input}
               handleInputChange={handleInputChange}
               handleSubmit={customHandleSubmit}
-              placeholder={t('agents.enterMessage')}
+              placeholder={t("agents.enterMessage")}
               servers={selectedServers}
               enabledTools={getEnabledTools}
               onToolConfirmation={handleToolConfirmation}

@@ -1,5 +1,9 @@
-import { MCPServerConfig, MCPTool, MCPAgentToolPermission } from '../../../../types';
-import { logError, logInfo } from '../../../utils/error-handler';
+import {
+  MCPServerConfig,
+  MCPTool,
+  MCPAgentToolPermission,
+} from "../../../../types";
+import { logError, logInfo } from "../../../utils/error-handler";
 
 /**
  * エージェントの基本情報を表すインターフェース
@@ -63,7 +67,9 @@ export abstract class AgentBase {
 
     const serverTools = this.config.toolPermissions[serverId];
     if (serverTools && Array.isArray(serverTools)) {
-      const toolPermission = serverTools.find(tool => tool.toolName === toolName);
+      const toolPermission = serverTools.find(
+        (tool) => tool.toolName === toolName,
+      );
       if (toolPermission) {
         return toolPermission.enabled;
       }
@@ -78,7 +84,7 @@ export abstract class AgentBase {
    * @returns サーバー設定（見つからない場合はundefined）
    */
   protected findServerConfig(serverId: string): MCPServerConfig | undefined {
-    return this.config.mcpServers.find(server => server.id === serverId);
+    return this.config.mcpServers.find((server) => server.id === serverId);
   }
 
   /**
@@ -91,23 +97,26 @@ export abstract class AgentBase {
   /**
    * 2つのサーバー配列が実質的に同じかどうかを比較する
    */
-  protected hasServerConfigChanged(currentServers: MCPServerConfig[], newServers: MCPServerConfig[]): boolean {
+  protected hasServerConfigChanged(
+    currentServers: MCPServerConfig[],
+    newServers: MCPServerConfig[],
+  ): boolean {
     if (currentServers.length !== newServers.length) {
       return true;
     }
 
     const serverMap = new Map<string, MCPServerConfig>();
-    currentServers.forEach(server => {
+    currentServers.forEach((server) => {
       serverMap.set(server.id, server);
     });
 
     for (const newServer of newServers) {
       const currentServer = serverMap.get(newServer.id);
-      
+
       if (!currentServer) {
         return true;
       }
-      
+
       if (
         newServer.name !== currentServer.name ||
         newServer.command !== currentServer.command ||
@@ -118,16 +127,18 @@ export abstract class AgentBase {
       ) {
         return true;
       }
-      
+
       if (JSON.stringify(newServer.env) !== JSON.stringify(currentServer.env)) {
         return true;
       }
-      
-      if (JSON.stringify(newServer.args) !== JSON.stringify(currentServer.args)) {
+
+      if (
+        JSON.stringify(newServer.args) !== JSON.stringify(currentServer.args)
+      ) {
         return true;
       }
     }
-    
+
     return false;
   }
 }

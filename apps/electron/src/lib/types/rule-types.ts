@@ -13,7 +13,7 @@ export interface MCPDisplayRules {
    * Available variables: {description}, {serverName}, {name}
    */
   toolDescriptionRule?: string;
-  
+
   /**
    * Rule for tool parameter descriptions in input schema
    * Object with properties and required fields to extend the schema
@@ -65,7 +65,7 @@ export interface ToolParameterSchemaRule {
    * Additional properties to add to the schema
    */
   properties?: Record<string, any>;
-  
+
   /**
    * Additional required parameters
    */
@@ -74,18 +74,18 @@ export interface ToolParameterSchemaRule {
 
 // Default rules if not specified in settings
 export const DEFAULT_DISPLAY_RULES: MCPDisplayRules = {
-  toolNameRule: '{name}',
-  toolDescriptionRule: '[{serverName}] {description}',
+  toolNameRule: "{name}",
+  toolDescriptionRule: "[{serverName}] {description}",
   toolParameterRule: {
     properties: {},
-    required: []
+    required: [],
   },
-  resourceNameRule: '{name}',
-  resourceDescriptionRule: '[{serverName}] {description}',
-  promptNameRule: '{name}',
-  promptDescriptionRule: '[{serverName}] {description}',
-  resourceTemplateNameRule: '{name}',
-  resourceTemplateDescriptionRule: '[{serverName}] {description}'
+  resourceNameRule: "{name}",
+  resourceDescriptionRule: "[{serverName}] {description}",
+  promptNameRule: "{name}",
+  promptDescriptionRule: "[{serverName}] {description}",
+  resourceTemplateNameRule: "{name}",
+  resourceTemplateDescriptionRule: "[{serverName}] {description}",
 };
 
 /**
@@ -101,4 +101,4 @@ export interface RuleVariables {
 /**
  * Type of MCP entity for display rules
  */
-export type MCPEntityType = 'tool' | 'resource' | 'prompt' | 'resourceTemplate';
+export type MCPEntityType = "tool" | "resource" | "prompt" | "resourceTemplate";

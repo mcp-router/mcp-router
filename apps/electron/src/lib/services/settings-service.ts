@@ -1,14 +1,20 @@
-import { AppSettings } from '../types/settings-types';
-import { BaseService } from './base-service';
-import { Singleton } from '../utils/singleton';
-import { SettingsRepository, getSettingsRepository } from '@mcp-router/database';
+import { AppSettings } from "../types/settings-types";
+import { BaseService } from "./base-service";
+import { Singleton } from "../utils/singleton";
+import {
+  SettingsRepository,
+  getSettingsRepository,
+} from "@mcp-router/database";
 
 /**
  * アプリケーション設定を管理するサービス
  */
-export class SettingsService extends BaseService<AppSettings, string> implements Singleton<SettingsService> {
+export class SettingsService
+  extends BaseService<AppSettings, string>
+  implements Singleton<SettingsService>
+{
   private static instance: SettingsService | null = null;
-  
+
   /**
    * シングルトンインスタンスを取得
    */
@@ -18,9 +24,9 @@ export class SettingsService extends BaseService<AppSettings, string> implements
     }
     return SettingsService.instance;
   }
-  
+
   private repository: SettingsRepository;
-  
+
   /**
    * コンストラクタ
    */
@@ -28,12 +34,12 @@ export class SettingsService extends BaseService<AppSettings, string> implements
     super();
     this.repository = getSettingsRepository();
   }
-  
+
   /**
    * エンティティ名を取得
    */
   protected getEntityName(): string {
-    return '設定';
+    return "設定";
   }
 
   /**
@@ -43,10 +49,10 @@ export class SettingsService extends BaseService<AppSettings, string> implements
     try {
       return this.repository.getSettings();
     } catch (error) {
-      return this.handleError('設定取得', error);
+      return this.handleError("設定取得", error);
     }
   }
-  
+
   /**
    * 全ての設定を一度に保存
    */
@@ -54,7 +60,7 @@ export class SettingsService extends BaseService<AppSettings, string> implements
     try {
       return this.repository.saveSettings(settings);
     } catch (error) {
-      return this.handleError('設定保存', error, false);
+      return this.handleError("設定保存", error, false);
     }
   }
 }

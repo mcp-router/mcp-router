@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { RequestLogEntry } from '../../../../lib/types/log-types';
+import { useState, useEffect, useCallback } from "react";
+import { RequestLogEntry } from "../../../../lib/types/log-types";
 
 interface RequestLogsParams {
   serverId?: string;
@@ -24,7 +24,9 @@ interface RequestLogsResult {
 /**
  * Custom hook for fetching and managing request log
  */
-export const useRequestLogs = (params: RequestLogsParams): RequestLogsResult => {
+export const useRequestLogs = (
+  params: RequestLogsParams,
+): RequestLogsResult => {
   const [logs, setLogs] = useState<RequestLogEntry[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -34,34 +36,38 @@ export const useRequestLogs = (params: RequestLogsParams): RequestLogsResult => 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // console.log(`[useRequestLogs] Fetching request log:`, params);
-      
+
       const result = await window.electronAPI.getRequestLogs({
         serverId: params.serverId || undefined,
         clientId: params.clientId || undefined,
         startDate: params.startDate,
         endDate: params.endDate,
         requestType: params.requestType || undefined,
-        responseStatus: params.responseStatus === 'success' ? 'success' : 
-                       params.responseStatus === 'error' ? 'error' : undefined,
+        responseStatus:
+          params.responseStatus === "success"
+            ? "success"
+            : params.responseStatus === "error"
+              ? "error"
+              : undefined,
         offset: params.offset || 0,
-        limit: params.limit || 50
+        limit: params.limit || 50,
       });
-      
+
       if (Array.isArray(result.logs)) {
         setLogs(result.logs);
         setTotal(result.total);
       } else {
-        console.error('Expected log to be an array but got:', result.logs);
+        console.error("Expected log to be an array but got:", result.logs);
         setLogs([]);
         setTotal(0);
-        setError('Invalid response format');
+        setError("Invalid response format");
       }
     } catch (error) {
-      console.error('Failed to fetch request log:', error);
-      setError('Failed to fetch request log');
+      console.error("Failed to fetch request log:", error);
+      setError("Failed to fetch request log");
       setLogs([]);
       setTotal(0);
     } finally {
@@ -76,7 +82,7 @@ export const useRequestLogs = (params: RequestLogsParams): RequestLogsResult => 
     params.responseStatus,
     params.offset,
     params.limit,
-    params.refreshTrigger
+    params.refreshTrigger,
   ]);
 
   // Fetch log when params change or refresh is triggered
@@ -89,6 +95,6 @@ export const useRequestLogs = (params: RequestLogsParams): RequestLogsResult => 
     total,
     loading,
     error,
-    fetchLogs
+    fetchLogs,
   };
 };

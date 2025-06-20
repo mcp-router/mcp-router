@@ -1,6 +1,6 @@
 // Agent API types for the AgentChatPlayground component
 export interface AgentChatMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
 }
 

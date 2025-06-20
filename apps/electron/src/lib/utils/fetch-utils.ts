@@ -1,5 +1,5 @@
-import { getDecryptedAuthToken } from '../../main/auth';
-import { API_BASE_URL } from '../../main';
+import { getDecryptedAuthToken } from "../../main/auth";
+import { API_BASE_URL } from "../../main";
 
 /**
  * Make a fetch request with authentication token
@@ -9,28 +9,30 @@ import { API_BASE_URL } from '../../main';
  * @throws Error if token is not available or fetch fails
  */
 export async function fetchWithToken(
-  path: string, 
-  options: RequestInit = {}
+  path: string,
+  options: RequestInit = {},
 ): Promise<Response> {
   // Get the authentication token - now async
   const token = await getDecryptedAuthToken();
-  
+
   if (!token) {
-    throw new Error('Authentication token not available');
+    throw new Error("Authentication token not available");
   }
-  
+
   // Prepare headers
   const headers = new Headers(options.headers || {});
-  headers.set('Authorization', `Bearer ${token}`);
-  headers.set('Content-Type', 'application/json');
-  
+  headers.set("Authorization", `Bearer ${token}`);
+  headers.set("Content-Type", "application/json");
+
   // Create URL (handle both relative paths and full URLs)
-  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
-  
+  const url = path.startsWith("http")
+    ? path
+    : `${API_BASE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
+
   // Make the authenticated request
   return fetch(url, {
     ...options,
-    headers
+    headers,
   });
 }
 
@@ -43,13 +45,15 @@ export async function fetchWithToken(
  */
 export async function fetchWithTokenJson<T = any>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const response = await fetchWithToken(path, options);
-  
+
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `API request failed: ${response.status} ${response.statusText}`,
+    );
   }
-  
+
   return response.json() as Promise<T>;
 }

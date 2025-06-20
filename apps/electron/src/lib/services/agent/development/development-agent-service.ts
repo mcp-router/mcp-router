@@ -1,10 +1,15 @@
-import { AgentConfig, MCPServerConfig, MCPTool, MCPAgentToolPermission } from '../../../../types';
-import { getAgentRepository } from '@mcp-router/database';
-import { getServerService } from '../../server-service';
-import { DevelopmentAgent } from './development-agent';
-import { v4 as uuidv4 } from 'uuid';
-import { logError, logInfo } from '../../../utils/error-handler';
-import { Singleton } from '../../../utils/singleton';
+import {
+  AgentConfig,
+  MCPServerConfig,
+  MCPTool,
+  MCPAgentToolPermission,
+} from "../../../../types";
+import { getAgentRepository } from "@mcp-router/database";
+import { getServerService } from "../../server-service";
+import { DevelopmentAgent } from "./development-agent";
+import { v4 as uuidv4 } from "uuid";
+import { logError, logInfo } from "../../../utils/error-handler";
+import { Singleton } from "../../../utils/singleton";
 
 /**
  * 開発中エージェント管理サービス
@@ -39,7 +44,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
 
       logInfo(`${this.agents.size}個の開発中エージェント情報を読み込みました`);
     } catch (error) {
-      logError('開発中エージェント情報の読み込み中にエラーが発生しました', error);
+      logError(
+        "開発中エージェント情報の読み込み中にエラーが発生しました",
+        error,
+      );
     }
   }
 
@@ -69,7 +77,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
     try {
       return this.repository.getAllAgents();
     } catch (error) {
-      logError('開発中エージェントの取得中にエラーが発生しました', error);
+      logError("開発中エージェントの取得中にエラーが発生しました", error);
       return [];
     }
   }
@@ -81,7 +89,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
     try {
       return this.repository.getAgentById(id);
     } catch (error) {
-      logError(`ID: ${id} の開発中エージェントの取得中にエラーが発生しました`, error);
+      logError(
+        `ID: ${id} の開発中エージェントの取得中にエラーが発生しました`,
+        error,
+      );
       return undefined;
     }
   }
@@ -99,7 +110,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
         if (server) {
           const configCopy: MCPServerConfig = {
             ...server,
-            id: uuidv4()
+            id: uuidv4(),
           };
 
           serverConfigs.push(configCopy);
@@ -108,7 +119,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
 
       return serverConfigs;
     } catch (error) {
-      logError('サーバ設定のコピー中にエラーが発生しました', error);
+      logError("サーバ設定のコピー中にエラーが発生しました", error);
       return [];
     }
   }
@@ -116,13 +127,15 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
   /**
    * 新しい開発中エージェントを作成する
    */
-  public createAgent(agentConfig: Omit<AgentConfig, 'id'>): AgentConfig {
+  public createAgent(agentConfig: Omit<AgentConfig, "id">): AgentConfig {
     try {
       let mcpServersConfig: MCPServerConfig[] = [];
 
       if (Array.isArray(agentConfig.mcpServers)) {
-        if (typeof agentConfig.mcpServers[0] === 'string') {
-          mcpServersConfig = this.copyServerConfigs(agentConfig.mcpServers as unknown as string[]);
+        if (typeof agentConfig.mcpServers[0] === "string") {
+          mcpServersConfig = this.copyServerConfigs(
+            agentConfig.mcpServers as unknown as string[],
+          );
         } else {
           mcpServersConfig = agentConfig.mcpServers as MCPServerConfig[];
         }
@@ -131,7 +144,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
       const config: AgentConfig = {
         ...agentConfig,
         mcpServers: mcpServersConfig,
-        id: uuidv4()
+        id: uuidv4(),
       };
 
       const agent = this.repository.addAgent(config);
@@ -139,11 +152,13 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
       // エージェントインスタンスを作成してキャッシュ
       this.agents.set(agent.id, new DevelopmentAgent(agent));
 
-      logInfo(`新しい開発中エージェント "${agent.name}" が作成されました (ID: ${agent.id})`);
+      logInfo(
+        `新しい開発中エージェント "${agent.name}" が作成されました (ID: ${agent.id})`,
+      );
 
       return agent;
     } catch (error) {
-      logError('開発中エージェントの作成中にエラーが発生しました', error);
+      logError("開発中エージェントの作成中にエラーが発生しました", error);
       throw error;
     }
   }
@@ -151,7 +166,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
   /**
    * 開発中エージェントを更新する
    */
-  public async updateAgent(id: string, config: Partial<AgentConfig>): Promise<AgentConfig | undefined> {
+  public async updateAgent(
+    id: string,
+    config: Partial<AgentConfig>,
+  ): Promise<AgentConfig | undefined> {
     try {
       const currentAgent = this.repository.getAgentById(id);
 
@@ -162,18 +180,24 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
 
       const agentInstance = this.getAgentInstance(id);
       if (agentInstance) {
-        logInfo(`開発中エージェント "${currentAgent.name}" (ID: ${id}) の設定を更新します`);
+        logInfo(
+          `開発中エージェント "${currentAgent.name}" (ID: ${id}) の設定を更新します`,
+        );
 
         await agentInstance.updateConfig(config, true);
         const updatedConfig = agentInstance.getConfig();
 
         const updatedAgent = this.repository.updateAgent(id, updatedConfig);
 
-        logInfo(`開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました`);
+        logInfo(
+          `開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました`,
+        );
         return updatedAgent;
       }
 
-      logInfo(`開発中エージェント "${currentAgent.name}" (ID: ${id}) のインスタンスを作成して更新します`);
+      logInfo(
+        `開発中エージェント "${currentAgent.name}" (ID: ${id}) のインスタンスを作成して更新します`,
+      );
       const newAgentInstance = new DevelopmentAgent(currentAgent);
       this.agents.set(id, newAgentInstance);
 
@@ -182,10 +206,15 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
 
       const updatedAgent = this.repository.updateAgent(id, updatedConfig);
 
-      logInfo(`開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました (新規インスタンス)`);
+      logInfo(
+        `開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました (新規インスタンス)`,
+      );
       return updatedAgent;
     } catch (error) {
-      logError(`ID: ${id} の開発中エージェントの更新中にエラーが発生しました`, error);
+      logError(
+        `ID: ${id} の開発中エージェントの更新中にエラーが発生しました`,
+        error,
+      );
       throw error;
     }
   }
@@ -209,7 +238,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
 
       return result;
     } catch (error) {
-      logError(`ID: ${id} の開発中エージェントの削除中にエラーが発生しました`, error);
+      logError(
+        `ID: ${id} の開発中エージェントの削除中にエラーが発生しました`,
+        error,
+      );
       return false;
     }
   }
@@ -217,7 +249,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
   /**
    * 特定のMCPサーバーのツールを取得する
    */
-  public async getAgentMCPServerTools(agentId: string, serverId: string): Promise<(MCPTool & { enabled?: boolean })[]> {
+  public async getAgentMCPServerTools(
+    agentId: string,
+    serverId: string,
+  ): Promise<(MCPTool & { enabled?: boolean })[]> {
     const agentInstance = this.getAgentInstance(agentId);
     if (!agentInstance) {
       throw new Error(`開発中エージェントが見つかりません (ID: ${agentId})`);
@@ -234,7 +269,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
   public async callAgentTool(
     agentId: string,
     toolName: string,
-    args: Record<string, any>
+    args: Record<string, any>,
   ): Promise<any> {
     try {
       const agentInstance = this.getAgentInstance(agentId);
@@ -244,7 +279,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
 
       return await agentInstance.callTool(toolName, args);
     } catch (error) {
-      logError(`開発中エージェント (ID: ${agentId}) のツール呼び出し中にエラーが発生しました`, error);
+      logError(
+        `開発中エージェント (ID: ${agentId}) のツール呼び出し中にエラーが発生しました`,
+        error,
+      );
       throw error;
     }
   }
@@ -252,7 +290,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
   /**
    * サーバーからリソース一覧を取得する
    */
-  public async getAgentServerResources(agentId: string, serverId: string): Promise<any[]> {
+  public async getAgentServerResources(
+    agentId: string,
+    serverId: string,
+  ): Promise<any[]> {
     const agentInstance = this.getAgentInstance(agentId);
     if (!agentInstance) {
       return [];
@@ -261,7 +302,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
     try {
       return await agentInstance.getServerResources(serverId);
     } catch (error) {
-      logError(`開発中エージェント (ID: ${agentId}) のサーバー (ID: ${serverId}) からのリソース取得中にエラーが発生しました`, error);
+      logError(
+        `開発中エージェント (ID: ${agentId}) のサーバー (ID: ${serverId}) からのリソース取得中にエラーが発生しました`,
+        error,
+      );
       return [];
     }
   }
@@ -269,7 +313,11 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
   /**
    * サーバーからリソースを読み込む
    */
-  public async readAgentServerResource(agentId: string, serverId: string, uri: string): Promise<any> {
+  public async readAgentServerResource(
+    agentId: string,
+    serverId: string,
+    uri: string,
+  ): Promise<any> {
     const agentInstance = this.getAgentInstance(agentId);
     if (!agentInstance) {
       throw new Error(`開発中エージェント (ID: ${agentId}) が見つかりません`);
@@ -278,7 +326,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
     try {
       return await agentInstance.readServerResource(serverId, uri);
     } catch (error) {
-      logError(`開発中エージェント (ID: ${agentId}) のサーバー (ID: ${serverId}) からのリソース読み込み中にエラーが発生しました`, error);
+      logError(
+        `開発中エージェント (ID: ${agentId}) のサーバー (ID: ${serverId}) からのリソース読み込み中にエラーが発生しました`,
+        error,
+      );
       throw error;
     }
   }
@@ -286,7 +337,11 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
   /**
    * セットアップ完了状態を更新する
    */
-  public completeSetup(id: string, completed: boolean, updatedServers?: MCPServerConfig[]): AgentConfig | undefined {
+  public completeSetup(
+    id: string,
+    completed: boolean,
+    updatedServers?: MCPServerConfig[],
+  ): AgentConfig | undefined {
     try {
       const agent = this.repository.getAgentById(id);
       if (!agent) {
@@ -307,12 +362,17 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
       const updatedAgent = this.repository.updateAgent(id, updates);
 
       if (updatedAgent) {
-        logInfo(`開発中エージェント "${updatedAgent.name}" のセットアップ状態が ${completed ? '完了' : '未完了'} に更新されました (ID: ${id})`);
+        logInfo(
+          `開発中エージェント "${updatedAgent.name}" のセットアップ状態が ${completed ? "完了" : "未完了"} に更新されました (ID: ${id})`,
+        );
       }
 
       return updatedAgent;
     } catch (error) {
-      logError(`ID: ${id} の開発中エージェントのセットアップ状態更新中にエラーが発生しました`, error);
+      logError(
+        `ID: ${id} の開発中エージェントのセットアップ状態更新中にエラーが発生しました`,
+        error,
+      );
       return undefined;
     }
   }
@@ -320,7 +380,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
   /**
    * 開発中エージェントのための初期化処理
    */
-  public async initializeAgent(id: string, syncToolPermissions = true): Promise<boolean> {
+  public async initializeAgent(
+    id: string,
+    syncToolPermissions = true,
+  ): Promise<boolean> {
     try {
       const agentInstance = this.getAgentInstance(id);
       if (!agentInstance) {
@@ -330,7 +393,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
       await agentInstance.init(syncToolPermissions);
       return true;
     } catch (error) {
-      logError(`開発中エージェント (ID: ${id}) の初期化中にエラーが発生しました`, error);
+      logError(
+        `開発中エージェント (ID: ${id}) の初期化中にエラーが発生しました`,
+        error,
+      );
       return false;
     }
   }
@@ -347,7 +413,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
 
       return await agentInstance.startServers();
     } catch (error) {
-      logError(`開発中エージェント (ID: ${id}) のMCPサーバー開始中にエラーが発生しました`, error);
+      logError(
+        `開発中エージェント (ID: ${id}) のMCPサーバー開始中にエラーが発生しました`,
+        error,
+      );
       return false;
     }
   }
@@ -364,7 +433,10 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
 
       return agentInstance.stopServers();
     } catch (error) {
-      logError(`開発中エージェント (ID: ${id}) のMCPサーバー停止中にエラーが発生しました`, error);
+      logError(
+        `開発中エージェント (ID: ${id}) のMCPサーバー停止中にエラーが発生しました`,
+        error,
+      );
       return false;
     }
   }

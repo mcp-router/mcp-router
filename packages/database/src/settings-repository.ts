@@ -1,6 +1,6 @@
-import { Singleton } from './utils/singleton';
-import { SqliteManager, getSqliteManager } from './sqlite-manager';
-import { AppSettings, DEFAULT_APP_SETTINGS } from '@mcp-router/shared';
+import { Singleton } from "./utils/singleton";
+import { SqliteManager, getSqliteManager } from "./sqlite-manager";
+import { AppSettings, DEFAULT_APP_SETTINGS } from "@mcp-router/shared";
 
 /**
  * アプリケーション設定を管理するリポジトリ
@@ -48,8 +48,10 @@ export class SettingsRepository implements Singleton<SettingsRepository> {
   private loadSettingsToCache(): void {
     try {
       const settings: AppSettings = { ...DEFAULT_APP_SETTINGS };
-      const rows = this.db.all<{key: string, value: string}>('SELECT key, value FROM settings');
-      rows.forEach(row => {
+      const rows = this.db.all<{ key: string; value: string }>(
+        "SELECT key, value FROM settings",
+      );
+      rows.forEach((row) => {
         const key = row.key as keyof AppSettings;
         if (key in settings) {
           try {
@@ -63,7 +65,7 @@ export class SettingsRepository implements Singleton<SettingsRepository> {
       });
       this.settingsCache = settings;
     } catch (error) {
-      console.error('設定のロードに失敗しました:', error);
+      console.error("設定のロードに失敗しました:", error);
       this.settingsCache = { ...DEFAULT_APP_SETTINGS };
     }
   }
@@ -93,17 +95,18 @@ export class SettingsRepository implements Singleton<SettingsRepository> {
         // 設定オブジェクトの各キーと値をデータベースに保存
         Object.entries(settings).forEach(([key, value]) => {
           // 値をJSON文字列に変換して保存
-          const stringValue = value !== undefined ? JSON.stringify(value) : JSON.stringify(null);
+          const stringValue =
+            value !== undefined ? JSON.stringify(value) : JSON.stringify(null);
           this.db.execute(sql, [key, stringValue]);
         });
       });
-      
+
       // キャッシュを更新
       this.settingsCache = { ...settings };
-      
+
       return true;
     } catch (error) {
-      console.error('設定の保存に失敗しました:', error);
+      console.error("設定の保存に失敗しました:", error);
       return false;
     }
   }

@@ -1,7 +1,7 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
-import { enTranslation, jaTranslation } from '@mcp-router/shared';
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
+import { enTranslation, jaTranslation } from "@mcp-router/shared";
 
 // Initialize i18next
 i18n
@@ -19,21 +19,21 @@ i18n
         translation: jaTranslation,
       },
     },
-    fallbackLng: 'en',
+    fallbackLng: "en",
     // Debug mode in development environment
-    debug: process.env.NODE_ENV === 'development',
-    
+    debug: process.env.NODE_ENV === "development",
+
     // Common namespace used around the app
-    ns: ['translation'],
-    defaultNS: 'translation',
+    ns: ["translation"],
+    defaultNS: "translation",
 
     // Caching
-    load: 'currentOnly',
-    
+    load: "currentOnly",
+
     interpolation: {
       escapeValue: false, // React already safes from XSS
     },
-    
+
     // React settings
     react: {
       useSuspense: true,

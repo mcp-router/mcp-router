@@ -13,12 +13,12 @@ export function decryptStringSync(encryptedText: string): string {
 }
 
 export function encryptObjectSync<T>(obj: T): string {
-  if (obj === undefined || obj === null) return '';
+  if (obj === undefined || obj === null) return "";
   try {
     return JSON.stringify(obj);
   } catch (err) {
-    console.error('Object serialization error:', err);
-    return '';
+    console.error("Object serialization error:", err);
+    return "";
   }
 }
 
@@ -27,7 +27,7 @@ export function decryptObjectSync<T>(encryptedText: string): T | null {
   try {
     return JSON.parse(encryptedText) as T;
   } catch (err) {
-    console.error('Object deserialization error:', err);
+    console.error("Object deserialization error:", err);
     return null;
   }
 }

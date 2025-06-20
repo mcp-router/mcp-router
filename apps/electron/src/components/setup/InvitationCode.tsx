@@ -1,36 +1,43 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 
 interface InvitationCodeProps {
   onActivate: (code: string) => Promise<boolean>;
 }
 
-export const InvitationCode: React.FC<InvitationCodeProps> = ({ onActivate }) => {
+export const InvitationCode: React.FC<InvitationCodeProps> = ({
+  onActivate,
+}) => {
   const { t } = useTranslation();
-  const [activationCode, setActivationCode] = useState<string>('');
+  const [activationCode, setActivationCode] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
 
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       const success = await onActivate(activationCode.trim());
-      
+
       if (!success) {
-        setError(t('activation.invalidCode'));
+        setError(t("activation.invalidCode"));
       }
     } catch (err) {
-      setError(t('activation.errorOccurred'));
-      console.error('Activation error:', err);
+      setError(t("activation.errorOccurred"));
+      console.error("Activation error:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -39,12 +46,12 @@ export const InvitationCode: React.FC<InvitationCodeProps> = ({ onActivate }) =>
   const handleSkip = async () => {
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
-      await onActivate('');
+      await onActivate("");
     } catch (err) {
-      setError(t('activation.errorOccurred'));
-      console.error('Activation error:', err);
+      setError(t("activation.errorOccurred"));
+      console.error("Activation error:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -54,44 +61,46 @@ export const InvitationCode: React.FC<InvitationCodeProps> = ({ onActivate }) =>
     <div className="flex justify-center items-center min-h-screen bg-content-light">
       <Card className="w-[450px] shadow-lg">
         <CardHeader>
-          <CardTitle>{t('activation.title')}</CardTitle>
-          <CardDescription>{t('activation.description')}</CardDescription>
+          <CardTitle>{t("activation.title")}</CardTitle>
+          <CardDescription>{t("activation.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="activationCode">{t('activation.codeLabel')}</Label>
+                <Label htmlFor="activationCode">
+                  {t("activation.codeLabel")}
+                </Label>
                 <Input
                   id="activationCode"
-                  placeholder={t('activation.codePlaceholder')}
+                  placeholder={t("activation.codePlaceholder")}
                   value={activationCode}
                   onChange={(e) => setActivationCode(e.target.value)}
                   className="font-mono"
                 />
               </div>
-              
-              {error && (
-                <div className="text-red-500 text-sm">{error}</div>
-              )}
-              
+
+              {error && <div className="text-red-500 text-sm">{error}</div>}
+
               <div className="space-y-2">
-                <Button 
+                <Button
                   type="submit"
-                  className="w-full" 
+                  className="w-full"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? t('activation.activating') : t('activation.activate')}
+                  {isSubmitting
+                    ? t("activation.activating")
+                    : t("activation.activate")}
                 </Button>
-                
-                <Button 
+
+                <Button
                   type="button"
                   variant="outline"
-                  className="w-full" 
+                  className="w-full"
                   disabled={isSubmitting}
                   onClick={handleSkip}
                 >
-                  {t('activation.skip')}
+                  {t("activation.skip")}
                 </Button>
               </div>
             </div>

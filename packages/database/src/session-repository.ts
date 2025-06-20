@@ -1,11 +1,11 @@
-import { BaseRepository } from './base-repository';
-import { getSqliteManager } from './sqlite-manager';
-import { v4 as uuidv4 } from 'uuid';
+import { BaseRepository } from "./base-repository";
+import { getSqliteManager } from "./sqlite-manager";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Chat session status enum
  */
-export type SessionStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type SessionStatus = "pending" | "processing" | "completed" | "failed";
 
 /**
  * Chat session entity interface
@@ -26,7 +26,7 @@ export interface ChatSession {
 export class SessionRepository extends BaseRepository<ChatSession> {
   constructor() {
     const db = getSqliteManager();
-    super(db, 'chat_sessions');
+    super(db, "chat_sessions");
   }
 
   /**
@@ -48,13 +48,19 @@ export class SessionRepository extends BaseRepository<ChatSession> {
     this.db.execute(createTableSql);
 
     // Create index for agent_id to improve query performance
-    this.db.execute('CREATE INDEX IF NOT EXISTS idx_chat_sessions_agent_id ON chat_sessions(agent_id)');
-    
+    this.db.execute(
+      "CREATE INDEX IF NOT EXISTS idx_chat_sessions_agent_id ON chat_sessions(agent_id)",
+    );
+
     // Create index for created_at to improve sorting performance
-    this.db.execute('CREATE INDEX IF NOT EXISTS idx_chat_sessions_created_at ON chat_sessions(created_at)');
-    
+    this.db.execute(
+      "CREATE INDEX IF NOT EXISTS idx_chat_sessions_created_at ON chat_sessions(created_at)",
+    );
+
     // Create index for status to improve filtering performance
-    this.db.execute('CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status)');
+    this.db.execute(
+      "CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status)",
+    );
   }
 
   /**
@@ -64,11 +70,11 @@ export class SessionRepository extends BaseRepository<ChatSession> {
     return {
       id: row.id,
       agentId: row.agent_id,
-      messages: JSON.parse(row.messages || '[]'),
+      messages: JSON.parse(row.messages || "[]"),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-      status: (row.status || 'pending') as SessionStatus,
-      source: row.source || 'ui',
+      status: (row.status || "pending") as SessionStatus,
+      source: row.source || "ui",
     };
   }
 
@@ -90,28 +96,31 @@ export class SessionRepository extends BaseRepository<ChatSession> {
   /**
    * Get sessions by agent ID with pagination
    */
-  public getSessionsByAgent(agentId: string, options: {
-    limit?: number;
-    cursor?: string; // timestamp for cursor-based pagination
-    orderBy?: 'created_at' | 'updated_at';
-    order?: 'ASC' | 'DESC';
-  } = {}): { sessions: ChatSession[], hasMore: boolean, nextCursor?: string } {
+  public getSessionsByAgent(
+    agentId: string,
+    options: {
+      limit?: number;
+      cursor?: string; // timestamp for cursor-based pagination
+      orderBy?: "created_at" | "updated_at";
+      order?: "ASC" | "DESC";
+    } = {},
+  ): { sessions: ChatSession[]; hasMore: boolean; nextCursor?: string } {
     try {
       const {
         limit = 10,
         cursor,
-        orderBy = 'updated_at',
-        order = 'DESC'
+        orderBy = "updated_at",
+        order = "DESC",
       } = options;
 
       // Build WHERE clause
-      let whereClause = 'agent_id = :agentId';
+      let whereClause = "agent_id = :agentId";
       const params: any = { agentId };
 
       // Add cursor condition for pagination
       if (cursor) {
         const cursorTimestamp = parseInt(cursor, 10);
-        if (order === 'DESC') {
+        if (order === "DESC") {
           whereClause += ` AND ${orderBy} < :cursor`;
         } else {
           whereClause += ` AND ${orderBy} > :cursor`;
@@ -129,27 +138,33 @@ export class SessionRepository extends BaseRepository<ChatSession> {
 
       const rows = this.db.all<any>(sql, {
         ...params,
-        limit: limit + 1 // Get one extra to check if there are more
+        limit: limit + 1, // Get one extra to check if there are more
       });
 
       // Check if there are more results
       const hasMore = rows.length > limit;
-      const sessions = rows.slice(0, limit).map(row => this.mapRowToEntity(row));
+      const sessions = rows
+        .slice(0, limit)
+        .map((row) => this.mapRowToEntity(row));
 
       // Get next cursor from the last item
       let nextCursor: string | undefined;
       if (hasMore && sessions.length > 0) {
         const lastSession = sessions[sessions.length - 1];
-        nextCursor = String(orderBy === 'created_at' ? lastSession.createdAt : lastSession.updatedAt);
+        nextCursor = String(
+          orderBy === "created_at"
+            ? lastSession.createdAt
+            : lastSession.updatedAt,
+        );
       }
 
       return {
         sessions,
         hasMore,
-        nextCursor
+        nextCursor,
       };
     } catch (error) {
-      console.error('Error getting sessions by agent:', error);
+      console.error("Error getting sessions by agent:", error);
       throw error;
     }
   }
@@ -158,10 +173,10 @@ export class SessionRepository extends BaseRepository<ChatSession> {
    * Create a new chat session
    */
   public createSession(
-    agentId: string, 
-    initialMessages: any[] = [], 
-    source: string = 'ui',
-    status: SessionStatus = 'pending'
+    agentId: string,
+    initialMessages: any[] = [],
+    source: string = "ui",
+    status: SessionStatus = "pending",
   ): ChatSession {
     const now = Date.now();
     const session: ChatSession = {
@@ -180,7 +195,10 @@ export class SessionRepository extends BaseRepository<ChatSession> {
   /**
    * Update session messages
    */
-  public updateSessionMessages(sessionId: string, messages: any[]): ChatSession | undefined {
+  public updateSessionMessages(
+    sessionId: string,
+    messages: any[],
+  ): ChatSession | undefined {
     const session = this.getById(sessionId);
     if (!session) {
       return undefined;
@@ -195,7 +213,10 @@ export class SessionRepository extends BaseRepository<ChatSession> {
   /**
    * Add a message to an existing session
    */
-  public addMessageToSession(sessionId: string, message: any): ChatSession | undefined {
+  public addMessageToSession(
+    sessionId: string,
+    message: any,
+  ): ChatSession | undefined {
     const session = this.getById(sessionId);
     if (!session) {
       return undefined;
@@ -210,11 +231,11 @@ export class SessionRepository extends BaseRepository<ChatSession> {
    */
   public deleteSessionsByAgent(agentId: string): number {
     try {
-      const sql = 'DELETE FROM chat_sessions WHERE agent_id = :agentId';
+      const sql = "DELETE FROM chat_sessions WHERE agent_id = :agentId";
       const result = this.db.execute(sql, { agentId });
       return Number(result.changes) || 0;
     } catch (error) {
-      console.error('Error deleting sessions by agent:', error);
+      console.error("Error deleting sessions by agent:", error);
       throw error;
     }
   }
@@ -229,7 +250,10 @@ export class SessionRepository extends BaseRepository<ChatSession> {
   /**
    * Update session status
    */
-  public updateSessionStatus(sessionId: string, status: SessionStatus): ChatSession | undefined {
+  public updateSessionStatus(
+    sessionId: string,
+    status: SessionStatus,
+  ): ChatSession | undefined {
     const session = this.getById(sessionId);
     if (!session) {
       return undefined;
@@ -250,31 +274,31 @@ export class SessionRepository extends BaseRepository<ChatSession> {
     options: {
       limit?: number;
       cursor?: string;
-      orderBy?: 'created_at' | 'updated_at';
-      order?: 'ASC' | 'DESC';
-    } = {}
-  ): { sessions: ChatSession[], hasMore: boolean, nextCursor?: string } {
+      orderBy?: "created_at" | "updated_at";
+      order?: "ASC" | "DESC";
+    } = {},
+  ): { sessions: ChatSession[]; hasMore: boolean; nextCursor?: string } {
     try {
       const {
         limit = 10,
         cursor,
-        orderBy = 'updated_at',
-        order = 'DESC'
+        orderBy = "updated_at",
+        order = "DESC",
       } = options;
 
       // Build WHERE clause
-      let whereClause = 'status = :status';
+      let whereClause = "status = :status";
       const params: any = { status };
 
       if (agentId) {
-        whereClause += ' AND agent_id = :agentId';
+        whereClause += " AND agent_id = :agentId";
         params.agentId = agentId;
       }
 
       // Add cursor condition for pagination
       if (cursor) {
         const cursorTimestamp = parseInt(cursor, 10);
-        if (order === 'DESC') {
+        if (order === "DESC") {
           whereClause += ` AND ${orderBy} < :cursor`;
         } else {
           whereClause += ` AND ${orderBy} > :cursor`;
@@ -292,27 +316,33 @@ export class SessionRepository extends BaseRepository<ChatSession> {
 
       const rows = this.db.all<any>(sql, {
         ...params,
-        limit: limit + 1 // Get one extra to check if there are more
+        limit: limit + 1, // Get one extra to check if there are more
       });
 
       // Check if there are more results
       const hasMore = rows.length > limit;
-      const sessions = rows.slice(0, limit).map(row => this.mapRowToEntity(row));
+      const sessions = rows
+        .slice(0, limit)
+        .map((row) => this.mapRowToEntity(row));
 
       // Get next cursor from the last item
       let nextCursor: string | undefined;
       if (hasMore && sessions.length > 0) {
         const lastSession = sessions[sessions.length - 1];
-        nextCursor = String(orderBy === 'created_at' ? lastSession.createdAt : lastSession.updatedAt);
+        nextCursor = String(
+          orderBy === "created_at"
+            ? lastSession.createdAt
+            : lastSession.updatedAt,
+        );
       }
 
       return {
         sessions,
         hasMore,
-        nextCursor
+        nextCursor,
       };
     } catch (error) {
-      console.error('Error getting sessions by status:', error);
+      console.error("Error getting sessions by status:", error);
       throw error;
     }
   }
@@ -327,35 +357,37 @@ export class SessionRepository extends BaseRepository<ChatSession> {
   /**
    * Get recent sessions across all statuses
    */
-  public getRecentSessions(options: {
-    limit?: number;
-    cursor?: string;
-    source?: string;
-    orderBy?: 'created_at' | 'updated_at';
-    order?: 'ASC' | 'DESC';
-  } = {}): { sessions: ChatSession[], hasMore: boolean, nextCursor?: string } {
+  public getRecentSessions(
+    options: {
+      limit?: number;
+      cursor?: string;
+      source?: string;
+      orderBy?: "created_at" | "updated_at";
+      order?: "ASC" | "DESC";
+    } = {},
+  ): { sessions: ChatSession[]; hasMore: boolean; nextCursor?: string } {
     try {
       const {
         limit = 10,
         cursor,
         source,
-        orderBy = 'updated_at',
-        order = 'DESC'
+        orderBy = "updated_at",
+        order = "DESC",
       } = options;
 
       // Build WHERE clause
-      let whereClause = '1=1'; // Always true to start
+      let whereClause = "1=1"; // Always true to start
       const params: any = {};
 
       if (source) {
-        whereClause += ' AND source = :source';
+        whereClause += " AND source = :source";
         params.source = source;
       }
 
       // Add cursor condition for pagination
       if (cursor) {
         const cursorTimestamp = parseInt(cursor, 10);
-        if (order === 'DESC') {
+        if (order === "DESC") {
           whereClause += ` AND ${orderBy} < :cursor`;
         } else {
           whereClause += ` AND ${orderBy} > :cursor`;
@@ -373,27 +405,33 @@ export class SessionRepository extends BaseRepository<ChatSession> {
 
       const rows = this.db.all<any>(sql, {
         ...params,
-        limit: limit + 1 // Get one extra to check if there are more
+        limit: limit + 1, // Get one extra to check if there are more
       });
 
       // Check if there are more results
       const hasMore = rows.length > limit;
-      const sessions = rows.slice(0, limit).map(row => this.mapRowToEntity(row));
+      const sessions = rows
+        .slice(0, limit)
+        .map((row) => this.mapRowToEntity(row));
 
       // Get next cursor from the last item
       let nextCursor: string | undefined;
       if (hasMore && sessions.length > 0) {
         const lastSession = sessions[sessions.length - 1];
-        nextCursor = String(orderBy === 'created_at' ? lastSession.createdAt : lastSession.updatedAt);
+        nextCursor = String(
+          orderBy === "created_at"
+            ? lastSession.createdAt
+            : lastSession.updatedAt,
+        );
       }
 
       return {
         sessions,
         hasMore,
-        nextCursor
+        nextCursor,
       };
     } catch (error) {
-      console.error('Error getting recent sessions:', error);
+      console.error("Error getting recent sessions:", error);
       throw error;
     }
   }
@@ -405,7 +443,7 @@ export class SessionRepository extends BaseRepository<ChatSession> {
     try {
       // Get all agent IDs
       const agentIds = this.db.all<{ agent_id: string }>(
-        'SELECT DISTINCT agent_id FROM chat_sessions'
+        "SELECT DISTINCT agent_id FROM chat_sessions",
       );
 
       for (const { agent_id: agentId } of agentIds) {
@@ -415,22 +453,24 @@ export class SessionRepository extends BaseRepository<ChatSession> {
            WHERE agent_id = :agentId 
            ORDER BY updated_at DESC 
            LIMIT -1 OFFSET :offset`,
-          { agentId, offset: maxSessionsPerAgent }
+          { agentId, offset: maxSessionsPerAgent },
         );
 
         // Delete old sessions
         if (sessions.length > 0) {
-          const sessionIds = sessions.map(s => s.id);
-          const placeholders = sessionIds.map(() => '?').join(',');
+          const sessionIds = sessions.map((s) => s.id);
+          const placeholders = sessionIds.map(() => "?").join(",");
           this.db.execute(
             `DELETE FROM chat_sessions WHERE id IN (${placeholders})`,
-            sessionIds
+            sessionIds,
           );
-          console.log(`Cleaned up ${sessions.length} old sessions for agent ${agentId}`);
+          console.log(
+            `Cleaned up ${sessions.length} old sessions for agent ${agentId}`,
+          );
         }
       }
     } catch (error) {
-      console.error('Error cleaning up old sessions:', error);
+      console.error("Error cleaning up old sessions:", error);
       throw error;
     }
   }

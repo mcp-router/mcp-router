@@ -1,6 +1,6 @@
-import { BaseRepository } from './base-repository';
-import { SqliteManager, getSqliteManager } from './sqlite-manager';
-import { Token, TokenScope } from '@mcp-router/shared';
+import { BaseRepository } from "./base-repository";
+import { SqliteManager, getSqliteManager } from "./sqlite-manager";
+import { Token, TokenScope } from "@mcp-router/shared";
 
 /**
  * トークン用リポジトリクラス
@@ -12,9 +12,9 @@ export class TokenRepository extends BaseRepository<Token> {
    * @param db SqliteManagerインスタンス
    */
   constructor(db: SqliteManager) {
-    super(db, 'tokens');
+    super(db, "tokens");
   }
-  
+
   /**
    * テーブルとインデックスを初期化
    * 注: このメソッドはテーブルの初期作成のみを行います
@@ -32,15 +32,17 @@ export class TokenRepository extends BaseRepository<Token> {
           scopes TEXT DEFAULT '[]'
         )
       `);
-      
+
       // インデックスの作成
-      this.db.execute(`CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON ${this.tableName} (client_id)`);
+      this.db.execute(
+        `CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON ${this.tableName} (client_id)`,
+      );
     } catch (error) {
-      console.error('トークンテーブルの初期化中にエラーが発生しました:', error);
+      console.error("トークンテーブルの初期化中にエラーが発生しました:", error);
       throw error;
     }
   }
-  
+
   /**
    * DBの行をエンティティに変換
    */
@@ -49,34 +51,42 @@ export class TokenRepository extends BaseRepository<Token> {
       // サーバIDsとスコープをJSONからパース
       const serverIds = JSON.parse(row.server_ids);
       let scopes: TokenScope[] = [];
-      
+
       // scopesフィールドがある場合はパース、ない場合は全スコープ付与
       if (row.scopes) {
         try {
           scopes = JSON.parse(row.scopes);
         } catch (e) {
           console.warn(`トークン ${row.id} のスコープデータが無効です:`, e);
-          scopes = [TokenScope.MCP_SERVER_MANAGEMENT, TokenScope.LOG_MANAGEMENT, TokenScope.APPLICATION];
+          scopes = [
+            TokenScope.MCP_SERVER_MANAGEMENT,
+            TokenScope.LOG_MANAGEMENT,
+            TokenScope.APPLICATION,
+          ];
         }
       } else {
         // 既存トークンには全てのスコープを付与
-        scopes = [TokenScope.MCP_SERVER_MANAGEMENT, TokenScope.LOG_MANAGEMENT, TokenScope.APPLICATION];
+        scopes = [
+          TokenScope.MCP_SERVER_MANAGEMENT,
+          TokenScope.LOG_MANAGEMENT,
+          TokenScope.APPLICATION,
+        ];
       }
-      
+
       // エンティティオブジェクトを構築
       return {
         id: row.id,
         clientId: row.client_id,
         issuedAt: row.issued_at,
         serverIds: serverIds,
-        scopes: scopes
+        scopes: scopes,
       };
     } catch (error) {
-      console.error('トークンデータの変換中にエラーが発生しました:', error);
+      console.error("トークンデータの変換中にエラーが発生しました:", error);
       throw error;
     }
   }
-  
+
   /**
    * エンティティをDBの行に変換
    */
@@ -85,21 +95,21 @@ export class TokenRepository extends BaseRepository<Token> {
       // サーバIDsとスコープをJSON文字列に変換
       const serverIdsJson = JSON.stringify(entity.serverIds || []);
       const scopesJson = JSON.stringify(entity.scopes || []);
-      
+
       // DB行オブジェクトを構築
       return {
         id: entity.id,
         client_id: entity.clientId,
         issued_at: entity.issuedAt,
         server_ids: serverIdsJson,
-        scopes: scopesJson
+        scopes: scopesJson,
       };
     } catch (error) {
-      console.error('トークンデータの変換中にエラーが発生しました:', error);
+      console.error("トークンデータの変換中にエラーが発生しました:", error);
       throw error;
     }
   }
-  
+
   /**
    * トークンを取得
    */
@@ -107,34 +117,34 @@ export class TokenRepository extends BaseRepository<Token> {
     const token = this.getById(id);
     return token || null;
   }
-  
+
   /**
    * トークンを保存
    */
   public saveToken(token: Token): void {
     const existingToken = this.getById(token.id);
-    
+
     if (existingToken) {
       this.update(token.id, token);
     } else {
       this.add(token);
     }
   }
-  
+
   /**
    * トークンをリスト表示
    */
   public listTokens(): Token[] {
     return this.getAll();
   }
-  
+
   /**
    * トークンを削除
    */
   public deleteToken(id: string): boolean {
     return this.delete(id);
   }
-  
+
   /**
    * クライアントIDに関連付けられた全てのトークンを削除
    */
@@ -144,41 +154,44 @@ export class TokenRepository extends BaseRepository<Token> {
       const result = this.db.prepare(sql).run({ clientId });
       return result.changes;
     } catch (error) {
-      console.error(`クライアント${clientId}のトークン削除中にエラーが発生しました:`, error);
+      console.error(
+        `クライアント${clientId}のトークン削除中にエラーが発生しました:`,
+        error,
+      );
       throw error;
     }
   }
-  
+
   /**
    * トークンのサーバIDsを更新
    */
   public updateTokenServerIds(id: string, serverIds: string[]): boolean {
     const token = this.getById(id);
-    
+
     if (!token) {
       return false;
     }
-    
+
     token.serverIds = serverIds;
     this.update(id, token);
     return true;
   }
-  
+
   /**
    * トークンのスコープを更新
    */
   public updateTokenScopes(id: string, scopes: TokenScope[]): boolean {
     const token = this.getById(id);
-    
+
     if (!token) {
       return false;
     }
-    
+
     token.scopes = scopes;
     this.update(id, token);
     return true;
   }
-  
+
   /**
    * クライアントIDに関連付けられたトークンを取得
    */
@@ -186,10 +199,13 @@ export class TokenRepository extends BaseRepository<Token> {
     try {
       const sql = `SELECT * FROM ${this.tableName} WHERE client_id = :clientId`;
       const rows = this.db.all<any>(sql, { clientId });
-      
-      return rows.map(row => this.mapRowToEntity(row));
+
+      return rows.map((row) => this.mapRowToEntity(row));
     } catch (error) {
-      console.error(`クライアントID ${clientId} のトークン取得中にエラーが発生しました:`, error);
+      console.error(
+        `クライアントID ${clientId} のトークン取得中にエラーが発生しました:`,
+        error,
+      );
       throw error;
     }
   }
@@ -203,7 +219,7 @@ let instance: TokenRepository | null = null;
 export function getTokenRepository(): TokenRepository {
   if (!instance) {
     // SqliteManagerのインスタンスを取得
-    const db = getSqliteManager('mcprouter');
+    const db = getSqliteManager("mcprouter");
     instance = new TokenRepository(db);
   }
   return instance;

@@ -6,14 +6,14 @@
  * Format a date for datetime-local input (YYYY-MM-DDThh:mm)
  */
 export const formatDateForInput = (date?: Date): string => {
-  if (!date) return '';
-  
+  if (!date) return "";
+
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
@@ -22,7 +22,7 @@ export const formatDateForInput = (date?: Date): string => {
  */
 export const parseDateFromInput = (value: string): Date | undefined => {
   if (!value) return undefined;
-  
+
   try {
     const date = new Date(value);
     if (isNaN(date.getTime())) {
@@ -30,7 +30,7 @@ export const parseDateFromInput = (value: string): Date | undefined => {
     }
     return date;
   } catch (e) {
-    console.error('Error parsing date:', e);
+    console.error("Error parsing date:", e);
     return undefined;
   }
 };
@@ -39,13 +39,14 @@ export const parseDateFromInput = (value: string): Date | undefined => {
  * Format time bucket for chart display
  */
 export const formatTimeBucket = (bucket: string): string => {
-  if (!bucket) return '';
-  
+  if (!bucket) return "";
+
   try {
     const date = new Date(bucket);
-    return new Intl.DateTimeFormat('ja-JP', {
-      month: 'numeric', day: 'numeric',
-      hour: 'numeric'
+    return new Intl.DateTimeFormat("ja-JP", {
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
     }).format(date);
   } catch (e) {
     return bucket; // If parsing fails, return the original value

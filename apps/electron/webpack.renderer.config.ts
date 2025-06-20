@@ -1,16 +1,16 @@
-import type { Configuration } from 'webpack';
-import * as path from 'path';
+import type { Configuration } from "webpack";
+import * as path from "path";
 
-import { rules } from './webpack.rules';
-import { plugins } from './webpack.plugins';
+import { rules } from "./webpack.rules";
+import { plugins } from "./webpack.plugins";
 
 rules.push({
   test: /\.css$/,
   use: [
-    { loader: 'style-loader' },
-    { loader: 'css-loader' },
+    { loader: "style-loader" },
+    { loader: "css-loader" },
     {
-      loader: 'postcss-loader',
+      loader: "postcss-loader",
       // PostCSS plugins are defined in postcss.config.mjs
     },
   ],
@@ -22,11 +22,14 @@ export const rendererConfig: Configuration = {
   },
   plugins,
   resolve: {
-    extensions: ['.js', '.ts', '.jsx', '.tsx', '.css'],
-    modules: [path.resolve(__dirname, '../../node_modules'), 'node_modules'],
+    extensions: [".js", ".ts", ".jsx", ".tsx", ".css"],
+    modules: [path.resolve(__dirname, "../../node_modules"), "node_modules"],
     alias: {
-      '@': path.resolve(__dirname, 'src'),
-      '@mcp-router/shared': path.resolve(__dirname, '../../packages/shared/src'),
-    }
+      "@": path.resolve(__dirname, "src"),
+      "@mcp-router/shared": path.resolve(
+        __dirname,
+        "../../packages/shared/src",
+      ),
+    },
   },
 };

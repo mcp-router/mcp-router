@@ -1,5 +1,5 @@
-import { extractServerVariables } from './server-variable-utils';
-import { AgentConfig, DeployedAgent } from '@mcp-router/shared';
+import { extractServerVariables } from "./server-variable-utils";
+import { AgentConfig, DeployedAgent } from "@mcp-router/shared";
 
 /**
  * Agent utility functions
@@ -10,8 +10,10 @@ import { AgentConfig, DeployedAgent } from '@mcp-router/shared';
  * @param agent The agent to check
  * @returns true if the agent is a DeployedAgent
  */
-export function isDeployedAgent(agent: AgentConfig | DeployedAgent): agent is DeployedAgent {
-    return 'originalId' in agent;
+export function isDeployedAgent(
+  agent: AgentConfig | DeployedAgent,
+): agent is DeployedAgent {
+  return "originalId" in agent;
 }
 
 /**
@@ -21,10 +23,10 @@ export function isDeployedAgent(agent: AgentConfig | DeployedAgent): agent is De
  * @returns The appropriate ID for server communication
  */
 export function getServerAgentId(agent: AgentConfig | DeployedAgent): string {
-    if (isDeployedAgent(agent) && agent.originalId) {
-        return agent.originalId;
-    }
-    return agent.id;
+  if (isDeployedAgent(agent) && agent.originalId) {
+    return agent.originalId;
+  }
+  return agent.id;
 }
 
 /**
@@ -34,44 +36,47 @@ export function getServerAgentId(agent: AgentConfig | DeployedAgent): string {
  * @returns true if all required fields are filled, false otherwise
  */
 export function isAgentConfigured(agent: any): boolean {
-    if (!agent || !agent.mcpServers) {
+  if (!agent || !agent.mcpServers) {
+    return false;
+  }
+
+  for (const server of agent.mcpServers) {
+    // Extract all variables from the server configuration
+    const variables = extractServerVariables(server);
+
+    // If no variables are extracted, consider the server as configured
+    if (variables.length === 0) {
+      continue;
+    }
+
+    // Determine which variables are required
+    let requiredVariables: string[];
+    if (Array.isArray(server.required) && server.required.length > 0) {
+      // Use explicitly defined required fields
+      requiredVariables = server.required;
+    } else {
+      // If no required fields are defined, consider the server as configured
+      continue;
+    }
+
+    // Check if all required variables have non-empty values
+    for (const requiredVar of requiredVariables) {
+      const variable = variables.find((v) => v.name === requiredVar);
+      if (!variable) {
+        // Required variable not found in any source
         return false;
+      }
+
+      // Check if the variable has a non-empty value
+      if (
+        !variable.value ||
+        (typeof variable.value === "string" && variable.value.trim() === "")
+      ) {
+        return false;
+      }
     }
-    
-    for (const server of agent.mcpServers) {
-        // Extract all variables from the server configuration
-        const variables = extractServerVariables(server);
-        
-        // If no variables are extracted, consider the server as configured
-        if (variables.length === 0) {
-            continue;
-        }
-        
-        // Determine which variables are required
-        let requiredVariables: string[];
-        if (Array.isArray(server.required) && server.required.length > 0) {
-            // Use explicitly defined required fields
-            requiredVariables = server.required;
-        } else {
-            // If no required fields are defined, consider the server as configured
-            continue;
-        }
-        
-        // Check if all required variables have non-empty values
-        for (const requiredVar of requiredVariables) {
-            const variable = variables.find(v => v.name === requiredVar);
-            if (!variable) {
-                // Required variable not found in any source
-                return false;
-            }
-            
-            // Check if the variable has a non-empty value
-            if (!variable.value || (typeof variable.value === 'string' && variable.value.trim() === '')) {
-                return false;
-            }
-        }
-    }
-    
-    // All required fields are filled
-    return true;
+  }
+
+  // All required fields are filled
+  return true;
 }

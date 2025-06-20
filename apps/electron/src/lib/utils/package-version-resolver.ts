@@ -1,13 +1,13 @@
 /**
  * package-version-resolver.ts
- * 
+ *
  * Utility for resolving the latest version of a package using pnpm or uvx.
  */
 
-import * as semver from 'semver';
-import { run, commandExists } from '../get-env';
-import { installPNPM, installUV } from './install-package-manager';
-import {logError} from "./error-handler";
+import * as semver from "semver";
+import { run, commandExists } from "../get-env";
+import { installPNPM, installUV } from "./install-package-manager";
+import { logError } from "./error-handler";
 
 /**
  * Extract the package name without version from a package specifier
@@ -16,7 +16,7 @@ import {logError} from "./error-handler";
  */
 export function extractPackageName(packageSpec: string): string {
   // Handle scoped packages (@org/package-name)
-  if (packageSpec.startsWith('@')) {
+  if (packageSpec.startsWith("@")) {
     const scopedMatch = packageSpec.match(/^(@[^/]+\/[^@]+)(?:@.*)?$/);
     return scopedMatch ? scopedMatch[1] : packageSpec;
   }
@@ -30,17 +30,14 @@ export function extractPackageName(packageSpec: string): string {
  * @param args Array of command arguments
  * @returns The package name or null if not found
  */
-export function extractPackageNameFromCommand(
-  args: string[],
-): string | null {
+export function extractPackageNameFromCommand(args: string[]): string | null {
   for (let i = 0; i < args.length; i++) {
-    if (!args[i].startsWith('-')) {
+    if (!args[i].startsWith("-")) {
       return args[i];
     }
   }
   return null;
 }
-
 
 /**
  * Extract version from a package specifier
@@ -49,7 +46,7 @@ export function extractPackageNameFromCommand(
  */
 export function extractPackageVersion(packageSpec: string): string | null {
   // Handle scoped packages (@org/package-name@version)
-  if (packageSpec.startsWith('@')) {
+  if (packageSpec.startsWith("@")) {
     const versionMatch = packageSpec.match(/@[^/]+\/[^@]+@(.+)$/);
     return versionMatch ? versionMatch[1] : null;
   }
@@ -66,10 +63,10 @@ export function extractPackageVersion(packageSpec: string): string | null {
  */
 export function hasVersionSpecified(packageSpec: string): boolean {
   // For scoped packages (@org/package-name)
-  if (packageSpec.startsWith('@')) {
+  if (packageSpec.startsWith("@")) {
     return /@[^/]+\/[^@]+@.+/.test(packageSpec);
   }
-  
+
   // For regular packages
   return /^[^@]+@.+/.test(packageSpec);
 }
@@ -87,23 +84,22 @@ export interface ServerPackageUpdates {
   hasUpdates: boolean;
 }
 
-
 /**
  * Validate if a string is a valid version format
  * @param version Version string to validate
  * @returns True if the version is valid
  */
 function isValidVersion(version: string): boolean {
-  if (!version || version.trim() === '') {
+  if (!version || version.trim() === "") {
     return false;
   }
-  
+
   // Check if it's a valid semver or Python-style version
   // Semver: 1.2.3, 1.2.3-alpha.1, etc.
   // Python: 1.2.3, 1.2.3a1, 1.2.3.dev0, etc.
   const semverPattern = /^\d+\.\d+\.\d+(?:-[\w\.]+)?(?:\+[\w\.]+)?$/;
   const pythonPattern = /^\d+(?:\.\d+)*(?:[a-zA-Z]+\d*)?(?:\.dev\d+)?$/;
-  
+
   return semverPattern.test(version) || pythonPattern.test(version);
 }
 
@@ -115,23 +111,28 @@ function isValidVersion(version: string): boolean {
  */
 async function getLatestVersion(
   packageName: string,
-  packageManager: 'pnpm' | 'uvx'
+  packageManager: "pnpm" | "uvx",
 ): Promise<string> {
   // Execute the appropriate command to get the latest version
-  if (packageManager === 'pnpm') {
+  if (packageManager === "pnpm") {
     try {
-      const result = await run('pnpm', ['view', packageName, 'version']);
+      const result = await run("pnpm", ["view", packageName, "version"]);
       const version = result.trim();
-      
+
       // Validate the version format
       if (!isValidVersion(version)) {
-        console.error(`Invalid version format received for ${packageName}: ${version}`);
+        console.error(
+          `Invalid version format received for ${packageName}: ${version}`,
+        );
         throw new Error(`Invalid version format: ${version}`);
       }
-      
+
       return version;
     } catch (error) {
-      console.error(`Failed to get version for ${packageName} using pnpm:`, error);
+      console.error(
+        `Failed to get version for ${packageName} using pnpm:`,
+        error,
+      );
       throw error;
     }
   } else {
@@ -139,57 +140,73 @@ async function getLatestVersion(
     try {
       // Method 1: Try the "show" command first if the package is already installed
       try {
-        const showResult = await run('uv', ['pip', 'show', packageName]);
+        const showResult = await run("uv", ["pip", "show", packageName]);
         // Package found - parse the version
         if (!showResult.includes("WARNING: Package(s) not found")) {
           // Extract version from output format like "Version: x.y.z"
           const versionMatch = showResult.match(/Version:\s*([^\s]+)/);
           if (versionMatch && versionMatch[1]) {
             const version = versionMatch[1].trim();
-            
+
             // Validate the version format
             if (!isValidVersion(version)) {
               console.error(`Invalid version format from uv show: ${version}`);
               throw new Error(`Invalid version format: ${version}`);
             }
-            
+
             return version;
           }
         }
       } catch (showError) {
-        logError(`'uv pip show' command failed: ${showError}. Trying next method.`);
+        logError(
+          `'uv pip show' command failed: ${showError}. Trying next method.`,
+        );
       }
-      
+
       // Method 2: If show command didn't work, try dry-run install method
       try {
-        const dryRunResult = await run('uv', ['pip', 'install', packageName, '--dry-run']);
+        const dryRunResult = await run("uv", [
+          "pip",
+          "install",
+          packageName,
+          "--dry-run",
+        ]);
 
         // Find the line that contains the package name and version
         // Format: " + packageName==version"
-        const lines = dryRunResult.split('\n');
+        const lines = dryRunResult.split("\n");
         for (const line of lines) {
-          const packageMatch = line.match(new RegExp(`\\s+\\+\\s+(${packageName})\\s*==\\s*([\\d\\.]+(?:\\.[\\d]+)*)`));
+          const packageMatch = line.match(
+            new RegExp(
+              `\\s+\\+\\s+(${packageName})\\s*==\\s*([\\d\\.]+(?:\\.[\\d]+)*)`,
+            ),
+          );
           if (packageMatch && packageMatch[2]) {
             const version = packageMatch[2].trim();
-            
+
             // Validate the version format
             if (!isValidVersion(version)) {
-              console.error(`Invalid version format from uv dry-run: ${version}`);
+              console.error(
+                `Invalid version format from uv dry-run: ${version}`,
+              );
               throw new Error(`Invalid version format: ${version}`);
             }
-            
+
             return version;
           }
         }
       } catch (dryRunError) {
-        logError(`'uv pip install --dry-run' command failed: ${dryRunError}. Trying next method.`);
+        logError(
+          `'uv pip install --dry-run' command failed: ${dryRunError}. Trying next method.`,
+        );
       }
       // If we still couldn't get a version
       const errorMsg = `Could not determine version for ${packageName}`;
       throw new Error(errorMsg);
-      
     } catch (error) {
-      console.error(`Failed to get version information for ${packageName}: ${error}`);
+      console.error(
+        `Failed to get version information for ${packageName}: ${error}`,
+      );
       throw error;
     }
   }
@@ -203,20 +220,20 @@ async function getLatestVersion(
  */
 export async function checkPackageUpdate(
   packageSpec: string,
-  packageManager: 'pnpm' | 'uvx'
+  packageManager: "pnpm" | "uvx",
 ): Promise<PackageUpdateInfo> {
   // Extract package name and current version
   const packageName = extractPackageName(packageSpec);
   const currentVersion = extractPackageVersion(packageSpec);
-  
+
   // Default return object
   const result: PackageUpdateInfo = {
     packageName,
     currentVersion,
     latestVersion: null,
-    updateAvailable: false
+    updateAvailable: false,
   };
-  
+
   // If no current version, we can't check for updates
   if (!currentVersion) {
     return result;
@@ -224,24 +241,24 @@ export async function checkPackageUpdate(
 
   try {
     // Ensure the package manager is installed
-    if (packageManager === 'pnpm') {
-      if (!(await commandExists('pnpm'))) {
+    if (packageManager === "pnpm") {
+      if (!(await commandExists("pnpm"))) {
         await installPNPM();
       }
-    } else if (packageManager === 'uvx') {
-      if (!(await commandExists('uv'))) {
+    } else if (packageManager === "uvx") {
+      if (!(await commandExists("uv"))) {
         await installUV();
       }
     }
 
     // Get the latest version using the common helper function
     const latestVersion = await getLatestVersion(packageName, packageManager);
-    
+
     // Compare versions
     result.latestVersion = latestVersion;
-    
+
     // Use semantic version comparison
-    if (latestVersion && currentVersion && latestVersion.trim() !== '') {
+    if (latestVersion && currentVersion && latestVersion.trim() !== "") {
       try {
         // Clean versions to ensure they are valid semver
         const cleanCurrent = semver.coerce(currentVersion);
@@ -249,19 +266,24 @@ export async function checkPackageUpdate(
 
         // Only proceed if both versions are valid semver
         if (cleanCurrent && cleanLatest) {
-          result.updateAvailable = semver.lt(cleanCurrent.version, cleanLatest.version);
+          result.updateAvailable = semver.lt(
+            cleanCurrent.version,
+            cleanLatest.version,
+          );
         } else {
           // Fallback to string comparison for non-semver versions
-          result.updateAvailable = currentVersion !== latestVersion && latestVersion.trim() !== '';
+          result.updateAvailable =
+            currentVersion !== latestVersion && latestVersion.trim() !== "";
         }
       } catch (error) {
         // Fallback to string comparison
-        result.updateAvailable = currentVersion !== latestVersion && latestVersion.trim() !== '';
+        result.updateAvailable =
+          currentVersion !== latestVersion && latestVersion.trim() !== "";
       }
     } else {
       result.updateAvailable = false;
     }
-    
+
     return result;
   } catch (error) {
     console.error(`Failed to check update for ${packageSpec}:`, error);
@@ -277,34 +299,34 @@ export async function checkPackageUpdate(
  */
 export async function checkMcpServerPackageUpdates(
   serverArgs: string[],
-  packageManager: 'pnpm' | 'uvx'
+  packageManager: "pnpm" | "uvx",
 ): Promise<ServerPackageUpdates> {
   // Default result
   const result: ServerPackageUpdates = {
     packages: [],
-    hasUpdates: false
+    hasUpdates: false,
   };
-  
+
   // Find package name from command structure
   const packageArg = extractPackageNameFromCommand(serverArgs);
-  
+
   if (!packageArg) {
     return result;
   }
-  
+
   // Process the package
   const updateCheck = hasVersionSpecified(packageArg)
     ? await checkPackageUpdate(packageArg, packageManager)
-    : {
+    : ({
         packageName: packageArg,
         currentVersion: null,
         latestVersion: null,
-        updateAvailable: false
-      } as PackageUpdateInfo;
-  
+        updateAvailable: false,
+      } as PackageUpdateInfo);
+
   result.packages = [updateCheck];
   result.hasUpdates = updateCheck.updateAvailable;
-  
+
   return result;
 }
 
@@ -315,8 +337,8 @@ export async function checkMcpServerPackageUpdates(
  * @returns The package specifier with the latest version
  */
 export async function resolvePackageVersion(
-  packageSpec: string, 
-  packageManager: 'pnpm' | 'uvx'
+  packageSpec: string,
+  packageManager: "pnpm" | "uvx",
 ): Promise<string> {
   // If the package already has a version specified, return it as is
   if (hasVersionSpecified(packageSpec)) {
@@ -325,28 +347,33 @@ export async function resolvePackageVersion(
 
   try {
     // Ensure the package manager is installed
-    if (packageManager === 'pnpm') {
-      if (!(await commandExists('pnpm'))) {
+    if (packageManager === "pnpm") {
+      if (!(await commandExists("pnpm"))) {
         await installPNPM();
       }
-    } else if (packageManager === 'uvx') {
-      if (!(await commandExists('uv'))) {
+    } else if (packageManager === "uvx") {
+      if (!(await commandExists("uv"))) {
         await installUV();
       }
     }
 
     // Get the package name without version
     const packageName = extractPackageName(packageSpec);
-    
+
     // Get the latest version using the common helper function
     const latestVersion = await getLatestVersion(packageName, packageManager);
 
     // Return the package with the exact version
     return `${packageName}@${latestVersion}`;
   } catch (error) {
-    console.error(`Failed to resolve package version for ${packageSpec}:`, error);
+    console.error(
+      `Failed to resolve package version for ${packageSpec}:`,
+      error,
+    );
     // Throw error instead of silently returning original spec
-    throw new Error(`Failed to resolve version for ${packageSpec}: ${(error as Error).message}`);
+    throw new Error(
+      `Failed to resolve version for ${packageSpec}: ${(error as Error).message}`,
+    );
   }
 }
 
@@ -358,28 +385,36 @@ export async function resolvePackageVersion(
  */
 export async function resolvePackageVersionsInArgs(
   argsString: string,
-  packageManager: 'pnpm' | 'uvx'
+  packageManager: "pnpm" | "uvx",
 ): Promise<string> {
   // Split args by spaces and ensure non-empty
-  const args = argsString.trim().split(/\s+/).filter(arg => arg.length > 0);
-  
+  const args = argsString
+    .trim()
+    .split(/\s+/)
+    .filter((arg) => arg.length > 0);
+
   // Find package name from command structure
   const packageArg = extractPackageNameFromCommand(args);
-  
-  
+
   // If no package name found, return the original string
   if (!packageArg) {
     return argsString;
   }
-  
+
   try {
     // Resolve the version for the identified package
-    const resolvedPackage = await resolvePackageVersion(packageArg, packageManager);
-    
+    const resolvedPackage = await resolvePackageVersion(
+      packageArg,
+      packageManager,
+    );
+
     // Replace only the specific package argument with the resolved version
     return argsString.replace(packageArg, resolvedPackage);
   } catch (error) {
-    console.error(`Failed to resolve package version in args: ${argsString}`, error);
+    console.error(
+      `Failed to resolve package version in args: ${argsString}`,
+      error,
+    );
     // Re-throw the error instead of silently returning original args
     throw error;
   }
