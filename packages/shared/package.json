@@ -8,7 +8,9 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "lint": "eslint . --ext .ts,.js",
-    "typecheck": "tsc --noEmit"
+    "lint:fix": "eslint . --ext .ts,.js --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -1,5 +1,5 @@
 {
-  "name": "@mcp-router/database",
+  "name": "@mcp-router/api",
   "version": "0.4.9",
   "private": true,
   "main": "dist/index.js",
@@ -14,13 +14,14 @@
   },
   "dependencies": {
     "@mcp-router/shared": "workspace:*",
-    "better-sqlite3": "^11.10.0",
-    "uuid": "^11.1.0"
+    "@trpc/client": "10.45.2",
+    "@trpc/server": "^10.45.2",
+    "superjson": "^2.2.2",
+    "zod": "^3.25.64"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/uuid": "^10.0.0",
-    "typescript": "^5.8.3",
-    "electron": "^36.0.0"
+    "@types/node": "^24.0.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
   }
 }

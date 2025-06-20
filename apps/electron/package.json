@@ -15,7 +15,9 @@
     "make": "NODE_ENV=production electron-forge make",
     "publish": "NODE_ENV=production electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
-    "typecheck": "tsc --noEmit"
+    "lint:fix": "eslint --ext .ts,.tsx . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",

@@ -1,0 +1,29 @@
+{
+  "name": "@mcp-router/frontend",
+  "version": "0.4.9",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@mcp-router/shared": "workspace:*",
+    "@mcp-router/api": "workspace:*",
+    "@tanstack/react-query": "^5.67.2",
+    "@trpc/client": "10.45.2",
+    "@trpc/react-query": "10.45.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "typescript": "^5.8.3"
+  }
+}
