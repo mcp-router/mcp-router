@@ -222,7 +222,7 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
   }
 
   /**
-   * Deploy an agent from the build section to the use section
+   * Deploy an agent from the create section to the use section
    * @param sourceAgent The source agent to deploy
    * @returns The deployed agent
    */

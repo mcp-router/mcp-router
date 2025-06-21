@@ -5,7 +5,7 @@ import { AgentConfig, DeployedAgent } from "../../../../types";
 import { AlertCircle } from "lucide-react";
 import { cn } from "../../../../lib/utils/frontend/tailwind-utils";
 import { Message } from "@ai-sdk/react";
-import ChatInterface from "../build/ChatInterface";
+import ChatInterface from "@/frontend/components/agent/create/ChatInterface";
 import ChatSessions from "./ChatSessions";
 import { isAgentConfigured } from "../../../../lib/utils/shared/agent-utils";
 import { useAgentStore } from "../../../stores";

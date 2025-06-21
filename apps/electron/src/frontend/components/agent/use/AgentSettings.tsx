@@ -11,7 +11,7 @@ import { Button } from "../../ui/button";
 import { DeployedAgent, MCPServerConfig, AgentConfig } from "../../../../types";
 import { useTranslation } from "react-i18next";
 import { isAgentConfigured } from "../../../../lib/utils/shared/agent-utils";
-import { McpSettings } from "../build/McpSettings";
+import { McpSettings } from "@/frontend/components/agent/create/McpSettings";
 import { useAgentStore } from "../../../stores";
 import { cn } from "../../../../lib/utils/frontend/tailwind-utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";

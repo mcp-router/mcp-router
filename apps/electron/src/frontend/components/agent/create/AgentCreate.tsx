@@ -473,7 +473,7 @@ const AgentCreate: React.FC = () => {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/agents/build">{t("agents.build")}</Link>
+              <Link to="/agents/build">{t("agents.create")}</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />

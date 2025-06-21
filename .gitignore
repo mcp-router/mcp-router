@@ -17,8 +17,6 @@ out/
 /dist/
 **/dist/
 **/build/
-# Allow specific source directories that happen to be named 'build'
-!apps/electron/src/frontend/components/agent/build/
 
 # Production
 *.production
