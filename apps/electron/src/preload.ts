@@ -3,7 +3,7 @@
 
 import { contextBridge, ipcRenderer } from "electron";
 import { MCPServerConfig } from "./types";
-import { TokenScope } from "./lib/types/token-types";
+import { TokenScope } from "@/types/token-types";
 
 // Consolidate everything into one contextBridge call
 

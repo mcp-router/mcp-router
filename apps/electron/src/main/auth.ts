@@ -1,13 +1,13 @@
-import { getSettingsService } from "../lib/services/settings-service";
+import { getSettingsService } from "@/main/services/settings-service";
 import { API_BASE_URL, mainWindow } from "../main";
 import crypto from "crypto";
 import { shell } from "electron";
-import { fetchWithToken } from "../lib/utils/fetch-utils";
+import { fetchWithToken } from "../lib/utils/backend/fetch-utils";
 import { machineIdSync } from "node-machine-id";
 import {
   decryptStringSync,
   encryptStringSync,
-} from "../lib/utils/encryption-utils";
+} from "../lib/utils/backend/encryption-utils";
 
 // Store authentication state for PKCE flow
 interface AuthState {

@@ -4,7 +4,7 @@ import {
   checkUvExists,
   installPNPM,
   installUV,
-} from "../../lib/utils/install-package-manager";
+} from "../../lib/utils/backend/install-package-manager";
 
 /**
  * Register package manager-related IPC handlers

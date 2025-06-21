@@ -1,8 +1,8 @@
 import { machineIdSync } from "node-machine-id";
-import { AppSettings } from "../lib/types/settings-types";
-import { getSettingsService } from "../lib/services/settings-service";
+import { AppSettings } from "@/types/settings-types";
+import { getSettingsService } from "@/main/services/settings-service";
 import { API_BASE_URL } from "../main";
-import { fetchWithTokenJson } from "../lib/utils/fetch-utils";
+import { fetchWithTokenJson } from "../lib/utils/backend/fetch-utils";
 
 // Get the settings service
 const settingsService = getSettingsService();

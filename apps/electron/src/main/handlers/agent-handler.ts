@@ -4,7 +4,7 @@ import {
   getDevelopmentAgentService,
   getDeployedAgentService,
   getAgentSharingService,
-} from "../../lib/services/agent";
+} from "@/main/services/agent";
 import { backgroundWindow, mainWindow } from "../../main";
 import { status } from "../auth";
 import { getSessionRepository } from "@mcp-router/database";

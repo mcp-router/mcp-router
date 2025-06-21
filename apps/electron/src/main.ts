@@ -6,19 +6,19 @@ import {
   session,
   shell,
 } from "electron";
-import { getSettingsService } from "./lib/services/settings-service";
+import { getSettingsService } from "@/main/services/settings-service";
 import path from "node:path";
 import { MCPServerManager } from "./main/mcp-server-manager";
 import { MCPServerConfig } from "./types";
-import { getTokenService } from "./lib/services/token-service";
-import { TokenScope } from "./lib/types/token-types";
-import { setEncryptionInitialized } from "./lib/utils/encryption-utils";
+import { getTokenService } from "@/main/services/token-service";
+import { TokenScope } from "@/types/token-types";
+import { setEncryptionInitialized } from "./lib/utils/backend/encryption-utils";
 import {
   fetchMcpServersFromIndex,
   fetchMcpServerVersionDetails,
 } from "./main/mcp-fetcher";
 import { MCPHttpServer } from "./main/http/mcp-http-server";
-import { logService } from "./lib/services/log-service";
+import { logService } from "@/main/services/log-service";
 import started from "electron-squirrel-startup";
 import {
   listMcpApps,
@@ -26,7 +26,7 @@ import {
   addApp,
   unifyAppConfig,
   deleteCustomApp,
-} from "./lib/services/mcp-apps-service";
+} from "@/main/services/mcp-apps-service";
 import { updateElectronApp } from "update-electron-app";
 import { machineIdSync } from "node-machine-id";
 import { getDatabaseMigration } from "@mcp-router/database";
@@ -41,7 +41,7 @@ import { createTray, updateTrayContextMenu } from "./main/tray";
 import { importExistingServerConfigurations } from "./main/mcp-config-importer";
 import { commandExists } from "./lib/get-env";
 import { handleAuthToken, logout, startAuthFlow, status } from "./main/auth";
-import { fetchWithToken } from "./lib/utils/fetch-utils";
+import { fetchWithToken } from "./lib/utils/backend/fetch-utils";
 import { registerPackageVersionHandlers } from "./main/handlers/package-version-handler";
 import { registerPackageManagerHandlers } from "./main/handlers/package-manager-handler";
 import { setupAgentHandlers } from "./main/handlers/agent-handler";

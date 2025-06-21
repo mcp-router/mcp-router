@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
-import BackgroundComponent from "./components/agent/BackgroundComponent";
+import BackgroundComponent from "@/frontend/components/agent/BackgroundComponent";
 import "./global.css";
 
 // Create a container component that manages chat sessions

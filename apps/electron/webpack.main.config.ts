@@ -18,5 +18,12 @@ export const mainConfig: Configuration = {
   resolve: {
     extensions: [".js", ".ts", ".jsx", ".tsx", ".css", ".json"],
     modules: [path.resolve(__dirname, "../../node_modules"), "node_modules"],
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      "@mcp-router/shared": path.resolve(
+        __dirname,
+        "../../packages/shared/src",
+      ),
+    },
   },
 };

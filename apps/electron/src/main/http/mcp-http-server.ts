@@ -2,14 +2,14 @@ import express from "express";
 import cors from "cors";
 import * as http from "http";
 import { MCPServerManager } from "../mcp-server-manager";
-import { getLogService } from "../../lib/services/log-service";
-import { getTokenService } from "../../lib/services/token-service";
-import { listMcpApps } from "../../lib/services/mcp-apps-service";
+import { getLogService } from "@/main/services/log-service";
+import { getTokenService } from "@/main/services/token-service";
+import { listMcpApps } from "@/main/services/mcp-apps-service";
 import {
   validateMcpServerJson,
   processMcpServerConfigs,
-} from "../../lib/utils/mcp-server-utils";
-import { TokenScope } from "../../lib/types/token-types";
+} from "../../lib/utils/shared/mcp-server-utils";
+import { TokenScope } from "@/types/token-types";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
 
 /**

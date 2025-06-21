@@ -1,5 +1,5 @@
 import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
-import { getDeployedAgentService } from "../lib/services/agent";
+import { getDeployedAgentService } from "@/main/services/agent";
 import { status } from "./auth";
 import { backgroundWindow } from "../main";
 import { getSessionRepository } from "@mcp-router/database";

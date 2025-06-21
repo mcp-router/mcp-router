@@ -5,21 +5,21 @@ import { MCPServer, MCPServerConfig, MCPTool } from "@mcp-router/shared";
 import {
   getServerService,
   ServerService,
-} from "../lib/services/server-service";
+} from "@/main/services/server-service";
 import {
   applyDisplayRules,
   applyRulesToInputSchema,
-} from "../lib/utils/rule-utils";
+} from "../lib/utils/shared/rule-utils";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
-import { logService } from "../lib/services/log-service";
-import { getTokenService } from "../lib/services/token-service";
+import { logService } from "@/main/services/log-service";
+import { getTokenService } from "@/main/services/token-service";
 import {
   connectToMCPServer,
   substituteArgsParameters,
-} from "../lib/utils/mcp-client-util";
+} from "../lib/utils/backend/mcp-client-util";
 import {
   CallToolRequestSchema,
   ErrorCode,
@@ -35,10 +35,10 @@ import {
   parseResourceUri,
   createResourceUri,
   createUriVariants,
-} from "../lib/utils/uri-utils";
-import { summarizeResponse } from "../lib/utils/response-utils";
+} from "../lib/utils/shared/uri-utils";
+import { summarizeResponse } from "../lib/utils/shared/response-utils";
 import { AgentToolHandler } from "./agent-tools";
-import { logError } from "../lib/utils/error-handler";
+import { logError } from "../lib/utils/backend/error-handler";
 
 // Constants for the Aggregator Server identification in LogService
 const AGGREGATOR_SERVER_ID = "mcp-router-aggregator";

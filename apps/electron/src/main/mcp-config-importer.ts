@@ -1,5 +1,5 @@
 import { promises as fsPromises } from "fs";
-import { getServerService } from "../lib/services/server-service";
+import { getServerService } from "@/main/services/server-service";
 import { MCPServerConfig } from "@mcp-router/shared";
 import {
   claudeConfig,
@@ -8,7 +8,7 @@ import {
   cursorConfig,
   vscodeConfig,
   exists,
-} from "../lib/utils/mcp-app-paths";
+} from "../lib/utils/backend/mcp-app-paths";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import { app } from "electron";

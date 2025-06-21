@@ -2,7 +2,7 @@ import process from "node:process";
 import { execa } from "execa";
 import stripAnsi from "strip-ansi";
 import { userInfo } from "node:os";
-import { logInfo } from "./utils/error-handler";
+import { logInfo } from "./utils/backend/error-handler";
 
 const DELIMITER = "_ENV_DELIMITER_";
 
