@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Button } from "../../ui/button";
+import { platformAPI } from "@/frontend/lib/platform-api";
 import {
   Card,
   CardContent,
@@ -140,7 +141,7 @@ const McpAppsManager: React.FC = () => {
 
     try {
       // サーバーアクセスの更新
-      const serverResult = await window.electronAPI.updateAppServerAccess(
+      const serverResult = await platformAPI.updateAppServerAccess(
         selectedApp.name,
         selectedServerIds,
       );
@@ -152,7 +153,7 @@ const McpAppsManager: React.FC = () => {
 
       // トークンスコープの更新（トークンが存在する場合のみ）
       if (selectedApp.token) {
-        const scopeResult = await window.electronAPI.updateTokenScopes(
+        const scopeResult = await platformAPI.updateTokenScopes(
           selectedApp.token,
           selectedScopes,
         );
@@ -200,7 +201,7 @@ const McpAppsManager: React.FC = () => {
   // サーバ一覧の読み込み
   const loadServers = async () => {
     try {
-      const serverList = await window.electronAPI.listMcpServers();
+      const serverList = await platformAPI.listMcpServers();
       setServers(serverList);
     } catch (error) {
       console.error("Failed to load MCP servers:", error);
@@ -210,7 +211,7 @@ const McpAppsManager: React.FC = () => {
   const loadApps = async () => {
     setLoading(true);
     try {
-      const appsList = await window.electronAPI.listMcpApps();
+      const appsList = await platformAPI.listMcpApps();
       setApps(appsList);
     } catch (error) {
       console.error("Failed to load MCP apps:", error);
@@ -230,7 +231,7 @@ const McpAppsManager: React.FC = () => {
     }
 
     try {
-      const result = await window.electronAPI.addMcpAppConfig(customAppName);
+      const result = await platformAPI.addMcpAppConfig(customAppName);
 
       if (result.success && result.app) {
         // アプリリストに追加
@@ -249,7 +250,7 @@ const McpAppsManager: React.FC = () => {
   const handleAddConfig = async (appName: string) => {
     try {
       const result: McpAppsManagerResult =
-        await window.electronAPI.addMcpAppConfig(appName);
+        await platformAPI.addMcpAppConfig(appName);
 
       if (result.success && result.app) {
         // Update the app in the list
@@ -284,7 +285,7 @@ const McpAppsManager: React.FC = () => {
   const handleUnifyConfig = async (appName: string) => {
     try {
       const result: McpAppsManagerResult =
-        await window.electronAPI.unifyAppConfig(appName);
+        await platformAPI.unifyAppConfig(appName);
 
       if (result.success && result.app) {
         // アプリリストを更新
@@ -322,7 +323,7 @@ const McpAppsManager: React.FC = () => {
     if (!appToDelete) return;
 
     try {
-      const success = await window.electronAPI.deleteMcpApp(appToDelete.name);
+      const success = await platformAPI.deleteMcpApp(appToDelete.name);
 
       if (success) {
         // アプリリストから削除

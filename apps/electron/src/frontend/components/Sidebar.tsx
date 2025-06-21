@@ -11,6 +11,7 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/frontend/stores";
+import { platformAPI } from "@/frontend/lib/platform-api";
 // @ts-ignore
 import iconImage from "../../../../../public/images/icon/icon.png";
 import {
@@ -45,12 +46,12 @@ const SidebarComponent: React.FC = () => {
 
   useEffect(() => {
     // Check if an update is available on mount
-    window.electronAPI.checkForUpdates().then(({ updateAvailable }) => {
+    platformAPI.checkForUpdates().then(({ updateAvailable }) => {
       setUpdateAvailable(updateAvailable);
     });
 
     // Listen for future update availability
-    const unsubscribe = window.electronAPI.onUpdateAvailable((available) => {
+    const unsubscribe = platformAPI.onUpdateAvailable((available) => {
       setUpdateAvailable(available);
     });
 
@@ -60,14 +61,14 @@ const SidebarComponent: React.FC = () => {
   }, []);
 
   const handleInstallUpdate = () => {
-    window.electronAPI.installUpdate();
+    platformAPI.installUpdate();
   };
 
   const handleSubmitFeedback = async () => {
     if (!feedback.trim()) return;
     setIsSendingFeedback(true);
     try {
-      const success = await window.electronAPI.submitFeedback(feedback.trim());
+      const success = await platformAPI.submitFeedback(feedback.trim());
       if (success) {
         setFeedback("");
         toast.success(t("feedback.sent"));

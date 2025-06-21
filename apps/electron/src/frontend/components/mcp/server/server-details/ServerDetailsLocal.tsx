@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { MCPServer } from "../../../../../types";
+import { platformAPI } from "@/frontend/lib/platform-api";
 import { useTranslation } from "react-i18next";
 import {
   Terminal,
@@ -52,7 +53,7 @@ const ServerDetailsLocal: React.FC<ServerDetailsLocalProps> = ({
       setBaseCommand(cmd);
 
       // Check if command exists using the API we added
-      window.electronAPI
+      platformAPI
         .checkCommandExists(cmd)
         .then((exists: boolean) => setCommandExists(exists))
         .catch(() => setCommandExists(false));

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { platformAPI } from "@/frontend/lib/platform-api";
 import {
   Card,
   CardContent,
@@ -172,7 +173,7 @@ const Manual: React.FC = () => {
       }
 
       // Get existing servers to prevent duplicates
-      const existingServers = await window.electronAPI.listMcpServers();
+      const existingServers = await platformAPI.listMcpServers();
       const existingServerNames = new Set<string>(
         existingServers.map((server: any) => server.name as string),
       );
@@ -188,7 +189,7 @@ const Manual: React.FC = () => {
         if (result.success && result.server) {
           try {
             // Add the server
-            const serverResponse = await window.electronAPI.addMcpServer(
+            const serverResponse = await platformAPI.addMcpServer(
               result.server,
             );
             result.server = serverResponse;
@@ -327,7 +328,7 @@ const Manual: React.FC = () => {
       };
 
       // Add server directly
-      const result = await window.electronAPI.addMcpServer(serverConfig);
+      const result = await platformAPI.addMcpServer(serverConfig);
 
       if (result && !result.error) {
         toast.success(t("manual.successCreate", { name: serverName }));
@@ -363,7 +364,7 @@ const Manual: React.FC = () => {
         disabled: false,
       };
 
-      const result = await window.electronAPI.addMcpServer(config);
+      const result = await platformAPI.addMcpServer(config);
 
       if (result && result.success) {
         toast.success(

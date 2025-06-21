@@ -24,6 +24,7 @@ import { Download, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAgentStore } from "../../../stores";
+import { platformAPI } from "@/frontend/lib/platform-api";
 
 const DeployedAgents: React.FC = () => {
   const { t } = useTranslation();
@@ -55,7 +56,7 @@ const DeployedAgents: React.FC = () => {
   const handleImportAgent = async () => {
     try {
       setIsImporting(true);
-      const agent = await window.electronAPI.importAgent(importCode);
+      const agent = await platformAPI.importAgent(importCode);
       addDeployedAgent(agent);
       setIsImportDialogOpen(false);
       setImportCode("");
@@ -84,7 +85,7 @@ const DeployedAgents: React.FC = () => {
       let importedCount = 0;
       for (const agentId of sampleAgentIds) {
         try {
-          const agent = await window.electronAPI.importAgent(agentId);
+          const agent = await platformAPI.importAgent(agentId);
           addDeployedAgent(agent);
           importedCount++;
         } catch (error) {

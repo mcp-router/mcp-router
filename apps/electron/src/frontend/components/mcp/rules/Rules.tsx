@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { platformAPI } from "@/frontend/lib/platform-api";
 import {
   MCPDisplayRules,
   DEFAULT_DISPLAY_RULES,
@@ -463,7 +464,7 @@ const Rules: React.FC = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const settings = await window.electronAPI.getSettings();
+        const settings = await platformAPI.getSettings();
         if (settings.mcpDisplayRules) {
           setRules({
             ...DEFAULT_DISPLAY_RULES,
@@ -500,7 +501,7 @@ const Rules: React.FC = () => {
         mcpDisplayRules: rules,
       };
 
-      const success = await window.electronAPI.saveSettings(updatedSettings);
+      const success = await platformAPI.saveSettings(updatedSettings);
 
       if (success) {
         toast.success("Settings saved successfully");

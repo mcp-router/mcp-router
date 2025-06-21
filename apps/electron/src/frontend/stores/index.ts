@@ -27,6 +27,8 @@ export {
 } from "./ui-store";
 export { useServerEditingStore } from "./server-editing-store";
 
+import { platformAPI } from "../lib/platform-api";
+
 // Store initialization utility
 export const initializeStores = async () => {
   const { useAuthStore } = await import("./auth-store");
@@ -35,7 +37,7 @@ export const initializeStores = async () => {
 
   // Initialize auth state from settings
   try {
-    const settings = await window.electronAPI.getSettings();
+    const settings = await platformAPI.getSettings();
     await useAuthStore.getState().initializeFromSettings(settings);
   } catch (error) {
     console.error("Failed to initialize auth from settings:", error);

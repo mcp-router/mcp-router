@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { platformAPI } from "@/frontend/lib/platform-api";
 
 interface PackageManagerOverlayProps {
   isOpen: boolean;
@@ -41,7 +42,7 @@ const PackageManagerOverlay: React.FC<PackageManagerOverlayProps> = ({
   // パッケージマネージャーの状態確認
   const checkPackageManagers = useCallback(async () => {
     try {
-      const result = await window.electronAPI.checkPackageManagers();
+      const result = await platformAPI.checkPackageManagers();
       setPackageManagers(result);
 
       // インストール完了状態でない場合のみ自動クローズを実行
@@ -58,7 +59,7 @@ const PackageManagerOverlay: React.FC<PackageManagerOverlayProps> = ({
   const incrementDisplayCount = useCallback(async () => {
     try {
       const result =
-        await window.electronAPI.incrementPackageManagerOverlayCount();
+        await platformAPI.incrementPackageManagerOverlayCount();
       if (result.success) {
         setDisplayCount(result.count);
       }
@@ -82,7 +83,7 @@ const PackageManagerOverlay: React.FC<PackageManagerOverlayProps> = ({
   const handleInstallPackageManagers = async () => {
     try {
       setIsInstallingPM(true);
-      const result = await window.electronAPI.installPackageManagers();
+      const result = await platformAPI.installPackageManagers();
 
       if (result.success) {
         // インストール完了状態に設定
@@ -111,7 +112,7 @@ const PackageManagerOverlay: React.FC<PackageManagerOverlayProps> = ({
   // アプリケーション再起動
   const handleRestart = async () => {
     try {
-      await window.electronAPI.restartApp();
+      await platformAPI.restartApp();
     } catch (error) {
       console.error("Failed to restart app:", error);
       toast.error("Failed to restart application");

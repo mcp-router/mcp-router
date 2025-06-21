@@ -6,6 +6,7 @@ import {
   MCPServer,
   APIMCPServer,
 } from "../../../../types";
+import { platformAPI } from "@/frontend/lib/platform-api";
 import DiscoverServerList from "./DiscoverServerList";
 import Manual from "./Manual";
 import ServerSearchBox from "./ServerSearchBox";
@@ -116,7 +117,7 @@ const DiscoverWrapper: React.FC = () => {
     setIsLoadingVerifiedServers(true);
     try {
       const verifiedResponse: PaginatedResponse<APIMCPServer> =
-        await window.electronAPI.fetchMcpServersFromIndex(
+        await platformAPI.fetchMcpServersFromIndex(
           page,
           limit,
           search,
@@ -149,7 +150,7 @@ const DiscoverWrapper: React.FC = () => {
     setIsLoadingCommunityServers(true);
     try {
       const communityResponse: PaginatedResponse<APIMCPServer> =
-        await window.electronAPI.fetchMcpServersFromIndex(
+        await platformAPI.fetchMcpServersFromIndex(
           page,
           limit,
           search,
@@ -187,7 +188,7 @@ const DiscoverWrapper: React.FC = () => {
 
   const fetchInstalledServers = async () => {
     try {
-      const servers = await window.electronAPI.listMcpServers();
+      const servers = await platformAPI.listMcpServers();
       setInstalledServerIds(
         new Set(servers.map((server: MCPServer) => server.id)),
       );
@@ -240,7 +241,7 @@ const DiscoverWrapper: React.FC = () => {
       // First, fetch the server version details to get command and args
       let versionDetails = null;
       if (server.displayId && server.latestVersion) {
-        versionDetails = await window.electronAPI.fetchMcpServerVersionDetails(
+        versionDetails = await platformAPI.fetchMcpServerVersionDetails(
           server.displayId,
           server.latestVersion,
         );
@@ -296,7 +297,7 @@ const DiscoverWrapper: React.FC = () => {
           serverConfig.verificationStatus = server.verificationStatus;
         if (server.inputParams) serverConfig.inputParams = server.inputParams;
       }
-      await window.electronAPI.addMcpServer(serverConfig);
+      await platformAPI.addMcpServer(serverConfig);
       // Update installed servers list after successful installation
       await fetchInstalledServers();
     } catch (error) {

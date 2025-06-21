@@ -3,6 +3,7 @@ import {
   RequestLogEntry,
   TimeSeriesDataPoint,
 } from "@/types/log-types";
+import { platformAPI } from "@/frontend/lib/platform-api";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -57,7 +58,7 @@ export const useTimeSeriesData = (
       // });
 
       // getRequestLogsを使ってログデータを取得
-      const result = await (window.electronAPI as any).getRequestLogs({
+      const result = await (platformAPI as any).getRequestLogs({
         startDate: params.startDate,
         endDate: params.endDate,
         clientId: params.clientId,

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { AgentConfig, DeployedAgent } from "@mcp-router/shared";
 import { AgentChatMessage } from "@/types/agent-api";
 import { Message } from "@ai-sdk/react";
+import { platformAPI } from "../lib/platform-api";
 
 interface ChatSession {
   id: string;
@@ -326,7 +327,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   fetchAuthToken: async () => {
     const { setAuthToken } = get();
     try {
-      const status = await window.electronAPI.getAuthStatus();
+      const status = await platformAPI.getAuthStatus();
       if (status.authenticated && status.token) {
         setAuthToken(status.token);
       } else {
@@ -345,7 +346,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     try {
       setError(null);
 
-      const newAgent = await window.electronAPI.createAgent(config);
+      const newAgent = await platformAPI.createAgent(config);
       addDevelopmentAgent(newAgent);
       return newAgent;
     } catch (error) {
@@ -362,7 +363,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     try {
       setError(null);
 
-      await window.electronAPI.updateAgent(id, config);
+      await platformAPI.updateAgent(id, config);
       updateDevelopmentAgent(id, config);
     } catch (error) {
       setError(
@@ -378,7 +379,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     try {
       setError(null);
 
-      await window.electronAPI.deleteAgent(id);
+      await platformAPI.deleteAgent(id);
       removeDevelopmentAgent(id);
     } catch (error) {
       setError(
@@ -394,7 +395,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     try {
       setError(null);
 
-      const deployedAgent = await window.electronAPI.deployAgent(agentId);
+      const deployedAgent = await platformAPI.deployAgent(agentId);
       addDeployedAgent(deployedAgent);
       return deployedAgent;
     } catch (error) {
@@ -411,7 +412,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     try {
       setError(null);
 
-      await window.electronAPI.deleteDeployedAgent(agentId);
+      await platformAPI.deleteDeployedAgent(agentId);
       removeDeployedAgent(agentId);
     } catch (error) {
       setError(
@@ -444,7 +445,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
         order: "DESC" as const,
       };
 
-      const data = await window.electronAPI.getSessions(agentId, options);
+      const data = await platformAPI.getSessions(agentId, options);
 
       if (append) {
         set({
@@ -508,7 +509,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       setSessionsError(null);
       setDeletingSession(sessionId, true);
 
-      const success = await window.electronAPI.deleteSession(sessionId);
+      const success = await platformAPI.deleteSession(sessionId);
 
       if (!success) {
         throw new Error("Failed to delete session");
@@ -537,7 +538,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     try {
       setSessionsError(null);
 
-      const messages = await window.electronAPI.fetchSessionMessages(sessionId);
+      const messages = await platformAPI.fetchSessionMessages(sessionId);
 
       // Update the session with the fetched messages
       set((state) => ({
@@ -587,7 +588,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       addMessageToSession(targetSessionId, userMessage);
 
       // Send message to agent using background chat
-      await window.electronAPI.startBackgroundChat(
+      await platformAPI.startBackgroundChat(
         targetSessionId,
         currentAgent.id,
         message,
@@ -611,8 +612,8 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       setError(null);
 
       const [developmentAgents, deployedAgents] = await Promise.all([
-        window.electronAPI.listAgents(),
-        window.electronAPI.getDeployedAgents(),
+        platformAPI.listAgents(),
+        platformAPI.getDeployedAgents(),
       ]);
 
       setDevelopmentAgents(developmentAgents);

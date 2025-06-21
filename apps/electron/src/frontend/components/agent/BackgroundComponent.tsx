@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useChat, Message } from "@ai-sdk/react";
 import { AgentConfig } from "@mcp-router/shared";
 import { getServerAgentId } from "../../../lib/utils/shared/agent-utils";
+import { platformAPI } from "@/frontend/lib/platform-api";
 
 interface BackgroundComponentProps {
   chatHistorySessionId?: string; // チャット履歴のsessionId
@@ -115,7 +116,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
       if (agent?.autoExecuteTool) {
         // 自動実行が有効な場合、ツールを即座に実行
         try {
-          const result = await window.electronAPI.executeAgentTool(
+          const result = await platformAPI.executeAgentTool(
             agent.id,
             toolCall.toolName,
             toolCall.args,
@@ -143,7 +144,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
     },
     onFinish: async (_message, { finishReason }) => {
       // ストリーム終了をメインプロセスに送信
-      window.electronAPI.sendChatStreamEnd({
+      platformAPI.sendChatStreamEnd({
         backgroundSessionKey,
         chatHistorySessionId,
         agentId,
@@ -161,7 +162,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
     },
     onError: async (error) => {
       // ストリームエラーをメインプロセスに送信
-      window.electronAPI.sendChatStreamError({
+      platformAPI.sendChatStreamError({
         backgroundSessionKey,
         chatHistorySessionId,
         agentId,
@@ -189,8 +190,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
         stop();
 
         // Also send stream end notification to main window
-        if (window.electronAPI?.sendChatStreamEnd) {
-          window.electronAPI.sendChatStreamEnd({
+        if (platformAPI?.sendChatStreamEnd) {
+          platformAPI.sendChatStreamEnd({
             backgroundSessionKey,
             chatHistorySessionId,
             agentId,
@@ -208,7 +209,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
       }
     };
 
-    window.electronAPI?.onBackgroundChatStop?.(handleBackgroundChatStop);
+    platformAPI?.onBackgroundChatStop?.(handleBackgroundChatStop);
 
     return () => {
       // Cleanup listener if needed
@@ -233,8 +234,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
         processedQueryRef.current = query;
 
         // ストリーム開始をメインプロセスに送信
-        if (window.electronAPI?.sendChatStreamStart) {
-          window.electronAPI.sendChatStreamStart({
+        if (platformAPI?.sendChatStreamStart) {
+          platformAPI.sendChatStreamStart({
             backgroundSessionKey,
             chatHistorySessionId,
             agentId,
@@ -252,8 +253,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
           });
         } catch (error) {
           // エラーをメインプロセスに送信
-          if (window.electronAPI?.sendChatStreamError) {
-            window.electronAPI.sendChatStreamError({
+          if (platformAPI?.sendChatStreamError) {
+            platformAPI.sendChatStreamError({
               backgroundSessionKey,
               chatHistorySessionId,
               agentId,
@@ -286,14 +287,14 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
         try {
           if (!chatHistorySessionId) {
             // 新しいセッションを作成
-            const session = await window.electronAPI.createSession(
+            const session = await platformAPI.createSession(
               agent.id || agentId,
               messages,
             );
             console.log("Created new local session:", session.id);
           } else {
             // 既存セッションのメッセージを更新
-            await window.electronAPI.updateSessionMessages(
+            await platformAPI.updateSessionMessages(
               chatHistorySessionId,
               messages,
             );
@@ -311,8 +312,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
           setShouldSaveSession(false);
 
           // セッション保存エラーもメインプロセスに送信
-          if (window.electronAPI?.sendChatStreamError) {
-            window.electronAPI.sendChatStreamError({
+          if (platformAPI?.sendChatStreamError) {
+            platformAPI.sendChatStreamError({
               backgroundSessionKey,
               chatHistorySessionId,
               agentId,
@@ -371,8 +372,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
             // });
 
             // ストリームチャンクを送信
-            if (window.electronAPI?.sendChatStreamChunk) {
-              window.electronAPI.sendChatStreamChunk({
+            if (platformAPI?.sendChatStreamChunk) {
+              platformAPI.sendChatStreamChunk({
                 backgroundSessionKey,
                 chatHistorySessionId,
                 agentId,
@@ -412,8 +413,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
             JSON.stringify(message.parts);
 
         if (messageChanged) {
-          if (window.electronAPI?.sendChatStreamChunk) {
-            window.electronAPI.sendChatStreamChunk({
+          if (platformAPI?.sendChatStreamChunk) {
+            platformAPI.sendChatStreamChunk({
               backgroundSessionKey,
               chatHistorySessionId,
               agentId,

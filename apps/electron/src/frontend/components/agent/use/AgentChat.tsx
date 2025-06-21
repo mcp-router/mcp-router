@@ -9,6 +9,7 @@ import ChatInterface from "../build/ChatInterface";
 import ChatSessions from "./ChatSessions";
 import { isAgentConfigured } from "../../../../lib/utils/shared/agent-utils";
 import { useAgentStore } from "../../../stores";
+import { platformAPI } from "@/frontend/lib/platform-api";
 
 /**
  * エージェントチャットコンポーネント
@@ -203,7 +204,7 @@ const AgentChat: React.FC = () => {
 
   // Chat Stream Event Handlers
   useEffect(() => {
-    const unsubscribeStart = window.electronAPI?.onChatStreamStart?.(
+    const unsubscribeStart = platformAPI?.onChatStreamStart?.(
       (data: any) => {
         // Check if this stream is for the current agent
         if (data.agentId === agent?.id) {
@@ -223,7 +224,7 @@ const AgentChat: React.FC = () => {
       },
     );
 
-    const unsubscribeChunk = window.electronAPI?.onChatStreamChunk?.(
+    const unsubscribeChunk = platformAPI?.onChatStreamChunk?.(
       (data: any) => {
         // console.log('Stream chunk received in AgentChat:', {
         //     agentId: data.agentId,
@@ -298,7 +299,7 @@ const AgentChat: React.FC = () => {
       },
     );
 
-    const unsubscribeEnd = window.electronAPI?.onChatStreamEnd?.(
+    const unsubscribeEnd = platformAPI?.onChatStreamEnd?.(
       (data: any) => {
         // console.log('Stream end received:', {
         //     agentId: data.agentId,
@@ -357,7 +358,7 @@ const AgentChat: React.FC = () => {
       },
     );
 
-    const unsubscribeError = window.electronAPI?.onChatStreamError?.(
+    const unsubscribeError = platformAPI?.onChatStreamError?.(
       (data: any) => {
         // Check if this error is for the current agent
         if (data.agentId === agent?.id) {
@@ -417,7 +418,7 @@ const AgentChat: React.FC = () => {
 
       try {
         // Start background chat with the query
-        const result = await window.electronAPI.startBackgroundChat(
+        const result = await platformAPI.startBackgroundChat(
           currentSessionId || undefined,
           agent.id,
           input.trim(),
@@ -455,7 +456,7 @@ const AgentChat: React.FC = () => {
 
     try {
       // Stop the background chat process
-      await window.electronAPI.stopBackgroundChat(agent.id);
+      await platformAPI.stopBackgroundChat(agent.id);
 
       // Update state
       setIsLoading(false);
@@ -499,7 +500,7 @@ const AgentChat: React.FC = () => {
           try {
             setIsLoading(true);
             const fetchedMessages =
-              await window.electronAPI.fetchSessionMessages(selectedSession.id);
+              await platformAPI.fetchSessionMessages(selectedSession.id);
 
             // Filter out system messages when setting from fetched messages
             const sessionMessages = fetchedMessages.filter(
@@ -561,7 +562,7 @@ const AgentChat: React.FC = () => {
     if (confirmed) {
       try {
         // User approved - execute the tool
-        const result = await window.electronAPI.executeAgentTool(
+        const result = await platformAPI.executeAgentTool(
           agent.id,
           toolName,
           args,

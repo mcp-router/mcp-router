@@ -1,5 +1,6 @@
 import React from "react";
 import { useAuthStore } from "@/frontend/stores";
+import { platformAPI } from "@/frontend/lib/platform-api";
 import LoginScreen from "../setup/LoginScreen";
 
 interface AgentAuthGuardProps {
@@ -10,7 +11,7 @@ const AgentAuthGuard: React.FC<AgentAuthGuardProps> = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
 
   const handleLogin = () => {
-    window.electronAPI.login();
+    platformAPI.login();
   };
 
   if (!isAuthenticated) {

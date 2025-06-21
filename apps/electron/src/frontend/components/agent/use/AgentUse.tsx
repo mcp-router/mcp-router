@@ -29,6 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../ui/dialog";
+import { platformAPI } from "@/frontend/lib/platform-api";
 
 /**
  * AgentUse Component
@@ -118,7 +119,7 @@ const AgentUse: React.FC = () => {
 
     setIsDeleting(true);
     try {
-      await window.electronAPI.deleteDeployedAgent(id);
+      await platformAPI.deleteDeployedAgent(id);
       toast.success(t("agents.success.deleted"));
 
       // Navigate away first before removing from store

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { RequestLogEntry } from "@/types/log-types";
+import { platformAPI } from "@/frontend/lib/platform-api";
 
 interface RequestLogsParams {
   serverId?: string;
@@ -40,7 +41,7 @@ export const useRequestLogs = (
     try {
       // console.log(`[useRequestLogs] Fetching request log:`, params);
 
-      const result = await window.electronAPI.getRequestLogs({
+      const result = await platformAPI.getRequestLogs({
         serverId: params.serverId || undefined,
         clientId: params.clientId || undefined,
         startDate: params.startDate,

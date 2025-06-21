@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { AppSettings } from "@/types/settings-types";
+import { platformAPI } from "../lib/platform-api";
 
 interface UserInfo {
   userId: string;
@@ -103,8 +104,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       setLoggingIn(true);
       setLoginError(null);
 
-      // Call Electron API to start login flow
-      await window.electronAPI.login();
+      // Call Platform API to start login flow
+      await platformAPI.login();
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : "Login failed");
       throw error;
@@ -117,8 +118,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { setAuthenticated, setUserData, setUserInfo, clearErrors } = get();
 
     try {
-      // Call Electron API to clear stored auth data
-      await window.electronAPI.logout();
+      // Call Platform API to clear stored auth data
+      await platformAPI.logout();
 
       // Clear local state
       setAuthenticated(false);
@@ -153,9 +154,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       setActivating(true);
       setActivationError(null);
 
-      // Call Electron API to activate with the code
+      // Call Platform API to activate with the code
       const result =
-        await window.electronAPI.submitInvitationCode(invitationCode);
+        await platformAPI.submitInvitationCode(invitationCode);
 
       if (result) {
         setUserData({
@@ -190,11 +191,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       // First check activation status
-      const isActivated = await window.electronAPI.checkActivation();
+      const isActivated = await platformAPI.checkActivation();
       setActivated(isActivated);
 
       // Then check auth status with optional force refresh
-      const status = await window.electronAPI.getAuthStatus(forceRefresh);
+      const status = await platformAPI.getAuthStatus(forceRefresh);
 
       setAuthenticated(status.authenticated);
       setUserData({
@@ -236,7 +237,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       // Refresh credits by getting the full auth status
-      const status = await window.electronAPI.getAuthStatus();
+      const status = await platformAPI.getAuthStatus();
       // Credits are now part of user info
       if (status.authenticated && status.user) {
         setCredits(status.user.creditBalance || 0);
@@ -250,8 +251,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   subscribeToAuthChanges: () => {
     const { setAuthenticated, setUserInfo } = get();
 
-    // Subscribe to auth status changes from Electron
-    const unsubscribe = window.electronAPI.onAuthStatusChanged(
+    // Subscribe to auth status changes from Platform API
+    const unsubscribe = platformAPI.onAuthStatusChanged(
       (status: {
         loggedIn: boolean;
         userId?: string;
@@ -281,7 +282,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const isAuthenticated = !!(settings.authToken && settings.userId);
 
     // Use checkActivation to determine activation status
-    const isActivated = await window.electronAPI.checkActivation();
+    const isActivated = await platformAPI.checkActivation();
 
     setAuthenticated(isAuthenticated);
     setActivated(isActivated);

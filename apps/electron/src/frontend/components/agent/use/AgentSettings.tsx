@@ -16,6 +16,7 @@ import { useAgentStore } from "../../../stores";
 import { cn } from "../../../../lib/utils/frontend/tailwind-utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
 import { toast } from "sonner";
+import { platformAPI } from "@/frontend/lib/platform-api";
 
 interface ServerConfigVariable {
   name: string;
@@ -279,7 +280,7 @@ const AgentSettings: React.FC = () => {
         mcpServers: updatedServers,
       };
 
-      await window.electronAPI.updateDeployedAgent(agent.id, updatedAgent);
+      await platformAPI.updateDeployedAgent(agent.id, updatedAgent);
 
       // Update the Zustand store to reflect changes
       updateDeployedAgent(agent.id, updatedAgent);

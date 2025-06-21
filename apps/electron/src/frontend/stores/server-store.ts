@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { MCPServer, MCPServerConfig } from "@mcp-router/shared";
+import { platformAPI } from "../lib/platform-api";
 
 interface ServerState {
   // Server data
@@ -114,8 +115,8 @@ export const useServerStore = create<ServerState>((set, get) => ({
       // Update status to starting immediately for UI feedback
       setServerStatus(id, "starting");
 
-      // Call Electron API
-      await window.electronAPI.startMcpServer(id);
+      // Call Platform API
+      await platformAPI.startMcpServer(id);
 
       // The actual status will be updated via server status polling
       // or through IPC events from the main process
@@ -139,8 +140,8 @@ export const useServerStore = create<ServerState>((set, get) => ({
       // Update status to stopping immediately for UI feedback
       setServerStatus(id, "stopping");
 
-      // Call Electron API
-      await window.electronAPI.stopMcpServer(id);
+      // Call Platform API
+      await platformAPI.stopMcpServer(id);
 
       // The actual status will be updated via server status polling
     } catch (error) {
@@ -160,7 +161,7 @@ export const useServerStore = create<ServerState>((set, get) => ({
       setLoading(true);
       setError(null);
 
-      const servers = await window.electronAPI.listMcpServers();
+      const servers = await platformAPI.listMcpServers();
       setServers(servers);
     } catch (error) {
       setError(
@@ -177,7 +178,7 @@ export const useServerStore = create<ServerState>((set, get) => ({
     try {
       setError(null);
 
-      const newServer = await window.electronAPI.addMcpServer(config);
+      const newServer = await platformAPI.addMcpServer(config);
       addServer(newServer);
     } catch (error) {
       setError(
@@ -194,7 +195,7 @@ export const useServerStore = create<ServerState>((set, get) => ({
       setUpdating(id, true);
       setError(null);
 
-      const updatedServer = await window.electronAPI.updateMcpServerConfig(
+      const updatedServer = await platformAPI.updateMcpServerConfig(
         id,
         config,
       );
@@ -216,7 +217,7 @@ export const useServerStore = create<ServerState>((set, get) => ({
       setUpdating(id, true);
       setError(null);
 
-      await window.electronAPI.removeMcpServer(id);
+      await platformAPI.removeMcpServer(id);
       removeServer(id);
     } catch (error) {
       setError(

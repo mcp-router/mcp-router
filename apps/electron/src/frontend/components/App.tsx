@@ -32,6 +32,7 @@ import {
   useUIStore,
   initializeStores,
 } from "../stores";
+import { platformAPI } from "../lib/platform-api";
 import { IconProgress } from "@tabler/icons-react";
 
 // Lazy load components
@@ -105,7 +106,7 @@ const App: React.FC = () => {
 
   // Subscribe to protocol URL events
   useEffect(() => {
-    const unsubscribe = window.electronAPI.onProtocolUrl((url) => {
+    const unsubscribe = platformAPI.onProtocolUrl((url) => {
       handleProtocolUrl(url);
     });
 
@@ -120,7 +121,7 @@ const App: React.FC = () => {
       // Check if we're on an agents page
       if (location.pathname.startsWith("/agents")) {
         try {
-          const result = await window.electronAPI.checkPackageManagers();
+          const result = await platformAPI.checkPackageManagers();
           // Show overlay if either package manager is missing
           if (!result.pnpm || !result.uv) {
             setPackageManagerOverlay(true);
@@ -157,7 +158,7 @@ const App: React.FC = () => {
       try {
         if (url.hostname === "agent") {
           const agentId = url.searchParams.get("id");
-          const result = await window.electronAPI.importAgent(agentId);
+          const result = await platformAPI.importAgent(agentId);
           if (result) {
             // Show success message for agent import
             toast.success("Agent successfully imported!", {
@@ -172,7 +173,7 @@ const App: React.FC = () => {
           const token = url.searchParams.get("token");
           const state = url.searchParams.get("state");
           if (token && state) {
-            await window.electronAPI.handleAuthToken(token, state);
+            await platformAPI.handleAuthToken(token, state);
             // Navigate to settings page
             navigate("/settings");
           }

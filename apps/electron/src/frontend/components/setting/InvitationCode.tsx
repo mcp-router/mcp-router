@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Label } from "../ui/label";
 import { cn } from "@mcp-router/shared";
+import { platformAPI } from "@/frontend/lib/platform-api";
 import { Badge } from "../ui/badge";
 import { Alert, AlertDescription } from "../ui/alert";
 
@@ -51,8 +52,8 @@ export const InvitationCode: React.FC<InvitationCodeProps> = ({
     setError(null);
 
     try {
-      // Use the Electron API to get an invitation
-      const data = await window.electronAPI.fetchInvitation();
+      // Use the platform API to get an invitation
+      const data = await platformAPI.fetchInvitation();
 
       if (data.success) {
         setInvitation(data);
