@@ -9,7 +9,7 @@ import {
 import {
   applyDisplayRules,
   applyRulesToInputSchema,
-} from "../lib/utils/shared/rule-utils";
+} from "../lib/utils/backend/rule-utils";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp";
@@ -35,8 +35,8 @@ import {
   parseResourceUri,
   createResourceUri,
   createUriVariants,
-} from "../lib/utils/shared/uri-utils";
-import { summarizeResponse } from "../lib/utils/shared/response-utils";
+  summarizeResponse,
+} from "@mcp-router/shared";
 import { AgentToolHandler } from "./agent-tools";
 import { logError } from "../lib/utils/backend/error-handler";
 

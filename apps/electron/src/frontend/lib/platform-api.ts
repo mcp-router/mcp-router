@@ -5,9 +5,9 @@
  * It abstracts away the direct use of window.electronAPI to enable future web platform support.
  */
 
-import { TokenGenerateOptions, TokenScope } from "@/types/token-types";
-import { AppSettings } from "@/types/settings-types";
-import { Agent, AgentConfig, DeployedAgent, MCPServerConfig } from "@/types";
+import { TokenGenerateOptions, TokenScope } from "@mcp-router/shared";
+import { AppSettings } from "@mcp-router/shared";
+import { Agent, AgentConfig, DeployedAgent, MCPServerConfig } from "@mcp-router/shared";
 import { McpAppsManagerResult, McpApp } from "@/main/services/mcp-apps-service";
 import { ServerPackageUpdates } from "@/lib/utils/backend/package-version-resolver";
 

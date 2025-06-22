@@ -3,7 +3,7 @@ import {
   TokenGenerateOptions,
   TokenValidationResult,
   TokenScope,
-} from "@/types/token-types";
+} from "@mcp-router/shared";
 import { BaseService } from "./base-service";
 import { Singleton } from "../../lib/utils/backend/singleton";
 import { TokenRepository, getTokenRepository } from "@mcp-router/database";

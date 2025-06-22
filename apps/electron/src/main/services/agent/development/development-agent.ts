@@ -3,7 +3,7 @@ import {
   MCPServerConfig,
   MCPTool,
   MCPAgentToolPermission,
-} from "../../../../types";
+} from "@mcp-router/shared";
 import { AgentBase, BaseAgentInfo } from "../shared/agent-base";
 import { logError, logInfo } from "../../../../lib/utils/backend/error-handler";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";

@@ -15,10 +15,12 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
-    "tailwind-merge": "^3.3.0"
+    "tailwind-merge": "^3.3.0",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.1",
+    "@types/uuid": "^10.0.0",
     "typescript": "^5.8.3"
   }
 }

@@ -22,7 +22,7 @@ import {
 import {
   validateMcpServerJson,
   processMcpServerConfigs,
-} from "@/lib/utils/shared/mcp-server-utils";
+} from "@mcp-router/shared";
 import { toast } from "sonner";
 import { Textarea } from "@/frontend/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/frontend/components/ui/alert";
@@ -30,7 +30,7 @@ import { Input } from "@/frontend/components/ui/input";
 import { Label } from "@/frontend/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/frontend/components/ui/tabs";
 import { v4 as uuidv4 } from "uuid";
-import { MCPServerConfig } from "@/types";
+import { MCPServerConfig } from "@mcp-router/shared";
 import { Checkbox } from "@/frontend/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../../ui/radio-group";
 

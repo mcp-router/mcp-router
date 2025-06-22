@@ -23,6 +23,7 @@
     "@ai-sdk/react": "^1.2.12",
     "@mcp-router/database": "workspace:*",
     "@mcp-router/shared": "workspace:*",
+    "@mcp-router/tailwind-config": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

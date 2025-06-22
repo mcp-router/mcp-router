@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useState } from "react";
-import { TokenScope } from "@/types/token-types";
+import { TokenScope } from "@mcp-router/shared";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,

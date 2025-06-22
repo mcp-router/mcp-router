@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { AppSettings } from "@/types/settings-types";
+import { AppSettings } from "@mcp-router/shared";
 import { platformAPI } from "../lib/platform-api";
 
 interface UserInfo {

@@ -14,7 +14,7 @@ import {
   syncServersFromClientConfig,
   extractConfigInfo,
 } from "../mcp-config-importer";
-import { TokenScope } from "@/types/token-types";
+import { TokenScope } from "@mcp-router/shared";
 
 // 対応アプリが多くて複雑になってきたら、ストラテジーパターンに分けることを検討
 

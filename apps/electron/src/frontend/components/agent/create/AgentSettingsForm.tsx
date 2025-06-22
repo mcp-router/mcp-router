@@ -1,5 +1,5 @@
 import React from "react";
-import { AgentConfig } from "../../../../types";
+import { AgentConfig } from "@mcp-router/shared";
 import { McpSettings } from "./McpSettings";
 import { UsageSettings } from "./UsageSettings";
 import { Separator } from "../../ui/separator";

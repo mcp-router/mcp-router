@@ -9,9 +9,9 @@ import {
 import { getSettingsService } from "@/main/services/settings-service";
 import path from "node:path";
 import { MCPServerManager } from "./main/mcp-server-manager";
-import { MCPServerConfig } from "./types";
+import { MCPServerConfig } from "@mcp-router/shared";
 import { getTokenService } from "@/main/services/token-service";
-import { TokenScope } from "@/types/token-types";
+import { TokenScope } from "@mcp-router/shared";
 import { setEncryptionInitialized } from "./lib/utils/backend/encryption-utils";
 import {
   fetchMcpServersFromIndex,

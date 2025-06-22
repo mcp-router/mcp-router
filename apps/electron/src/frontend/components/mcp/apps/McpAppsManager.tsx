@@ -23,7 +23,7 @@ import {
 } from "../../ui/dialog";
 import HowToUse, { HowToUseHandle } from "./HowToUse";
 import { toast } from "sonner";
-import { TokenScope } from "@/types/token-types";
+import { TokenScope } from "@mcp-router/shared";
 import { ScrollArea } from "../../ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
 // @ts-ignore

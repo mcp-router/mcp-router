@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   RequestLogEntry,
   TimeSeriesDataPoint,
-} from "@/types/log-types";
+} from "@mcp-router/shared";
 import { platformAPI } from "@/frontend/lib/platform-api";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";

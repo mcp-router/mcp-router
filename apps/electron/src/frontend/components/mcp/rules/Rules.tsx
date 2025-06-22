@@ -6,7 +6,7 @@ import {
   DEFAULT_DISPLAY_RULES,
   RuleVariables,
   ToolParameterSchemaRule,
-} from "@/types/rule-types";
+} from "@mcp-router/shared";
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
 import { Label } from "../../ui/label";

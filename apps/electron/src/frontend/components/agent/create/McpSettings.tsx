@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { AgentConfig, MCPServerConfig, MCPTool } from "../../../../types";
+import { AgentConfig, MCPServerConfig, MCPTool } from "@mcp-router/shared";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";

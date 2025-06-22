@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { RequestLogEntry } from "@/types/log-types";
+import { RequestLogEntry } from "@mcp-router/shared";
 import { platformAPI } from "@/frontend/lib/platform-api";
 
 interface RequestLogsParams {

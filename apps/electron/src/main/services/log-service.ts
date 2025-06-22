@@ -6,7 +6,7 @@ import {
   ClientStats,
   ServerStats,
   RequestTypeStats,
-} from "@/types/log-types";
+} from "@mcp-router/shared";
 import { Singleton } from "../../lib/utils/backend/singleton";
 import { LogRepository, getLogRepository } from "@mcp-router/database";
 

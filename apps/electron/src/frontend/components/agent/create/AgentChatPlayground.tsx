@@ -12,7 +12,7 @@ import {
   BreadcrumbPage,
 } from "../../ui/breadcrumb";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
-import { AgentConfig, MCPServerConfig } from "../../../../types";
+import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
 import { useTranslation } from "react-i18next";
 import ChatInterface from "./ChatInterface";
 import ServerSettingsForm from "./ServerSettingsForm";

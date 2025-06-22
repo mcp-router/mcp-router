@@ -1,5 +1,5 @@
 import React from "react";
-import { RequestLogEntry } from "@/types/log-types";
+import { RequestLogEntry } from "@mcp-router/shared";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import { Button } from "@/frontend/components/ui/button";
 import { Card } from "@/frontend/components/ui/card";
 import { ScrollArea } from "@/frontend/components/ui/scroll-area";
 import { useTranslation } from "react-i18next";
-import { formatDateI18n } from "../../../../../lib/utils/shared/date-utils";
+import { formatDateI18n } from "@mcp-router/shared";
 
 interface LogDetailModalProps {
   log: RequestLogEntry;

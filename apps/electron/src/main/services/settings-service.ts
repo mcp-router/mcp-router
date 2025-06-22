@@ -1,4 +1,4 @@
-import { AppSettings } from "@/types/settings-types";
+import { AppSettings } from "@mcp-router/shared";
 import { BaseService } from "./base-service";
 import { Singleton } from "../../lib/utils/backend/singleton";
 import {

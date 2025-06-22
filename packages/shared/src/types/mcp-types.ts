@@ -52,6 +52,9 @@ export interface MCPServer extends MCPServerConfig {
   prompts?: MCPPrompt[];
 }
 
+// Agent type alias for backward compatibility
+export type Agent = AgentConfig;
+
 // Agent関連の型定義
 export interface AgentConfig {
   id: string;

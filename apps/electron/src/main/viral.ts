@@ -1,5 +1,5 @@
 import { machineIdSync } from "node-machine-id";
-import { AppSettings } from "@/types/settings-types";
+import { AppSettings } from "@mcp-router/shared";
 import { getSettingsService } from "@/main/services/settings-service";
 import { API_BASE_URL } from "../main";
 import { fetchWithTokenJson } from "../lib/utils/backend/fetch-utils";

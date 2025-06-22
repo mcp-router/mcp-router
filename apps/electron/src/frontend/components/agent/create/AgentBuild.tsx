@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { AgentConfig } from "../../../../types";
+import { AgentConfig } from "@mcp-router/shared";
 import { platformAPI } from "@/frontend/lib/platform-api";
 import { Button } from "../../ui/button";
 import {

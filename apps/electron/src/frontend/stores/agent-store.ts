@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { AgentConfig, DeployedAgent } from "@mcp-router/shared";
-import { AgentChatMessage } from "@/types/agent-api";
+import { AgentChatMessage } from "@mcp-router/shared";
 import { Message } from "@ai-sdk/react";
 import { platformAPI } from "../lib/platform-api";
 

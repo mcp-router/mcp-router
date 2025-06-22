@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AgentConfig } from "../../../../types";
+import { AgentConfig } from "@mcp-router/shared";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
 import { Button } from "../../ui/button";

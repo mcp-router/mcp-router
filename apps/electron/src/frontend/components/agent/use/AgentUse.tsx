@@ -7,7 +7,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { DeployedAgent } from "../../../../types";
+import { DeployedAgent } from "@mcp-router/shared";
 import { Button } from "../../ui/button";
 import { toast } from "sonner";
 import { useAgentStore } from "../../../stores";

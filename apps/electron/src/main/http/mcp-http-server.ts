@@ -8,8 +8,8 @@ import { listMcpApps } from "@/main/services/mcp-apps-service";
 import {
   validateMcpServerJson,
   processMcpServerConfigs,
-} from "../../lib/utils/shared/mcp-server-utils";
-import { TokenScope } from "@/types/token-types";
+} from "@mcp-router/shared";
+import { TokenScope } from "@mcp-router/shared";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
 
 /**

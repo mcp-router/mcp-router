@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { DeployedAgent } from "../../../../types";
+import { DeployedAgent } from "@mcp-router/shared";
 import { Button } from "../../ui/button";
 import {
   Card,

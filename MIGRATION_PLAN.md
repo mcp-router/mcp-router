@@ -1,133 +1,228 @@
-⏺ MCP Router モノレポ移行計画
+# MCP Router モノレポ移行計画
 
-1. パッケージ構成設計
+## 現在の進捗状況
+
+### ✅ 完了済み
+- モノレポ構造の作成（apps/electron, packages/*）
+- pnpmワークスペースとTurboの設定
+- packages/shared（型定義、ユーティリティ、ロケール）
+- packages/database（SQLiteリポジトリ層）
+- 型システムとインポートパスの更新
+- 開発スクリプトの整備
+
+### 🚧 進行中
+- packages/frontend（ディレクトリのみ作成済み）
+- packages/api（基本構造のみ、実装未完了）
+- packages/platform-api（ディレクトリのみ）
+
+### ❌ 未着手
+- apps/web（Next.jsアプリ）
+- フロントエンドコンポーネントの移行
+- tRPC APIの実装
+- 認証・セキュリティの抽象化
+
+## 1. パッケージ構成（更新版）
 
 ```
 mcp-router/
 ├── apps/
-│   ├── electron/        # Electronアプリケーション
-│   └── web/            # Next.js Webアプリケーション
+│   ├── electron/        # Electronアプリケーション ✅
+│   └── web/            # Next.js Webアプリケーション ❌
 ├── packages/
-│   ├── api/            # バックエンドAPI・サービス層
-│   ├── frontend/       # 共通フロントエンドコンポーネント
-│   ├── shared/         # 共通型定義・ユーティリティ
-│   └── database/       # データベース層（新規）
-└── pnpm-workspace.yaml
+│   ├── api/            # バックエンドAPI・サービス層 🚧
+│   ├── frontend/       # 共通フロントエンドコンポーネント 🚧
+│   ├── shared/         # 共通型定義・ユーティリティ ✅
+│   ├── database/       # データベース層 ✅
+│   └── platform-api/   # プラットフォーム抽象化層 🚧
+└── pnpm-workspace.yaml ✅
 ```
 
-2. 段階的移行計画
+## 2. 更新された段階的移行計画
 
-フェーズ1: 基盤整備
+### フェーズ1: 基盤整備（✅ 完了）
+- [x] packages/shared の構築
+- [x] packages/database の作成
+- [x] Turboビルドシステムの設定
+- [x] 基本的な開発スクリプトの整備
 
-1. packages/shared の構築
-   - src/lib/types/ → packages/shared/src/types/
-   - src/types.ts → packages/shared/src/types/index.ts
-   - src/lib/utils/ の共通ユーティリティ → packages/shared/src/utils/
-   - src/locales/ → packages/shared/src/locales/
-2. packages/database の作成
-   - src/lib/database/ → packages/database/src/
-   - SQLiteマネージャーとリポジトリパターンの移行
-   - better-sqlite3依存関係の移動
+### フェーズ2: フロントエンドパッケージの作成（🚧 次の優先事項 - 簡略化版）
 
-フェーズ2: API層の分離
+#### シンプルなアプローチ：一括移行
 
-1. packages/api の拡張
-   - src/lib/services/ → packages/api/src/services/
-   - src/main/handlers/ → packages/api/src/handlers/
-   - tRPCルーターの統合（既存のボイラープレートを拡張）
-   - MCP固有のAPIエンドポイント追加
-2. 依存関係の整理
-   - @electron-monorepo/shared と @electron-monorepo/database への依存追加
-   - サービスクラスのtRPCプロシージャへの変換
+メインプロセスが使用するファイルは限定的なため、それ以外を全てpackages/frontendに移動する：
 
-フェーズ3: フロントエンドの統合
+1. **Electronアプリに残すファイル**
+   - [ ] `src/main.ts` - メインプロセスエントリーポイント
+   - [ ] `src/main/` - メインプロセス関連ファイル
+   - [ ] `src/preload.ts` - プリロードスクリプト
+   - [ ] `src/lib/utils/backend/` - Node.js依存のユーティリティ
+   - [ ] `src/lib/get-env.ts` - 環境変数チェック
+   - [ ] メインプロセスが使用する型定義とユーティリティ
 
-1. packages/frontend の拡張
-   - src/components/ → packages/frontend/src/components/
-   - src/hooks/ → packages/frontend/src/hooks/
-   - src/lib/stores/ → packages/frontend/src/stores/
-   - スタイルファイルの移行
-2. コンポーネントの整理
-   - Electron固有コンポーネントの分離
-   - Web/Electron共通コンポーネントの識別
-   - プラットフォーム固有のロジックの抽象化
+2. **packages/frontendに移動するファイル**
+   - [ ] `src/app.tsx` - Reactエントリーポイント
+   - [ ] `src/components/` - 全UIコンポーネント
+   - [ ] `src/frontend/` - フロントエンド固有のファイル
+   - [ ] `src/hooks/` - Reactフック
+   - [ ] `src/pages/` - ページコンポーネント
+   - [ ] `src/layout/` - レイアウトコンポーネント
+   - [ ] `src/lib/stores/` - Zustandストア
+   - [ ] `src/lib/utils/frontend/` - フロントエンドユーティリティ
+   - [ ] `src/lib/platform-api.ts` - プラットフォーム抽象化
+   - [ ] フロントエンドのみが使用する共有ユーティリティと型定義
+   - [ ] スタイル関連ファイル（CSS、Tailwind設定）
 
-フェーズ4: Electronアプリの再構築
+3. **共有リソースの処理**
+   - [ ] メインプロセスとフロントエンドの両方が使用するファイルは一時的に複製
+   - [ ] または`@mcp-router/shared`に移動
+   - [ ] 将来的に整理・統合
 
-1. apps/electron の更新
-   - src/main.ts → apps/electron/src/main.ts
-   - src/main/ → apps/electron/src/main/
-   - src/preload.ts → apps/electron/src/preload.ts
-   - レンダラープロセスの統合
-2. IPC通信の再設計
-   - electron-trpcを使用したIPC通信への移行
-   - 既存のIPCハンドラーをtRPCプロシージャに変換
+### フェーズ3: API層の実装（🚧 並行作業可能）
 
-フェーズ5: Webアプリケーションの実装
+1. **packages/api の完成**
+   - [ ] tRPCルーターの実装
+   - [ ] 既存IPCハンドラーのtRPCプロシージャへの変換
+   - [ ] サービス層の移行（apps/electron/src/lib/services → packages/api/src/services）
+   - [ ] 認証ミドルウェアの実装
 
-1. apps/web の拡張
-   - 共通コンポーネントの利用
-   - tRPC APIクライアントの設定
-   - 認証フローの実装
-   - MCPサーバー管理UIの実装
+2. **Electronアプリの更新**
+   - [ ] electron-trpcの統合
+   - [ ] IPCからtRPCへの移行
+   - [ ] preloadスクリプトの更新
 
-3. 技術的考慮事項
+### フェーズ4: Webアプリケーションの作成
 
-依存関係の管理
+1. **apps/web の初期化**
+   - [ ] Next.js 14+のセットアップ
+   - [ ] tRPCクライアントの設定
+   - [ ] 共通コンポーネントの統合
+   - [ ] 認証フローの実装
 
-- React バージョンの統一（18.2.0 or 19.1.0）
-- TypeScript設定の統一
-- ESLint/Prettier設定の共有
+2. **機能実装**
+   - [ ] MCPサーバー管理UI
+   - [ ] エージェント機能
+   - [ ] ログビューア
+   - [ ] 設定画面
 
-ビルドシステム
+### フェーズ5: 最適化と仕上げ
 
-- 各パッケージに独立したビルドスクリプト
-- TypeScript プロジェクトリファレンスの設定
-- 共通のtsconfig.base.jsonの作成
+1. **パフォーマンス最適化**
+   - [ ] バンドルサイズの最適化
+   - [ ] 遅延読み込みの実装
+   - [ ] キャッシュ戦略の実装
 
-データベースアクセス
+2. **品質保証**
+   - [ ] E2Eテストの追加
+   - [ ] CI/CDパイプラインの更新
+   - [ ] ドキュメントの更新
 
-- Electron: 直接データベースアクセス
-- Web: API経由でのアクセス（tRPC）
+## 3. 技術的考慮事項（更新版）
 
-認証・セキュリティ
+### 解決済み
+- ✅ TypeScript設定の統一
+- ✅ pnpmワークスペースの設定
+- ✅ Turboによるビルドオーケストレーション
+- ✅ 共通型定義の集約
 
-- 共通認証ロジックのpackages/apiへの集約
-- プラットフォーム固有の認証フローの分離
+### 対応が必要
+- ⚠️ React バージョンの統一（現在19.1.0使用中）
+- ⚠️ フロントエンドパッケージのビルド設定
+- ⚠️ API層のセキュリティ設計
+- ⚠️ Web版の認証フロー設計
 
-4. 移行作業の優先順位
+## 4. 次のアクションアイテム
 
-1. 高優先度
-   - shared パッケージの作成（型定義の共有）
-   - database パッケージの分離
-   - API層のtRPC化
-2. 中優先度
-   - フロントエンドコンポーネントの移行
-   - Electronアプリの再構築
-3. 低優先度
-   - Webアプリの新機能実装
-   - 最適化・リファクタリング
+### 即座に実行可能（シンプルアプローチ）
+1. メインプロセスが使用するファイルの特定（完了）
+2. packages/frontendのpackage.json作成
+3. フロントエンド関連ファイルの一括移行
+4. インポートパスの更新
+5. ビルド設定の調整
 
-5. リスクと対策
+### 短期目標（1-2週間）
+1. フロントエンドパッケージの完成
+2. tRPC APIの基本実装
+3. Electronアプリのリファクタリング
 
-リスク
+### 中期目標（1ヶ月）
+1. Web版の初期実装
+2. 認証システムの統合
+3. 基本機能の動作確認
 
+## 5. リスクと対策（更新版）
+
+### 新たに識別されたリスク
+- **インポートパスの不整合**: 一部のファイルで相対パスが残存
+  - 対策: 自動化ツールによる一括変換
+- **フロントエンドの分離複雑性**: Electron固有機能の抽象化が困難
+  - 対策: 段階的な分離とインターフェース設計
+- **依存関係の循環参照**: フロントエンドが`apps/electron/src/lib`に依存
+  - 対策: 共有ユーティリティと型定義を先に`@mcp-router/shared`へ移行
+- **プラットフォーム固有機能の抽象化不足**: platformAPIの拡張が必要
+  - 対策: インターフェース設計を先行実施
+
+### 継続的なリスク
 - 既存機能の破壊
-- パフォーマンスの低下
 - 開発効率の一時的低下
+- パフォーマンスへの影響
 
-対策
+## 6. 成功指標（進捗付き）
 
-- 段階的移行による影響範囲の限定
-- 十分なテストの実施
-- 古いコードと新しいコードの並行運用期間の設定
-- ロールバック計画の準備
+- [x] モノレポ構造の確立
+- [x] 共通パッケージの作成
+- [ ] すべてのテストが通過
+- [ ] ビルド時間の20%短縮
+- [ ] コード再利用率50%以上
+- [ ] Web版の基本機能実装
+- [ ] 開発者体験の向上（ホットリロード、型安全性）
 
-6. 成功指標
+## 7. 推定完了時期
 
-- すべてのテストが通過
-- ビルド時間の短縮
-- コードの再利用率向上
-- 新機能追加の容易さ
-- Web版とElectron版の機能パリティ
+現在の進捗: **約40%完了**
 
+- フェーズ2（フロントエンドパッケージ）: 1週間（簡略化により短縮）
+  - 一括移行: 3日
+  - ビルド設定とテスト: 4日
+- フェーズ3（API層）: 2週間
+- フェーズ4（Webアプリ）: 3週間
+- フェーズ5（最適化）: 1週間
+
+**推定完了時期: 7週間**
+
+## 8. フロントエンドパッケージ化の詳細計画
+
+### 依存関係の分析結果
+
+1. **`apps/electron/src/lib`への依存**
+   - 8つの共有ユーティリティファイル
+   - 5つの型定義ファイル
+   - これらは全てプラットフォーム非依存
+
+2. **プラットフォーム固有機能**
+   - パッケージマネージャーインストール
+   - アプリ更新機能
+   - アプリ再起動
+   - プロトコルURL処理
+
+3. **既存の抽象化**
+   - `platformAPI`が既に存在し、全てのIPC通信を抽象化
+   - コンポーネントは直接`window.electronAPI`を使用していない
+
+### 推奨される移行順序
+
+1. **Step 1: 共有リソースの移行**（1週間）
+   - ユーティリティファイルの移行
+   - 型定義の移行
+   - インポートパスの更新
+
+2. **Step 2: プラットフォーム抽象化の完成**（3日）
+   - platformAPIインターフェースの拡張
+   - Electron固有機能の抽象化
+   - Web用のスタブ実装
+
+3. **Step 3: フロントエンドパッケージ作成**（4日）
+   - パッケージ構造の作成
+   - コンポーネント、ストア、フックの移行
+   - ビルド設定とスタイル設定
+
+この順序により、フロントエンドの独立性を確保し、将来的なWeb版開発の基盤を整えることができます。

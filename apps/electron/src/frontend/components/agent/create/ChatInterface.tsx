@@ -14,8 +14,8 @@ import {
 } from "lucide-react";
 import { EnhancedErrorDisplay } from "../../ui/enhanced-error-display";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
-import { AgentConfig, MCPServerConfig } from "../../../../types";
-import { extractServerVariables } from "../../../../lib/utils/shared/server-variable-utils";
+import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
+import { extractServerVariables } from "@mcp-router/shared";
 import {
   Card,
   CardContent,
