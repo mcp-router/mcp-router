@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DeployedAgent } from "@mcp-router/shared";
-import { Button } from "../../ui/button";
+import { Button } from "@mcp-router/frontend";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../ui/card";
-import { Badge } from "../../ui/badge";
-import { Label } from "../../ui/label";
-import { Textarea } from "../../ui/textarea";
+} from "@mcp-router/frontend";
+import { Badge } from "@mcp-router/frontend";
+import { Label } from "@mcp-router/frontend";
+import { Textarea } from "@mcp-router/frontend";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog";
+} from "@mcp-router/frontend";
 import { Download, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";

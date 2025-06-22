@@ -1,8 +1,8 @@
 import React, { FC, FormEvent, useState, useMemo, useCallback } from "react";
 import { Message } from "ai";
 import { useTranslation } from "react-i18next";
-import { Textarea } from "../../ui/textarea";
-import { Button } from "../../ui/button";
+import { Textarea } from "@mcp-router/frontend";
+import { Button } from "@mcp-router/frontend";
 import {
   Send,
   Check,
@@ -12,8 +12,8 @@ import {
   ChevronUp,
   Square,
 } from "lucide-react";
-import { EnhancedErrorDisplay } from "../../ui/enhanced-error-display";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
+import { EnhancedErrorDisplay } from "@mcp-router/frontend";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/frontend";
 import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
 import { extractServerVariables } from "@mcp-router/shared";
 import {
@@ -23,12 +23,12 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../ui/card";
+} from "@mcp-router/frontend";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "../../ui/collapsible";
+} from "@mcp-router/frontend";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";

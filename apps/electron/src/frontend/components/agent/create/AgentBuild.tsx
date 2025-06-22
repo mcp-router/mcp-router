@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AgentConfig } from "@mcp-router/shared";
 import { platformAPI } from "@/frontend/lib/platform-api";
-import { Button } from "../../ui/button";
+import { Button } from "@mcp-router/frontend";
 import {
   Card,
   CardContent,
@@ -10,8 +10,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../ui/card";
-import { Badge } from "../../ui/badge";
+} from "@mcp-router/frontend";
+import { Badge } from "@mcp-router/frontend";
 import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
+import { Button } from "@mcp-router/frontend";
+import { Skeleton } from "@mcp-router/frontend";
 import {
   Clipboard,
   CheckCircle2,
@@ -11,11 +11,11 @@ import {
   Share2,
   Lock,
 } from "lucide-react";
-import { Label } from "../ui/label";
+import { Label } from "@mcp-router/frontend";
 import { cn } from "@mcp-router/shared";
 import { platformAPI } from "@/frontend/lib/platform-api";
-import { Badge } from "../ui/badge";
-import { Alert, AlertDescription } from "../ui/alert";
+import { Badge } from "@mcp-router/frontend";
+import { Alert, AlertDescription } from "@mcp-router/frontend";
 
 interface InvitationResponse {
   success: boolean;

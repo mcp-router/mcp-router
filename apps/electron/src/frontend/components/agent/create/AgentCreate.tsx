@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
-import { Button } from "../../ui/button";
-import { Input } from "../../ui/input";
-import { Label } from "../../ui/label";
-import { Textarea } from "../../ui/textarea";
+import { Button } from "@mcp-router/frontend";
+import { Input } from "@mcp-router/frontend";
+import { Label } from "@mcp-router/frontend";
+import { Textarea } from "@mcp-router/frontend";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog";
+} from "@mcp-router/frontend";
 import { toast } from "sonner";
 import {
   Save,
@@ -24,8 +24,8 @@ import {
 } from "lucide-react";
 import AgentChatPlayground from "./AgentChatPlayground";
 import AgentSettingsForm from "./AgentSettingsForm";
-import { Switch } from "../../ui/switch";
-import { Badge } from "../../ui/badge";
+import { Switch } from "@mcp-router/frontend";
+import { Badge } from "@mcp-router/frontend";
 import { useTranslation } from "react-i18next";
 import {
   Breadcrumb,
@@ -34,13 +34,13 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../../ui/breadcrumb";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
+} from "@mcp-router/frontend";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/frontend";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@/frontend/components/ui/resizable";
+} from "@mcp-router/frontend";
 import { platformAPI } from "@/frontend/lib/platform-api";
 
 // エージェントの状態を取得するユーティリティ関数

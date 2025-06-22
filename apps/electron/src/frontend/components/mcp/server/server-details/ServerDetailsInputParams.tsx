@@ -2,8 +2,8 @@ import React from "react";
 import { MCPServer } from "../../../../../types";
 import { useTranslation } from "react-i18next";
 import { Settings, Info } from "lucide-react";
-import { Label } from "@/frontend/components/ui/label";
-import { Input } from "@/frontend/components/ui/input";
+import { Label } from "@mcp-router/frontend";
+import { Input } from "@mcp-router/frontend";
 
 interface ServerDetailsInputParamsProps {
   server: MCPServer;

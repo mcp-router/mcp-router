@@ -8,11 +8,11 @@ import {
 } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DeployedAgent } from "@mcp-router/shared";
-import { Button } from "../../ui/button";
+import { Button } from "@mcp-router/frontend";
 import { toast } from "sonner";
 import { useAgentStore } from "../../../stores";
 import { Settings, Trash2, RefreshCw } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/frontend";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,7 +20,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../../ui/breadcrumb";
+} from "@mcp-router/frontend";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog";
+} from "@mcp-router/frontend";
 import { platformAPI } from "@/frontend/lib/platform-api";
 
 /**

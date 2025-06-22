@@ -5,8 +5,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
+} from "@mcp-router/frontend";
+import { Button } from "@mcp-router/frontend";
 import {
   Package,
   AlertCircle,

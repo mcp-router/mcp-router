@@ -4,14 +4,14 @@ import {
   extractServerVariables,
   ServerVariable,
 } from "@mcp-router/shared";
-import { Badge } from "../../ui/badge";
+import { Badge } from "@mcp-router/frontend";
 import { Database, Server } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../../ui/accordion";
+} from "@mcp-router/frontend";
 import { useTranslation } from "react-i18next";
 
 interface ServerVariableDisplayProps {

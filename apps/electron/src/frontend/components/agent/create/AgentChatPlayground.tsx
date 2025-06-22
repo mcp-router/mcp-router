@@ -1,6 +1,6 @@
 import { FC, useEffect, useState, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
-import { Button } from "../../ui/button";
+import { Button } from "@mcp-router/frontend";
 import { Settings, X } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -10,8 +10,8 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
   BreadcrumbPage,
-} from "../../ui/breadcrumb";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
+} from "@mcp-router/frontend";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/frontend";
 import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
 import { useTranslation } from "react-i18next";
 import ChatInterface from "./ChatInterface";

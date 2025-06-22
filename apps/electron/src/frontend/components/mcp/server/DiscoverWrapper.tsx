@@ -12,8 +12,8 @@ import Manual from "./Manual";
 import ServerSearchBox from "./ServerSearchBox";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/frontend/components/ui/tabs";
-import { Pagination } from "@/frontend/components/ui/pagination";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp-router/frontend";
+import { Pagination } from "@mcp-router/frontend";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -21,7 +21,7 @@ import {
   BreadcrumbLink,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../../ui/breadcrumb";
+} from "@mcp-router/frontend";
 
 const DiscoverWrapper: React.FC = () => {
   const { t } = useTranslation();

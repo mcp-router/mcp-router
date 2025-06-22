@@ -7,9 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/frontend/components/ui/dialog";
-import { Button } from "@/frontend/components/ui/button";
-import { ScrollArea } from "@/frontend/components/ui/scroll-area";
+} from "@mcp-router/frontend";
+import { Button } from "@mcp-router/frontend";
+import { ScrollArea } from "@mcp-router/frontend";
 
 interface HowToUseProps {
   token?: string;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Button } from "../../ui/button";
+import { Button } from "@mcp-router/frontend";
 import { platformAPI } from "@/frontend/lib/platform-api";
 import {
   Card,
@@ -8,24 +8,24 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../ui/card";
-import { Badge } from "../../ui/badge";
+} from "@mcp-router/frontend";
+import { Badge } from "@mcp-router/frontend";
 import { useTranslation } from "react-i18next";
-import { Input } from "../../ui/input";
-import { Checkbox } from "../../ui/checkbox";
-import { Label } from "../../ui/label";
+import { Input } from "@mcp-router/frontend";
+import { Checkbox } from "@mcp-router/frontend";
+import { Label } from "@mcp-router/frontend";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "../../ui/dialog";
+} from "@mcp-router/frontend";
 import HowToUse, { HowToUseHandle } from "./HowToUse";
 import { toast } from "sonner";
 import { TokenScope } from "@mcp-router/shared";
-import { ScrollArea } from "../../ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
+import { ScrollArea } from "@mcp-router/frontend";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp-router/frontend";
 // @ts-ignore
 import claudeIcon from "../../../../../../../public/images/apps/claude.svg";
 // @ts-ignore

@@ -7,10 +7,10 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/frontend/components/ui/dialog";
-import { Button } from "@/frontend/components/ui/button";
-import { Card } from "@/frontend/components/ui/card";
-import { ScrollArea } from "@/frontend/components/ui/scroll-area";
+} from "@mcp-router/frontend";
+import { Button } from "@mcp-router/frontend";
+import { Card } from "@mcp-router/frontend";
+import { ScrollArea } from "@mcp-router/frontend";
 import { useTranslation } from "react-i18next";
 import { formatDateI18n } from "@mcp-router/shared";
 

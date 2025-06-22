@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { platformAPI } from "@/frontend/lib/platform-api";
 import { Terminal, RefreshCw, FileText } from "lucide-react";
-import { ScrollArea } from "@/frontend/components/ui/scroll-area";
-import { Switch } from "@/frontend/components/ui/switch";
-import { Label } from "@/frontend/components/ui/label";
-import { Button } from "@/frontend/components/ui/button";
+import { ScrollArea } from "@mcp-router/frontend";
+import { Switch } from "@mcp-router/frontend";
+import { Label } from "@mcp-router/frontend";
+import { Button } from "@mcp-router/frontend";
 import { toast } from "sonner";
 
 interface ServerDetailsLogsProps {

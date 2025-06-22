@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { AgentConfig } from "@mcp-router/shared";
-import { Label } from "../../ui/label";
-import { Textarea } from "../../ui/textarea";
-import { Button } from "../../ui/button";
-import { Input } from "../../ui/input";
+import { Label } from "@mcp-router/frontend";
+import { Textarea } from "@mcp-router/frontend";
+import { Button } from "@mcp-router/frontend";
+import { Input } from "@mcp-router/frontend";
 import { t } from "i18next";
 import { Loader2, Bot } from "lucide-react";
 import { toast } from "sonner";

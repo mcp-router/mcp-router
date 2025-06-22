@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { Button } from "@mcp-router/frontend";
+import { Input } from "@mcp-router/frontend";
+import { Label } from "@mcp-router/frontend";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from "@mcp-router/frontend";
 
 interface InvitationCodeProps {
   onActivate: (code: string) => Promise<boolean>;

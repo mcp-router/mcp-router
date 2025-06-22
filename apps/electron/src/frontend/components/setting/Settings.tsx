@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@mcp-router/frontend";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from "@mcp-router/frontend";
 import { InvitationCode } from "./InvitationCode";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
+import { Button } from "@mcp-router/frontend";
+import { Badge } from "@mcp-router/frontend";
 import { useThemeStore } from "@/frontend/stores/theme-store";
 import { useAuthStore } from "../../stores";
 import { IconBrandDiscord } from "@tabler/icons-react";

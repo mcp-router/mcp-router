@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Input } from "../../ui/input";
-import { Textarea } from "../../ui/textarea";
+import { Input } from "@mcp-router/frontend";
+import { Textarea } from "@mcp-router/frontend";
 import { Server, Save, Power } from "lucide-react";
-import { Label } from "../../ui/label";
-import { ScrollArea } from "../../ui/scroll-area";
-import { Switch } from "../../ui/switch";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../ui/tabs";
-import { Button } from "../../ui/button";
+import { Label } from "@mcp-router/frontend";
+import { ScrollArea } from "@mcp-router/frontend";
+import { Switch } from "@mcp-router/frontend";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@mcp-router/frontend";
+import { Button } from "@mcp-router/frontend";
 import { DeployedAgent, MCPServerConfig, AgentConfig } from "@mcp-router/shared";
 import { useTranslation } from "react-i18next";
 import { isAgentConfigured } from "@mcp-router/shared";
 import { McpSettings } from "@/frontend/components/agent/create/McpSettings";
 import { useAgentStore } from "../../../stores";
 import { cn } from "@mcp-router/shared";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/frontend";
 import { toast } from "sonner";
 import { platformAPI } from "@/frontend/lib/platform-api";
 

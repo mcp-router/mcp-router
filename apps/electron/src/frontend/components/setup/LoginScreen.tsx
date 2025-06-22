@@ -1,13 +1,13 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "../ui/button";
+import { Button } from "@mcp-router/frontend";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from "@mcp-router/frontend";
 import { IconUserPlus } from "@tabler/icons-react";
 
 interface LoginScreenProps {

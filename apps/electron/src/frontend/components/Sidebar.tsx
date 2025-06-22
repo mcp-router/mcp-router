@@ -25,15 +25,15 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/frontend/components/ui/sidebar";
+} from "@mcp-router/frontend";
 import { ChevronDown, Wrench } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "./ui/collapsible";
-import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
+} from "@mcp-router/frontend";
+import { Button } from "@mcp-router/frontend";
+import { Textarea } from "@mcp-router/frontend";
 import { toast } from "sonner";
 
 const SidebarComponent: React.FC = () => {

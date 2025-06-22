@@ -7,13 +7,13 @@ import {
   useLocation,
 } from "react-router-dom";
 import PageLayout from "./layout/PageLayout";
-import { Toaster } from "./ui/toaster";
+import { ToasterProvider } from "@mcp-router/frontend";
 import { toast } from "sonner";
 import DiscoverWrapper from "@/frontend/components/mcp/server/DiscoverWrapper";
 import Home from "./Home";
 import { useTranslation } from "react-i18next";
 import SidebarComponent from "./Sidebar";
-import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@mcp-router/frontend";
 import McpAppsManager from "@/frontend/components/mcp/apps/McpAppsManager";
 import LogViewer from "@/frontend/components/mcp/log/LogViewer";
 import Rules from "@/frontend/components/mcp/rules/Rules";
@@ -229,7 +229,7 @@ const App: React.FC = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <Toaster />
+      <ToasterProvider />
 
       {/* Package Manager Overlay */}
       <PackageManagerOverlay
