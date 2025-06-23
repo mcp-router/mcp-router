@@ -124,7 +124,9 @@ interface AgentState {
   refreshAgents: () => Promise<void>;
 }
 
-export const createAgentStore = (platformAPI: PlatformAPI): UseBoundStore<StoreApi<AgentState>> => 
+export const createAgentStore = (
+  platformAPI: PlatformAPI,
+): UseBoundStore<StoreApi<AgentState>> =>
   create<AgentState>((set, get) => ({
     // Initial state
     developmentAgents: [],
@@ -633,7 +635,11 @@ export const createAgentStore = (platformAPI: PlatformAPI): UseBoundStore<StoreA
   }));
 
 // Utility selector creators
-export const createAgentSelectors = <T extends ReturnType<typeof createAgentStore>>(useStore: T) => ({
+export const createAgentSelectors = <
+  T extends ReturnType<typeof createAgentStore>,
+>(
+  useStore: T,
+) => ({
   useCurrentAgent: () =>
     useStore(
       (state) => state.currentDevelopmentAgent || state.currentDeployedAgent,

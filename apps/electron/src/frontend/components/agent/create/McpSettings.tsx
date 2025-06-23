@@ -276,11 +276,10 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
         server.command === "pnpm"
           ? serverArgs.filter((arg) => arg !== "dlx")
           : serverArgs;
-      const updateResult =
-        await platformAPI.checkMcpServerPackageUpdates(
-          argsList,
-          server.command as "pnpm" | "uvx",
-        );
+      const updateResult = await platformAPI.checkMcpServerPackageUpdates(
+        argsList,
+        server.command as "pnpm" | "uvx",
+      );
 
       if (
         !updateResult?.success ||

@@ -59,8 +59,7 @@ const PackageManagerOverlay: React.FC<PackageManagerOverlayProps> = ({
   // オーバーレイ表示回数を増加
   const incrementDisplayCount = useCallback(async () => {
     try {
-      const result =
-        await platformAPI.incrementPackageManagerOverlayCount();
+      const result = await platformAPI.incrementPackageManagerOverlayCount();
       if (result.success) {
         setDisplayCount(result.count);
       }

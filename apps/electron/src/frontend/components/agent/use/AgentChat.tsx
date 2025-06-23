@@ -205,172 +205,164 @@ const AgentChat: React.FC = () => {
 
   // Chat Stream Event Handlers
   useEffect(() => {
-    const unsubscribeStart = platformAPI?.onChatStreamStart?.(
-      (data: any) => {
-        // Check if this stream is for the current agent
-        if (data.agentId === agent?.id) {
-          setIsStreaming(true);
-          setIsLoading(true);
+    const unsubscribeStart = platformAPI?.onChatStreamStart?.((data: any) => {
+      // Check if this stream is for the current agent
+      if (data.agentId === agent?.id) {
+        setIsStreaming(true);
+        setIsLoading(true);
 
-          // Create a new assistant message for streaming
-          const streamMessage: Message = {
-            id: `assistant-stream-${Date.now()}`,
-            role: "assistant",
-            content: "",
-            parts: [{ type: "text", text: "" }],
+        // Create a new assistant message for streaming
+        const streamMessage: Message = {
+          id: `assistant-stream-${Date.now()}`,
+          role: "assistant",
+          content: "",
+          parts: [{ type: "text", text: "" }],
+        };
+
+        setCurrentStreamMessage(streamMessage);
+      }
+    });
+
+    const unsubscribeChunk = platformAPI?.onChatStreamChunk?.((data: any) => {
+      // console.log('Stream chunk received in AgentChat:', {
+      //     agentId: data.agentId,
+      //     currentAgentId: agent?.id,
+      //     isStreaming,
+      //     chunkLength: data.chunk?.length,
+      //     messageId: data.messageId,
+      //     isToolInvocation: data.isToolInvocation,
+      //     isCompleteMessage: data.isCompleteMessage,
+      //     hasCompleteMessage: !!data.completeMessage,
+      //     chunk: data.chunk?.substring(0, 100) + (data.chunk?.length > 100 ? '...' : '')
+      // });
+
+      // Check if this chunk is for the current agent
+      if (data.agentId === agent?.id) {
+        // ツール呼び出しメッセージの場合は、メッセージ配列に直接追加
+        if (
+          data.isToolInvocation &&
+          data.completeMessage &&
+          data.isCompleteMessage
+        ) {
+          const completeMessage = data.completeMessage as Message;
+
+          // ツール呼び出し中はローディング状態を維持
+          if (!isLoading) {
+            setIsLoading(true);
+          }
+
+          // ツール実行結果が含まれている場合は、isCallingToolをfalseにする
+          const hasToolResults = completeMessage.parts?.some(
+            (part) =>
+              part.type === "tool-invocation" &&
+              part.toolInvocation?.state === "result",
+          );
+
+          if (hasToolResults) {
+            setIsCallingTool(false);
+          }
+
+          // 完全なメッセージをstoreに追加
+          const existingIndex = messages.findIndex(
+            (msg) => msg.id === completeMessage.id,
+          );
+          if (existingIndex >= 0) {
+            updateMessage(completeMessage.id, completeMessage);
+          } else {
+            addMessage(completeMessage);
+          }
+
+          return; // ツール呼び出しメッセージの場合は、ストリーミング処理をスキップ
+        }
+
+        // 通常のアシスタントメッセージの場合のストリーミング処理
+        if (!data.isToolInvocation) {
+          // ストリーミング状態を開始（まだ開始していない場合）
+          if (!isStreaming) {
+            setIsStreaming(true);
+            setIsLoading(true);
+          }
+
+          // ストリームメッセージを更新
+          const newMessage = {
+            id: data.messageId || `assistant-stream-${Date.now()}`,
+            role: "assistant" as const,
+            content: data.chunk,
+            parts: [{ type: "text" as const, text: data.chunk }],
           };
 
-          setCurrentStreamMessage(streamMessage);
+          setCurrentStreamMessage(newMessage);
         }
-      },
-    );
+      }
+    });
 
-    const unsubscribeChunk = platformAPI?.onChatStreamChunk?.(
-      (data: any) => {
-        // console.log('Stream chunk received in AgentChat:', {
-        //     agentId: data.agentId,
-        //     currentAgentId: agent?.id,
-        //     isStreaming,
-        //     chunkLength: data.chunk?.length,
-        //     messageId: data.messageId,
-        //     isToolInvocation: data.isToolInvocation,
-        //     isCompleteMessage: data.isCompleteMessage,
-        //     hasCompleteMessage: !!data.completeMessage,
-        //     chunk: data.chunk?.substring(0, 100) + (data.chunk?.length > 100 ? '...' : '')
-        // });
+    const unsubscribeEnd = platformAPI?.onChatStreamEnd?.((data: any) => {
+      // console.log('Stream end received:', {
+      //     agentId: data.agentId,
+      //     currentAgentId: agent?.id,
+      //     isStreaming,
+      //     finishReason: data.finishReason,
+      //     willProcess: data.agentId === agent?.id
+      // });
+      // Check if this end event is for the current agent
+      // Remove isStreaming check since it might already be false when this event arrives
+      if (data.agentId === agent?.id) {
+        setIsStreaming(false);
 
-        // Check if this chunk is for the current agent
-        if (data.agentId === agent?.id) {
-          // ツール呼び出しメッセージの場合は、メッセージ配列に直接追加
-          if (
-            data.isToolInvocation &&
-            data.completeMessage &&
-            data.isCompleteMessage
-          ) {
-            const completeMessage = data.completeMessage as Message;
-
-            // ツール呼び出し中はローディング状態を維持
-            if (!isLoading) {
-              setIsLoading(true);
-            }
-
-            // ツール実行結果が含まれている場合は、isCallingToolをfalseにする
-            const hasToolResults = completeMessage.parts?.some(
-              (part) =>
-                part.type === "tool-invocation" &&
-                part.toolInvocation?.state === "result",
-            );
-
-            if (hasToolResults) {
-              setIsCallingTool(false);
-            }
-
-            // 完全なメッセージをstoreに追加
-            const existingIndex = messages.findIndex(
-              (msg) => msg.id === completeMessage.id,
-            );
-            if (existingIndex >= 0) {
-              updateMessage(completeMessage.id, completeMessage);
-            } else {
-              addMessage(completeMessage);
-            }
-
-            return; // ツール呼び出しメッセージの場合は、ストリーミング処理をスキップ
-          }
-
-          // 通常のアシスタントメッセージの場合のストリーミング処理
-          if (!data.isToolInvocation) {
-            // ストリーミング状態を開始（まだ開始していない場合）
-            if (!isStreaming) {
-              setIsStreaming(true);
-              setIsLoading(true);
-            }
-
-            // ストリームメッセージを更新
-            const newMessage = {
-              id: data.messageId || `assistant-stream-${Date.now()}`,
-              role: "assistant" as const,
-              content: data.chunk,
-              parts: [{ type: "text" as const, text: data.chunk }],
-            };
-
-            setCurrentStreamMessage(newMessage);
-          }
-        }
-      },
-    );
-
-    const unsubscribeEnd = platformAPI?.onChatStreamEnd?.(
-      (data: any) => {
-        // console.log('Stream end received:', {
-        //     agentId: data.agentId,
-        //     currentAgentId: agent?.id,
-        //     isStreaming,
-        //     finishReason: data.finishReason,
-        //     willProcess: data.agentId === agent?.id
-        // });
-        // Check if this end event is for the current agent
-        // Remove isStreaming check since it might already be false when this event arrives
-        if (data.agentId === agent?.id) {
-          setIsStreaming(false);
-
-          // Handle different finish reasons
-          if (data.finishReason === "stop") {
-            setIsLoading(false);
-            setIsCallingTool(false);
-
-            // Refresh sessions list after a short delay to ensure server has saved the session (only if authenticated)
-            if (authToken) {
-              const wasNewSession = !currentSessionId;
-              setTimeout(async () => {
-                await fetchChatSessions(agent.id);
-
-                // If this was a new session, auto-select the most recent session
-                if (wasNewSession) {
-                  // Use a state flag to trigger auto-selection after sessions are loaded
-                  setNeedsAutoSelection(true);
-                }
-              }, 1000); // 1 second delay
-            }
-            // Without auth, sessions won't be saved to server but local functionality still works
-          } else if (data.finishReason === "tool-calls") {
-            setIsCallingTool(true);
-          } else if (data.finishReason === "tool-results") {
-            // Tool results have been received, reset tool calling state
-            setIsCallingTool(false);
-            setIsLoading(false);
-          } else {
-            // For other finish reasons (like 'length'), keep both states as they are
-            setIsCallingTool(false);
-          }
-          // Add the completed message to the store (with duplication check)
-          if (currentStreamMessage) {
-            const existingIndex = messages.findIndex(
-              (msg) => msg.id === currentStreamMessage.id,
-            );
-            if (existingIndex >= 0) {
-              updateMessage(currentStreamMessage.id, currentStreamMessage);
-            } else {
-              addMessage(currentStreamMessage);
-            }
-            setCurrentStreamMessage(null);
-          }
-        }
-      },
-    );
-
-    const unsubscribeError = platformAPI?.onChatStreamError?.(
-      (data: any) => {
-        // Check if this error is for the current agent
-        if (data.agentId === agent?.id) {
-          setIsStreaming(false);
+        // Handle different finish reasons
+        if (data.finishReason === "stop") {
           setIsLoading(false);
           setIsCallingTool(false);
-          setCurrentStreamMessage(null);
-          setError(new Error(data.error || "Stream error occurred"));
+
+          // Refresh sessions list after a short delay to ensure server has saved the session (only if authenticated)
+          if (authToken) {
+            const wasNewSession = !currentSessionId;
+            setTimeout(async () => {
+              await fetchChatSessions(agent.id);
+
+              // If this was a new session, auto-select the most recent session
+              if (wasNewSession) {
+                // Use a state flag to trigger auto-selection after sessions are loaded
+                setNeedsAutoSelection(true);
+              }
+            }, 1000); // 1 second delay
+          }
+          // Without auth, sessions won't be saved to server but local functionality still works
+        } else if (data.finishReason === "tool-calls") {
+          setIsCallingTool(true);
+        } else if (data.finishReason === "tool-results") {
+          // Tool results have been received, reset tool calling state
+          setIsCallingTool(false);
+          setIsLoading(false);
+        } else {
+          // For other finish reasons (like 'length'), keep both states as they are
+          setIsCallingTool(false);
         }
-      },
-    );
+        // Add the completed message to the store (with duplication check)
+        if (currentStreamMessage) {
+          const existingIndex = messages.findIndex(
+            (msg) => msg.id === currentStreamMessage.id,
+          );
+          if (existingIndex >= 0) {
+            updateMessage(currentStreamMessage.id, currentStreamMessage);
+          } else {
+            addMessage(currentStreamMessage);
+          }
+          setCurrentStreamMessage(null);
+        }
+      }
+    });
+
+    const unsubscribeError = platformAPI?.onChatStreamError?.((data: any) => {
+      // Check if this error is for the current agent
+      if (data.agentId === agent?.id) {
+        setIsStreaming(false);
+        setIsLoading(false);
+        setIsCallingTool(false);
+        setCurrentStreamMessage(null);
+        setError(new Error(data.error || "Stream error occurred"));
+      }
+    });
 
     return () => {
       unsubscribeStart?.();
@@ -500,8 +492,9 @@ const AgentChat: React.FC = () => {
           // Fetch messages from local database
           try {
             setIsLoading(true);
-            const fetchedMessages =
-              await platformAPI.fetchSessionMessages(selectedSession.id);
+            const fetchedMessages = await platformAPI.fetchSessionMessages(
+              selectedSession.id,
+            );
 
             // Filter out system messages when setting from fetched messages
             const sessionMessages = fetchedMessages.filter(

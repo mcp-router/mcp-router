@@ -124,7 +124,7 @@ if (container) {
   root.render(
     <PlatformAPIProvider platformAPI={electronPlatformAPI}>
       <BackgroundChatManager />
-    </PlatformAPIProvider>
+    </PlatformAPIProvider>,
   );
 } else {
   console.error("Background root element not found");

@@ -1,12 +1,12 @@
 // Export everything from @mcp-router/ui
 // This includes all UI components, hooks (useIsMobile), and utilities (cn)
-export * from '@mcp-router/ui';
+export * from "@mcp-router/ui";
 
 // Export enhanced error display component
-export { EnhancedErrorDisplay } from './components/enhanced-error-display';
+export { EnhancedErrorDisplay } from "./components/enhanced-error-display";
 
 // Export all stores
-export * from './stores';
+export * from "./stores";
 
 // Re-export platform API from dedicated package
 export {
@@ -20,5 +20,5 @@ export {
   // Context and provider
   PlatformAPIProvider,
   usePlatformAPI,
-  usePlatformAPIAvailable
-} from '@mcp-router/platform-api';
+  usePlatformAPIAvailable,
+} from "@mcp-router/platform-api";

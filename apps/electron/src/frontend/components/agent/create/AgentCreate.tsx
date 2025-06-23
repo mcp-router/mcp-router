@@ -176,10 +176,7 @@ const AgentCreate: React.FC = () => {
       if (!id) return false;
 
       try {
-        const updatedAgent = await platformAPI.updateAgent(
-          id,
-          agentData,
-        );
+        const updatedAgent = await platformAPI.updateAgent(id, agentData);
         // 更新されたエージェントデータを使用して状態を更新
         setCurrentAgent(updatedAgent);
         // 保存した状態を記録

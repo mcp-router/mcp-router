@@ -8,7 +8,11 @@ import { ScrollArea } from "@mcp-router/ui";
 import { Switch } from "@mcp-router/ui";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@mcp-router/ui";
 import { Button } from "@mcp-router/ui";
-import { DeployedAgent, MCPServerConfig, AgentConfig } from "@mcp-router/shared";
+import {
+  DeployedAgent,
+  MCPServerConfig,
+  AgentConfig,
+} from "@mcp-router/shared";
 import { useTranslation } from "react-i18next";
 import { isAgentConfigured } from "@mcp-router/shared";
 import { McpSettings } from "@/frontend/components/agent/create/McpSettings";

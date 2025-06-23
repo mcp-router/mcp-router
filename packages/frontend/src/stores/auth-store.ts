@@ -61,7 +61,9 @@ interface AuthState {
   initializeFromSettings: (settings: AppSettings) => void;
 }
 
-export const createAuthStore = (platformAPI: PlatformAPI): UseBoundStore<StoreApi<AuthState>> => 
+export const createAuthStore = (
+  platformAPI: PlatformAPI,
+): UseBoundStore<StoreApi<AuthState>> =>
   create<AuthState>((set, get) => ({
     // Initial state
     isAuthenticated: false,
@@ -156,8 +158,7 @@ export const createAuthStore = (platformAPI: PlatformAPI): UseBoundStore<StoreAp
         setActivationError(null);
 
         // Call Platform API to activate with the code
-        const result =
-          await platformAPI.submitInvitationCode(invitationCode);
+        const result = await platformAPI.submitInvitationCode(invitationCode);
 
         if (result) {
           setUserData({
@@ -296,7 +297,11 @@ export const createAuthStore = (platformAPI: PlatformAPI): UseBoundStore<StoreAp
   }));
 
 // Utility selector creators
-export const createAuthSelectors = <T extends ReturnType<typeof createAuthStore>>(useStore: T) => ({
+export const createAuthSelectors = <
+  T extends ReturnType<typeof createAuthStore>,
+>(
+  useStore: T,
+) => ({
   useIsLoggedIn: () =>
     useStore((state) => state.isAuthenticated && state.authToken),
 

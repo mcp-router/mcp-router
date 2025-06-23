@@ -86,7 +86,10 @@ const SidebarComponent: React.FC = () => {
   return (
     <Sidebar>
       <SidebarHeader>
-        <Link to="/apps/electron/public" className="flex items-center no-underline px-2 py-1">
+        <Link
+          to="/apps/electron/public"
+          className="flex items-center no-underline px-2 py-1"
+        >
           <img src={iconImage} className="w-8 h-8 mr-3" alt="Logo" />
           <h1 className="text-xl font-bold tracking-tight">
             {t("home.title")}

@@ -4,7 +4,12 @@
 
 import { TokenGenerateOptions, TokenScope } from "@mcp-router/shared";
 import { AppSettings } from "@mcp-router/shared";
-import { Agent, AgentConfig, DeployedAgent, MCPServerConfig } from "@mcp-router/shared";
+import {
+  Agent,
+  AgentConfig,
+  DeployedAgent,
+  MCPServerConfig,
+} from "@mcp-router/shared";
 import { McpAppsManagerResult, McpApp } from "@/main/services/mcp-apps-service";
 import { ServerPackageUpdates } from "./lib/utils/backend/package-version-resolver";
 
@@ -14,9 +19,7 @@ declare global {
       // Authentication
       login: (idp?: string) => Promise<boolean>;
       logout: () => Promise<boolean>;
-      getAuthStatus: (
-        forceRefresh?: boolean,
-      ) => Promise<{
+      getAuthStatus: (forceRefresh?: boolean) => Promise<{
         authenticated: boolean;
         userId?: string;
         user?: any;

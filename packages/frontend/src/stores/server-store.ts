@@ -49,7 +49,9 @@ interface ServerState {
   deleteServer: (id: string) => Promise<void>;
 }
 
-export const createServerStore = (platformAPI: PlatformAPI): UseBoundStore<StoreApi<ServerState>> => 
+export const createServerStore = (
+  platformAPI: PlatformAPI,
+): UseBoundStore<StoreApi<ServerState>> =>
   create<ServerState>((set, get) => ({
     // Initial state
     servers: [],
@@ -232,15 +234,19 @@ export const createServerStore = (platformAPI: PlatformAPI): UseBoundStore<Store
   }));
 
 // Utility selector creators
-export const createServerSelectors = <T extends ReturnType<typeof createServerStore>>(useStore: T) => ({
+export const createServerSelectors = <
+  T extends ReturnType<typeof createServerStore>,
+>(
+  useStore: T,
+) => ({
   useServerById: (id: string) =>
     useStore((state) => state.servers.find((server) => server.id === id)),
-  
+
   useServersByStatus: (status: MCPServer["status"]) =>
     useStore((state) =>
       state.servers.filter((server) => server.status === status),
     ),
-  
+
   useIsServerUpdating: (id: string) =>
     useStore((state) => state.isUpdating.includes(id)),
 });

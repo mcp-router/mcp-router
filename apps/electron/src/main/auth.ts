@@ -272,9 +272,7 @@ export function clearStatusCache(): void {
  * @param forceRefresh If true, bypasses the cache and fetches fresh data
  * @returns User status information or null if not authenticated
  */
-export async function status(
-  forceRefresh = false,
-): Promise<{
+export async function status(forceRefresh = false): Promise<{
   authenticated: boolean;
   userId?: string;
   user?: any;

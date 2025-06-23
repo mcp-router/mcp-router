@@ -62,11 +62,9 @@ export class MCPHttpServer {
       // Token validation middleware
       if (!token) {
         // No token provided
-        res
-          .status(401)
-          .json({
-            error: "Authentication required. Please provide a valid token.",
-          });
+        res.status(401).json({
+          error: "Authentication required. Please provide a valid token.",
+        });
         return;
       }
 

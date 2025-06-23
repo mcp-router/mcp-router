@@ -27,7 +27,6 @@ export const STANDARD_APPS = [
   { id: "vscode", name: "VSCode", configPathFn: vscodeConfig },
 ];
 
-
 // 基本的なMCP設定の構造
 interface McpRouterConfig {
   command: string;
