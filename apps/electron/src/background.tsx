@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import BackgroundComponent from "@/frontend/components/agent/BackgroundComponent";
 import { PlatformAPIProvider } from "@mcp-router/platform-api";
 import { electronPlatformAPI } from "@/frontend/lib/electron-platform-api";
-import "./global.css";
+import "@mcp-router/tailwind-config/base.css";
 
 // Create a container component that manages chat sessions
 const BackgroundChatManager: React.FC = () => {
