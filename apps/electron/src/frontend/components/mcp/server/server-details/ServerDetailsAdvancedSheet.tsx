@@ -14,7 +14,7 @@ import { Button } from "@mcp-router/ui";
 import ServerDetailsLocal from "./ServerDetailsLocal";
 import ServerDetailsRemote from "./ServerDetailsRemote";
 import ServerDetailsEnvironment from "./ServerDetailsEnvironment";
-import { useServerEditingStore } from "@/frontend/stores/server-editing-store";
+import { useServerEditingStore } from "@mcp-router/frontend";
 
 interface ServerDetailsAdvancedSheetProps {
   server: MCPServer;

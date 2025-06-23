@@ -14,7 +14,7 @@ import {
   syncServersFromClientConfig,
   extractConfigInfo,
 } from "../mcp-config-importer";
-import { TokenScope } from "@mcp-router/shared";
+import { TokenScope, McpApp, McpAppsManagerResult } from "@mcp-router/shared";
 
 // 対応アプリが多くて複雑になってきたら、ストラテジーパターンに分けることを検討
 
@@ -27,23 +27,6 @@ export const STANDARD_APPS = [
   { id: "vscode", name: "VSCode", configPathFn: vscodeConfig },
 ];
 
-export interface McpApp {
-  name: string;
-  installed: boolean;
-  configPath: string;
-  configured: boolean;
-  token?: string; // アプリ用のトークン
-  serverIds?: string[]; // アクセス可能なサーバIDs
-  isCustom?: boolean; // カスタムアプリかどうか
-  hasOtherServers?: boolean; // McpAppで、他のMCPサーバが設定されているかどうか（例：VSCodeで他のMCPサーバも設定されている）
-  scopes: TokenScope[]; // トークンのスコープ
-}
-
-export interface McpAppsManagerResult {
-  success: boolean;
-  message: string;
-  app?: McpApp;
-}
 
 // 基本的なMCP設定の構造
 interface McpRouterConfig {

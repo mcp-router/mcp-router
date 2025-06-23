@@ -6,6 +6,7 @@ export * from "./types/token-types";
 export * from "./types/rule-types";
 export * from "./types/settings-types";
 export * from "./types/agent-api";
+export * from "./types/mcp-app-types";
 
 // Export utilities
 export * from "./utils/tailwind-utils";

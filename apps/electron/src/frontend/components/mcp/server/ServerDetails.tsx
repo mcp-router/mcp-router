@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { MCPServer } from "../../../../types";
 import {
-  Settings,
-  Edit,
-  FileText,
-  Terminal,
   Settings2,
   RefreshCw,
   Check,
@@ -12,8 +8,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Button } from "@mcp-router/ui";
 import { toast } from "sonner";
-import { useServerStore } from "@/frontend/stores/server-store";
-import { useServerEditingStore } from "@/frontend/stores/server-editing-store";
+import { useServerEditingStore } from "@mcp-router/frontend";
 
 // Import sub-components
 import ServerDetailsLocal from "@/frontend/components/mcp/server/server-details/ServerDetailsLocal";
@@ -23,6 +18,7 @@ import ServerDetailsRemote from "@/frontend/components/mcp/server/server-details
 import ServerDetailsAdvancedSheet from "@/frontend/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
 // import ServerDetailsRemoveDialog from './server-details/ServerDetailsRemoveDialog';
 import ServerDetailsInputParams from "@/frontend/components/mcp/server/server-details/ServerDetailsInputParams";
+import {useServerStore} from "@/frontend/stores";
 
 interface ServerDetailsProps {
   server: MCPServer;

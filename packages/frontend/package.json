@@ -13,6 +13,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@ai-sdk/react": "^1.2.12",
     "@mcp-router/shared": "workspace:*",
     "@mcp-router/tailwind-config": "workspace:*",
     "@mcp-router/ui": "workspace:*",

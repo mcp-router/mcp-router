@@ -8,6 +8,7 @@ import * as semver from "semver";
 import { run, commandExists } from "../../get-env";
 import { installPNPM, installUV } from "./install-package-manager";
 import { logError } from "./error-handler";
+import { PackageUpdateInfo, ServerPackageUpdates } from "@mcp-router/shared";
 
 /**
  * Extract the package name without version from a package specifier
@@ -69,19 +70,6 @@ export function hasVersionSpecified(packageSpec: string): boolean {
 
   // For regular packages
   return /^[^@]+@.+/.test(packageSpec);
-}
-
-// Define interfaces for the return types
-export interface PackageUpdateInfo {
-  packageName: string;
-  currentVersion: string | null;
-  latestVersion: string | null;
-  updateAvailable: boolean;
-}
-
-export interface ServerPackageUpdates {
-  packages: PackageUpdateInfo[];
-  hasUpdates: boolean;
 }
 
 /**

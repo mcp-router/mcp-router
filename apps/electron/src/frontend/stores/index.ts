@@ -1,40 +1,54 @@
-// Export all stores for easy importing
-export {
-  useServerStore,
-  useServerById,
-  useServersByStatus,
-  useIsServerUpdating,
-} from "./server-store";
-export {
-  useAuthStore,
-  useIsLoggedIn,
-  useIsActivated,
-  useAuthToken,
-  useUserId,
-} from "./auth-store";
-export {
-  useAgentStore,
-  useCurrentAgent,
-  useCurrentSession,
-  useSessionsByAgent,
-} from "./agent-store";
+// Import factory functions from @mcp-router/frontend
+import {
+  createServerStore,
+  createServerSelectors,
+  createAuthStore,
+  createAuthSelectors,
+  createAgentStore,
+  createAgentSelectors,
+} from "@mcp-router/frontend";
+
+// Re-export platform-independent stores directly from @mcp-router/frontend
 export {
   useUIStore,
   useToasts,
   useDialog,
   useGlobalLoading,
   useTheme,
-} from "./ui-store";
-export { useServerEditingStore } from "./server-editing-store";
+  useServerEditingStore,
+  useThemeStore,
+} from "@mcp-router/frontend";
 
 import { platformAPI } from "../lib/platform-api";
 
+// Create store instances with Electron platform API
+export const useServerStore = createServerStore(platformAPI);
+export const useAuthStore = createAuthStore(platformAPI);
+export const useAgentStore = createAgentStore(platformAPI);
+
+// Create selectors from store instances
+const serverSelectors = createServerSelectors(useServerStore);
+const authSelectors = createAuthSelectors(useAuthStore);
+const agentSelectors = createAgentSelectors(useAgentStore);
+
+// Export server selectors
+export const useServerById = serverSelectors.useServerById;
+export const useServersByStatus = serverSelectors.useServersByStatus;
+export const useIsServerUpdating = serverSelectors.useIsServerUpdating;
+
+// Export auth selectors
+export const useIsLoggedIn = authSelectors.useIsLoggedIn;
+export const useIsActivated = authSelectors.useIsActivated;
+export const useAuthToken = authSelectors.useAuthToken;
+export const useUserId = authSelectors.useUserId;
+
+// Export agent selectors
+export const useCurrentAgent = agentSelectors.useCurrentAgent;
+export const useCurrentSession = agentSelectors.useCurrentSession;
+export const useSessionsByAgent = agentSelectors.useSessionsByAgent;
+
 // Store initialization utility
 export const initializeStores = async () => {
-  const { useAuthStore } = await import("./auth-store");
-  const { useServerStore } = await import("./server-store");
-  const { useAgentStore } = await import("./agent-store");
-
   // Initialize auth state from settings
   try {
     const settings = await platformAPI.getSettings();
