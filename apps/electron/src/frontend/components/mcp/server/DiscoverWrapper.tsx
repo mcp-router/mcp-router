@@ -13,7 +13,7 @@ import ServerSearchBox from "./ServerSearchBox";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp-router/ui";
-import { Pagination } from "@mcp-router/ui";
+import { CustomPagination } from "../../ui/CustomPagination";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -364,7 +364,7 @@ const DiscoverWrapper: React.FC = () => {
               {/* Verified Pagination controls */}
               {!isLoadingVerifiedServers && (
                 <div className="overflow-x-auto">
-                  <Pagination
+                  <CustomPagination
                     currentPage={verifiedCurrentPage}
                     totalPages={verifiedTotalPages}
                     totalItems={verifiedTotalItems}
@@ -398,7 +398,7 @@ const DiscoverWrapper: React.FC = () => {
               {/* Community Pagination controls */}
               {!isLoadingCommunityServers && (
                 <div className="overflow-x-auto">
-                  <Pagination
+                  <CustomPagination
                     currentPage={communityCurrentPage}
                     totalPages={communityTotalPages}
                     totalItems={communityTotalItems}
