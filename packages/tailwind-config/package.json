@@ -2,13 +2,14 @@
   "name": "@mcp-router/tailwind-config",
   "version": "0.4.9",
   "private": true,
-  "main": "src/index.js",
-  "exports": {
-    ".": "./src/index.js",
-    "./theme.css": "./src/theme.css",
-    "./base.css": "./src/base.css",
-    "./tailwind.config.js": "./tailwind.config.js"
-  },
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "tailwind.config.js",
+    "postcss.config.js",
+    "base.css",
+    "theme.css"
+  ],
   "scripts": {
     "lint": "eslint . --ext .js,.mjs",
     "lint:fix": "eslint . --ext .js,.mjs --fix",
@@ -16,8 +17,9 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "tailwindcss": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.33"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
