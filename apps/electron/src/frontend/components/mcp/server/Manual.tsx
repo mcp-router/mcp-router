@@ -7,8 +7,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@mcp-router/frontend";
-import { Button } from "@mcp-router/frontend";
+} from "@mcp-router/ui";
+import { Button } from "@mcp-router/ui";
 import {
   Upload,
   AlertTriangle,
@@ -24,15 +24,15 @@ import {
   processMcpServerConfigs,
 } from "@mcp-router/shared";
 import { toast } from "sonner";
-import { Textarea } from "@mcp-router/frontend";
-import { Alert, AlertDescription, AlertTitle } from "@mcp-router/frontend";
-import { Input } from "@mcp-router/frontend";
-import { Label } from "@mcp-router/frontend";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp-router/frontend";
+import { Textarea } from "@mcp-router/ui";
+import { Alert, AlertDescription, AlertTitle } from "@mcp-router/ui";
+import { Input } from "@mcp-router/ui";
+import { Label } from "@mcp-router/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp-router/ui";
 import { v4 as uuidv4 } from "uuid";
 import { MCPServerConfig } from "@mcp-router/shared";
-import { Checkbox } from "@mcp-router/frontend";
-import { RadioGroup, RadioGroupItem } from "@mcp-router/frontend";
+import { Checkbox } from "@mcp-router/ui";
+import { RadioGroup, RadioGroupItem } from "@mcp-router/ui";
 
 interface EnvVariable {
   key: string;

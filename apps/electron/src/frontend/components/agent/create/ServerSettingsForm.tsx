@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
-import { Button } from "@mcp-router/frontend";
-import { Input } from "@mcp-router/frontend";
-import { Label } from "@mcp-router/frontend";
-import { Textarea } from "@mcp-router/frontend";
-import { Badge } from "@mcp-router/frontend";
-import { Switch } from "@mcp-router/frontend";
+import { Button } from "@mcp-router/ui";
+import { Input } from "@mcp-router/ui";
+import { Label } from "@mcp-router/ui";
+import { Textarea } from "@mcp-router/ui";
+import { Badge } from "@mcp-router/ui";
+import { Switch } from "@mcp-router/ui";
 import { toast } from "sonner";
 import { Server, X, Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { ScrollArea } from "@mcp-router/frontend";
+import { ScrollArea } from "@mcp-router/ui";
 
 interface ServerConfigVariable {
   name: string;

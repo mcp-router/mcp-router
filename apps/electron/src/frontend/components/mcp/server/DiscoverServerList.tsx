@@ -3,7 +3,7 @@ import { LocalMCPServer } from "../../../../types";
 import { RotateCw, Plus, CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "@mcp-router/frontend";
+import { Button } from "@mcp-router/ui";
 import {
   Card,
   CardContent,
@@ -11,14 +11,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@mcp-router/frontend";
-import { Badge } from "@mcp-router/frontend";
+} from "@mcp-router/ui";
+import { Badge } from "@mcp-router/ui";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@mcp-router/frontend";
+} from "@mcp-router/ui";
 
 interface DiscoverServerListProps {
   remoteServers: LocalMCPServer[];

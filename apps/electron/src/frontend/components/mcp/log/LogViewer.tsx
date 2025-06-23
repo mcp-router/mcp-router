@@ -7,7 +7,7 @@ import { useRequestLogs } from "./hooks/useRequestLogs";
 import LogTable from "./components/LogTable";
 import LogDetailModal from "./components/LogDetailModal";
 import ToolCallTimeline from "./components/ToolCallTimeline";
-import { Card } from "@mcp-router/frontend";
+import { Card } from "@mcp-router/ui";
 
 interface LogViewerProps {
   serverId?: string; // 特定のサーバのみ表示する場合は指定、なければすべてのサーバ

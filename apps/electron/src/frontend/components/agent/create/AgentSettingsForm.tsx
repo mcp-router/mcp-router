@@ -2,8 +2,8 @@ import React from "react";
 import { AgentConfig } from "@mcp-router/shared";
 import { McpSettings } from "./McpSettings";
 import { UsageSettings } from "./UsageSettings";
-import { Separator } from "@mcp-router/frontend";
-import { ScrollArea } from "@mcp-router/frontend";
+import { Separator } from "@mcp-router/ui";
+import { ScrollArea } from "@mcp-router/ui";
 
 interface AgentSettingsFormProps {
   agent: AgentConfig;

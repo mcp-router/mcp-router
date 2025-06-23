@@ -9,16 +9,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@mcp-router/frontend";
-import { Button } from "@mcp-router/frontend";
+} from "@mcp-router/ui";
+import { Button } from "@mcp-router/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@mcp-router/frontend";
-import { Card } from "@mcp-router/frontend";
+} from "@mcp-router/ui";
+import { Card } from "@mcp-router/ui";
 
 interface LogTableProps {
   logs: RequestLogEntry[];

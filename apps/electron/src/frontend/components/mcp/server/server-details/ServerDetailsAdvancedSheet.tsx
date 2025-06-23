@@ -9,8 +9,8 @@ import {
   SheetTitle,
   SheetFooter,
   SheetDescription,
-} from "@mcp-router/frontend";
-import { Button } from "@mcp-router/frontend";
+} from "@mcp-router/ui";
+import { Button } from "@mcp-router/ui";
 import ServerDetailsLocal from "./ServerDetailsLocal";
 import ServerDetailsRemote from "./ServerDetailsRemote";
 import ServerDetailsEnvironment from "./ServerDetailsEnvironment";

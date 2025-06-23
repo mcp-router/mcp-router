@@ -10,13 +10,7 @@ import {
   Check,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@mcp-router/frontend";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@mcp-router/frontend";
+import { Button } from "@mcp-router/ui";
 import { toast } from "sonner";
 import { useServerStore } from "@/frontend/stores/server-store";
 import { useServerEditingStore } from "@/frontend/stores/server-editing-store";

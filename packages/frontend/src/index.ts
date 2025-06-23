@@ -1,8 +1,6 @@
-// Export UI components
-export * from './components/ui';
+// Export everything from @mcp-router/ui
+// This includes all UI components, hooks (useIsMobile), and utilities (cn)
+export * from '@mcp-router/ui';
 
-// Export hooks
-export * from './hooks/use-mobile';
-
-// Export utilities
-export * from './lib/utils';
+// Export enhanced error display component
+export { EnhancedErrorDisplay } from './components/enhanced-error-display';

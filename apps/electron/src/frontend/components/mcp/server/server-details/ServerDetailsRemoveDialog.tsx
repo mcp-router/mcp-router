@@ -9,8 +9,8 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@mcp-router/frontend";
-import { Button } from "@mcp-router/frontend";
+} from "@mcp-router/ui";
+import { Button } from "@mcp-router/ui";
 
 interface ServerDetailsRemoveDialogProps {
   server: MCPServer;

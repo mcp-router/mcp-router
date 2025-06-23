@@ -1,9 +1,9 @@
 import React from "react";
-import { Button } from "@mcp-router/frontend";
+import { Button } from "@mcp-router/ui";
 import { Trash2, Plus, MoreHorizontal, Loader2 } from "lucide-react";
 import { cn, getDateInstance } from "@mcp-router/shared";
-import { Skeleton } from "@mcp-router/frontend";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@mcp-router/frontend";
+import { Skeleton } from "@mcp-router/ui";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@mcp-router/ui";
 import { useTranslation } from "react-i18next";
 
 interface ChatSession {

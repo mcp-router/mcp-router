@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import ServerDetailsRemoveDialog from "@/frontend/components/mcp/server/server-details/ServerDetailsRemoveDialog";
 import { MCPServer } from "@mcp-router/shared";
-import { ScrollArea } from "@mcp-router/frontend";
-import { Badge } from "@mcp-router/frontend";
-import { Switch } from "@mcp-router/frontend";
+import { ScrollArea } from "@mcp-router/ui";
+import { Badge } from "@mcp-router/ui";
+import { Switch } from "@mcp-router/ui";
 import {
   IconSearch,
   IconServer,
@@ -19,13 +19,13 @@ import { useServerStore } from "../stores";
 // Import components
 import ServerDetails from "@/frontend/components/mcp/server/ServerDetails";
 import { Link } from "react-router-dom";
-import { Button } from "@mcp-router/frontend";
+import { Button } from "@mcp-router/ui";
 import {
   Breadcrumb,
   BreadcrumbList,
   BreadcrumbItem,
   BreadcrumbLink,
-} from "@mcp-router/frontend";
+} from "@mcp-router/ui";
 
 const Home: React.FC = () => {
   const { t } = useTranslation();

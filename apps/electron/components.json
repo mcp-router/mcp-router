@@ -4,7 +4,7 @@
   "rsc": false,
   "tsx": true,
   "tailwind": {
-    "config": "",
+    "config": "tailwind.config.js",
     "css": "src/global.css",
     "baseColor": "neutral",
     "cssVariables": true,
@@ -12,8 +12,8 @@
   },
   "aliases": {
     "components": "@/components",
-    "utils": "@/lib/utils/tailwind-utils",
-    "ui": "@/components/ui",
+    "utils": "@mcp-router/ui/lib/utils",
+    "ui": "@mcp-router/ui/components",
     "lib": "@/lib",
     "hooks": "@/hooks"
   },

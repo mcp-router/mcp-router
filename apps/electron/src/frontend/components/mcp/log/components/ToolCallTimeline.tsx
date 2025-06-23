@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDateI18n } from "@mcp-router/shared";
 import { RequestLogEntry } from "@mcp-router/shared";
-import { Card } from "@mcp-router/frontend";
+import { Card } from "@mcp-router/ui";
 
 interface ToolCallTimelineProps {
   logs: RequestLogEntry[];
