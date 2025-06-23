@@ -7,7 +7,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import PageLayout from "./layout/PageLayout";
-import { Toaster } from "@mcp-router/ui";
+import { Sonner as Toaster } from "@mcp-router/ui";
 import { toast } from "sonner";
 import DiscoverWrapper from "@/frontend/components/mcp/server/DiscoverWrapper";
 import Home from "./Home";
