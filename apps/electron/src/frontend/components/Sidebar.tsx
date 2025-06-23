@@ -11,7 +11,7 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/frontend/stores";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 // @ts-ignore
 import iconImage from "../../../../../public/images/icon/icon.png";
 import {
@@ -43,6 +43,7 @@ const SidebarComponent: React.FC = () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
+  const platformAPI = usePlatformAPI();
 
   useEffect(() => {
     // Check if an update is available on mount

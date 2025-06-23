@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Label } from "@mcp-router/ui";
 import { cn } from "@mcp-router/shared";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 import { Badge } from "@mcp-router/ui";
 import { Alert, AlertDescription } from "@mcp-router/ui";
 
@@ -38,6 +38,7 @@ export const InvitationCode: React.FC<InvitationCodeProps> = ({
 }) => {
   const { t } = useTranslation();
   const [invitation, setInvitation] = useState<InvitationResponse | null>(null);
+  const platformAPI = usePlatformAPI();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 import {
   MCPDisplayRules,
   DEFAULT_DISPLAY_RULES,
@@ -450,6 +450,7 @@ const EntityTypeSection: React.FC<EntityTypeSectionProps> = ({
  */
 const Rules: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const platformAPI = usePlatformAPI();
   const [rules, setRules] = useState<MCPDisplayRules>({
     ...DEFAULT_DISPLAY_RULES,
   });
@@ -495,7 +496,7 @@ const Rules: React.FC = () => {
       // No validation needed for tool parameter rules as they are schema-based
       // Remove the tool name rule validation since we're not using display rules anymore
 
-      const settings = await window.electronAPI.getSettings();
+      const settings = await platformAPI.getSettings();
       const updatedSettings = {
         ...settings,
         mcpDisplayRules: rules,

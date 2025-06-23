@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AgentConfig } from "@mcp-router/shared";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 import { Button } from "@mcp-router/ui";
 import {
   Card,
@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 const AgentBuild: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const platformAPI = usePlatformAPI();
   const [agents, setAgents] = useState<AgentConfig[]>([]);
 
   // エージェント一覧の取得

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Button } from "@mcp-router/ui";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 import {
   Card,
   CardContent,
@@ -49,6 +49,7 @@ const appIcons: { [key: string]: string } = {
 
 const McpAppsManager: React.FC = () => {
   const { t } = useTranslation();
+  const platformAPI = usePlatformAPI();
   const [apps, setApps] = useState<McpApp[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [customAppName, setCustomAppName] = useState<string>("");

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { RequestLogEntry } from "@mcp-router/shared";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 interface RequestLogsParams {
   serverId?: string;
@@ -28,6 +28,7 @@ interface RequestLogsResult {
 export const useRequestLogs = (
   params: RequestLogsParams,
 ): RequestLogsResult => {
+  const platformAPI = usePlatformAPI();
   const [logs, setLogs] = useState<RequestLogEntry[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);

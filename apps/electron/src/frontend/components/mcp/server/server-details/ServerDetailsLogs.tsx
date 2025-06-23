@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 import { Terminal, RefreshCw, FileText } from "lucide-react";
 import { ScrollArea } from "@mcp-router/ui";
 import { Switch } from "@mcp-router/ui";
@@ -20,6 +20,7 @@ const ServerDetailsLogs: React.FC<ServerDetailsLogsProps> = ({
   serverStatus,
 }) => {
   const { t } = useTranslation();
+  const platformAPI = usePlatformAPI();
   const [logs, setLogs] = useState<string[]>([]);
   const [isLogLoading, setIsLogLoading] = useState(false);
   const [autoRefreshLogs, setAutoRefreshLogs] = useState(false);

@@ -6,7 +6,7 @@ import {
   MCPServer,
   APIMCPServer,
 } from "../../../../types";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 import DiscoverServerList from "./DiscoverServerList";
 import Manual from "./Manual";
 import ServerSearchBox from "./ServerSearchBox";
@@ -25,6 +25,7 @@ import {
 
 const DiscoverWrapper: React.FC = () => {
   const { t } = useTranslation();
+  const platformAPI = usePlatformAPI();
   const [verifiedServers, setVerifiedServers] = useState<LocalMCPServer[]>([]);
   const [communityServers, setCommunityServers] = useState<LocalMCPServer[]>(
     [],

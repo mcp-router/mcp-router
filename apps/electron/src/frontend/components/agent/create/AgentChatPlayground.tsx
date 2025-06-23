@@ -16,7 +16,7 @@ import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
 import { useTranslation } from "react-i18next";
 import ChatInterface from "./ChatInterface";
 import ServerSettingsForm from "./ServerSettingsForm";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 interface AgentChatPlaygroundProps {
   agent?: AgentConfig;
@@ -35,6 +35,7 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
+  const platformAPI = usePlatformAPI();
 
   // Get authentication token from Electron API
   useEffect(() => {

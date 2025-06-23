@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useChat, Message } from "@ai-sdk/react";
 import { AgentConfig } from "@mcp-router/shared";
 import { getServerAgentId } from "@mcp-router/shared";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 interface BackgroundComponentProps {
   chatHistorySessionId?: string; // チャット履歴のsessionId
@@ -31,6 +31,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
   onSessionComplete,
   backgroundSessionKey,
 }) => {
+  const platformAPI = usePlatformAPI();
   const [isInitialized, setIsInitialized] = useState(false);
   const [shouldSaveSession, setShouldSaveSession] = useState(false);
 

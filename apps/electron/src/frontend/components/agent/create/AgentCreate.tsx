@@ -41,7 +41,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@mcp-router/ui";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 // エージェントの状態を取得するユーティリティ関数
 const createAgentSnapshot = (agent: AgentConfig): AgentConfig => {
@@ -82,6 +82,7 @@ const AgentCreate: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams();
+  const platformAPI = usePlatformAPI();
 
   // 現在のエージェントの状態（編集中の値）- ユーティリティ関数を使用して初期化
   const [currentAgent, setCurrentAgent] = useState<AgentConfig>(() =>

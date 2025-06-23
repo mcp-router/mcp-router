@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import BackgroundComponent from "@/frontend/components/agent/BackgroundComponent";
+import { PlatformAPIProvider } from "@mcp-router/platform-api";
+import { electronPlatformAPI } from "@/frontend/lib/electron-platform-api";
 import "./global.css";
 
 // Create a container component that manages chat sessions
@@ -72,13 +74,9 @@ const BackgroundChatManager: React.FC = () => {
     // Register IPC listener
     let cleanup: (() => void) | undefined;
 
-    if (window.electronAPI?.onBackgroundChatStart) {
-      cleanup = window.electronAPI.onBackgroundChatStart(
-        handleBackgroundChatStart,
-      );
-    } else {
-      console.warn("electronAPI.onBackgroundChatStart not available");
-    }
+    cleanup = electronPlatformAPI.onBackgroundChatStart(
+      handleBackgroundChatStart,
+    );
 
     return () => {
       if (cleanup) {
@@ -123,7 +121,11 @@ const BackgroundChatManager: React.FC = () => {
 const container = document.getElementById("background-root");
 if (container) {
   const root = createRoot(container);
-  root.render(<BackgroundChatManager />);
+  root.render(
+    <PlatformAPIProvider platformAPI={electronPlatformAPI}>
+      <BackgroundChatManager />
+    </PlatformAPIProvider>
+  );
 } else {
   console.error("Background root element not found");
 }

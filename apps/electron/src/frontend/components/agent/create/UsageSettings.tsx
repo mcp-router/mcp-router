@@ -7,7 +7,7 @@ import { Input } from "@mcp-router/ui";
 import { t } from "i18next";
 import { Loader2, Bot } from "lucide-react";
 import { toast } from "sonner";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 // Usage Settings Component
 interface UsageSettingsProps {
@@ -19,6 +19,7 @@ export const UsageSettings: React.FC<UsageSettingsProps> = ({
   agent,
   setAgent,
 }) => {
+  const platformAPI = usePlatformAPI();
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 

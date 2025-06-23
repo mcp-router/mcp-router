@@ -16,7 +16,7 @@ import { useAgentStore } from "../../../stores";
 import { cn } from "@mcp-router/shared";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/ui";
 import { toast } from "sonner";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 interface ServerConfigVariable {
   name: string;
@@ -36,6 +36,7 @@ type AgentConfigWithoutId = Omit<AgentConfig, "id">;
 const AgentSettings: React.FC = () => {
   const { t } = useTranslation();
   const { agent } = useOutletContext<{ agent: DeployedAgent }>();
+  const platformAPI = usePlatformAPI();
   // Zustand store
   const { updateDeployedAgent } = useAgentStore();
 

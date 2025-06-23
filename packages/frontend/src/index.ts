@@ -19,11 +19,6 @@ export {
   createPlatformAPI,
   // Context and provider
   PlatformAPIProvider,
-  usePlatformAPIContext,
-  usePlatformAPIAvailable,
-  // Shim for backward compatibility
-  initializePlatformAPIShim,
-  getPlatformAPI,
-  platformAPI,
-  usePlatformAPI
+  usePlatformAPI,
+  usePlatformAPIAvailable
 } from '@mcp-router/platform-api';

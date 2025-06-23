@@ -1,6 +1,6 @@
 # Platform API Migration Guide
 
-This guide explains how to migrate components from using the local `platform-api` to the centralized platform API in the `@mcp-router/platform-api` package.
+This guide explains the platform API architecture after moving it to the centralized `@mcp-router/platform-api` package.
 
 ## Overview
 
@@ -17,9 +17,9 @@ The platform API has been moved to a dedicated package at `packages/platform-api
    - Provides React context for platform API access
    - Offers `usePlatformAPI` hook for components
 
-3. **Platform API Shim** (`packages/platform-api/src/platform-api-shim.ts`)
-   - Provides backward compatibility for existing imports
-   - Allows gradual migration of components
+3. **Platform API Factory** (`packages/platform-api/src/platform-api-factory.ts`)
+   - Factory functions for creating platform-specific API instances
+   - Platform detection utilities (isElectron, isWeb)
 
 4. **Electron Implementation** (`apps/electron/src/frontend/lib/electron-platform-api.ts`)
    - Electron-specific implementation of the PlatformAPI interface
@@ -30,11 +30,8 @@ The platform API has been moved to a dedicated package at `packages/platform-api
 The platform API is initialized in `apps/electron/src/App.tsx`:
 
 ```typescript
-import { initializePlatformAPIShim, PlatformAPIProvider } from "@mcp-router/platform-api";
+import { PlatformAPIProvider } from "@mcp-router/platform-api";
 import { electronPlatformAPI } from "@/frontend/lib/electron-platform-api";
-
-// Initialize the shim for backward compatibility
-initializePlatformAPIShim(electronPlatformAPI);
 
 // Wrap the app with the provider
 <PlatformAPIProvider platformAPI={electronPlatformAPI}>
@@ -42,43 +39,36 @@ initializePlatformAPIShim(electronPlatformAPI);
 </PlatformAPIProvider>
 ```
 
-## Migration Steps
+## Usage
 
-### For New Components
+### For Components
 
-1. Use the platform API from context:
-   ```typescript
-   import { usePlatformAPI } from "@mcp-router/platform-api";
-   
-   function MyComponent() {
-     const platformAPI = usePlatformAPI();
-     // Use platformAPI methods
-   }
-   ```
-
-### For Existing Components (Gradual Migration)
-
-Components can continue to work without changes due to the shim layer:
+Components should use the platform API through the React context hook:
 
 ```typescript
-// This still works (backward compatibility)
-import { platformAPI } from "@/frontend/lib/platform-api";
-
-// But prefer migrating to:
-import { platformAPI } from "@mcp-router/platform-api";
-// or
 import { usePlatformAPI } from "@mcp-router/platform-api";
+
+function MyComponent() {
+  const platformAPI = usePlatformAPI();
+  
+  // Use platformAPI methods
+  const handleLogin = async () => {
+    await platformAPI.login();
+  };
+}
 ```
 
 ### For Stores
 
-Stores are already using factory functions that accept platform API:
+Stores use factory functions that accept platform API as a parameter:
 
 ```typescript
 // In apps/electron/src/frontend/stores/index.ts
-import { getPlatformAPI } from "@mcp-router/platform-api";
+import { electronPlatformAPI } from "../lib/electron-platform-api";
 
-export const useServerStore = createServerStore(getPlatformAPI());
+export const useServerStore = createServerStore(electronPlatformAPI);
+export const useAuthStore = createAuthStore(electronPlatformAPI);
+export const useAgentStore = createAgentStore(electronPlatformAPI);
 ```
 
 ## Benefits
@@ -88,17 +78,18 @@ export const useServerStore = createServerStore(getPlatformAPI());
 3. **Multi-platform**: Supports different platform implementations (Electron, Web, etc.)
 4. **Type Safety**: Strong TypeScript typing throughout
 
-## Future Steps
-
-1. Gradually migrate all components to use `import { platformAPI } from "@mcp-router/platform-api"`
-2. Eventually remove the local `apps/electron/src/frontend/lib/platform-api.ts` re-export
-3. Move components to `packages/frontend/src/components` as needed
-
 ## Component Migration Checklist
 
-When moving a component to packages:
+When moving a component from `apps/electron/src/frontend/components` to `packages/frontend/src/components`:
 
-- [ ] Update imports from `@/frontend/lib/platform-api` to `@mcp-router/platform-api`
-- [ ] Ensure the component uses platform API through props, context, or imports from packages
+- [ ] Ensure the component uses `usePlatformAPI` hook from `@mcp-router/platform-api`
 - [ ] Update any relative imports to use package imports
+- [ ] Update store imports to use `@mcp-router/frontend`
 - [ ] Test the component still works correctly in the Electron app
+
+## Architecture Benefits
+
+- **Clean separation**: Platform API is completely independent from UI components
+- **Type safety**: Strong TypeScript types throughout
+- **Testability**: Easy to mock platform API for testing
+- **Multi-platform ready**: Support for different platform implementations (Electron, Web, etc.)

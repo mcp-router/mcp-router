@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 interface PackageManagerOverlayProps {
   isOpen: boolean;
@@ -30,6 +30,7 @@ const PackageManagerOverlay: React.FC<PackageManagerOverlayProps> = ({
   onCancel,
 }) => {
   const { t, i18n } = useTranslation();
+  const platformAPI = usePlatformAPI();
   const [packageManagers, setPackageManagers] = useState<{
     node: boolean;
     pnpm: boolean;

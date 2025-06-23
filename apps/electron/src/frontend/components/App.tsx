@@ -32,7 +32,7 @@ import {
   useUIStore,
   initializeStores,
 } from "../stores";
-import { platformAPI } from "../lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 import { IconProgress } from "@tabler/icons-react";
 
 // Lazy load components
@@ -43,6 +43,7 @@ const App: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const platformAPI = usePlatformAPI();
 
   // Zustand stores
   const { refreshServers } = useServerStore();

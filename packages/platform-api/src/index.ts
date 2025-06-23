@@ -12,14 +12,6 @@ export {
 // Platform API React context and provider
 export { 
   PlatformAPIProvider, 
-  usePlatformAPI as usePlatformAPIContext,
+  usePlatformAPI,
   usePlatformAPIAvailable 
 } from './platform-api-context';
-
-// Platform API shim for backward compatibility
-export { 
-  initializePlatformAPIShim,
-  getPlatformAPI,
-  platformAPI,
-  usePlatformAPI
-} from './platform-api-shim';

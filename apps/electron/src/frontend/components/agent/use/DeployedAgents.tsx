@@ -24,11 +24,12 @@ import { Download, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAgentStore } from "../../../stores";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 const DeployedAgents: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const platformAPI = usePlatformAPI();
 
   // Zustand store
   const { deployedAgents, refreshAgents, addDeployedAgent } = useAgentStore();

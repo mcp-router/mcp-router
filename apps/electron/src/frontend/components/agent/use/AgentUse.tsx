@@ -29,7 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@mcp-router/ui";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 /**
  * AgentUse Component
@@ -38,6 +38,7 @@ import { platformAPI } from "@/frontend/lib/platform-api";
  */
 const AgentUse: React.FC = () => {
   const { t } = useTranslation();
+  const platformAPI = usePlatformAPI();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const location = useLocation();

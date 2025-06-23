@@ -3,7 +3,7 @@ import {
   RequestLogEntry,
   TimeSeriesDataPoint,
 } from "@mcp-router/shared";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -34,6 +34,7 @@ interface TimeSeriesResult {
 export const useTimeSeriesData = (
   params: TimeSeriesParams,
 ): TimeSeriesResult => {
+  const platformAPI = usePlatformAPI();
   const [data, setData] = useState<TimeSeriesDataPoint[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@mcp-router/ui";
 import { v4 as uuidv4 } from "uuid";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 // Setup Settings Component
 interface McpSettingsProps {
@@ -40,6 +40,7 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
   isDev = false,
 }) => {
   const { t } = useTranslation();
+  const platformAPI = usePlatformAPI();
 
   // Server dialog state
   const [isServerDialogOpen, setIsServerDialogOpen] = useState(false);

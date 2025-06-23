@@ -9,7 +9,7 @@ import ChatInterface from "@/frontend/components/agent/create/ChatInterface";
 import ChatSessions from "./ChatSessions";
 import { isAgentConfigured } from "@mcp-router/shared";
 import { useAgentStore } from "../../../stores";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 
 /**
  * エージェントチャットコンポーネント
@@ -22,6 +22,7 @@ const AgentChat: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const platformAPI = usePlatformAPI();
 
   // Zustand store
   const {

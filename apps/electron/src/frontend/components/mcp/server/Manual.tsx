@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { platformAPI } from "@/frontend/lib/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 import {
   Card,
   CardContent,
@@ -41,6 +41,7 @@ interface EnvVariable {
 
 const Manual: React.FC = () => {
   const { t } = useTranslation();
+  const platformAPI = usePlatformAPI();
 
   // JSON Import State
   const [jsonInput, setJsonInput] = useState("");
