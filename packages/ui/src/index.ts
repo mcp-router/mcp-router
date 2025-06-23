@@ -32,9 +32,11 @@ export * from './components/tabs';
 export * from './components/textarea';
 export { Toaster } from './components/toaster';
 export * from './components/tooltip';
+export * from './components/toast';
 
 // Hooks
 export * from './hooks/use-mobile';
+export * from './hooks/use-toast';
 
 // Utils
 export * from './lib/utils';
