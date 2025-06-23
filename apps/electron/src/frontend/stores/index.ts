@@ -19,12 +19,12 @@ export {
   useThemeStore,
 } from "@mcp-router/frontend";
 
-import { platformAPI } from "../lib/platform-api";
+import { getPlatformAPI } from "@mcp-router/platform-api";
 
 // Create store instances with Electron platform API
-export const useServerStore = createServerStore(platformAPI);
-export const useAuthStore = createAuthStore(platformAPI);
-export const useAgentStore = createAgentStore(platformAPI);
+export const useServerStore = createServerStore(getPlatformAPI());
+export const useAuthStore = createAuthStore(getPlatformAPI());
+export const useAgentStore = createAgentStore(getPlatformAPI());
 
 // Create selectors from store instances
 const serverSelectors = createServerSelectors(useServerStore);
@@ -51,7 +51,7 @@ export const useSessionsByAgent = agentSelectors.useSessionsByAgent;
 export const initializeStores = async () => {
   // Initialize auth state from settings
   try {
-    const settings = await platformAPI.getSettings();
+    const settings = await getPlatformAPI().getSettings();
     await useAuthStore.getState().initializeFromSettings(settings);
   } catch (error) {
     console.error("Failed to initialize auth from settings:", error);

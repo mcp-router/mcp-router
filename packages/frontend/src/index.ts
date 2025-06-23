@@ -8,11 +8,22 @@ export { EnhancedErrorDisplay } from './components/enhanced-error-display';
 // Export all stores
 export * from './stores';
 
-// Export platform API interface and utilities
-export { PlatformAPI } from './lib/platform-api-interface';
-export { 
-  isElectron, 
-  isWeb, 
-  WebPlatformAPI, 
-  createPlatformAPI 
-} from './lib/platform-api-factory';
+// Re-export platform API from dedicated package
+export {
+  // Interface
+  PlatformAPI,
+  // Factory and utilities
+  isElectron,
+  isWeb,
+  WebPlatformAPI,
+  createPlatformAPI,
+  // Context and provider
+  PlatformAPIProvider,
+  usePlatformAPIContext,
+  usePlatformAPIAvailable,
+  // Shim for backward compatibility
+  initializePlatformAPIShim,
+  getPlatformAPI,
+  platformAPI,
+  usePlatformAPI
+} from '@mcp-router/platform-api';

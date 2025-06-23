@@ -1,16 +1,16 @@
 /**
  * Platform API re-export
  * 
- * This module re-exports the Electron platform API for backward compatibility
+ * This module provides backward compatibility for components importing from this path
+ * while using the centralized platform API from packages
  */
 
-import { electronPlatformAPI } from "./electron-platform-api";
-
-// Export the Electron platform API as the default platform API
-export const platformAPI = electronPlatformAPI;
-
-// Re-export types and utilities from frontend package
-export { PlatformAPI, isElectron, isWeb } from "@mcp-router/frontend";
-
-// Export convenience hook
-export const usePlatformAPI = () => platformAPI;
+// Re-export everything from the platform-api package
+export { 
+  PlatformAPI, 
+  isElectron, 
+  isWeb,
+  platformAPI,
+  usePlatformAPI,
+  getPlatformAPI
+} from "@mcp-router/platform-api";

@@ -2,7 +2,7 @@
  * Electron-specific Platform API implementation
  */
 
-import { PlatformAPI } from "@mcp-router/frontend";
+import { PlatformAPI } from "@mcp-router/platform-api";
 
 // Electron implementation
 export class ElectronPlatformAPI implements PlatformAPI {
