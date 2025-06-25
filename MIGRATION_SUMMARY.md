@@ -73,7 +73,10 @@ alias: {
 ## Remaining Packages
 
 ### Kept in packages/:
-- **@mcp-router/shared**: Type definitions only (utils moved to Electron)
+- **@mcp-router/shared**: 
+  - **Type definitions**: Common types used by both Electron and Web apps
+  - **Locales (i18n)**: Shared translation files (en.json, ja.json)
+  - **Why keep**: Essential for type safety and consistent translations across platforms
 - **@mcp-router/platform-api**: Platform abstraction layer (key for Web version)
 - **@mcp-router/ui**: Shared UI components
 - **@mcp-router/tailwind-config**: Shared Tailwind configuration
