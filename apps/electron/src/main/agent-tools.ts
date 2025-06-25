@@ -2,7 +2,7 @@ import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
 import { getDeployedAgentService } from "@/main/services/agent";
 import { status } from "./auth";
 import { backgroundWindow } from "../main";
-import { getSessionRepository } from "@mcp-router/database";
+import { getSessionRepository } from "../lib/database";
 
 /**
  * Agent tools definitions and handlers for DeployedAgent integration

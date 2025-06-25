@@ -14,10 +14,10 @@ import {
   AgentConfig,
 } from "@mcp-router/shared";
 import { useTranslation } from "react-i18next";
-import { isAgentConfigured } from "@mcp-router/shared";
+import { isAgentConfigured } from "@/lib/utils/agent-utils";
 import { McpSettings } from "@/frontend/components/agent/create/McpSettings";
 import { useAgentStore } from "../../../stores";
-import { cn } from "@mcp-router/shared";
+import { cn } from "@/lib/utils/tailwind-utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/ui";
 import { toast } from "sonner";
 import { usePlatformAPI } from "@mcp-router/platform-api";

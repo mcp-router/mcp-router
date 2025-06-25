@@ -24,6 +24,10 @@ export const mainConfig: Configuration = {
         __dirname,
         "../../packages/shared/src",
       ),
+      "@mcp-router/platform-api": path.resolve(
+        __dirname,
+        "../../packages/platform-api/src",
+      ),
     },
   },
 };

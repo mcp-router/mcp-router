@@ -2,7 +2,7 @@ import { BaseService } from "./base-service";
 import { MCPServer, MCPServerConfig } from "@mcp-router/shared";
 import { logInfo } from "../../lib/utils/backend/error-handler";
 import { Singleton } from "../../lib/utils/backend/singleton";
-import { ServerRepository, getServerRepository } from "@mcp-router/database";
+import { ServerRepository, getServerRepository } from "../../lib/database";
 import { getTokenService } from "./token-service";
 
 /**

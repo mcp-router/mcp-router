@@ -8,7 +8,7 @@ import {
   RequestTypeStats,
 } from "@mcp-router/shared";
 import { Singleton } from "../../lib/utils/backend/singleton";
-import { LogRepository, getLogRepository } from "@mcp-router/database";
+import { LogRepository, getLogRepository } from "../../lib/database";
 
 /**
  * リクエストログサービスクラス

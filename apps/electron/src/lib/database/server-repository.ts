@@ -7,7 +7,7 @@ import {
   encryptObjectSync,
   decryptObjectSync,
   encryptStringSync,
-} from "./utils/encryption-utils";
+} from "../utils/backend/encryption-utils";
 
 /**
  * サーバ情報用リポジトリクラス

@@ -1,25 +1,20 @@
-// Import factory functions from @mcp-router/frontend
-import {
-  createServerStore,
-  createServerSelectors,
-  createAuthStore,
-  createAuthSelectors,
-  createAgentStore,
-  createAgentSelectors,
-} from "@mcp-router/frontend";
+// Platform-independent stores (no PlatformAPI dependency)
+export * from "./theme-store";
+export * from "./ui-store";
+export * from "./server-editing-store";
 
-// Re-export platform-independent stores directly from @mcp-router/frontend
-export {
-  useUIStore,
-  useToasts,
-  useDialog,
-  useGlobalLoading,
-  useTheme,
-  useServerEditingStore,
-  useThemeStore,
-} from "@mcp-router/frontend";
+// Platform-dependent store factories
+export * from "./server-store";
+export * from "./auth-store";
+export * from "./agent-store";
 
+// Import the electron platform API
 import { electronPlatformAPI } from "../lib/electron-platform-api";
+
+// Import store factories
+import { createServerStore, createServerSelectors } from "./server-store";
+import { createAuthStore, createAuthSelectors } from "./auth-store";
+import { createAgentStore, createAgentSelectors } from "./agent-store";
 
 // Create store instances with Electron platform API
 export const useServerStore = createServerStore(electronPlatformAPI);

@@ -1,7 +1,8 @@
 import React from "react";
 import { Button } from "@mcp-router/ui";
 import { Trash2, Plus, MoreHorizontal, Loader2 } from "lucide-react";
-import { cn, getDateInstance } from "@mcp-router/shared";
+import { cn } from "@/lib/utils/tailwind-utils";
+import { getDateInstance } from "@/lib/utils/date-utils";
 import { Skeleton } from "@mcp-router/ui";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@mcp-router/ui";
 import { useTranslation } from "react-i18next";

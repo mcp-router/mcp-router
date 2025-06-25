@@ -11,7 +11,7 @@ import {
 import { InvitationCode } from "./InvitationCode";
 import { Button } from "@mcp-router/ui";
 import { Badge } from "@mcp-router/ui";
-import { useThemeStore } from "@mcp-router/frontend";
+import { useThemeStore } from "@/frontend/stores";
 import { useAuthStore } from "../../stores";
 import { IconBrandDiscord } from "@tabler/icons-react";
 

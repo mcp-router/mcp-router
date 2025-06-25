@@ -3,11 +3,11 @@ import { useOutletContext, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AgentConfig, DeployedAgent } from "@mcp-router/shared";
 import { AlertCircle } from "lucide-react";
-import { cn } from "@mcp-router/shared";
+import { cn } from "@/lib/utils/tailwind-utils";
 import { Message } from "@ai-sdk/react";
 import ChatInterface from "@/frontend/components/agent/create/ChatInterface";
 import ChatSessions from "./ChatSessions";
-import { isAgentConfigured } from "@mcp-router/shared";
+import { isAgentConfigured } from "@/lib/utils/agent-utils";
 import { useAgentStore } from "../../../stores";
 import { usePlatformAPI } from "@mcp-router/platform-api";
 

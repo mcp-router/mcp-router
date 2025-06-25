@@ -4,7 +4,7 @@ import { Singleton } from "../../lib/utils/backend/singleton";
 import {
   SettingsRepository,
   getSettingsRepository,
-} from "@mcp-router/database";
+} from "../../lib/database";
 
 /**
  * アプリケーション設定を管理するサービス

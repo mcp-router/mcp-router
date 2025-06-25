@@ -11,7 +11,7 @@ import {
   IconPlus,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { cn } from "@mcp-router/shared";
+import { cn } from "@/lib/utils/tailwind-utils";
 import { Trash } from "lucide-react";
 import { toast } from "sonner";
 import { useServerStore } from "../stores";

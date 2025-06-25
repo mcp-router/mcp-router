@@ -4,7 +4,7 @@ import { Settings2, RefreshCw, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@mcp-router/ui";
 import { toast } from "sonner";
-import { useServerEditingStore } from "@mcp-router/frontend";
+import { useServerEditingStore } from "@/frontend/stores";
 
 // Import sub-components
 import ServerDetailsLocal from "@/frontend/components/mcp/server/server-details/ServerDetailsLocal";

@@ -29,7 +29,7 @@ import {
 } from "@/main/services/mcp-apps-service";
 import { updateElectronApp } from "update-electron-app";
 import { machineIdSync } from "node-machine-id";
-import { getDatabaseMigration } from "@mcp-router/database";
+import { getDatabaseMigration } from "./lib/database";
 import {
   validateClientId,
   isAppActivated,

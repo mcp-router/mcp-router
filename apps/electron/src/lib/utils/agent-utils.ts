@@ -1,5 +1,5 @@
 import { extractServerVariables } from "./server-variable-utils";
-import { AgentConfig, DeployedAgent } from "../types/mcp-types";
+import { AgentConfig, DeployedAgent } from "@mcp-router/shared";
 
 /**
  * Agent utility functions

@@ -1,6 +1,6 @@
 import React from "react";
 import { MCPServerConfig } from "@mcp-router/shared";
-import { extractServerVariables, ServerVariable } from "@mcp-router/shared";
+import { extractServerVariables, ServerVariable } from "../../../lib/utils/server-variable-utils";
 import { Badge } from "@mcp-router/ui";
 import { Database, Server } from "lucide-react";
 import {

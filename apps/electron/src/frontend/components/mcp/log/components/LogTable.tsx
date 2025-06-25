@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { RequestLogEntry } from "@mcp-router/shared";
-import { formatDateI18n } from "@mcp-router/shared";
+import { formatDateI18n } from "@/lib/utils/date-utils";
 import {
   Table,
   TableBody,

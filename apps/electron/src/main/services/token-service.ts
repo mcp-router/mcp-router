@@ -6,7 +6,7 @@ import {
 } from "@mcp-router/shared";
 import { BaseService } from "./base-service";
 import { Singleton } from "../../lib/utils/backend/singleton";
-import { TokenRepository, getTokenRepository } from "@mcp-router/database";
+import { TokenRepository, getTokenRepository } from "../../lib/database";
 import crypto from "crypto";
 
 /**

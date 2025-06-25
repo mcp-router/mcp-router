@@ -35,8 +35,8 @@ import {
   parseResourceUri,
   createResourceUri,
   createUriVariants,
-  summarizeResponse,
-} from "@mcp-router/shared";
+} from "@/lib/utils/uri-utils";
+import { summarizeResponse } from "@/lib/utils/response-utils";
 import { AgentToolHandler } from "./agent-tools";
 import { logError } from "../lib/utils/backend/error-handler";
 

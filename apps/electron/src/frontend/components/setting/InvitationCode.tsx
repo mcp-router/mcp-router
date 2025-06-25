@@ -12,7 +12,7 @@ import {
   Lock,
 } from "lucide-react";
 import { Label } from "@mcp-router/ui";
-import { cn } from "@mcp-router/shared";
+import { cn } from "@/lib/utils/tailwind-utils";
 import { usePlatformAPI } from "@mcp-router/platform-api";
 import { Badge } from "@mcp-router/ui";
 import { Alert, AlertDescription } from "@mcp-router/ui";

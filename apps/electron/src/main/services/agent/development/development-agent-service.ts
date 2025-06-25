@@ -4,7 +4,7 @@ import {
   MCPTool,
   MCPAgentToolPermission,
 } from "@mcp-router/shared";
-import { getAgentRepository } from "@mcp-router/database";
+import { getAgentRepository } from "../../../../lib/database";
 import { getServerService } from "../../server-service";
 import { DevelopmentAgent } from "./development-agent";
 import { v4 as uuidv4 } from "uuid";

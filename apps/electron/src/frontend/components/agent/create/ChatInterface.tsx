@@ -15,7 +15,7 @@ import {
 import { EnhancedErrorDisplay } from "@mcp-router/ui";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/ui";
 import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
-import { extractServerVariables } from "@mcp-router/shared";
+import { extractServerVariables } from "@/lib/utils/server-variable-utils";
 import {
   Card,
   CardContent,

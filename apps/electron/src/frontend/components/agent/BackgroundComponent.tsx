@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useChat, Message } from "@ai-sdk/react";
 import { AgentConfig } from "@mcp-router/shared";
-import { getServerAgentId } from "@mcp-router/shared";
+import { getServerAgentId } from "@/lib/utils/agent-utils";
 import { usePlatformAPI } from "@mcp-router/platform-api";
 
 interface BackgroundComponentProps {
