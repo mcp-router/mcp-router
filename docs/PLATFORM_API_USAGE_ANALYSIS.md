@@ -1,12 +1,12 @@
 # Platform API 使用状況分析
 
-Platform APIの91個のメソッドのうち、実際に使用されているものと未使用のものを詳細に分析しました。
+Platform APIのメソッドのうち、実際に使用されているものと未使用のものを詳細に分析しました。
 
 ## サマリー
 
-- **総メソッド数**: 91個
-- **使用中**: 58個 (64%)
-- **未使用**: 33個 (36%)
+- **総メソッド数**: 67個  
+- **使用中**: 67個 (100%)
+- **未使用**: 0個 (0%)
 
 ## カテゴリー別使用状況
 
@@ -19,13 +19,12 @@ Platform APIの91個のメソッドのうち、実際に使用されているも
 - ✅ `handleAuthToken` - auth.ts で使用
 - ✅ `onAuthStatusChanged` - App.tsx で使用
 
-#### 2. MCP Server Management (9/9)
+#### 2. MCP Server Management (8/8)
 - ✅ `listMcpServers` - server-store.ts で使用
 - ✅ `startMcpServer` - server-store.ts で使用
 - ✅ `stopMcpServer` - server-store.ts で使用
 - ✅ `addMcpServer` - server-store.ts で使用
 - ✅ `removeMcpServer` - server-store.ts で使用
-- ✅ `getMcpServerStatus` - Manual.tsx で使用（実際は未使用だが参照あり）
 - ✅ `updateMcpServerConfig` - server-store.ts で使用
 - ✅ `fetchMcpServersFromIndex` - DiscoverServerList.tsx で使用
 - ✅ `fetchMcpServerVersionDetails` - ServerDetails.tsx で使用
@@ -35,22 +34,29 @@ Platform APIの91個のメソッドのうち、実際に使用されているも
 - ✅ `saveSettings` - Settings.tsx で使用
 - ✅ `incrementPackageManagerOverlayCount` - PackageManagerOverlay.tsx で使用
 
-### ⚠️ 部分的に使用されているカテゴリー
+#### 4. Chat Stream Communication (8/8)
+- ✅ `sendChatStreamStart` - BackgroundComponent.tsx で使用
+- ✅ `sendChatStreamChunk` - BackgroundComponent.tsx で使用
+- ✅ `sendChatStreamEnd` - BackgroundComponent.tsx で使用
+- ✅ `sendChatStreamError` - BackgroundComponent.tsx で使用
+- ✅ `onChatStreamStart` - AgentChat.tsx, AgentChatPlayground.tsx で使用
+- ✅ `onChatStreamChunk` - AgentChat.tsx, AgentChatPlayground.tsx で使用
+- ✅ `onChatStreamEnd` - AgentChat.tsx, AgentChatPlayground.tsx で使用
+- ✅ `onChatStreamError` - AgentChat.tsx, AgentChatPlayground.tsx で使用
 
-#### 1. Logging (2/6 = 33%)
-**使用中:**
+#### 5. Command Utilities (1/1)
+- ✅ `checkCommandExists` - ServerDetailsLocal.tsx で使用
+
+#### 6. Background Chat (4/4)
+- ✅ `startBackgroundChat` - agent-store.ts で使用
+- ✅ `stopBackgroundChat` - agent-store.ts で使用
+- ✅ `onBackgroundChatStart` - background.tsx で使用（バックグラウンドウィンドウでチャット開始イベントを受信）
+- ✅ `onBackgroundChatStop` - BackgroundComponent.tsx で使用（チャット停止イベントを受信）
+
+#### 7. Logging (1/1)
 - ✅ `getRequestLogs` - useRequestLogs.ts で使用
-- ✅ `getServers` - getServers は listMcpServers のエイリアス
 
-**未使用:**
-- ❌ `getAvailableRequestTypes`
-- ❌ `getAvailableClientIds`
-- ❌ `getClientStats`
-- ❌ `getServerStats`
-- ❌ `getRequestTypeStats`
-
-#### 2. Agent Management (11/13 = 85%)
-**使用中:**
+#### 8. Agent Management (7/7)
 - ✅ `listAgents` - agent-store.ts で使用
 - ✅ `getAgent` - agent-store.ts で使用
 - ✅ `createAgent` - agent-store.ts で使用
@@ -58,44 +64,58 @@ Platform APIの91個のメソッドのうち、実際に使用されているも
 - ✅ `deleteAgent` - agent-store.ts で使用
 - ✅ `shareAgent` - agent-store.ts で使用
 - ✅ `importAgent` - DeployedAgents.tsx で使用
+
+#### 9. Agent Deployment (4/4)
 - ✅ `deployAgent` - agent-store.ts で使用
 - ✅ `getDeployedAgents` - agent-store.ts で使用
 - ✅ `updateDeployedAgent` - agent-store.ts で使用
 - ✅ `deleteDeployedAgent` - agent-store.ts で使用
 
-**未使用:**
-- ❌ `completeAgentSetup`
-- ❌ `getDeployedAgent`
+#### 10. Invitation & Activation (3/3)
+- ✅ `fetchInvitation` - App.tsx で使用
+- ✅ `checkActivation` - App.tsx で使用
+- ✅ `submitInvitationCode` - ActivationModal.tsx で使用
 
-#### 3. Background Chat (2/4 = 50%)
-**使用中:**
-- ✅ `startBackgroundChat` - agent-store.ts で使用
-- ✅ `stopBackgroundChat` - agent-store.ts で使用
+#### 11. MCP Apps (5/5)
+- ✅ `listMcpApps` - McpApps.tsx で使用
+- ✅ `addMcpAppConfig` - McpApps.tsx で使用
+- ✅ `deleteMcpApp` - McpApps.tsx で使用
+- ✅ `updateAppServerAccess` - McpApps.tsx で使用
+- ✅ `unifyAppConfig` - McpApps.tsx で使用
 
-**未使用:**
-- ❌ `onBackgroundChatStart`
-- ❌ `onBackgroundChatStop`
+#### 12. Package Management (2/2)
+- ✅ `resolvePackageVersionsInArgs` - server-store.ts で使用
+- ✅ `checkMcpServerPackageUpdates` - ServerUpdateCheck.tsx で使用
 
-#### 4. Chat Stream Communication (4/8 = 50%)
-**使用中:**
-- ✅ `sendChatStreamStart` - agent-store.ts で使用
-- ✅ `sendChatStreamChunk` - agent-store.ts で使用
-- ✅ `sendChatStreamEnd` - agent-store.ts で使用
-- ✅ `sendChatStreamError` - agent-store.ts で使用
+#### 13. Agent Tools (2/2)
+- ✅ `getAgentMCPServerTools` - agent-store.ts で使用
+- ✅ `executeAgentTool` - agent-store.ts で使用
 
-**未使用:**
-- ❌ `onChatStreamStart`
-- ❌ `onChatStreamChunk`
-- ❌ `onChatStreamEnd`
-- ❌ `onChatStreamError`
+#### 14. Session Management (5/5)
+- ✅ `fetchSessionMessages` - agent-store.ts で使用
+- ✅ `getSessions` - agent-store.ts で使用
+- ✅ `createSession` - agent-store.ts で使用
+- ✅ `updateSessionMessages` - agent-store.ts で使用
+- ✅ `deleteSession` - agent-store.ts で使用
 
-### ❌ 完全に未使用のカテゴリー
+#### 15. Token Management (1/1)
+- ✅ `updateTokenScopes` - McpApps.tsx で使用
 
-#### 1. General Server Methods (0/1)
-- ❌ `getServers` - listMcpServers のエイリアスだが直接使用されていない
+#### 16. Feedback (1/1)
+- ✅ `submitFeedback` - Feedback.tsx で使用
 
-#### 2. Command Utilities (0/1)
-- ❌ `checkCommandExists`
+#### 17. Updates (3/3)
+- ✅ `checkForUpdates` - UpdateNotification.tsx で使用
+- ✅ `installUpdate` - UpdateNotification.tsx で使用
+- ✅ `onUpdateAvailable` - UpdateNotification.tsx で使用
+
+#### 18. Protocol Handling (1/1)
+- ✅ `onProtocolUrl` - App.tsx で使用
+
+#### 19. Package Manager Utilities (3/3)
+- ✅ `checkPackageManagers` - PackageManagerOverlay.tsx で使用
+- ✅ `installPackageManagers` - PackageManagerOverlay.tsx で使用
+- ✅ `restartApp` - PackageManagerOverlay.tsx で使用
 
 ## 詳細な使用状況
 
@@ -121,52 +141,14 @@ Platform APIの91個のメソッドのうち、実際に使用されているも
    - `installUpdate` - UpdateNotification.tsx で使用
    - `onUpdateAvailable` - UpdateNotification.tsx で使用
 
-## 削減可能なメソッド
-
-### 1. 重複したメソッド
-- `getServers` → `listMcpServers` を使用すべき
-
-### 2. 未実装の統計メソッド (5個)
-```typescript
-// これらは将来的に統計ダッシュボードで使用予定？
-getAvailableRequestTypes
-getAvailableClientIds
-getClientStats
-getServerStats
-getRequestTypeStats
-```
-
-### 3. 未使用のイベントリスナー (6個)
-```typescript
-// チャットストリーム関連のリスナーは実装されていない
-onBackgroundChatStart
-onBackgroundChatStop
-onChatStreamStart
-onChatStreamChunk
-onChatStreamEnd
-onChatStreamError
-```
-
-### 4. その他の未使用メソッド
-- `checkCommandExists` - コマンド存在チェック（未使用）
-- `completeAgentSetup` - エージェントセットアップ完了（未使用）
-- `getDeployedAgent` - 単一のデプロイ済みエージェント取得（リストで十分）
-- `getMcpServerStatus` - サーバーステータス取得（実装はあるが未使用）
-
 ## 推奨事項
 
-1. **即座に削除可能**: 33個の未使用メソッドは安全に削除できます
-   - これにより API サーフェスを 36% 削減可能
+1. **さらなる改善の余地**:
+   - 将来的にログ統計が必要になった場合は、個別メソッドではなく統一的な統計APIを設計
+   - エージェント管理APIは現在のセットで必要十分
 
-2. **統合の候補**:
-   - 5つのログ統計メソッド → 1つの包括的な統計メソッドに
-   - 6つのイベントリスナー → 統一されたイベントシステムに
-
-3. **リファクタリング候補**:
-   - チャットストリーム通信を高レベルAPIに置き換え
-   - エージェント管理の一部メソッドを統合
-
-4. **保持すべきメソッド**:
+2. **保持すべきメソッド**:
    - 使用頻度は低いが重要な機能（アップデート、パッケージマネージャー、プロトコルハンドリング）
+   - すべてのチャットストリーミングAPI（リアルタイム通信に必須）
 
-この分析により、Platform APIを91個から58個程度まで削減でき、より管理しやすく理解しやすいAPIになります。
+削除したメソッドにより、Platform APIを91個から67個に削減し、すべてのメソッドが実際に使用されている、より効率的で管理しやすいAPIになりました。

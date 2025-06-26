@@ -10,11 +10,9 @@
 // 現在の問題：同じデータを取得する複数のメソッド
 interface PlatformAPI {
   listMcpServers(): Promise<any>;      // MCPサーバーのリストを取得
-  getServers(): Promise<any>;          // 上記のエイリアス（同じ実装）
   
   // エージェント関連でも同様の重複
   getAgent(id: string): Promise<Agent>;
-  getDeployedAgent(id: string): Promise<DeployedAgent>;
   // 実際には同じデータ構造で、statusフィールドが違うだけ
 }
 ```
@@ -24,7 +22,6 @@ interface PlatformAPI {
 interface PlatformAPI {
   servers: {
     list(options?: { includeStatus?: boolean }): Promise<Server[]>;
-    // getServers() は削除
   };
   
   agents: {

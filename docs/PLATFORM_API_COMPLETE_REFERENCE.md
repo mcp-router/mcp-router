@@ -6,25 +6,24 @@
 
 1. [Authentication](#1-authentication)
 2. [MCP Server Management](#2-mcp-server-management)
-3. [Logging & Analytics](#3-logging--analytics)
-4. [General Server Methods](#4-general-server-methods)
-5. [Invitation & Activation](#5-invitation--activation)
-6. [Settings](#6-settings)
-7. [MCP Apps](#7-mcp-apps)
-8. [Command Utilities](#8-command-utilities)
-9. [Agent Management](#9-agent-management)
-10. [Agent Deployment](#10-agent-deployment)
-11. [Package Management](#11-package-management)
-12. [Agent Tools](#12-agent-tools)
-13. [Background Chat](#13-background-chat)
-14. [Session Management](#14-session-management)
-15. [Chat Stream Communication](#15-chat-stream-communication)
-16. [Chat Stream Listeners](#16-chat-stream-listeners)
-17. [Token Management](#17-token-management)
-18. [Feedback](#18-feedback)
-19. [Updates](#19-updates)
-20. [Protocol Handling](#20-protocol-handling)
-21. [Package Manager Utilities](#21-package-manager-utilities)
+3. [Logging](#3-logging)
+4. [Invitation & Activation](#4-invitation--activation)
+5. [Settings](#5-settings)
+6. [MCP Apps](#6-mcp-apps)
+7. [Command Utilities](#7-command-utilities)
+8. [Agent Management](#8-agent-management)
+9. [Agent Deployment](#9-agent-deployment)
+10. [Package Management](#10-package-management)
+11. [Agent Tools](#11-agent-tools)
+12. [Background Chat](#12-background-chat)
+13. [Session Management](#13-session-management)
+14. [Chat Stream Communication](#14-chat-stream-communication)
+15. [Chat Stream Listeners](#15-chat-stream-listeners)
+16. [Token Management](#16-token-management)
+17. [Feedback](#17-feedback)
+18. [Updates](#18-updates)
+19. [Protocol Handling](#19-protocol-handling)
+20. [Package Manager Utilities](#20-package-manager-utilities)
 
 ---
 
@@ -352,7 +351,7 @@ async fetchMcpServerVersionDetails(displayId: string, version: string) {
 
 ---
 
-## 3. Logging & Analytics
+## 3. Logging
 
 ### `getRequestLogs(options?): Promise<LogsResponse>`
 リクエストログを取得します。
@@ -394,97 +393,10 @@ async getRequestLogs(options?: any) {
 }
 ```
 
----
-
-### `getAvailableRequestTypes(): Promise<string[]>`
-利用可能なリクエストタイプの一覧を取得します。
-
-**Returns:** リクエストタイプの配列
-
-**Web Implementation:**
-```typescript
-async getAvailableRequestTypes(): Promise<string[]> {
-  const result = await this.fetch("/mcp/logs/request-types");
-  return result.types;
-}
-```
 
 ---
 
-### `getAvailableClientIds(): Promise<string[]>`
-利用可能なクライアントIDの一覧を取得します。
-
-**Returns:** クライアントIDの配列
-
-**Web Implementation:**
-```typescript
-async getAvailableClientIds(): Promise<string[]> {
-  const result = await this.fetch("/mcp/logs/client-ids");
-  return result.clientIds;
-}
-```
-
----
-
-### `getClientStats(): Promise<any[]>`
-クライアント統計情報を取得します。
-
-**Returns:** クライアント統計の配列
-
-**Web Implementation:**
-```typescript
-async getClientStats() {
-  return this.fetch("/mcp/logs/stats/clients");
-}
-```
-
----
-
-### `getServerStats(): Promise<any[]>`
-サーバー統計情報を取得します。
-
-**Returns:** サーバー統計の配列
-
-**Web Implementation:**
-```typescript
-async getServerStats() {
-  return this.fetch("/mcp/logs/stats/servers");
-}
-```
-
----
-
-### `getRequestTypeStats(): Promise<any[]>`
-リクエストタイプ別の統計情報を取得します。
-
-**Returns:** リクエストタイプ統計の配列
-
-**Web Implementation:**
-```typescript
-async getRequestTypeStats() {
-  return this.fetch("/mcp/logs/stats/request-types");
-}
-```
-
----
-
-## 4. General Server Methods
-
-### `getServers(): Promise<any>`
-すべてのサーバーを取得します（`listMcpServers`のエイリアス）。
-
-**Returns:** サーバーの配列
-
-**Web Implementation:**
-```typescript
-async getServers() {
-  return this.listMcpServers();
-}
-```
-
----
-
-## 5. Invitation & Activation
+## 4. Invitation & Activation
 
 ### `fetchInvitation(): Promise<any>`
 招待情報を取得します。
@@ -534,7 +446,7 @@ async submitInvitationCode(code: string): Promise<boolean> {
 
 ---
 
-## 6. Settings
+## 5. Settings
 
 ### `getSettings(): Promise<AppSettings>`
 アプリケーション設定を取得します。
@@ -593,7 +505,7 @@ async incrementPackageManagerOverlayCount() {
 
 ---
 
-## 7. MCP Apps
+## 6. MCP Apps
 
 ### `listMcpApps(): Promise<McpApp[]>`
 すべてのMCPアプリ設定を取得します。
@@ -696,7 +608,7 @@ async unifyAppConfig(appName: string): Promise<McpAppsManagerResult> {
 
 ---
 
-## 8. Command Utilities
+## 7. Command Utilities
 
 ### `checkCommandExists(command: string): Promise<boolean>`
 指定したコマンドがシステムに存在するか確認します。
@@ -718,7 +630,7 @@ async checkCommandExists(command: string): Promise<boolean> {
 
 ---
 
-## 9. Agent Management
+## 8. Agent Management
 
 ### `listAgents(): Promise<Agent[]>`
 すべての開発中エージェントを取得します。
@@ -865,35 +777,10 @@ async importAgent(shareCode: string): Promise<DeployedAgent | undefined> {
 }
 ```
 
----
-
-### `completeAgentSetup(id: string, completed: boolean, updatedServers?): Promise<Agent | undefined>`
-エージェントのセットアップを完了します。
-
-**Parameters:**
-- `id`: エージェントID
-- `completed`: セットアップが完了したかどうか
-- `updatedServers` (optional): 更新されたサーバー設定
-
-**Returns:** 更新されたエージェントまたはundefined
-
-**Web Implementation:**
-```typescript
-async completeAgentSetup(
-  id: string,
-  completed: boolean,
-  updatedServers?: any[]
-): Promise<Agent | undefined> {
-  return this.fetch(`/agents/${id}/setup`, {
-    method: "POST",
-    body: JSON.stringify({ completed, updatedServers }),
-  });
-}
-```
 
 ---
 
-## 10. Agent Deployment
+## 9. Agent Deployment
 
 ### `deployAgent(id: string): Promise<DeployedAgent | undefined>`
 開発中のエージェントをデプロイします。
@@ -926,22 +813,6 @@ async getDeployedAgents(): Promise<DeployedAgent[] | undefined> {
 }
 ```
 
----
-
-### `getDeployedAgent(id: string): Promise<DeployedAgent | undefined>`
-特定のデプロイ済みエージェントを取得します。
-
-**Parameters:**
-- `id`: エージェントID
-
-**Returns:** デプロイ済みエージェントまたはundefined
-
-**Web Implementation:**
-```typescript
-async getDeployedAgent(id: string): Promise<DeployedAgent | undefined> {
-  return this.fetch(`/agents/deployed/${id}`);
-}
-```
 
 ---
 
@@ -989,7 +860,7 @@ async deleteDeployedAgent(id: string): Promise<boolean> {
 
 ---
 
-## 11. Package Management
+## 10. Package Management
 
 ### `resolvePackageVersionsInArgs(argsString: string, packageManager: "pnpm" | "uvx"): Promise<Result>`
 パッケージバージョンを解決します。
@@ -1049,7 +920,7 @@ async checkMcpServerPackageUpdates(
 
 ---
 
-## 12. Agent Tools
+## 11. Agent Tools
 
 ### `getAgentMCPServerTools(agentId: string, serverId: string, isDev?: boolean): Promise<Result>`
 エージェントが利用可能なMCPサーバーツールを取得します。
@@ -1117,7 +988,7 @@ async executeAgentTool(
 
 ---
 
-## 13. Background Chat
+## 12. Background Chat
 
 ### `startBackgroundChat(sessionId: string | undefined, agentId: string, query: string): Promise<Result>`
 バックグラウンドでチャットを開始します。
@@ -1210,7 +1081,7 @@ onBackgroundChatStop(callback: (data: any) => void): () => void {
 
 ---
 
-## 14. Session Management
+## 13. Session Management
 
 ### `fetchSessionMessages(sessionId: string): Promise<any[]>`
 セッションのメッセージを取得します。
@@ -1324,7 +1195,7 @@ async deleteSession(sessionId: string): Promise<boolean> {
 
 ---
 
-## 15. Chat Stream Communication
+## 14. Chat Stream Communication
 
 ### `sendChatStreamStart(streamData: any): Promise<Result>`
 チャットストリームを開始します。
@@ -1421,7 +1292,7 @@ async sendChatStreamError(errorData: any) {
 
 ---
 
-## 16. Chat Stream Listeners
+## 15. Chat Stream Listeners
 
 ### `onChatStreamStart(callback: (data: any) => void): () => void`
 チャットストリーム開始イベントを監視します。
@@ -1495,7 +1366,7 @@ onChatStreamError(callback: (data: any) => void): () => void {
 
 ---
 
-## 17. Token Management
+## 16. Token Management
 
 ### `updateTokenScopes(tokenId: string, scopes: TokenScope[]): Promise<McpAppsManagerResult>`
 トークンのスコープを更新します。
@@ -1525,7 +1396,7 @@ async updateTokenScopes(
 
 ---
 
-## 18. Feedback
+## 17. Feedback
 
 ### `submitFeedback(feedback: string): Promise<boolean>`
 ユーザーフィードバックを送信します。
@@ -1548,7 +1419,7 @@ async submitFeedback(feedback: string): Promise<boolean> {
 
 ---
 
-## 19. Updates
+## 18. Updates
 
 ### `checkForUpdates(): Promise<{updateAvailable: boolean}>`
 アプリケーションの更新を確認します。
@@ -1598,7 +1469,7 @@ onUpdateAvailable(callback: (available: boolean) => void): () => void {
 
 ---
 
-## 20. Protocol Handling
+## 19. Protocol Handling
 
 ### `onProtocolUrl(callback: (url: string) => void): () => void`
 プロトコルURL（ディープリンク）を監視します。
@@ -1620,7 +1491,7 @@ onProtocolUrl(callback: (url: string) => void): () => void {
 
 ---
 
-## 21. Package Manager Utilities
+## 20. Package Manager Utilities
 
 ### `checkPackageManagers(): Promise<PackageManagerStatus>`
 インストールされているパッケージマネージャーを確認します。

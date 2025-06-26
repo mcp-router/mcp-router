@@ -58,17 +58,6 @@ export function setupAgentHandlers(): void {
     return result;
   });
 
-  // エージェントのセットアップ関連のIPC通信ハンドラ
-  ipcMain.handle(
-    "agent:complete-setup",
-    (_, id: string, completed: boolean, updatedServers?: any[]) => {
-      return developmentAgentService.completeSetup(
-        id,
-        completed,
-        updatedServers,
-      );
-    },
-  );
 
   // エージェントデプロイ関連のIPC通信ハンドラ
   ipcMain.handle("agent:deploy", (_, id: string) => {
@@ -83,10 +72,6 @@ export function setupAgentHandlers(): void {
 
   ipcMain.handle("agent:deployed-list", () => {
     return deployedAgentService.getDeployedAgents();
-  });
-
-  ipcMain.handle("agent:deployed-get", (_, id: string) => {
-    return deployedAgentService.getDeployedAgentById(id);
   });
 
   ipcMain.handle("agent:deployed-update", (_, id: string, config: any) => {
