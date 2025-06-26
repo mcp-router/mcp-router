@@ -4,6 +4,7 @@ import App from "@/frontend/components/App";
 import { HashRouter } from "react-router-dom";
 import { PlatformAPIProvider } from "@mcp-router/platform-api";
 import { electronPlatformAPI } from "@/frontend/lib/electron-platform-api";
+import { TitleBar } from "@/frontend/components/TitleBar";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
@@ -12,7 +13,11 @@ root.render(
   <React.StrictMode>
     <HashRouter>
       <PlatformAPIProvider platformAPI={electronPlatformAPI}>
-        <App />
+        <div className="h-screen relative">
+          <TitleBar />
+          <div className="h-8" />
+          <App />
+        </div>
       </PlatformAPIProvider>
     </HashRouter>
   </React.StrictMode>,

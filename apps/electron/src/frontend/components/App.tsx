@@ -32,7 +32,7 @@ import {
   useUIStore,
   initializeStores,
 } from "../stores";
-import { usePlatformAPI, isElectron } from "@mcp-router/platform-api";
+import { usePlatformAPI } from "@mcp-router/platform-api";
 import { IconProgress } from "@tabler/icons-react";
 
 // Lazy load components
@@ -202,7 +202,7 @@ const App: React.FC = () => {
 
   // Loading indicator component to reuse
   const LoadingIndicator = () => (
-    <div className="flex h-screen items-center justify-center bg-content-light">
+    <div className="flex h-full items-center justify-center bg-content-light">
       <div className="text-center">
         <IconProgress className="h-10 w-10 mx-auto animate-spin text-primary" />
         <p className="mt-4 text-muted-foreground">{t("common.loading")}</p>
@@ -218,7 +218,7 @@ const App: React.FC = () => {
   // If not activated, show activation screen
   if (!isActivated) {
     return (
-      <div className="bg-content-light h-screen">
+      <div className="bg-content-light h-full">
         <React.Suspense fallback={<LoadingIndicator />}>
           <InvitationCode onActivate={handleActivate} />
         </React.Suspense>
@@ -229,7 +229,7 @@ const App: React.FC = () => {
   // Login is now optional - user can access app without authentication
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={true} className="h-full">
       <Sonner />
 
       {/* Package Manager Overlay */}
