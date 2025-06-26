@@ -591,10 +591,6 @@ function setupMcpServerHandlers(): void {
     return result;
   });
 
-  ipcMain.handle("mcp:status", (_, id: string) => {
-    return mcpServerManager.getServerStatus(id);
-  });
-
   ipcMain.handle(
     "mcp:update-config",
     (_, id: string, config: Partial<MCPServerConfig>) => {
@@ -652,59 +648,6 @@ function setupLogHandlers(): void {
       }
     },
   );
-
-  ipcMain.handle("requestLogs:getRequestTypes", async () => {
-    try {
-      const result = await logService.getAvailableRequestTypes();
-      return result;
-    } catch (error) {
-      console.error("[RequestLogs] Error retrieving request types:", error);
-      return [];
-    }
-  });
-
-  ipcMain.handle("requestLogs:getClientIds", async () => {
-    try {
-      const result = await logService.getAvailableClientIds();
-      return result;
-    } catch (error) {
-      console.error("[RequestLogs] Error retrieving client IDs:", error);
-      return [];
-    }
-  });
-
-  ipcMain.handle("requestLogs:getClientStats", async () => {
-    try {
-      const result = await logService.getClientStats();
-      return result;
-    } catch (error) {
-      console.error("[RequestLogs] Error retrieving client stats:", error);
-      return [];
-    }
-  });
-
-  ipcMain.handle("requestLogs:getServerStats", async () => {
-    try {
-      const result = await logService.getServerStats();
-      return result;
-    } catch (error) {
-      console.error("[RequestLogs] Error retrieving server stats:", error);
-      return [];
-    }
-  });
-
-  ipcMain.handle("requestLogs:getRequestTypeStats", async () => {
-    try {
-      const result = await logService.getRequestTypeStats();
-      return result;
-    } catch (error) {
-      console.error(
-        "[RequestLogs] Error retrieving request type stats:",
-        error,
-      );
-      return [];
-    }
-  });
 }
 
 /**

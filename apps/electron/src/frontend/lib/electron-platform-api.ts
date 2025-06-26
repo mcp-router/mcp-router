@@ -28,8 +28,6 @@ export class ElectronPlatformAPI implements PlatformAPI {
   addMcpServer = (serverConfig: any) =>
     window.electronAPI.addMcpServer(serverConfig);
   removeMcpServer = (id: string) => window.electronAPI.removeMcpServer(id);
-  getMcpServerStatus = (id: string) =>
-    window.electronAPI.getMcpServerStatus(id);
   updateMcpServerConfig = (id: string, config: any) =>
     window.electronAPI.updateMcpServerConfig(id, config);
   fetchMcpServersFromIndex = (
@@ -50,15 +48,6 @@ export class ElectronPlatformAPI implements PlatformAPI {
   // Logging
   getRequestLogs = (options?: any) =>
     window.electronAPI.getRequestLogs(options);
-  getAvailableRequestTypes = () =>
-    window.electronAPI.getAvailableRequestTypes();
-  getAvailableClientIds = () => window.electronAPI.getAvailableClientIds();
-  getClientStats = () => window.electronAPI.getClientStats();
-  getServerStats = () => window.electronAPI.getServerStats();
-  getRequestTypeStats = () => window.electronAPI.getRequestTypeStats();
-
-  // General server methods
-  getServers = () => window.electronAPI.getServers();
 
   // Invitation & Activation
   fetchInvitation = () => window.electronAPI.fetchInvitation();
@@ -97,16 +86,10 @@ export class ElectronPlatformAPI implements PlatformAPI {
   shareAgent = (id: string) => window.electronAPI.shareAgent(id);
   importAgent = (shareCode: string) =>
     window.electronAPI.importAgent(shareCode);
-  completeAgentSetup = (
-    id: string,
-    completed: boolean,
-    updatedServers?: any[],
-  ) => window.electronAPI.completeAgentSetup(id, completed, updatedServers);
 
   // Agent Deployment
   deployAgent = (id: string) => window.electronAPI.deployAgent(id);
   getDeployedAgents = () => window.electronAPI.getDeployedAgents();
-  getDeployedAgent = (id: string) => window.electronAPI.getDeployedAgent(id);
   updateDeployedAgent = (id: string, config: any) =>
     window.electronAPI.updateDeployedAgent(id, config);
   deleteDeployedAgent = (id: string) =>

@@ -40,7 +40,6 @@ export interface PlatformAPI {
   stopMcpServer: (id: string) => Promise<boolean>;
   addMcpServer: (serverConfig: MCPServerConfig) => Promise<any>;
   removeMcpServer: (id: string) => Promise<any>;
-  getMcpServerStatus: (id: string) => Promise<any>;
   updateMcpServerConfig: (id: string, config: any) => Promise<any>;
   fetchMcpServersFromIndex: (
     page?: number,
@@ -67,14 +66,6 @@ export interface PlatformAPI {
     logs: any[];
     total: number;
   }>;
-  getAvailableRequestTypes: () => Promise<string[]>;
-  getAvailableClientIds: () => Promise<string[]>;
-  getClientStats: () => Promise<any[]>;
-  getServerStats: () => Promise<any[]>;
-  getRequestTypeStats: () => Promise<any[]>;
-
-  // General server methods
-  getServers: () => Promise<any>;
 
   // Invitation & Activation
   fetchInvitation: () => Promise<any>;
@@ -113,16 +104,10 @@ export interface PlatformAPI {
   deleteAgent: (id: string) => Promise<boolean>;
   shareAgent: (id: string) => Promise<string>;
   importAgent: (shareCode: string) => Promise<DeployedAgent | undefined>;
-  completeAgentSetup: (
-    id: string,
-    completed: boolean,
-    updatedServers?: any[],
-  ) => Promise<Agent | undefined>;
 
   // Agent Deployment
   deployAgent: (id: string) => Promise<DeployedAgent | undefined>;
   getDeployedAgents: () => Promise<DeployedAgent[] | undefined>;
-  getDeployedAgent: (id: string) => Promise<DeployedAgent | undefined>;
   updateDeployedAgent: (
     id: string,
     config: any,

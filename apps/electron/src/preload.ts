@@ -30,7 +30,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   addMcpServer: (serverConfig: MCPServerConfig) =>
     ipcRenderer.invoke("mcp:add", serverConfig),
   removeMcpServer: (id: string) => ipcRenderer.invoke("mcp:remove", id),
-  getMcpServerStatus: (id: string) => ipcRenderer.invoke("mcp:status", id),
   updateMcpServerConfig: (id: string, config: any) =>
     ipcRenderer.invoke("mcp:update-config", id, config),
   fetchMcpServersFromIndex: (
@@ -54,9 +53,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     packageManager: "pnpm" | "uvx",
   ) => ipcRenderer.invoke("package:check-updates", args, packageManager),
 
-  // Basic operations (for compatibility with existing components)
-  getServers: () => ipcRenderer.invoke("mcp:list"),
-
+  // Logging
   getRequestLogs: (options?: {
     clientId?: string;
     serverId?: string;
@@ -67,14 +64,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     offset?: number;
     limit?: number;
   }) => ipcRenderer.invoke("requestLogs:get", options),
-
-  getAvailableRequestTypes: () =>
-    ipcRenderer.invoke("requestLogs:getRequestTypes"),
-  getAvailableClientIds: () => ipcRenderer.invoke("requestLogs:getClientIds"),
-  getClientStats: () => ipcRenderer.invoke("requestLogs:getClientStats"),
-  getServerStats: () => ipcRenderer.invoke("requestLogs:getServerStats"),
-  getRequestTypeStats: () =>
-    ipcRenderer.invoke("requestLogs:getRequestTypeStats"),
 
   // Invitation System
   fetchInvitation: () => ipcRenderer.invoke("invitation:fetch"),
@@ -113,18 +102,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   shareAgent: (id: string) => ipcRenderer.invoke("agent:share", id),
   importAgent: (shareCode: string) =>
     ipcRenderer.invoke("agent:import", shareCode),
-  completeAgentSetup: (
-    id: string,
-    completed: boolean,
-    updatedServers?: any[],
-  ) =>
-    ipcRenderer.invoke("agent:complete-setup", id, completed, updatedServers),
 
   // Agent Deployment
   deployAgent: (id: string) => ipcRenderer.invoke("agent:deploy", id),
   getDeployedAgents: () => ipcRenderer.invoke("agent:deployed-list"),
-  getDeployedAgent: (id: string) =>
-    ipcRenderer.invoke("agent:deployed-get", id),
   updateDeployedAgent: (id: string, config: any) =>
     ipcRenderer.invoke("agent:deployed-update", id, config),
   deleteDeployedAgent: (id: string) =>
