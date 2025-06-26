@@ -1,6 +1,6 @@
 /**
  * Platform API factory
- * 
+ *
  * This module provides utilities for creating platform-specific API instances
  */
 
@@ -8,13 +8,11 @@ import { PlatformAPI } from "./platform-api-interface";
 
 // Platform detection
 export const isElectron = () => {
-  return typeof window !== 'undefined' && 
-    window.electronAPI !== undefined;
+  return typeof window !== "undefined" && window.electronAPI !== undefined;
 };
 
 export const isWeb = () => {
-  return typeof window !== 'undefined' && 
-    !window.electronAPI;
+  return typeof window !== "undefined" && !window.electronAPI;
 };
 
 // Web implementation (placeholder for future web support)
@@ -70,7 +68,12 @@ export class WebPlatformAPI implements PlatformAPI {
     throw new Error("Web platform not yet implemented");
   };
 
-  fetchMcpServersFromIndex = async (page?: number, limit?: number, search?: string, isVerified?: boolean) => {
+  fetchMcpServersFromIndex = async (
+    page?: number,
+    limit?: number,
+    search?: string,
+    isVerified?: boolean,
+  ) => {
     throw new Error("Web platform not yet implemented");
   };
 
@@ -182,7 +185,11 @@ export class WebPlatformAPI implements PlatformAPI {
     throw new Error("Web platform not yet implemented");
   };
 
-  completeAgentSetup = async (id: string, completed: boolean, updatedServers?: any[]) => {
+  completeAgentSetup = async (
+    id: string,
+    completed: boolean,
+    updatedServers?: any[],
+  ) => {
     throw new Error("Web platform not yet implemented");
   };
 
@@ -206,23 +213,41 @@ export class WebPlatformAPI implements PlatformAPI {
     throw new Error("Web platform not yet implemented");
   };
 
-  resolvePackageVersionsInArgs = async (argsString: string, packageManager: "pnpm" | "uvx") => {
+  resolvePackageVersionsInArgs = async (
+    argsString: string,
+    packageManager: "pnpm" | "uvx",
+  ) => {
     throw new Error("Web platform not yet implemented");
   };
 
-  checkMcpServerPackageUpdates = async (args: string[], packageManager: "pnpm" | "uvx") => {
+  checkMcpServerPackageUpdates = async (
+    args: string[],
+    packageManager: "pnpm" | "uvx",
+  ) => {
     throw new Error("Web platform not yet implemented");
   };
 
-  getAgentMCPServerTools = async (agentId: string, serverId: string, isDev?: boolean) => {
+  getAgentMCPServerTools = async (
+    agentId: string,
+    serverId: string,
+    isDev?: boolean,
+  ) => {
     throw new Error("Web platform not yet implemented");
   };
 
-  executeAgentTool = async (agentId: string, toolName: string, args: Record<string, any>) => {
+  executeAgentTool = async (
+    agentId: string,
+    toolName: string,
+    args: Record<string, any>,
+  ) => {
     throw new Error("Web platform not yet implemented");
   };
 
-  startBackgroundChat = async (sessionId: string | undefined, agentId: string, query: string) => {
+  startBackgroundChat = async (
+    sessionId: string | undefined,
+    agentId: string,
+    query: string,
+  ) => {
     throw new Error("Web platform not yet implemented");
   };
 
@@ -332,7 +357,9 @@ export class WebPlatformAPI implements PlatformAPI {
  * @param customImplementation Optional custom implementation to use
  * @returns Platform API instance
  */
-export function createPlatformAPI(customImplementation?: PlatformAPI): PlatformAPI {
+export function createPlatformAPI(
+  customImplementation?: PlatformAPI,
+): PlatformAPI {
   if (customImplementation) {
     return customImplementation;
   }

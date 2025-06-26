@@ -41,6 +41,9 @@ importers:
       eslint-plugin-react-hooks:
         specifier: ^5.2.0
         version: 5.2.0(eslint@9.29.0)
+      globals:
+        specifier: ^16.2.0
+        version: 16.2.0
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
@@ -6069,6 +6072,11 @@ packages:
 
   /globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
+    engines: {node: '>=18'}
+    dev: true
+
+  /globals@16.2.0:
+    resolution: {integrity: sha512-O+7l9tPdHCU320IigZZPj5zmRCFG9xHmx9cU8FqU2Rp+JN714seHV+2S9+JslCpY4gJwU2vOGox0wzgae/MCEg==}
     engines: {node: '>=18'}
     dev: true
 

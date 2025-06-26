@@ -3,17 +3,17 @@
  * This allows the frontend stores to work with both Electron and Web platforms
  */
 
-import { 
-  TokenGenerateOptions, 
-  TokenScope, 
+import {
+  TokenGenerateOptions,
+  TokenScope,
   AppSettings,
-  Agent, 
-  AgentConfig, 
-  DeployedAgent, 
+  Agent,
+  AgentConfig,
+  DeployedAgent,
   MCPServerConfig,
   McpAppsManagerResult,
   McpApp,
-  ServerPackageUpdates
+  ServerPackageUpdates,
 } from "@mcp-router/shared";
 
 // Platform API interface that matches the current electronAPI
@@ -28,11 +28,13 @@ export interface PlatformAPI {
     token?: string;
   }>;
   handleAuthToken: (token: string, state?: string) => Promise<boolean>;
-  onAuthStatusChanged: (callback: (status: {
-    loggedIn: boolean;
-    userId?: string;
-    user?: any;
-  }) => void) => () => void;
+  onAuthStatusChanged: (
+    callback: (status: {
+      loggedIn: boolean;
+      userId?: string;
+      user?: any;
+    }) => void,
+  ) => () => void;
 
   // MCP Server Management
   listMcpServers: () => Promise<any>;
@@ -158,10 +160,7 @@ export interface PlatformAPI {
     options?: any,
   ) => Promise<{ sessions: any[]; hasMore: boolean; nextCursor?: string }>;
   createSession: (agentId: string, initialMessages?: any[]) => Promise<any>;
-  updateSessionMessages: (
-    sessionId: string,
-    messages: any[],
-  ) => Promise<any>;
+  updateSessionMessages: (sessionId: string, messages: any[]) => Promise<any>;
   deleteSession: (sessionId: string) => Promise<boolean>;
 
   // Chat Stream Communication

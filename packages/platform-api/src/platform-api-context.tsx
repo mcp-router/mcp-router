@@ -1,10 +1,10 @@
 /**
  * Platform API React Context
- * 
+ *
  * Provides platform API to React components through context
  */
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext } from "react";
 import { PlatformAPI } from "./platform-api-interface";
 
 // Create the context
@@ -17,7 +17,10 @@ export interface PlatformAPIProviderProps {
 }
 
 // Provider component
-export function PlatformAPIProvider({ platformAPI, children }: PlatformAPIProviderProps) {
+export function PlatformAPIProvider({
+  platformAPI,
+  children,
+}: PlatformAPIProviderProps) {
   return (
     <PlatformAPIContext.Provider value={platformAPI}>
       {children}
@@ -28,11 +31,11 @@ export function PlatformAPIProvider({ platformAPI, children }: PlatformAPIProvid
 // Hook to use the platform API
 export function usePlatformAPI(): PlatformAPI {
   const context = useContext(PlatformAPIContext);
-  
+
   if (!context) {
-    throw new Error('usePlatformAPI must be used within a PlatformAPIProvider');
+    throw new Error("usePlatformAPI must be used within a PlatformAPIProvider");
   }
-  
+
   return context;
 }
 
