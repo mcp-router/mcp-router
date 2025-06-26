@@ -214,6 +214,22 @@ declare global {
         errors?: { node?: string; pnpm?: string; uv?: string };
       }>;
       restartApp: () => Promise<boolean>;
+
+      // Workspace Management
+      listWorkspaces: () => Promise<any[]>;
+      createWorkspace: (config: any) => Promise<any>;
+      updateWorkspace: (
+        id: string,
+        updates: any,
+      ) => Promise<{ success: boolean }>;
+      deleteWorkspace: (id: string) => Promise<{ success: boolean }>;
+      switchWorkspace: (id: string) => Promise<{ success: boolean }>;
+      getCurrentWorkspace: () => Promise<any>;
+      getWorkspaceCredentials: (
+        id: string,
+      ) => Promise<{ token: string | null }>;
+      onWorkspaceSwitched: (callback: (workspace: any) => void) => () => void;
+      onWorkspaceConfigChanged: (callback: (config: any) => void) => () => void;
     };
   }
 }

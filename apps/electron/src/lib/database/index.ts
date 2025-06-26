@@ -12,6 +12,7 @@ export { ServerRepository } from "./server-repository";
 export { SessionRepository } from "./session-repository";
 export { SettingsRepository } from "./settings-repository";
 export { TokenRepository } from "./token-repository";
+export { WorkspaceRepository } from "./workspace-repository";
 
 // Repository Factory Functions
 export { getAgentRepository } from "./agent-repository";
@@ -21,6 +22,7 @@ export { getServerRepository } from "./server-repository";
 export { getSessionRepository } from "./session-repository";
 export { getSettingsRepository } from "./settings-repository";
 export { getTokenRepository } from "./token-repository";
+export { getWorkspaceRepository } from "./workspace-repository";
 
 // Database Migration
 export { getDatabaseMigration } from "./database-migration";

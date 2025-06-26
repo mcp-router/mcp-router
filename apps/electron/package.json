@@ -17,7 +17,8 @@
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",

@@ -12,7 +12,6 @@
     "paths": {
       "@/*": ["./src/*"],
       "@mcp-router/shared": ["../../packages/shared/src"],
-      "@mcp-router/database": ["../../packages/database/src"],
       "@mcp-router/ui": ["../../packages/ui/src"],
       "@mcp-router/ui/*": ["../../packages/ui/src/*"],
       "@mcp-router/platform-api": ["../../packages/platform-api/src"]
@@ -21,7 +20,6 @@
   "include": ["src/**/*"],
   "references": [
     { "path": "../../packages/shared" },
-    { "path": "../../packages/database" },
     { "path": "../../packages/ui" },
     { "path": "../../packages/platform-api" }
   ]

@@ -45,6 +45,8 @@ import { fetchWithToken } from "./lib/utils/backend/fetch-utils";
 import { registerPackageVersionHandlers } from "./main/handlers/package-version-handler";
 import { registerPackageManagerHandlers } from "./main/handlers/package-manager-handler";
 import { setupAgentHandlers } from "./main/handlers/agent-handler";
+import { registerWorkspaceHandlers } from "./main/handlers/workspace-handlers";
+import { getPlatformAPIManager } from "./main/platform-api-manager";
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -252,6 +254,9 @@ async function initMCPServices(): Promise<void> {
 
   // 既存のMCPサーバー設定をインポート
   await importExistingServerConfigurations();
+
+  // Platform APIマネージャーの初期化
+  await getPlatformAPIManager().initialize();
 }
 
 /**
@@ -260,6 +265,11 @@ async function initMCPServices(): Promise<void> {
 function initUI(): void {
   // メインウィンドウ作成
   createWindow();
+
+  // Platform APIマネージャーにメインウィンドウを設定
+  if (mainWindow) {
+    getPlatformAPIManager().setMainWindow(mainWindow);
+  }
 
   // バックグラウンドウィンドウ作成
   createBackgroundWindow();
@@ -504,6 +514,9 @@ function setupIpcHandlers(): void {
 
   // エージェント関連
   setupAgentHandlers();
+
+  // ワークスペース関連
+  registerWorkspaceHandlers();
 }
 
 /**

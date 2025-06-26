@@ -124,6 +124,37 @@ export abstract class BaseRepository<T extends { id: string }> {
   }
 
   /**
+   * 条件に一致する最初のエンティティを取得
+   * @param whereClause WHERE句
+   * @param params パラメータ
+   */
+  public findOne(whereClause: string, params: any[] = []): T | null {
+    try {
+      const sql = `SELECT * FROM ${this.tableName} WHERE ${whereClause} LIMIT 1`;
+      const row = this.db.get<any>(sql, params);
+
+      if (!row) {
+        return null;
+      }
+
+      // エンティティに変換
+      return this.mapRowToEntity(row);
+    } catch (error) {
+      console.error(`${this.tableName}の検索中にエラーが発生しました:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * IDでエンティティを取得（findByIdエイリアス）
+   * @param id エンティティのID
+   */
+  public findById(id: string): T | null {
+    const result = this.getById(id);
+    return result || null;
+  }
+
+  /**
    * エンティティを追加
    * @param data 追加するエンティティ
    */

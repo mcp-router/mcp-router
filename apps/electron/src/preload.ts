@@ -241,4 +241,30 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.removeListener("protocol:url", listener);
     };
   },
+
+  // Workspace Management
+  listWorkspaces: () => ipcRenderer.invoke("workspace:list"),
+  createWorkspace: (config: any) =>
+    ipcRenderer.invoke("workspace:create", config),
+  updateWorkspace: (id: string, updates: any) =>
+    ipcRenderer.invoke("workspace:update", id, updates),
+  deleteWorkspace: (id: string) => ipcRenderer.invoke("workspace:delete", id),
+  switchWorkspace: (id: string) => ipcRenderer.invoke("workspace:switch", id),
+  getCurrentWorkspace: () => ipcRenderer.invoke("workspace:current"),
+  getWorkspaceCredentials: (id: string) =>
+    ipcRenderer.invoke("workspace:get-credentials", id),
+  onWorkspaceSwitched: (callback: (workspace: any) => void) => {
+    const listener = (_: any, workspace: any) => callback(workspace);
+    ipcRenderer.on("workspace:switched", listener);
+    return () => {
+      ipcRenderer.removeListener("workspace:switched", listener);
+    };
+  },
+  onWorkspaceConfigChanged: (callback: (config: any) => void) => {
+    const listener = (_: any, config: any) => callback(config);
+    ipcRenderer.on("workspace:config-changed", listener);
+    return () => {
+      ipcRenderer.removeListener("workspace:config-changed", listener);
+    };
+  },
 });
