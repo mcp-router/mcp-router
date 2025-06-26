@@ -1,10 +1,7 @@
 import { AppSettings } from "@mcp-router/shared";
 import { BaseService } from "./base-service";
 import { Singleton } from "../../lib/utils/backend/singleton";
-import {
-  SettingsRepository,
-  getSettingsRepository,
-} from "../../lib/database";
+import { SettingsRepository, getSettingsRepository } from "../../lib/database";
 
 /**
  * アプリケーション設定を管理するサービス

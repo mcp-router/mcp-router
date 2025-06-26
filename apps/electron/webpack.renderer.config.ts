@@ -34,10 +34,7 @@ export const rendererConfig: Configuration = {
         __dirname,
         "../../packages/platform-api/src",
       ),
-      "@mcp-router/ui": path.resolve(
-        __dirname,
-        "../../packages/ui/src",
-      ),
+      "@mcp-router/ui": path.resolve(__dirname, "../../packages/ui/src"),
       "@mcp-router/tailwind-config": path.resolve(
         __dirname,
         "../../packages/tailwind-config",

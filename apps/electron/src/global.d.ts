@@ -65,7 +65,6 @@ declare global {
         total: number;
       }>;
 
-
       // Invitation System
       fetchInvitation: () => Promise<any>;
 

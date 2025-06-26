@@ -58,7 +58,6 @@ export function setupAgentHandlers(): void {
     return result;
   });
 
-
   // エージェントデプロイ関連のIPC通信ハンドラ
   ipcMain.handle("agent:deploy", (_, id: string) => {
     const developmentAgent = developmentAgentService.getAgentById(id);

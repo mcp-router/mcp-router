@@ -84,7 +84,9 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
   };
 
   return (
-    <div className={`flex items-center justify-between space-x-4 ${className || ""}`}>
+    <div
+      className={`flex items-center justify-between space-x-4 ${className || ""}`}
+    >
       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
         <span>
           Showing {Math.min((currentPage - 1) * pageSize + 1, totalItems)} to{" "}
@@ -96,7 +98,10 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
         {showPageSizeSelector && onPageSizeChange && (
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">Show</span>
-            <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+            <Select
+              value={String(pageSize)}
+              onValueChange={handlePageSizeChange}
+            >
               <SelectTrigger className="h-8 w-[70px]">
                 <SelectValue />
               </SelectTrigger>
@@ -123,7 +128,9 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
                     onPageChange(currentPage - 1);
                   }
                 }}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                className={
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                }
               />
             </PaginationItem>
 
@@ -155,7 +162,11 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
                     onPageChange(currentPage + 1);
                   }
                 }}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }
               />
             </PaginationItem>
           </PaginationContent>

@@ -125,7 +125,8 @@ const createWindow = () => {
     title: "MCP Router",
     icon: path.join(__dirname, "assets/icon.png"),
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
-    trafficLightPosition: process.platform === "darwin" ? { x: 15, y: 15 } : undefined,
+    trafficLightPosition:
+      process.platform === "darwin" ? { x: 15, y: 15 } : undefined,
     autoHideMenuBar: true,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
