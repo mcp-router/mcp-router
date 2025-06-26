@@ -85,7 +85,7 @@ const SidebarComponent: React.FC = () => {
 
   return (
     <Sidebar>
-      <div className="h-8" />
+      <div className="pt-[50px]" />
       <SidebarHeader>
         <Link
           to="/apps/electron/public"

@@ -13,10 +13,12 @@ root.render(
   <React.StrictMode>
     <HashRouter>
       <PlatformAPIProvider platformAPI={electronPlatformAPI}>
-        <div className="h-screen relative">
+        <div className="h-screen flex flex-col">
           <TitleBar />
-          <div className="h-8" />
-          <App />
+          <div className="flex-1 overflow-hidden">
+            <div className="h-2" />
+            <App />
+          </div>
         </div>
       </PlatformAPIProvider>
     </HashRouter>

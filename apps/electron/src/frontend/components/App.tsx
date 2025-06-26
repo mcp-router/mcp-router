@@ -37,6 +37,7 @@ import { IconProgress } from "@tabler/icons-react";
 
 // Lazy load components
 const InvitationCode = React.lazy(() => import("./setup/InvitationCode"));
+const WorkspaceManagement = React.lazy(() => import("./setting/WorkspaceManagement"));
 
 // Main App component
 const App: React.FC = () => {
@@ -261,6 +262,14 @@ const App: React.FC = () => {
             <Route path="/logs" element={<LogViewer />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="/settings" element={<Settings />} />
+            <Route
+              path="/settings/workspaces"
+              element={
+                <React.Suspense fallback={<LoadingIndicator />}>
+                  <WorkspaceManagement />
+                </React.Suspense>
+              }
+            />
           </Route>
 
           {/* Agent routes - authentication required */}

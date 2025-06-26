@@ -16,6 +16,7 @@ import {
 } from "@mcp-router/ui";
 import { useWorkspaceStore } from "@/frontend/stores/workspace-store";
 import { Globe, Monitor, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface WorkspaceDialogProps {
   workspace?: any;
@@ -23,6 +24,7 @@ interface WorkspaceDialogProps {
 }
 
 export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
+  const { t } = useTranslation();
   const { createWorkspace, updateWorkspace, error, setError } =
     useWorkspaceStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,22 +51,22 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
     const errors: typeof validationErrors = {};
 
     if (!formData.name.trim()) {
-      errors.name = "ワークスペース名を入力してください";
+      errors.name = "Workspace name is required";
     }
 
     if (formData.type === "remote") {
       if (!formData.apiUrl.trim()) {
-        errors.apiUrl = "API URLを入力してください";
+        errors.apiUrl = "API URL is required";
       } else {
         try {
           new URL(formData.apiUrl);
         } catch {
-          errors.apiUrl = "有効なURLを入力してください";
+          errors.apiUrl = "Please enter a valid URL";
         }
       }
 
       if (!workspace && !formData.authToken.trim()) {
-        errors.authToken = "認証トークンを入力してください";
+        errors.authToken = "Authentication token is required";
       }
     }
 
@@ -114,24 +116,24 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {workspace ? "ワークスペースを編集" : "新しいワークスペースを追加"}
+            {workspace ? t("workspace.editWorkspace") : t("workspace.createWorkspace")}
           </DialogTitle>
           <DialogDescription>
-            ローカルまたはリモートのワークスペースを設定します
+            Configure local or remote workspace
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">ワークスペース名</Label>
+              <Label htmlFor="name">{t("workspace.workspaceName")}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                placeholder="例: 開発環境"
+                placeholder="e.g. Development"
                 className={validationErrors.name ? "border-destructive" : ""}
               />
               {validationErrors.name && (
@@ -142,7 +144,7 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
             </div>
 
             <div className="space-y-3">
-              <Label>タイプ</Label>
+              <Label>{t("workspace.workspaceType")}</Label>
               <RadioGroup
                 value={formData.type}
                 onValueChange={(value) =>
@@ -157,7 +159,7 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
                     className="flex items-center cursor-pointer"
                   >
                     <Monitor className="mr-2 h-4 w-4" />
-                    ローカル（個人用）
+                    {t("workspace.local")} (Personal)
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -167,7 +169,7 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
                     className="flex items-center cursor-pointer"
                   >
                     <Globe className="mr-2 h-4 w-4" />
-                    リモート（チーム用）
+                    {t("workspace.remote")} (Team)
                   </Label>
                 </div>
               </RadioGroup>
@@ -198,7 +200,7 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="authToken">
-                    認証トークン {workspace && "(変更する場合のみ入力)"}
+                    Authentication Token {workspace && "(Only enter to change)"}
                   </Label>
                   <Input
                     id="authToken"
@@ -208,7 +210,7 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
                       setFormData({ ...formData, authToken: e.target.value })
                     }
                     placeholder={
-                      workspace ? "変更しない場合は空欄" : "APIトークンを入力"
+                      workspace ? "Leave blank to keep current" : "Enter API token"
                     }
                     className={
                       validationErrors.authToken ? "border-destructive" : ""
@@ -238,10 +240,10 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
               onClick={onClose}
               disabled={isSubmitting}
             >
-              キャンセル
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "処理中..." : workspace ? "更新" : "作成"}
+              {isSubmitting ? t("common.saving") : workspace ? t("common.update") : t("common.add")}
             </Button>
           </DialogFooter>
         </form>

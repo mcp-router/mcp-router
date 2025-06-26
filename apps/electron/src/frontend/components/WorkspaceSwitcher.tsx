@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,11 +20,20 @@ import {
 } from "lucide-react";
 import { useWorkspaceStore } from "@/frontend/stores/workspace-store";
 import { WorkspaceDialog } from "./WorkspaceDialog";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 export function WorkspaceSwitcher() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { workspaces, currentWorkspace, switchWorkspace } = useWorkspaceStore();
   const [showWorkspaceDialog, setShowWorkspaceDialog] = useState(false);
   const [editingWorkspace, setEditingWorkspace] = useState<any>(null);
+
+  // Sort workspaces by name
+  const sortedWorkspaces = useMemo(() => {
+    return [...workspaces].sort((a, b) => a.name.localeCompare(b.name));
+  }, [workspaces]);
 
   const handleWorkspaceSwitch = async (workspaceId: string) => {
     if (currentWorkspace?.id !== workspaceId) {
@@ -38,8 +47,7 @@ export function WorkspaceSwitcher() {
   };
 
   const handleManageWorkspaces = () => {
-    // TODO: ワークスペース管理画面を開く
-    console.log("Manage workspaces");
+    navigate("/settings/workspaces");
   };
 
   const getWorkspaceIcon = (type: string) => {
@@ -62,9 +70,9 @@ export function WorkspaceSwitcher() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2 hover:bg-accent"
+            className="h-8 px-3 hover:bg-accent/50"
           >
-            <Avatar className="h-5 w-5 mr-2">
+            <Avatar className="h-6 w-6 mr-2">
               {currentWorkspace?.displayInfo?.avatarUrl ? (
                 <AvatarImage src={currentWorkspace.displayInfo.avatarUrl} />
               ) : (
@@ -76,14 +84,14 @@ export function WorkspaceSwitcher() {
               )}
             </Avatar>
             <span className="text-sm">
-              {currentWorkspace?.name || "ワークスペース選択"}
+              {currentWorkspace?.name || t("workspace.selectWorkspace")}
             </span>
-            <ChevronDown className="ml-1 h-3 w-3" />
+            <ChevronDown className="ml-2 h-4 w-4 opacity-60" />
           </Button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className="w-64">
-          {workspaces.map((workspace) => {
+          {sortedWorkspaces.map((workspace) => {
             const Icon = getWorkspaceIcon(workspace.type);
             const isActive = currentWorkspace?.id === workspace.id;
 
@@ -120,7 +128,7 @@ export function WorkspaceSwitcher() {
             className="cursor-pointer"
           >
             <Plus className="mr-2 h-4 w-4" />
-            <span>新しいワークスペースを追加</span>
+            <span>{t("workspace.addNew")}</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -128,7 +136,7 @@ export function WorkspaceSwitcher() {
             className="cursor-pointer"
           >
             <Settings className="mr-2 h-4 w-4" />
-            <span>ワークスペースを管理</span>
+            <span>{t("workspace.manage")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

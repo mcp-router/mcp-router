@@ -14,15 +14,15 @@ export function TitleBar() {
 
   return (
     <div
-      className="h-8 fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
+      className="h-[50px] fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b"
       style={{ WebkitAppRegion: "drag" } as any}
     >
       {/* 左側のスペース（macOSのトラフィックライト用） */}
-      <div className="w-20" />
+      <div className="w-50" />
 
-      {/* 中央：アプリタイトル（オプション） */}
-      <div className="flex-1 text-center text-sm text-muted-foreground select-none">
-        {/* MCP Router */}
+      {/* 中央：アプリタイトル */}
+      <div className="flex-1 text-center text-sm font-medium text-muted-foreground select-none">
+        MCP Router
       </div>
 
       {/* 右側：ワークスペーススイッチャー */}

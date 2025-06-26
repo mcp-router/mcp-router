@@ -628,6 +628,33 @@
     "application": "Application Access",
     "applicationDesc": "Allows retrieving connected clients"
   },
+  "workspace": {
+    "title": "Workspace",
+    "selectWorkspace": "Select Workspace",
+    "addNew": "Add New Workspace",
+    "manage": "Manage Workspaces",
+    "local": "Local",
+    "remote": "Remote",
+    "teamName": "Team Name",
+    "createWorkspace": "Create Workspace",
+    "editWorkspace": "Edit Workspace",
+    "deleteWorkspace": "Delete Workspace",
+    "workspaceName": "Workspace Name",
+    "workspaceType": "Workspace Type",
+    "confirmDelete": "Are you sure you want to delete {{name}}?",
+    "deleteWarning": "This action cannot be undone. All data in this workspace will be permanently deleted.",
+    "created": "Workspace created successfully",
+    "updated": "Workspace updated successfully",
+    "deleted": "Workspace deleted successfully",
+    "switched": "Switched to workspace: {{name}}",
+    "errors": {
+      "createFailed": "Failed to create workspace",
+      "updateFailed": "Failed to update workspace",
+      "deleteFailed": "Failed to delete workspace",
+      "switchFailed": "Failed to switch workspace",
+      "fetchFailed": "Failed to fetch workspaces"
+    }
+  },
   "rules": {
     "title": "Tool Parameter Rules",
     "sections": {

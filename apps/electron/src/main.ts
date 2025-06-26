@@ -131,7 +131,7 @@ const createWindow = () => {
     titleBarOverlay: {
       color: "rgba(0, 0, 0, 0)",
       symbolColor: "#ffffff",
-      height: 30,
+      height: 50,
     },
     autoHideMenuBar: true,
     webPreferences: {

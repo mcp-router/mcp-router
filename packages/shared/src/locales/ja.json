@@ -645,6 +645,33 @@
     "application": "アプリケーションアクセス",
     "applicationDesc": "接続されたクライアントの取得を許可します"
   },
+  "workspace": {
+    "title": "ワークスペース",
+    "selectWorkspace": "ワークスペース選択",
+    "addNew": "新しいワークスペースを追加",
+    "manage": "ワークスペースを管理",
+    "local": "ローカル",
+    "remote": "リモート",
+    "teamName": "チーム名",
+    "createWorkspace": "ワークスペースを作成",
+    "editWorkspace": "ワークスペースを編集",
+    "deleteWorkspace": "ワークスペースを削除",
+    "workspaceName": "ワークスペース名",
+    "workspaceType": "ワークスペースタイプ",
+    "confirmDelete": "{{name}}を削除してもよろしいですか？",
+    "deleteWarning": "この操作は取り消せません。このワークスペースのすべてのデータが完全に削除されます。",
+    "created": "ワークスペースが作成されました",
+    "updated": "ワークスペースが更新されました",
+    "deleted": "ワークスペースが削除されました",
+    "switched": "ワークスペース「{{name}}」に切り替えました",
+    "errors": {
+      "createFailed": "ワークスペースの作成に失敗しました",
+      "updateFailed": "ワークスペースの更新に失敗しました",
+      "deleteFailed": "ワークスペースの削除に失敗しました",
+      "switchFailed": "ワークスペースの切り替えに失敗しました",
+      "fetchFailed": "ワークスペースの取得に失敗しました"
+    }
+  },
   "rules": {
     "title": "ツールパラメータルール",
     "sections": {
