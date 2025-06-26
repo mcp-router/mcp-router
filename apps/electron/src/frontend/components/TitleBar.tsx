@@ -3,8 +3,7 @@ import { useWorkspaceStore } from "@/frontend/stores/workspace-store";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 export function TitleBar() {
-  const { currentWorkspace, loadCurrentWorkspace, loadWorkspaces } =
-    useWorkspaceStore();
+  const { loadCurrentWorkspace, loadWorkspaces } = useWorkspaceStore();
 
   useEffect(() => {
     // 初期データの読み込み
@@ -18,7 +17,7 @@ export function TitleBar() {
       style={{ WebkitAppRegion: "drag" } as any}
     >
       {/* 左側のスペース（macOSのトラフィックライト用） */}
-      <div className="w-50" />
+      <div className="w-20" />
 
       {/* 中央：アプリタイトル */}
       <div className="flex-1 text-center text-sm font-medium text-muted-foreground select-none">

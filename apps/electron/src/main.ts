@@ -128,9 +128,8 @@ const createWindow = () => {
     title: "MCP Router",
     icon: path.join(__dirname, "assets/icon.png"),
     titleBarStyle: "hidden",
+    trafficLightPosition: { x: 20, y: 19 }, // y = (50-12)/2 ≈ 19 for vertical center
     titleBarOverlay: {
-      color: "rgba(0, 0, 0, 0)",
-      symbolColor: "#ffffff",
       height: 50,
     },
     autoHideMenuBar: true,
