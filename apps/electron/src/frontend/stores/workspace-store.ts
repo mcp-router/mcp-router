@@ -123,9 +123,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         // サーバーストアなど他のストアのデータを再読み込み
         const { initializeStores } = await import("../stores");
         await initializeStores();
-        
-        // ページをリロードして新しいワークスペースのデータを表示
-        window.location.reload();
       }
     } catch (error) {
       set({

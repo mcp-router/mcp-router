@@ -79,11 +79,6 @@ const WorkspaceManagement: React.FC = () => {
     
     try {
       await switchWorkspace(workspaceId);
-      toast.success(
-        t("workspace.switched", {
-          name: workspaces.find((w) => w.id === workspaceId)?.name,
-        })
-      );
     } catch (error) {
       toast.error(t("workspace.errors.switchFailed"));
     }
@@ -203,8 +198,6 @@ const WorkspaceManagement: React.FC = () => {
           onClose={() => {
             setShowWorkspaceDialog(false);
             setEditingWorkspace(null);
-            // Reload workspaces after dialog closes
-            loadWorkspaces();
           }}
         />
       )}

@@ -25,7 +25,7 @@ interface WorkspaceDialogProps {
 
 export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
   const { t } = useTranslation();
-  const { createWorkspace, updateWorkspace, error, setError } =
+  const { createWorkspace, updateWorkspace, switchWorkspace, error, setError } =
     useWorkspaceStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -99,11 +99,13 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
 
       if (workspace) {
         await updateWorkspace(workspace.id, config);
+        onClose();
       } else {
-        await createWorkspace(config);
+        const newWorkspace = await createWorkspace(config);
+        onClose();
+        // Switch to the newly created workspace
+        await switchWorkspace(newWorkspace.id);
       }
-
-      onClose();
     } catch (err) {
       // エラーは store で設定される
     } finally {
