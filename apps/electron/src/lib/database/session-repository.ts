@@ -1,5 +1,5 @@
 import { BaseRepository } from "./base-repository";
-import { getSqliteManager } from "./sqlite-manager";
+import { getSqliteManager, SqliteManager } from "./sqlite-manager";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -24,9 +24,9 @@ export interface ChatSession {
  * Chat session repository for local database storage
  */
 export class SessionRepository extends BaseRepository<ChatSession> {
-  constructor() {
-    const db = getSqliteManager();
+  constructor(db: SqliteManager) {
     super(db, "chat_sessions");
+    console.log('[SessionRepository] Constructor called with database:', db?.getDbPath?.() || 'database instance');
   }
 
   /**
@@ -478,13 +478,29 @@ export class SessionRepository extends BaseRepository<ChatSession> {
 
 // Singleton instance
 let sessionRepositoryInstance: SessionRepository | null = null;
+let currentDb: SqliteManager | null = null;
 
 /**
  * Get the singleton instance of SessionRepository
  */
 export function getSessionRepository(): SessionRepository {
-  if (!sessionRepositoryInstance) {
-    sessionRepositoryInstance = new SessionRepository();
+  const db = getSqliteManager("mcprouter");
+  
+  // Check if database instance has changed
+  if (!sessionRepositoryInstance || currentDb !== db) {
+    console.log('[SessionRepository] Database instance changed, creating new repository');
+    sessionRepositoryInstance = new SessionRepository(db);
+    currentDb = db;
   }
+  
   return sessionRepositoryInstance;
+}
+
+/**
+ * Reset SessionRepository instance (used when switching workspaces)
+ */
+export function resetSessionRepository(): void {
+  console.log('[SessionRepository] Resetting repository instance');
+  sessionRepositoryInstance = null;
+  currentDb = null;
 }

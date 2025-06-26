@@ -11,7 +11,7 @@ import { Singleton } from "../../lib/utils/backend/singleton";
 import { LogRepository, getLogRepository } from "../../lib/database";
 
 /**
- * リクエストログサービスクラス
+ * Request log service class
  */
 export class LogService
   extends BaseService<RequestLogEntry, string>
@@ -21,7 +21,7 @@ export class LogService
   private repository: LogRepository;
 
   /**
-   * コンストラクタ
+   * Constructor
    */
   private constructor() {
     super();
@@ -29,20 +29,28 @@ export class LogService
   }
 
   /**
-   * エンティティ名を取得
+   * Get entity name
    */
   protected getEntityName(): string {
-    return "リクエストログ";
+    return "Request Log";
   }
 
   /**
-   * LogServiceのシングルトンインスタンスを取得
+   * Get singleton instance of LogService
    */
   public static getInstance(): LogService {
     if (!LogService.instance) {
       LogService.instance = new LogService();
     }
     return LogService.instance;
+  }
+
+  /**
+   * Reset instance
+   * Used when switching workspaces
+   */
+  public static resetInstance(): void {
+    LogService.instance = null;
   }
 
   //--------------------------------------------------------------------------------

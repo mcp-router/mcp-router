@@ -20,6 +20,7 @@ export class ServerRepository extends BaseRepository<MCPServer> {
    */
   constructor(db: SqliteManager) {
     super(db, "servers");
+    console.log("[ServerRepository] Initialized with database:", db ? "Present" : "Missing");
   }
 
   /**
@@ -480,7 +481,23 @@ export function getServerRepository(): ServerRepository {
   if (!instance) {
     // SqliteManagerのインスタンスを取得
     const db = getSqliteManager("mcprouter");
+    console.log("[getServerRepository] Creating new ServerRepository instance");
     instance = new ServerRepository(db);
+  } else {
+    // インスタンスが存在する場合、現在のデータベースと一致するか確認
+    const currentDb = getSqliteManager("mcprouter");
+    if (instance.database !== currentDb) {
+      console.log("[getServerRepository] Database changed, creating new instance");
+      instance = new ServerRepository(currentDb);
+    }
   }
   return instance;
+}
+
+/**
+ * ServerRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
+ */
+export function resetServerRepository(): void {
+  console.log("[resetServerRepository] Resetting ServerRepository instance");
+  instance = null;
 }

@@ -9,6 +9,13 @@ import { v4 as uuidv4 } from "uuid";
 export abstract class BaseRepository<T extends { id: string }> {
   protected db: SqliteManager;
   protected tableName: string;
+  
+  /**
+   * 現在のデータベースインスタンスを取得（外部から比較用）
+   */
+  public get database(): SqliteManager {
+    return this.db;
+  }
 
   /**
    * コンストラクタ

@@ -37,8 +37,8 @@ export function registerWorkspaceHandlers(): void {
   ipcMain.handle("workspace:switch", async (_, workspaceId: string) => {
     await getWorkspaceService().switchWorkspace(workspaceId);
 
-    // TODO: Platform APIを再初期化
-    // await reinitializePlatformAPI(workspaceId);
+    // Platform APIマネージャーがワークスペース切り替えイベントをリッスンしているため、
+    // 自動的にPlatform APIの再初期化が行われる
 
     return { success: true };
   });

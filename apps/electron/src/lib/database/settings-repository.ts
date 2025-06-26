@@ -7,6 +7,7 @@ import { AppSettings, DEFAULT_APP_SETTINGS } from "@mcp-router/shared";
  */
 export class SettingsRepository implements Singleton<SettingsRepository> {
   private static instance: SettingsRepository | null = null;
+  private static currentDb: SqliteManager | null = null;
   private db: SqliteManager;
   private settingsCache: AppSettings | null = null;
 
@@ -14,9 +15,15 @@ export class SettingsRepository implements Singleton<SettingsRepository> {
    * シングルトンインスタンスを取得
    */
   public static getInstance(): SettingsRepository {
-    if (!SettingsRepository.instance) {
+    const db = getSqliteManager("mcprouter");
+    
+    // Check if database instance has changed
+    if (!SettingsRepository.instance || SettingsRepository.currentDb !== db) {
+      console.log('[SettingsRepository] Database instance changed, creating new repository');
       SettingsRepository.instance = new SettingsRepository();
+      SettingsRepository.currentDb = db;
     }
+    
     return SettingsRepository.instance;
   }
 
@@ -24,7 +31,8 @@ export class SettingsRepository implements Singleton<SettingsRepository> {
    * コンストラクタ
    */
   private constructor() {
-    this.db = getSqliteManager();
+    this.db = getSqliteManager("mcprouter");
+    console.log('[SettingsRepository] Constructor called with database:', this.db?.getDbPath?.() || 'database instance');
     this.initializeTable();
     this.loadSettingsToCache();
   }
@@ -117,4 +125,13 @@ export class SettingsRepository implements Singleton<SettingsRepository> {
  */
 export function getSettingsRepository(): SettingsRepository {
   return SettingsRepository.getInstance();
+}
+
+/**
+ * SettingsRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
+ */
+export function resetSettingsRepository(): void {
+  console.log('[SettingsRepository] Resetting repository instance');
+  SettingsRepository.instance = null;
+  SettingsRepository.currentDb = null;
 }

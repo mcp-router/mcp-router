@@ -116,7 +116,7 @@ const SidebarComponent: React.FC = () => {
                       tooltip={
                         isAuthenticated
                           ? t("agents.use")
-                          : t("agents.loginRequired")
+                          : t("agents.loginRequired.featureDescription")
                       }
                       isActive={
                         location.pathname === "/agents/use" ||
@@ -144,7 +144,7 @@ const SidebarComponent: React.FC = () => {
                       tooltip={
                         isAuthenticated
                           ? t("agents.build")
-                          : t("agents.loginRequired")
+                          : t("agents.loginRequired.featureDescription")
                       }
                       isActive={
                         location.pathname === "/agents/build" ||

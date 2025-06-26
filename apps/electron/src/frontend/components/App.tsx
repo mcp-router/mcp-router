@@ -240,9 +240,8 @@ const App: React.FC = () => {
       />
 
       <SidebarComponent />
-
-      <main className="flex flex-col flex-1 w-full min-w-0 overflow-hidden">
-        <SidebarTrigger />
+      <main className="flex flex-col flex-1 w-full min-w-0 overflow-auto pt-8">
+        {/*<SidebarTrigger />*/}
 
         <Routes>
           {/* Public routes - no authentication required */}

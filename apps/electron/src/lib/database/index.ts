@@ -15,14 +15,14 @@ export { TokenRepository } from "./token-repository";
 export { WorkspaceRepository } from "./workspace-repository";
 
 // Repository Factory Functions
-export { getAgentRepository } from "./agent-repository";
-export { getDeployedAgentRepository } from "./deployed-agent-repository";
-export { getLogRepository } from "./log-repository";
-export { getServerRepository } from "./server-repository";
-export { getSessionRepository } from "./session-repository";
-export { getSettingsRepository } from "./settings-repository";
-export { getTokenRepository } from "./token-repository";
-export { getWorkspaceRepository } from "./workspace-repository";
+export { getAgentRepository, resetAgentRepository } from "./agent-repository";
+export { getDeployedAgentRepository, resetDeployedAgentRepository } from "./deployed-agent-repository";
+export { getLogRepository, resetLogRepository } from "./log-repository";
+export { getServerRepository, resetServerRepository } from "./server-repository";
+export { getSessionRepository, resetSessionRepository } from "./session-repository";
+export { getSettingsRepository, resetSettingsRepository } from "./settings-repository";
+export { getTokenRepository, resetTokenRepository } from "./token-repository";
+export { getWorkspaceRepository, resetWorkspaceRepository } from "./workspace-repository";
 
 // Database Migration
 export { getDatabaseMigration } from "./database-migration";

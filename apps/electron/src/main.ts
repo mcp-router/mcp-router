@@ -47,6 +47,7 @@ import { registerPackageManagerHandlers } from "./main/handlers/package-manager-
 import { setupAgentHandlers } from "./main/handlers/agent-handler";
 import { registerWorkspaceHandlers } from "./main/handlers/workspace-handlers";
 import { getPlatformAPIManager } from "./main/platform-api-manager";
+import { getWorkspaceService } from "./main/services/workspace-service";
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -126,9 +127,12 @@ const createWindow = () => {
     minHeight: 600,
     title: "MCP Router",
     icon: path.join(__dirname, "assets/icon.png"),
-    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
-    trafficLightPosition:
-      process.platform === "darwin" ? { x: 15, y: 15 } : undefined,
+    titleBarStyle: "hidden",
+    titleBarOverlay: {
+      color: "rgba(0, 0, 0, 0)",
+      symbolColor: "#ffffff",
+      height: 30,
+    },
     autoHideMenuBar: true,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
@@ -227,8 +231,18 @@ function setupTrayUpdateTimer(
  */
 async function initDatabase(): Promise<void> {
   try {
-    const databaseMigration = getDatabaseMigration();
-    databaseMigration.runMigrations();
+    // ワークスペースサービスは自動的にメタデータベースを初期化する
+    const workspaceService = getWorkspaceService();
+
+    // アクティブなワークスペースを取得
+    const activeWorkspace = await workspaceService.getActiveWorkspace();
+    if (!activeWorkspace) {
+      // デフォルトワークスペースがない場合は作成
+      await workspaceService.switchWorkspace("local-default");
+    }
+
+    // ワークスペース固有のデータベースのマイグレーションは
+    // PlatformAPIManagerが初期化時に実行する
   } catch (error) {
     console.error(
       "データベースマイグレーション中にエラーが発生しました:",
@@ -241,8 +255,14 @@ async function initDatabase(): Promise<void> {
  * MCP関連サービスの初期化を行う
  */
 async function initMCPServices(): Promise<void> {
+  // Platform APIマネージャーの初期化（ワークスペースDBを設定）
+  await getPlatformAPIManager().initialize();
+
   // MCPサーバーマネージャーの初期化
   mcpServerManager = new MCPServerManager();
+
+  // データベースからサーバーリストを読み込む
+  await mcpServerManager.initializeAsync();
 
   // HTTPサーバーの初期化とスタート
   mcpHttpServer = new MCPHttpServer(mcpServerManager, 3282);
@@ -254,9 +274,6 @@ async function initMCPServices(): Promise<void> {
 
   // 既存のMCPサーバー設定をインポート
   await importExistingServerConfigurations();
-
-  // Platform APIマネージャーの初期化
-  await getPlatformAPIManager().initialize();
 }
 
 /**

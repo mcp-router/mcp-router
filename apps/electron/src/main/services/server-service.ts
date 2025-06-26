@@ -6,7 +6,7 @@ import { ServerRepository, getServerRepository } from "../../lib/database";
 import { getTokenService } from "./token-service";
 
 /**
- * サーバ情報を管理するサービスクラス
+ * Service class for managing server information
  */
 export class ServerService
   extends BaseService<MCPServer, string>
@@ -17,7 +17,7 @@ export class ServerService
   private repository: ServerRepository;
 
   /**
-   * コンストラクタ
+   * Constructor
    */
   private constructor() {
     super();
@@ -25,20 +25,27 @@ export class ServerService
   }
 
   /**
-   * エンティティ名を取得
+   * Get entity name
    */
   protected getEntityName(): string {
-    return "サーバ";
+    return "Server";
   }
 
   /**
-   * ServerServiceのシングルトンインスタンスを取得
+   * Get singleton instance of ServerService
    */
   public static getInstance(): ServerService {
     if (!ServerService.instance) {
       ServerService.instance = new ServerService();
     }
     return ServerService.instance;
+  }
+
+  /**
+   * Reset instance (used when switching workspaces)
+   */
+  public static resetInstance(): void {
+    ServerService.instance = null;
   }
 
   /**

@@ -4,7 +4,7 @@ import { Singleton } from "../../lib/utils/backend/singleton";
 import { SettingsRepository, getSettingsRepository } from "../../lib/database";
 
 /**
- * アプリケーション設定を管理するサービス
+ * Service for managing application settings
  */
 export class SettingsService
   extends BaseService<AppSettings, string>
@@ -13,7 +13,7 @@ export class SettingsService
   private static instance: SettingsService | null = null;
 
   /**
-   * シングルトンインスタンスを取得
+   * Get singleton instance
    */
   public static getInstance(): SettingsService {
     if (!SettingsService.instance) {
@@ -22,10 +22,18 @@ export class SettingsService
     return SettingsService.instance;
   }
 
+  /**
+   * Reset instance
+   * Used when switching workspaces
+   */
+  public static resetInstance(): void {
+    SettingsService.instance = null;
+  }
+
   private repository: SettingsRepository;
 
   /**
-   * コンストラクタ
+   * Constructor
    */
   private constructor() {
     super();
@@ -33,10 +41,10 @@ export class SettingsService
   }
 
   /**
-   * エンティティ名を取得
+   * Get entity name
    */
   protected getEntityName(): string {
-    return "設定";
+    return "Settings";
   }
 
   /**

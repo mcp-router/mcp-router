@@ -11,19 +11,25 @@ import Database, {
  */
 export class SqliteManager {
   private db: DatabaseType;
+  private dbPath: string;
 
   /**
    * コンストラクタ
-   * @param dbName データベース名
+   * @param dbNameOrPath データベース名またはフルパス
    */
-  constructor(dbName: string) {
-    // データベースファイルのパスを作成
-    const dbDir = app.getPath("userData");
-    const dbPath = path.join(dbDir, `${dbName}.db`);
+  constructor(dbNameOrPath: string) {
+    // フルパスが渡された場合はそのまま使用、それ以外はuserDataディレクトリに配置
+    if (path.isAbsolute(dbNameOrPath)) {
+      this.dbPath = dbNameOrPath;
+    } else {
+      const dbDir = app.getPath("userData");
+      this.dbPath = path.join(dbDir, `${dbNameOrPath}.db`);
+    }
 
     // ディレクトリが存在しない場合は作成
     try {
       const fs = require("fs");
+      const dbDir = path.dirname(this.dbPath);
       if (!fs.existsSync(dbDir)) {
         fs.mkdirSync(dbDir, { recursive: true });
       }
@@ -34,13 +40,16 @@ export class SqliteManager {
 
     // データベース接続
     try {
-      this.db = new Database(dbPath);
+      this.db = new Database(this.dbPath);
 
       // プラグマ設定
       this.db.pragma("journal_mode = WAL");
       this.db.pragma("foreign_keys = ON");
     } catch (error) {
-      console.error(`データベース '${dbName}' の初期化に失敗しました:`, error);
+      console.error(
+        `データベース '${dbNameOrPath}' の初期化に失敗しました:`,
+        error,
+      );
       throw error;
     }
   }
@@ -50,6 +59,13 @@ export class SqliteManager {
    */
   public getConnection(): DatabaseType {
     return this.db;
+  }
+
+  /**
+   * データベースファイルのパスを取得
+   */
+  public getDbPath(): string {
+    return this.dbPath;
   }
 
   /**
@@ -133,10 +149,23 @@ export class SqliteManager {
       throw error;
     }
   }
+
+  /**
+   * 複数のSQL文を実行
+   * @param sql SQL文（複数可）
+   */
+  public exec(sql: string): void {
+    try {
+      this.db.exec(sql);
+    } catch (error) {
+      console.error("SQLの実行に失敗しました:", error);
+      throw error;
+    }
+  }
 }
 
 /**
- * SQLiteManagerのシングルトンインスタンス
+ * SQLiteManagerのシングルトンインスタンス（互換性のために残す）
  */
 export class SqliteManagerSingleton {
   private static instance: SqliteManager | null = null;
@@ -152,9 +181,30 @@ export class SqliteManagerSingleton {
   }
 }
 
+// グローバルなワークスペースデータベース参照
+let currentWorkspaceDb: SqliteManager | null = null;
+
 /**
- * SQLiteManagerのシングルトンインスタンスを取得
+ * ワークスペースデータベースを設定（PlatformAPIManagerから呼び出される）
+ */
+export function setWorkspaceDatabase(db: SqliteManager | null): void {
+  console.log("[setWorkspaceDatabase] Setting workspace DB:", db ? "Set" : "Cleared");
+  currentWorkspaceDb = db;
+}
+
+/**
+ * 現在のワークスペースのSQLiteManagerインスタンスを取得
+ * ワークスペース切り替えに対応
  */
 export function getSqliteManager(dbName = "mcprouter"): SqliteManager {
+  // ワークスペースデータベースが設定されている場合はそれを使用
+  // 注意: ワークスペースモードでは引数のdbNameは無視される
+  if (currentWorkspaceDb) {
+    console.log("[getSqliteManager] Returning workspace DB (ignoring dbName:", dbName, ")");
+    return currentWorkspaceDb;
+  }
+  
+  // フォールバック：従来のシングルトンパターン（初期化時のみ）
+  console.log("[getSqliteManager] WARNING: No workspace DB set, falling back to singleton DB:", dbName);
   return SqliteManagerSingleton.getInstance(dbName);
 }

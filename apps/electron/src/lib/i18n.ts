@@ -34,6 +34,9 @@ i18n
       escapeValue: false, // React already safes from XSS
     },
 
+    // Allow returning objects from translation keys
+    returnObjects: true,
+
     // React settings
     react: {
       useSuspense: true,

@@ -65,7 +65,7 @@ export class MCPServerManager {
   private clients: Map<string, Client> = new Map(); // Map server ID to MCP client
   private serverNameToIdMap: Map<string, string> = new Map(); // Map server name to server ID
   private serversDir: string;
-  private serverService: ServerService;
+  private serverService!: ServerService; // 初期化はinitializeAsyncで行う
   private transport: StreamableHTTPServerTransport;
   private sseTransport: SSEServerTransport | null = null;
 
@@ -73,7 +73,15 @@ export class MCPServerManager {
   private serverStatusMap: Map<string, boolean> = new Map(); // Track which servers are connected
   private originalProtocols: Map<string, string> = new Map(); // Map resource URI to its original protocol
   private toolNameToServerMap: Map<string, string> = new Map(); // Map original tool name to server name
-  private tokenService = getTokenService();
+  private _tokenService: any = null; // 初期化はinitializeAsyncで行う
+  
+  // TokenServiceのgetterプロパティ
+  private get tokenService(): any {
+    if (!this._tokenService) {
+      this._tokenService = getTokenService();
+    }
+    return this._tokenService;
+  }
 
   // Aggregator server
   private aggregatorServer: Server;
@@ -85,17 +93,60 @@ export class MCPServerManager {
       fs.mkdirSync(this.serversDir, { recursive: true });
     }
 
-    // Initialize server service
-    this.serverService = getServerService();
-
     // Initialize the aggregator server
     this.initAggregatorServer();
 
-    // Load servers from database
-    this.loadServersFromDatabase();
+    // データベースの初期化が完了してから非同期でサーバーを読み込む
+    // コンストラクタでは呼び出さず、外部から明示的に呼び出すようにする
+    // this.initializeAsync();
+  }
 
-    // Initialize Agent Tools virtual server
-    this.initAgentToolsServer();
+  /**
+   * Initialize async operations
+   */
+  public async initializeAsync(): Promise<void> {
+    try {
+      console.log("[MCPServerManager] Initializing...");
+      
+      // Initialize server service (ワークスペースDBが設定された後に初期化)
+      this.serverService = getServerService();
+      this._tokenService = getTokenService();
+      
+      // Clear existing servers before reloading
+      this.clearAllServers();
+      
+      // Load servers from database
+      await this.loadServersFromDatabase();
+      
+      // Initialize Agent Tools virtual server
+      this.initAgentToolsServer();
+      
+      console.log("[MCPServerManager] Initialization complete");
+    } catch (error) {
+      console.error("Failed to initialize MCP Server Manager:", error);
+    }
+  }
+  
+  /**
+   * Clear all servers from memory (used when switching workspaces)
+   */
+  private clearAllServers(): void {
+    // Stop all running servers
+    for (const [id, client] of this.clients) {
+      try {
+        this.stopServer(id);
+      } catch (error) {
+        console.error(`Failed to stop server ${id}:`, error);
+      }
+    }
+    
+    // Clear all maps
+    this.servers.clear();
+    this.clients.clear();
+    this.serverNameToIdMap.clear();
+    this.serverStatusMap.clear();
+    this.originalProtocols.clear();
+    this.toolNameToServerMap.clear();
   }
 
   /**
@@ -271,9 +322,11 @@ export class MCPServerManager {
   /**
    * データベースからサーバ一覧を読み込む
    */
-  private loadServersFromDatabase(): void {
+  private async loadServersFromDatabase(): Promise<void> {
     try {
+      console.log("[MCPServerManager] Loading servers from database...");
       const servers = this.serverService.getAllServers();
+      console.log(`[MCPServerManager] Found ${servers.length} servers in database`);
 
       servers.forEach((server) => {
         // Initialize all servers as stopped when loading
@@ -290,7 +343,7 @@ export class MCPServerManager {
         }
       });
 
-      //console.log(`${servers.length}個のサーバ設定を読み込みました`);
+      console.log(`[MCPServerManager] ${servers.length}個のサーバ設定を読み込みました`);
     } catch (error) {
       console.error("サーバ設定の読み込み中にエラーが発生しました:", error);
     }

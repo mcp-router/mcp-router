@@ -10,7 +10,7 @@ import { TokenRepository, getTokenRepository } from "../../lib/database";
 import crypto from "crypto";
 
 /**
- * アクセストークンを管理するサービス
+ * Service for managing access tokens
  */
 export class TokenService
   extends BaseService<Token, string>
@@ -19,7 +19,7 @@ export class TokenService
   private static instance: TokenService | null = null;
 
   /**
-   * シングルトンインスタンスを取得
+   * Get singleton instance
    */
   public static getInstance(): TokenService {
     if (!TokenService.instance) {
@@ -28,10 +28,18 @@ export class TokenService
     return TokenService.instance;
   }
 
+  /**
+   * Reset instance
+   * Used when switching workspaces
+   */
+  public static resetInstance(): void {
+    TokenService.instance = null;
+  }
+
   private repository: TokenRepository;
 
   /**
-   * コンストラクタ
+   * Constructor
    */
   private constructor() {
     super();
@@ -39,10 +47,10 @@ export class TokenService
   }
 
   /**
-   * エンティティ名を取得
+   * Get entity name
    */
   protected getEntityName(): string {
-    return "トークン";
+    return "Token";
   }
 
   /**

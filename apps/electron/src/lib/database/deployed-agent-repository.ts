@@ -14,6 +14,7 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
    */
   constructor(db: SqliteManager) {
     super(db, "deployedAgents");
+    console.log('[DeployedAgentRepository] Constructor called with database:', db?.getDbPath?.() || 'database instance');
   }
 
   /**
@@ -258,12 +259,26 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
  * Get singleton instance of DeployedAgentRepository
  */
 let instance: DeployedAgentRepository | null = null;
+let currentDb: SqliteManager | null = null;
 
 export function getDeployedAgentRepository(): DeployedAgentRepository {
-  if (!instance) {
-    // Get SqliteManager instance
-    const db = getSqliteManager("mcprouter");
+  const db = getSqliteManager("mcprouter");
+  
+  // Check if database instance has changed
+  if (!instance || currentDb !== db) {
+    console.log('[DeployedAgentRepository] Database instance changed, creating new repository');
     instance = new DeployedAgentRepository(db);
+    currentDb = db;
   }
+  
   return instance;
+}
+
+/**
+ * Reset DeployedAgentRepository instance (used when switching workspaces)
+ */
+export function resetDeployedAgentRepository(): void {
+  console.log('[DeployedAgentRepository] Resetting repository instance');
+  instance = null;
+  currentDb = null;
 }

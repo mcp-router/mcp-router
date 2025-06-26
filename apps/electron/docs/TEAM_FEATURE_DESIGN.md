@@ -6,23 +6,26 @@
 
 ## アーキテクチャ
 
-### セッション管理
+### ワークスペース管理
 
-#### セッションタイプ
+ワークスペースは、既存のデータを完全に分離するメタレベルのデータベースとして機能します。各ワークスペースは独立したデータベースを持ち、サーバー設定、エージェント、ログなどのデータが完全に分離されます。
 
-1. **ローカルセッション**
-   - SQLiteデータベース使用
+#### ワークスペースタイプ
+
+1. **ローカルワークスペース**
+   - 独立したSQLiteデータベース（ワークスペースごとに別ファイル）
    - ローカルMCPサーバー管理
-   - 既存の動作を維持
-2. **リモートセッション**
+   - 完全にオフライン動作
+2. **リモートワークスペース**
    - 外部APIエンドポイントに接続
    - チーム共有設定
    - 認証必須
+   - ローカルキャッシュDB（オプション）
 
-#### セッションデータ構造
+#### ワークスペースデータ構造
 
 ```typescript
-interface Session {
+interface Workspace {
   id: string;
   name: string;
   type: "local" | "remote";
@@ -30,12 +33,12 @@ interface Session {
   createdAt: Date;
   lastUsedAt: Date;
 
-  // ローカルセッション用
+  // ローカルワークスペース用
   localConfig?: {
-    databasePath: string;
+    databasePath: string; // workspace-specific DB path
   };
 
-  // リモートセッション用
+  // リモートワークスペース用
   remoteConfig?: {
     apiUrl: string;
     authToken?: string;
@@ -51,36 +54,36 @@ interface Session {
   };
 }
 
-interface SessionState {
-  sessions: Session[];
-  activeSessionId: string;
+interface WorkspaceState {
+  workspaces: Workspace[];
+  activeWorkspaceId: string;
   isTransitioning: boolean;
 }
 ```
 
 ### Platform API拡張
 
-Platform APIは既にローカル/リモートの抽象化を提供しているため、セッション切り替え時にPlatform APIの実装を動的に変更する。
+Platform APIは既にローカル/リモートの抽象化を提供しているため、ワークスペース切り替え時にPlatform APIの実装を動的に変更します。各ワークスペースは独自のデータベースインスタンスを持ちます。
 
 ```typescript
-// セッション管理インターフェース
-interface SessionManager {
-  // セッション操作
-  listSessions(): Promise<Session[]>;
-  createSession(config: SessionCreateConfig): Promise<Session>;
-  switchSession(sessionId: string): Promise<void>;
-  deleteSession(sessionId: string): Promise<void>;
-  updateSession(sessionId: string, updates: Partial<Session>): Promise<void>;
+// ワークスペース管理インターフェース
+interface WorkspaceManager {
+  // ワークスペース操作
+  listWorkspaces(): Promise<Workspace[]>;
+  createWorkspace(config: WorkspaceCreateConfig): Promise<Workspace>;
+  switchWorkspace(workspaceId: string): Promise<void>;
+  deleteWorkspace(workspaceId: string): Promise<void>;
+  updateWorkspace(workspaceId: string, updates: Partial<Workspace>): Promise<void>;
 
-  // 現在のセッション
-  getCurrentSession(): Promise<Session>;
+  // 現在のワークスペース
+  getCurrentWorkspace(): Promise<Workspace>;
 
-  // Platform API切り替え
+  // Platform API切り替え（ワークスペース固有のDBインスタンスを含む）
   getPlatformAPI(): PlatformAPI;
 }
 
-// セッション作成設定
-interface SessionCreateConfig {
+// ワークスペース作成設定
+interface WorkspaceCreateConfig {
   name: string;
   type: "local" | "remote";
   remoteConfig?: {
@@ -93,43 +96,54 @@ interface SessionCreateConfig {
 
 ### データ分離戦略
 
-#### ワークスペース管理（既存アーキテクチャの拡張）
+#### ワークスペースごとの完全なデータ分離
 
-- **SQLiteデータベース**: ワークスペース設定をworkspacesテーブルで管理
-- **safeStorage API**: 認証情報の暗号化保存
-- **session API**: ワークスペースごとのCookie/認証情報分離
-- **BaseService/Repository**: 既存のサービス層パターンを踏襲
+各ワークスペースは独立したデータベースを持ち、以下のデータが完全に分離されます：
+
+- **サーバー設定** (`servers`テーブル)
+- **エージェント** (`agents`テーブル)
+- **ログ** (`logs`テーブル)
+- **設定** (`settings`テーブル)
+- **トークン** (`tokens`テーブル)
+
+#### メタデータベース（ワークスペース管理用）
+
+- **ワークスペースメタデータ**: `workspaces.db`（メインのメタDB）
+- **認証情報**: `safeStorage.encryptString()`で暗号化
+- **セッション分離**: `session.fromPartition()`でワークスペースごとに分離
 
 #### ローカルワークスペース
 
-- 既存のSQLiteデータベース（現在の動作を維持）
-- デフォルトワークスペース: `local-default`
-- 既存のテーブル構造を維持
+- **データベースパス**: `userData/workspaces/{workspace-id}/database.db`
+- **デフォルトワークスペース**: `local-default`
+- 既存のテーブル構造を各ワークスペースDBに複製
 
 #### リモートワークスペース
 
-- API通信結果: メモリキャッシュ + SQLite（必要に応じて）
-- 認証トークン: `safeStorage.encryptString()`で暗号化してDB保存
-- セッションCookie: `session.fromPartition()`で分離
-- Platform APIの実装を動的に切り替え
+- **API通信**: 外部APIサーバーとの通信
+- **ローカルキャッシュ**: `userData/workspaces/{workspace-id}/cache.db`（オプション）
+- **認証トークン**: メタDBに暗号化して保存
+- **セッションCookie**: ワークスペース専用パーティションで管理
 
-### セッション切り替えフロー
+### ワークスペース切り替えフロー
 
 ```mermaid
 sequenceDiagram
     participant UI
-    participant SessionManager
+    participant WorkspaceManager
     participant PlatformAPI
     participant MainProcess
+    participant Database
 
-    UI->>SessionManager: switchSession(sessionId)
-    SessionManager->>SessionManager: 現在のセッションを保存
-    SessionManager->>MainProcess: IPC: session:switch
+    UI->>WorkspaceManager: switchWorkspace(workspaceId)
+    WorkspaceManager->>WorkspaceManager: 現在のワークスペースを保存
+    WorkspaceManager->>MainProcess: IPC: workspace:switch
+    MainProcess->>Database: 現在のDB接続をクローズ
+    MainProcess->>Database: 新しいワークスペースDBを開く
     MainProcess->>MainProcess: Platform API実装を切り替え
-    MainProcess->>MainProcess: データベース接続を変更
-    MainProcess->>SessionManager: 切り替え完了
-    SessionManager->>PlatformAPI: 新しいAPIインスタンス
-    SessionManager->>UI: UIを更新
+    MainProcess->>WorkspaceManager: 切り替え完了
+    WorkspaceManager->>PlatformAPI: 新しいAPIインスタンス（新DB接続付き）
+    WorkspaceManager->>UI: UIを更新（全データリロード）
 ```
 
 ## UI/UX設計
@@ -137,21 +151,21 @@ sequenceDiagram
 ### Titlebarの拡張
 
 ```
-[Traffic Lights] [App Title]                    [Session Switcher ▼] [Window Controls]
+[Traffic Lights] [App Title]                    [Workspace Switcher ▼] [Window Controls]
                                                    ┌─────────────┐
-                                                   │ 👤 User Name│
+                                                   │ 👤 Workspace│
                                                    └─────────────┘
 ```
 
-#### セッションスイッチャーコンポーネント
+#### ワークスペーススイッチャーコンポーネント
 
 ```typescript
-interface SessionSwitcherProps {
-  currentSession: Session;
-  sessions: Session[];
-  onSwitch: (sessionId: string) => void;
-  onAddSession: () => void;
-  onManageSessions: () => void;
+interface WorkspaceSwitcherProps {
+  currentWorkspace: Workspace;
+  workspaces: Workspace[];
+  onSwitch: (workspaceId: string) => void;
+  onAddWorkspace: () => void;
+  onManageWorkspaces: () => void;
 }
 ```
 
@@ -160,22 +174,23 @@ interface SessionSwitcherProps {
 ```
 ┌─────────────────────────────┐
 │ ✓ 個人用（ローカル）          │
-│   リモートチーム A           │
-│   リモートチーム B           │
+│   開発環境（ローカル）        │
+│   チーム A（リモート）        │
+│   チーム B（リモート）        │
 ├─────────────────────────────┤
-│ ＋ 新しいセッションを追加     │
-│ ⚙️ セッションを管理          │
+│ ＋ 新しいワークスペースを追加  │
+│ ⚙️ ワークスペースを管理       │
 └─────────────────────────────┘
 ```
 
-### 新規セッション追加ダイアログ
+### 新規ワークスペース追加ダイアログ
 
 ```
 ┌─────────────────────────────────────┐
-│        新しいセッションを追加          │
+│      新しいワークスペースを追加        │
 ├─────────────────────────────────────┤
 │                                     │
-│ セッション名: [_______________]      │
+│ ワークスペース名: [_______________]   │
 │                                     │
 │ タイプ:                             │
 │ ○ ローカル（個人用）                 │
@@ -187,23 +202,22 @@ interface SessionSwitcherProps {
 │ ○ APIトークン                      │
 │ ○ OAuth (Google/GitHub)            │
 │                                     │
-│        [キャンセル] [接続]           │
+│        [キャンセル] [作成]           │
 └─────────────────────────────────────┘
 ```
 
 ## 実装アーキテクチャ（既存構造の拡張）
 
-### セッション管理サービスの実装
+### ワークスペース管理サービスの実装
 
 ```typescript
 // src/main/services/workspace-service.ts
 import { BaseService } from "./base-service";
 import { Singleton } from "../../lib/utils/backend/singleton";
-import {
-  WorkspaceRepository,
-  getWorkspaceRepository,
-} from "../../lib/database";
-import { safeStorage, session } from "electron";
+import { SqliteManager } from "../../lib/database";
+import { safeStorage, session, app } from "electron";
+import path from "path";
+import fs from "fs-extra";
 
 export interface Workspace {
   id: string;
@@ -212,6 +226,9 @@ export interface Workspace {
   isActive: boolean;
   createdAt: Date;
   lastUsedAt: Date;
+  localConfig?: {
+    databasePath: string;
+  };
   remoteConfig?: {
     apiUrl: string;
     authToken?: string; // 暗号化して保存
@@ -231,7 +248,8 @@ export class WorkspaceService
 {
   private static instance: WorkspaceService | null = null;
   private electronSessions: Map<string, Electron.Session> = new Map();
-  private repository: WorkspaceRepository;
+  private databaseInstances: Map<string, SqliteManager> = new Map();
+  private metaDb: SqliteManager; // ワークスペースメタデータ用DB
 
   public static getInstance(): WorkspaceService {
     if (!WorkspaceService.instance) {
@@ -242,11 +260,51 @@ export class WorkspaceService
 
   private constructor() {
     super();
-    this.repository = getWorkspaceRepository();
+    this.initializeMetaDatabase();
+  }
+
+  private initializeMetaDatabase(): void {
+    const metaDbPath = path.join(app.getPath("userData"), "workspaces.db");
+    this.metaDb = new SqliteManager(metaDbPath);
+    this.createMetaTables();
+  }
+
+  private createMetaTables(): void {
+    this.metaDb.exec(`
+      CREATE TABLE IF NOT EXISTS workspaces (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL CHECK(type IN ('local', 'remote')),
+        isActive INTEGER NOT NULL DEFAULT 0,
+        createdAt TEXT NOT NULL,
+        lastUsedAt TEXT NOT NULL,
+        localConfig TEXT, -- JSON
+        remoteConfig TEXT, -- JSON
+        displayInfo TEXT   -- JSON
+      )
+    `);
   }
 
   protected getEntityName(): string {
     return "ワークスペース";
+  }
+
+  // ワークスペース固有のデータベースを取得
+  async getWorkspaceDatabase(workspaceId: string): Promise<SqliteManager> {
+    if (!this.databaseInstances.has(workspaceId)) {
+      const workspace = await this.findById(workspaceId);
+      if (workspace.type === "local") {
+        const dbPath = workspace.localConfig?.databasePath || 
+          path.join(app.getPath("userData"), "workspaces", workspaceId, "database.db");
+        
+        // ディレクトリが存在しない場合は作成
+        await fs.ensureDir(path.dirname(dbPath));
+        
+        const db = new SqliteManager(dbPath);
+        this.databaseInstances.set(workspaceId, db);
+      }
+    }
+    return this.databaseInstances.get(workspaceId)!;
   }
 
   // 認証情報の暗号化保存
@@ -256,7 +314,12 @@ export class WorkspaceService
   ): Promise<void> {
     if (safeStorage.isEncryptionAvailable()) {
       const encrypted = safeStorage.encryptString(token);
-      await this.repository.updateCredentials(workspaceId, encrypted);
+      const encryptedBase64 = encrypted.toString("base64");
+      
+      // メタDBに保存
+      this.metaDb.prepare(
+        "UPDATE workspaces SET remoteConfig = json_set(remoteConfig, '$.authToken', ?) WHERE id = ?"
+      ).run(encryptedBase64, workspaceId);
     }
   }
 
@@ -272,77 +335,81 @@ export class WorkspaceService
 
   // ワークスペース切り替え
   async switchWorkspace(workspaceId: string): Promise<void> {
-    await this.repository.setActiveWorkspace(workspaceId);
+    // 現在のDBをクローズ
+    const currentWorkspace = await this.getActiveWorkspace();
+    if (currentWorkspace && this.databaseInstances.has(currentWorkspace.id)) {
+      const currentDb = this.databaseInstances.get(currentWorkspace.id);
+      currentDb?.close();
+      this.databaseInstances.delete(currentWorkspace.id);
+    }
+
+    // 新しいワークスペースをアクティブに
+    this.metaDb.transaction(() => {
+      this.metaDb.prepare("UPDATE workspaces SET isActive = 0").run();
+      this.metaDb.prepare(
+        "UPDATE workspaces SET isActive = 1, lastUsedAt = ? WHERE id = ?"
+      ).run(new Date().toISOString(), workspaceId);
+    })();
+
     // Platform APIの切り替えをトリガー
     this.emit("workspace-switched", workspaceId);
   }
-}
-```
-
-### データベース拡張
-
-```typescript
-// src/lib/database/repositories/workspace-repository.ts
-import { BaseRepository } from "./base-repository";
-import { Workspace } from "../../../main/services/workspace-service";
-
-export class WorkspaceRepository extends BaseRepository<Workspace> {
-  protected tableName = "workspaces";
-
-  constructor(db: SqliteManager) {
-    super(db);
-    this.initializeDefaultWorkspace();
-  }
-
-  // デフォルトのローカルワークスペースを作成
-  private initializeDefaultWorkspace(): void {
-    const defaultWorkspace = this.findOne("type = ?", ["local"]);
-    if (!defaultWorkspace) {
-      this.create({
-        id: "local-default",
-        name: "ローカル",
-        type: "local",
-        isActive: true,
-        createdAt: new Date(),
-        lastUsedAt: new Date(),
-      });
-    }
-  }
 
   // アクティブワークスペースを取得
-  getActiveWorkspace(): Workspace | null {
-    return this.findOne("isActive = ?", [1]);
+  async getActiveWorkspace(): Promise<Workspace | null> {
+    const row = this.metaDb.prepare(
+      "SELECT * FROM workspaces WHERE isActive = 1"
+    ).get();
+    return row ? this.deserializeWorkspace(row) : null;
   }
 
-  // ワークスペースを切り替え
-  setActiveWorkspace(workspaceId: string): void {
-    this.db.transaction(() => {
-      // 全てのワークスペースを非アクティブに
-      this.db.prepare("UPDATE workspaces SET isActive = 0").run();
-      // 指定されたワークスペースをアクティブに
-      this.db
-        .prepare(
-          "UPDATE workspaces SET isActive = 1, lastUsedAt = ? WHERE id = ?",
-        )
-        .run(new Date().toISOString(), workspaceId);
-    })();
-  }
-
-  // 暗号化された認証情報を更新
-  updateCredentials(workspaceId: string, encryptedToken: Buffer): void {
-    this.db
-      .prepare(
-        "UPDATE workspaces SET remoteConfig = json_set(remoteConfig, '$.authToken', ?) WHERE id = ?",
-      )
-      .run(encryptedToken.toString("base64"), workspaceId);
+  private deserializeWorkspace(row: any): Workspace {
+    return {
+      ...row,
+      localConfig: row.localConfig ? JSON.parse(row.localConfig) : undefined,
+      remoteConfig: row.remoteConfig ? JSON.parse(row.remoteConfig) : undefined,
+      displayInfo: row.displayInfo ? JSON.parse(row.displayInfo) : undefined,
+      createdAt: new Date(row.createdAt),
+      lastUsedAt: new Date(row.lastUsedAt),
+    };
   }
 }
 ```
 
-### マイグレーション
+### データベースアーキテクチャ
+
+#### ディレクトリ構造
+
+```
+userData/
+├── workspaces.db         # メタデータベース（ワークスペース一覧）
+└── workspaces/
+    ├── local-default/
+    │   └── database.db   # デフォルトワークスペースのDB
+    ├── workspace-abc123/
+    │   └── database.db   # ワークスペースABC123のDB
+    └── workspace-xyz789/
+        ├── database.db   # ワークスペースXYZ789のDB
+        └── cache.db      # リモートワークスペースのキャッシュ
+```
+
+#### 各ワークスペースDBの構造
+
+各ワークスペースのdatabase.dbには、既存のすべてのテーブルが含まれます：
 
 ```sql
--- migrations/008_add_workspaces.sql
+-- 各ワークスペースDBに含まれるテーブル
+CREATE TABLE servers (...);
+CREATE TABLE agents (...);
+CREATE TABLE logs (...);
+CREATE TABLE settings (...);
+CREATE TABLE tokens (...);
+```
+
+### メタデータベース初期化
+
+```sql
+-- workspaces.dbの初期化
 CREATE TABLE IF NOT EXISTS workspaces (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
@@ -350,13 +417,22 @@ CREATE TABLE IF NOT EXISTS workspaces (
   isActive INTEGER NOT NULL DEFAULT 0,
   createdAt TEXT NOT NULL,
   lastUsedAt TEXT NOT NULL,
-  remoteConfig TEXT, -- JSON
-  displayInfo TEXT   -- JSON
+  localConfig TEXT, -- JSON: {"databasePath": "path/to/db"}
+  remoteConfig TEXT, -- JSON: {"apiUrl": "...", "authToken": "..."}
+  displayInfo TEXT   -- JSON: {"avatarUrl": "...", "email": "..."}
 );
 
 -- デフォルトのローカルワークスペース
-INSERT INTO workspaces (id, name, type, isActive, createdAt, lastUsedAt)
-VALUES ('local-default', 'ローカル', 'local', 1, datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO workspaces (id, name, type, isActive, createdAt, lastUsedAt, localConfig)
+VALUES (
+  'local-default', 
+  'ローカル', 
+  'local', 
+  1, 
+  datetime('now'), 
+  datetime('now'),
+  json('{"databasePath": "workspaces/local-default/database.db"}')
+);
 ```
 
 ### IPC通信拡張
@@ -395,19 +471,43 @@ export function registerWorkspaceHandlers() {
 
 ```typescript
 // src/main/platform-api-manager.ts
+import { SqliteManager } from "../lib/database";
+
 class PlatformAPIManager {
   private currentAPI: PlatformAPI | null = null;
   private currentWorkspaceId: string | null = null;
+  private currentDatabase: SqliteManager | null = null;
 
   async initialize(workspaceId: string): Promise<void> {
-    const workspace = await getWorkspaceService().findById(workspaceId);
+    const workspaceService = getWorkspaceService();
+    const workspace = await workspaceService.findById(workspaceId);
+
+    // 現在のDBをクローズ
+    if (this.currentDatabase) {
+      this.currentDatabase.close();
+      this.currentDatabase = null;
+    }
 
     if (workspace.type === "local") {
-      // 既存のローカル実装を使用
-      this.currentAPI = createLocalPlatformAPI();
+      // ワークスペース固有のDBを取得
+      this.currentDatabase = await workspaceService.getWorkspaceDatabase(workspaceId);
+      
+      // 既存のローカル実装を使用（ワークスペース固有のDBを渡す）
+      this.currentAPI = createLocalPlatformAPI(this.currentDatabase);
     } else {
       // リモートAPI実装を使用
       this.currentAPI = createRemotePlatformAPI(workspace.remoteConfig);
+      
+      // キャッシュDBが必要な場合
+      if (workspace.remoteConfig?.enableCache) {
+        const cacheDbPath = path.join(
+          app.getPath("userData"), 
+          "workspaces", 
+          workspaceId, 
+          "cache.db"
+        );
+        this.currentDatabase = new SqliteManager(cacheDbPath);
+      }
     }
 
     this.currentWorkspaceId = workspaceId;
@@ -418,6 +518,10 @@ class PlatformAPIManager {
       throw new Error("Platform API not initialized");
     }
     return this.currentAPI;
+  }
+
+  getCurrentDatabase(): SqliteManager | null {
+    return this.currentDatabase;
   }
 }
 ```
@@ -482,23 +586,29 @@ class PlatformAPIManager {
 
 ### 制約
 
-1. Electron単一プロセスでの複数セッション管理
-2. メモリ使用量の増加（複数セッションのキャッシュ）
-3. セッション切り替え時のレイテンシ
+1. Electron単一プロセスでの複数データベース管理
+2. メモリ使用量の増加（複数ワークスペースのDB接続）
+3. ワークスペース切り替え時のレイテンシ
+4. データベースファイルの整合性管理
 
 ### 解決策
 
-1. セッションパーティション（`session.fromPartition()`）の効率的な管理
-2. 非アクティブセッションのガベージコレクション
-3. electron-storeでの軽量なメタデータ管理とオンデマンドロード
+1. ワークスペースごとの独立したSQLiteファイル
+2. 非アクティブワークスペースのDB接続を自動クローズ
+3. メタデータベースでの軽量な管理とオンデマンドDB接続
+4. ワークスペース切り替え時の適切なトランザクション管理
 
 ## 将来の拡張性
 
 1. **マルチウィンドウ対応**
-   - セッションごとの独立ウィンドウ
-2. **同期機能**
+   - ワークスペースごとの独立ウィンドウ
+   - 複数ワークスペースの同時利用
+2. **データ移行機能**
+   - ワークスペース間でのデータエクスポート/インポート
    - ローカル↔リモート間の設定同期
 3. **権限管理**
    - チーム内での役割ベースアクセス制御
+   - ワークスペースレベルの権限設定
 4. **監査ログ**
-   - セッション活動の記録
+   - ワークスペース活動の記録
+   - データベース変更履歴の追跡
