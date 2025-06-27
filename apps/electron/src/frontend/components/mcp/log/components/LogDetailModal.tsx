@@ -31,7 +31,7 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ log, onClose }) => {
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="fixed inset-0 w-full max-w-none !sm:max-w-none !max-w-none h-screen overflow-hidden flex flex-col rounded-none border-0 translate-x-0 translate-y-0 left-0 top-0">
+      <DialogContent className="fixed inset-x-0 top-8 bottom-0 w-full max-w-none !sm:max-w-none !max-w-none overflow-hidden flex flex-col rounded-none border-0 translate-x-0 translate-y-0 left-0">
         <DialogHeader className="shrink-0">
           <DialogTitle>{t("logs.viewer.detail.title")}</DialogTitle>
           <DialogDescription></DialogDescription>
