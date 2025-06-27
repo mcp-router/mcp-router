@@ -13,7 +13,10 @@ export class TokenRepository extends BaseRepository<Token> {
    */
   constructor(db: SqliteManager) {
     super(db, "tokens");
-    console.log('[TokenRepository] Constructor called with database:', db?.getDbPath?.() || 'database instance');
+    console.log(
+      "[TokenRepository] Constructor called with database:",
+      db?.getDbPath?.() || "database instance",
+    );
   }
 
   /**
@@ -220,14 +223,16 @@ let currentDb: SqliteManager | null = null;
 
 export function getTokenRepository(): TokenRepository {
   const db = getSqliteManager("mcprouter");
-  
+
   // Check if database instance has changed
   if (!instance || currentDb !== db) {
-    console.log('[TokenRepository] Database instance changed, creating new repository');
+    console.log(
+      "[TokenRepository] Database instance changed, creating new repository",
+    );
     instance = new TokenRepository(db);
     currentDb = db;
   }
-  
+
   return instance;
 }
 
@@ -235,7 +240,7 @@ export function getTokenRepository(): TokenRepository {
  * TokenRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
  */
 export function resetTokenRepository(): void {
-  console.log('[TokenRepository] Resetting repository instance');
+  console.log("[TokenRepository] Resetting repository instance");
   instance = null;
   currentDb = null;
 }

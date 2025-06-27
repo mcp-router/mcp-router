@@ -107,10 +107,12 @@ export class WorkspaceService
       // 既存のmcprouter.dbが存在するか確認
       const legacyDbPath = path.join(app.getPath("userData"), "mcprouter.db");
       const legacyDbExists = fsSync.existsSync(legacyDbPath);
-      
+
       if (legacyDbExists) {
-        console.log("[WorkspaceService] Using existing mcprouter.db as default workspace");
-        
+        console.log(
+          "[WorkspaceService] Using existing mcprouter.db as default workspace",
+        );
+
         // 既存のDBをそのまま使用する設定
         const defaultWorkspace: Workspace = {
           id: "local-default",
@@ -127,7 +129,7 @@ export class WorkspaceService
             teamName: "Using existing data",
           },
         };
-        
+
         this.metaDb
           .prepare(
             `
@@ -154,7 +156,11 @@ export class WorkspaceService
           createdAt: new Date(),
           lastUsedAt: new Date(),
           localConfig: {
-            databasePath: path.join("workspaces", "local-default", "database.db"),
+            databasePath: path.join(
+              "workspaces",
+              "local-default",
+              "database.db",
+            ),
           },
         };
 
@@ -318,7 +324,10 @@ export class WorkspaceService
   /**
    * 既存のデータベースから新しいワークスペースにデータをコピー
    */
-  async copyDataToNewWorkspace(sourceDbPath: string, targetWorkspaceId: string): Promise<void> {
+  async copyDataToNewWorkspace(
+    sourceDbPath: string,
+    targetWorkspaceId: string,
+  ): Promise<void> {
     try {
       const targetWorkspace = await this.findById(targetWorkspaceId);
       if (!targetWorkspace || targetWorkspace.type !== "local") {
@@ -348,31 +357,42 @@ export class WorkspaceService
           );
 
           if (tableExists) {
-            console.log(`[WorkspaceService] Copying data from ${table} table...`);
-            
+            console.log(
+              `[WorkspaceService] Copying data from ${table} table...`,
+            );
+
             // データを取得
             const rows = sourceDb.all(`SELECT * FROM ${table}`);
-            
+
             if (rows.length > 0) {
               // ターゲットテーブルをクリア
               targetDb.exec(`DELETE FROM ${table}`);
-              
+
               // データを挿入
               for (const row of rows) {
                 const columns = Object.keys(row).join(", ");
-                const placeholders = Object.keys(row).map(() => "?").join(", ");
+                const placeholders = Object.keys(row)
+                  .map(() => "?")
+                  .join(", ");
                 const values = Object.values(row);
-                
-                targetDb.prepare(
-                  `INSERT INTO ${table} (${columns}) VALUES (${placeholders})`
-                ).run(...values);
+
+                targetDb
+                  .prepare(
+                    `INSERT INTO ${table} (${columns}) VALUES (${placeholders})`,
+                  )
+                  .run(...values);
               }
-              
-              console.log(`[WorkspaceService] ${table} table: Copied ${rows.length} rows`);
+
+              console.log(
+                `[WorkspaceService] ${table} table: Copied ${rows.length} rows`,
+              );
             }
           }
         } catch (error) {
-          console.error(`[WorkspaceService] Failed to copy ${table} table:`, error);
+          console.error(
+            `[WorkspaceService] Failed to copy ${table} table:`,
+            error,
+          );
         }
       }
 

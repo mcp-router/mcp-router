@@ -7,7 +7,11 @@ import { getTokenService } from "./token-service";
 /**
  * Service class for managing server information
  */
-export class ServerService extends SingletonService<MCPServer, string, ServerService> {
+export class ServerService extends SingletonService<
+  MCPServer,
+  string,
+  ServerService
+> {
   /**
    * Constructor
    */

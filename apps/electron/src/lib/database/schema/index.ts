@@ -1,8 +1,12 @@
-export { DATABASE_SCHEMA, SCHEMA_VERSION, type TableName } from "./database-schema";
-export { 
-  createTable, 
-  createAllTables, 
-  isTableSchemaOutdated, 
+export {
+  DATABASE_SCHEMA,
+  SCHEMA_VERSION,
+  type TableName,
+} from "./database-schema";
+export {
+  createTable,
+  createAllTables,
+  isTableSchemaOutdated,
   recreateOutdatedTables,
-  tableExists 
+  tableExists,
 } from "./schema-utils";

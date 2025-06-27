@@ -11,7 +11,11 @@ import crypto from "crypto";
 /**
  * Service for managing access tokens
  */
-export class TokenService extends SingletonService<Token, string, TokenService> {
+export class TokenService extends SingletonService<
+  Token,
+  string,
+  TokenService
+> {
   /**
    * Constructor
    */

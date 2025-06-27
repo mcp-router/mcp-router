@@ -16,7 +16,10 @@ export default tseslint.config(
     files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_" },
+      ],
     },
   },
   {
@@ -26,5 +29,5 @@ export default tseslint.config(
         node: true,
       },
     },
-  }
+  },
 );

@@ -15,7 +15,11 @@ import { SingletonService } from "../../singleton-service";
  * 開発中エージェント管理サービス
  * 開発中のエージェントのCRUD操作とMCPサーバー管理を担当
  */
-class DevelopmentAgentService extends SingletonService<AgentConfig, string, DevelopmentAgentService> {
+class DevelopmentAgentService extends SingletonService<
+  AgentConfig,
+  string,
+  DevelopmentAgentService
+> {
   private agents: Map<string, DevelopmentAgent> = new Map();
 
   /**
@@ -204,7 +208,10 @@ class DevelopmentAgentService extends SingletonService<AgentConfig, string, Deve
         await agentInstance.updateConfig(config, true);
         const updatedConfig = agentInstance.getConfig();
 
-        const updatedAgent = getAgentRepository().updateAgent(id, updatedConfig);
+        const updatedAgent = getAgentRepository().updateAgent(
+          id,
+          updatedConfig,
+        );
 
         logInfo(
           `開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました`,

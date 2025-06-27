@@ -108,7 +108,15 @@ const AgentUse: React.FC = () => {
     };
 
     loadAgent();
-  }, [id, deployedAgents, navigate, refreshAgents, setCurrentDeployedAgent, t, currentWorkspace?.id]);
+  }, [
+    id,
+    deployedAgents,
+    navigate,
+    refreshAgents,
+    setCurrentDeployedAgent,
+    t,
+    currentWorkspace?.id,
+  ]);
 
   // Handler for navigating to settings
   const navigateToSettings = () => {

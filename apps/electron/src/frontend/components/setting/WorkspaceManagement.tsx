@@ -18,13 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@mcp-router/ui";
-import {
-  Globe,
-  Monitor,
-  Pencil,
-  Trash2,
-  Plus,
-} from "lucide-react";
+import { Globe, Monitor, Pencil, Trash2, Plus } from "lucide-react";
 import { useWorkspaceStore } from "@/frontend/stores/workspace-store";
 import { WorkspaceDialog } from "../WorkspaceDialog";
 import { useNavigate } from "react-router-dom";
@@ -76,14 +70,13 @@ const WorkspaceManagement: React.FC = () => {
 
   const handleWorkspaceClick = async (workspaceId: string) => {
     if (currentWorkspace?.id === workspaceId) return;
-    
+
     try {
       await switchWorkspace(workspaceId);
     } catch (error) {
       toast.error(t("workspace.errors.switchFailed"));
     }
   };
-
 
   const getWorkspaceIcon = (type: string) => {
     return type === "local" ? Monitor : Globe;
@@ -130,7 +123,9 @@ const WorkspaceManagement: React.FC = () => {
                       ? "border-primary bg-primary/5"
                       : "border-border hover:bg-accent/50 cursor-pointer"
                   } transition-colors`}
-                  onClick={() => !isActive && handleWorkspaceClick(workspace.id)}
+                  onClick={() =>
+                    !isActive && handleWorkspaceClick(workspace.id)
+                  }
                 >
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
@@ -209,7 +204,9 @@ const WorkspaceManagement: React.FC = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("workspace.deleteWorkspace")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("workspace.deleteWorkspace")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t("workspace.confirmDelete", { name: deletingWorkspace?.name })}
               <br />

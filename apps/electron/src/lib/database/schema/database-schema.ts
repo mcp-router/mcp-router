@@ -37,9 +37,7 @@ export const DATABASE_SCHEMA = {
         updated_at INTEGER NOT NULL
       )
     `,
-    indexes: [
-      "CREATE INDEX IF NOT EXISTS idx_servers_name ON servers(name)"
-    ]
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_servers_name ON servers(name)"],
   },
 
   agents: {
@@ -62,8 +60,8 @@ export const DATABASE_SCHEMA = {
     `,
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_agents_status ON agents(status)",
-      "CREATE INDEX IF NOT EXISTS idx_agents_created ON agents(created_at)"
-    ]
+      "CREATE INDEX IF NOT EXISTS idx_agents_created ON agents(created_at)",
+    ],
   },
 
   deployedAgents: {
@@ -92,8 +90,8 @@ export const DATABASE_SCHEMA = {
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_deployed_agents_deployed ON deployedAgents(deployed_at)",
       "CREATE INDEX IF NOT EXISTS idx_deployed_agents_last_used ON deployedAgents(last_used_at)",
-      "CREATE INDEX IF NOT EXISTS idx_deployed_agents_status ON deployedAgents(status)"
-    ]
+      "CREATE INDEX IF NOT EXISTS idx_deployed_agents_status ON deployedAgents(status)",
+    ],
   },
 
   logs: {
@@ -112,8 +110,8 @@ export const DATABASE_SCHEMA = {
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_logs_server_id ON logs(server_id)",
       "CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs(timestamp)",
-      "CREATE INDEX IF NOT EXISTS idx_logs_request_id ON logs(requestId)"
-    ]
+      "CREATE INDEX IF NOT EXISTS idx_logs_request_id ON logs(requestId)",
+    ],
   },
 
   requestLogs: {
@@ -137,8 +135,8 @@ export const DATABASE_SCHEMA = {
       "CREATE INDEX IF NOT EXISTS idx_request_logs_server_id ON requestLogs(serverId)",
       "CREATE INDEX IF NOT EXISTS idx_request_logs_timestamp ON requestLogs(timestamp)",
       "CREATE INDEX IF NOT EXISTS idx_request_logs_client_id ON requestLogs(clientId)",
-      "CREATE INDEX IF NOT EXISTS idx_request_logs_request_type ON requestLogs(requestType)"
-    ]
+      "CREATE INDEX IF NOT EXISTS idx_request_logs_request_type ON requestLogs(requestType)",
+    ],
   },
 
   settings: {
@@ -149,7 +147,7 @@ export const DATABASE_SCHEMA = {
         updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
       )
     `,
-    indexes: []
+    indexes: [],
   },
 
   tokens: {
@@ -165,8 +163,8 @@ export const DATABASE_SCHEMA = {
       )
     `,
     indexes: [
-      "CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)"
-    ]
+      "CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)",
+    ],
   },
 
   chat_sessions: {
@@ -185,8 +183,8 @@ export const DATABASE_SCHEMA = {
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_chat_sessions_agent_id ON chat_sessions(agent_id)",
       "CREATE INDEX IF NOT EXISTS idx_chat_sessions_created ON chat_sessions(createdAt)",
-      "CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status)"
-    ]
+      "CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status)",
+    ],
   },
 
   migrations: {
@@ -196,8 +194,8 @@ export const DATABASE_SCHEMA = {
         executed_at INTEGER NOT NULL
       )
     `,
-    indexes: []
-  }
+    indexes: [],
+  },
 } as const;
 
 /**
@@ -211,10 +209,16 @@ export type TableName = keyof typeof DATABASE_SCHEMA;
 export const SCHEMA_VERSION = {
   // 各テーブルの最小必須カラム（これらがない場合は再作成が必要）
   REQUIRED_COLUMNS: {
-    agents: ['mcp_servers', 'tool_permissions', 'purpose', 'instructions'],
-    deployedAgents: ['mcp_servers', 'description', 'purpose', 'instructions', 'tool_permissions'],
-    servers: ['server_type'],
-    tokens: ['scopes'],
-    chat_sessions: ['status', 'source']
-  }
+    agents: ["mcp_servers", "tool_permissions", "purpose", "instructions"],
+    deployedAgents: [
+      "mcp_servers",
+      "description",
+      "purpose",
+      "instructions",
+      "tool_permissions",
+    ],
+    servers: ["server_type"],
+    tokens: ["scopes"],
+    chat_sessions: ["status", "source"],
+  },
 } as const;

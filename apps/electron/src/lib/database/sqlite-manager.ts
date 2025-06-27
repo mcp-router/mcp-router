@@ -188,7 +188,10 @@ let currentWorkspaceDb: SqliteManager | null = null;
  * ワークスペースデータベースを設定（PlatformAPIManagerから呼び出される）
  */
 export function setWorkspaceDatabase(db: SqliteManager | null): void {
-  console.log("[setWorkspaceDatabase] Setting workspace DB:", db ? "Set" : "Cleared");
+  console.log(
+    "[setWorkspaceDatabase] Setting workspace DB:",
+    db ? "Set" : "Cleared",
+  );
   currentWorkspaceDb = db;
 }
 
@@ -204,8 +207,11 @@ export function getSqliteManager(dbName = "mcprouter"): SqliteManager {
     // console.log("[getSqliteManager] Returning workspace DB (ignoring dbName:", dbName, ")");
     return currentWorkspaceDb;
   }
-  
+
   // フォールバック：従来のシングルトンパターン（初期化時のみ）
-  console.log("[getSqliteManager] WARNING: No workspace DB set, falling back to singleton DB:", dbName);
+  console.log(
+    "[getSqliteManager] WARNING: No workspace DB set, falling back to singleton DB:",
+    dbName,
+  );
   return SqliteManagerSingleton.getInstance(dbName);
 }

@@ -12,7 +12,11 @@ import { getLogRepository } from "../../lib/database";
 /**
  * Request log service class
  */
-export class LogService extends SingletonService<RequestLogEntry, string, LogService> {
+export class LogService extends SingletonService<
+  RequestLogEntry,
+  string,
+  LogService
+> {
   /**
    * Constructor
    */

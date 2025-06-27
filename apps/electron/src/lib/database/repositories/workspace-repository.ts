@@ -5,7 +5,10 @@ import { Workspace } from "../../../main/services/workspace-service";
 export class WorkspaceRepository extends BaseRepository<Workspace> {
   constructor(db: SqliteManager) {
     super(db, "workspaces");
-    console.log('[WorkspaceRepository] Constructor called with database:', db?.getDbPath?.() || 'database instance');
+    console.log(
+      "[WorkspaceRepository] Constructor called with database:",
+      db?.getDbPath?.() || "database instance",
+    );
   }
 
   /**

@@ -10,7 +10,11 @@ import { SingletonService } from "../../singleton-service";
  * エージェント共有サービス
  * オンライン共有・インポート機能と開発中/デプロイ済みエージェント間のブリッジ役
  */
-class AgentSharingService extends SingletonService<any, string, AgentSharingService> {
+class AgentSharingService extends SingletonService<
+  any,
+  string,
+  AgentSharingService
+> {
   /**
    * コンストラクタ
    */

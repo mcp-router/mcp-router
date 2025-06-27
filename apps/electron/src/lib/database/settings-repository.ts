@@ -16,14 +16,16 @@ export class SettingsRepository implements Singleton<SettingsRepository> {
    */
   public static getInstance(): SettingsRepository {
     const db = getSqliteManager("mcprouter");
-    
+
     // Check if database instance has changed
     if (!SettingsRepository.instance || SettingsRepository.currentDb !== db) {
-      console.log('[SettingsRepository] Database instance changed, creating new repository');
+      console.log(
+        "[SettingsRepository] Database instance changed, creating new repository",
+      );
       SettingsRepository.instance = new SettingsRepository();
       SettingsRepository.currentDb = db;
     }
-    
+
     return SettingsRepository.instance;
   }
 
@@ -32,7 +34,10 @@ export class SettingsRepository implements Singleton<SettingsRepository> {
    */
   private constructor() {
     this.db = getSqliteManager("mcprouter");
-    console.log('[SettingsRepository] Constructor called with database:', this.db?.getDbPath?.() || 'database instance');
+    console.log(
+      "[SettingsRepository] Constructor called with database:",
+      this.db?.getDbPath?.() || "database instance",
+    );
     this.initializeTable();
     this.loadSettingsToCache();
   }
@@ -131,7 +136,7 @@ export function getSettingsRepository(): SettingsRepository {
  * SettingsRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
  */
 export function resetSettingsRepository(): void {
-  console.log('[SettingsRepository] Resetting repository instance');
+  console.log("[SettingsRepository] Resetting repository instance");
   SettingsRepository.instance = null;
   SettingsRepository.currentDb = null;
 }

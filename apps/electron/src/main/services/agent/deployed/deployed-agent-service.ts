@@ -11,7 +11,11 @@ import { SingletonService } from "../../singleton-service";
  * デプロイ済みエージェント管理サービス（軽量版）
  * 読み取り専用の操作とツール実行のみを担当
  */
-class DeployedAgentService extends SingletonService<DeployedAgentType, string, DeployedAgentService> {
+class DeployedAgentService extends SingletonService<
+  DeployedAgentType,
+  string,
+  DeployedAgentService
+> {
   private agents: Map<string, DeployedAgent> = new Map();
 
   /**
@@ -343,7 +347,8 @@ class DeployedAgentService extends SingletonService<DeployedAgentType, string, D
     agentData: Omit<DeployedAgentType, "id" | "createdAt" | "updatedAt">,
   ): DeployedAgentType {
     try {
-      const deployedAgent = getDeployedAgentRepository().createDeployedAgent(agentData);
+      const deployedAgent =
+        getDeployedAgentRepository().createDeployedAgent(agentData);
 
       // エージェントインスタンスを作成してキャッシュ
       this.agents.set(deployedAgent.id, new DeployedAgent(deployedAgent));
@@ -364,7 +369,8 @@ class DeployedAgentService extends SingletonService<DeployedAgentType, string, D
    */
   public deployFromDevelopmentAgent(sourceAgent: any): DeployedAgentType {
     try {
-      const deployedAgent = getDeployedAgentRepository().deployFromAgent(sourceAgent);
+      const deployedAgent =
+        getDeployedAgentRepository().deployFromAgent(sourceAgent);
 
       // エージェントインスタンスを作成してキャッシュ
       this.agents.set(deployedAgent.id, new DeployedAgent(deployedAgent));

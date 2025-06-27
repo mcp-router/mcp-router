@@ -1,6 +1,9 @@
 import { BrowserWindow } from "electron";
 import { getWorkspaceService, Workspace } from "./services/workspace-service";
-import { SqliteManager, setWorkspaceDatabase } from "../lib/database/sqlite-manager";
+import {
+  SqliteManager,
+  setWorkspaceDatabase,
+} from "../lib/database/sqlite-manager";
 import { WorkspaceDatabaseMigration } from "../lib/database/workspace-database-migration";
 import { getDatabaseContext } from "../lib/database/database-context";
 import {
@@ -11,13 +14,17 @@ import {
   resetSessionRepository,
   resetSettingsRepository,
   resetTokenRepository,
-  resetWorkspaceRepository
+  resetWorkspaceRepository,
 } from "../lib/database";
 import { ServerService } from "./services/server-service";
 import { TokenService } from "./services/token-service";
 import { LogService } from "./services/log-service";
 import { SettingsService } from "./services/settings-service";
-import { DevelopmentAgentService, DeployedAgentService, AgentSharingService } from "./services/agent";
+import {
+  DevelopmentAgentService,
+  DeployedAgentService,
+  AgentSharingService,
+} from "./services/agent";
 
 /**
  * Platform API管理クラス
@@ -102,7 +109,7 @@ export class PlatformAPIManager {
 
       // データベースコンテキストに設定
       getDatabaseContext().setCurrentDatabase(this.currentDatabase);
-      
+
       // グローバルなワークスペースデータベース参照を更新
       setWorkspaceDatabase(this.currentDatabase);
       console.log(`[PlatformAPIManager] Set workspace DB globally`);
@@ -113,10 +120,14 @@ export class PlatformAPIManager {
         const migration = new WorkspaceDatabaseMigration(this.currentDatabase);
         migration.runMigrations();
       } else {
-        console.log("[PlatformAPIManager] Using existing mcprouter.db, skipping workspace migration");
-        
+        console.log(
+          "[PlatformAPIManager] Using existing mcprouter.db, skipping workspace migration",
+        );
+
         // 既存のDBのマイグレーションを実行
-        const { getDatabaseMigration } = await import("../lib/database/database-migration");
+        const { getDatabaseMigration } = await import(
+          "../lib/database/database-migration"
+        );
         const migration = getDatabaseMigration();
         migration.runMigrations();
       }
@@ -146,7 +157,7 @@ export class PlatformAPIManager {
   private async notifyDatabaseChange(): Promise<void> {
     // Reset database context
     getDatabaseContext().reset();
-    
+
     // 全リポジトリのシングルトンインスタンスをリセット
     // これにより、次回のアクセス時に新しいワークスペースDBが使用される
     resetAgentRepository();
@@ -157,7 +168,7 @@ export class PlatformAPIManager {
     resetSettingsRepository();
     resetTokenRepository();
     resetWorkspaceRepository();
-    
+
     // サービスのシングルトンインスタンスもリセット
     ServerService.resetInstance();
     TokenService.resetInstance();
@@ -166,13 +177,16 @@ export class PlatformAPIManager {
     DevelopmentAgentService.resetInstance();
     DeployedAgentService.resetInstance();
     AgentSharingService.resetInstance();
-    
+
     // MCPServerManagerの再初期化をトリガー
     // グローバル変数からMCPServerManagerを取得して再初期化
     const getMCPServerManager = (global as any).getMCPServerManager;
-    if (getMCPServerManager && typeof getMCPServerManager === 'function') {
+    if (getMCPServerManager && typeof getMCPServerManager === "function") {
       const mcpServerManager = getMCPServerManager();
-      if (mcpServerManager && typeof mcpServerManager.initializeAsync === 'function') {
+      if (
+        mcpServerManager &&
+        typeof mcpServerManager.initializeAsync === "function"
+      ) {
         // サーバーリストを再読み込み
         await mcpServerManager.initializeAsync();
       }

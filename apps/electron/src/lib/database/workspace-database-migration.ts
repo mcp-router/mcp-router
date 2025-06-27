@@ -19,7 +19,7 @@ export class WorkspaceDatabaseMigration {
     try {
       // まず、古いスキーマのテーブルを再作成
       recreateOutdatedTables(this.db);
-      
+
       // すべてのテーブルを作成（統一されたスキーマ定義を使用）
       createAllTables(this.db);
 

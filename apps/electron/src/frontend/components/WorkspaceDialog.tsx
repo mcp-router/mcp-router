@@ -118,7 +118,9 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {workspace ? t("workspace.editWorkspace") : t("workspace.createWorkspace")}
+            {workspace
+              ? t("workspace.editWorkspace")
+              : t("workspace.createWorkspace")}
           </DialogTitle>
           <DialogDescription>
             Configure local or remote workspace
@@ -212,7 +214,9 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
                       setFormData({ ...formData, authToken: e.target.value })
                     }
                     placeholder={
-                      workspace ? "Leave blank to keep current" : "Enter API token"
+                      workspace
+                        ? "Leave blank to keep current"
+                        : "Enter API token"
                     }
                     className={
                       validationErrors.authToken ? "border-destructive" : ""
@@ -245,7 +249,11 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
               {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t("common.saving") : workspace ? t("common.update") : t("common.add")}
+              {isSubmitting
+                ? t("common.saving")
+                : workspace
+                  ? t("common.update")
+                  : t("common.add")}
             </Button>
           </DialogFooter>
         </form>

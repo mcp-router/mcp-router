@@ -14,7 +14,10 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
    */
   constructor(db: SqliteManager) {
     super(db, "agents");
-    console.log('[AgentRepository] Constructor called with database:', db?.getDbPath?.() || 'database instance');
+    console.log(
+      "[AgentRepository] Constructor called with database:",
+      db?.getDbPath?.() || "database instance",
+    );
   }
 
   /**
@@ -304,14 +307,16 @@ let currentDb: SqliteManager | null = null;
 
 export function getAgentRepository(): AgentRepository {
   const db = getSqliteManager("mcprouter");
-  
+
   // Check if database instance has changed
   if (!instance || currentDb !== db) {
-    console.log('[AgentRepository] Database instance changed, creating new repository');
+    console.log(
+      "[AgentRepository] Database instance changed, creating new repository",
+    );
     instance = new AgentRepository(db);
     currentDb = db;
   }
-  
+
   return instance;
 }
 
@@ -319,7 +324,7 @@ export function getAgentRepository(): AgentRepository {
  * AgentRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
  */
 export function resetAgentRepository(): void {
-  console.log('[AgentRepository] Resetting repository instance');
+  console.log("[AgentRepository] Resetting repository instance");
   instance = null;
   currentDb = null;
 }

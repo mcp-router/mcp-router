@@ -74,7 +74,7 @@ export class MCPServerManager {
   private originalProtocols: Map<string, string> = new Map(); // Map resource URI to its original protocol
   private toolNameToServerMap: Map<string, string> = new Map(); // Map original tool name to server name
   private _tokenService: any = null; // 初期化はinitializeAsyncで行う
-  
+
   // TokenServiceのgetterプロパティ
   private get tokenService(): any {
     if (!this._tokenService) {
@@ -107,26 +107,26 @@ export class MCPServerManager {
   public async initializeAsync(): Promise<void> {
     try {
       console.log("[MCPServerManager] Initializing...");
-      
+
       // Initialize server service (ワークスペースDBが設定された後に初期化)
       this.serverService = getServerService();
       this._tokenService = getTokenService();
-      
+
       // Clear existing servers before reloading
       this.clearAllServers();
-      
+
       // Load servers from database
       await this.loadServersFromDatabase();
-      
+
       // Initialize Agent Tools virtual server
       this.initAgentToolsServer();
-      
+
       console.log("[MCPServerManager] Initialization complete");
     } catch (error) {
       console.error("Failed to initialize MCP Server Manager:", error);
     }
   }
-  
+
   /**
    * Clear all servers from memory (used when switching workspaces)
    */
@@ -139,7 +139,7 @@ export class MCPServerManager {
         console.error(`Failed to stop server ${id}:`, error);
       }
     }
-    
+
     // Clear all maps
     this.servers.clear();
     this.clients.clear();
@@ -326,7 +326,9 @@ export class MCPServerManager {
     try {
       console.log("[MCPServerManager] Loading servers from database...");
       const servers = this.serverService.getAllServers();
-      console.log(`[MCPServerManager] Found ${servers.length} servers in database`);
+      console.log(
+        `[MCPServerManager] Found ${servers.length} servers in database`,
+      );
 
       servers.forEach((server) => {
         // Initialize all servers as stopped when loading
@@ -343,7 +345,9 @@ export class MCPServerManager {
         }
       });
 
-      console.log(`[MCPServerManager] ${servers.length}個のサーバ設定を読み込みました`);
+      console.log(
+        `[MCPServerManager] ${servers.length}個のサーバ設定を読み込みました`,
+      );
     } catch (error) {
       console.error("サーバ設定の読み込み中にエラーが発生しました:", error);
     }

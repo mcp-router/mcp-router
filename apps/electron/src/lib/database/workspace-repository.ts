@@ -9,14 +9,16 @@ let currentDb: SqliteManager | null = null;
  */
 export function getWorkspaceRepository(): WorkspaceRepository {
   const db = getSqliteManager();
-  
+
   // Check if database instance has changed
   if (!workspaceRepository || currentDb !== db) {
-    console.log('[WorkspaceRepository] Database instance changed, creating new repository');
+    console.log(
+      "[WorkspaceRepository] Database instance changed, creating new repository",
+    );
     workspaceRepository = new WorkspaceRepository(db);
     currentDb = db;
   }
-  
+
   return workspaceRepository;
 }
 
@@ -24,7 +26,7 @@ export function getWorkspaceRepository(): WorkspaceRepository {
  * Reset WorkspaceRepository instance (used when switching workspaces)
  */
 export function resetWorkspaceRepository(): void {
-  console.log('[WorkspaceRepository] Resetting repository instance');
+  console.log("[WorkspaceRepository] Resetting repository instance");
   workspaceRepository = null;
   currentDb = null;
 }

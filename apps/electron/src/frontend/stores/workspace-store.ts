@@ -118,7 +118,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const workspace = get().workspaces.find((w) => w.id === id);
       if (workspace) {
         set({ currentWorkspace: workspace, isLoading: false });
-        
+
         // ストアの再初期化をトリガー
         // サーバーストアなど他のストアのデータを再読み込み
         const { initializeStores } = await import("../stores");

@@ -22,7 +22,10 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
    */
   constructor(db: SqliteManager) {
     super(db, "requestLogs");
-    console.log('[LogRepository] Constructor called with database:', db?.getDbPath?.() || 'database instance');
+    console.log(
+      "[LogRepository] Constructor called with database:",
+      db?.getDbPath?.() || "database instance",
+    );
   }
 
   /**
@@ -514,14 +517,16 @@ let currentDb: SqliteManager | null = null;
 
 export function getLogRepository(): LogRepository {
   const db = getSqliteManager("mcprouter");
-  
+
   // Check if database instance has changed
   if (!instance || currentDb !== db) {
-    console.log('[LogRepository] Database instance changed, creating new repository');
+    console.log(
+      "[LogRepository] Database instance changed, creating new repository",
+    );
     instance = new LogRepository(db);
     currentDb = db;
   }
-  
+
   return instance;
 }
 
@@ -529,7 +534,7 @@ export function getLogRepository(): LogRepository {
  * LogRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
  */
 export function resetLogRepository(): void {
-  console.log('[LogRepository] Resetting repository instance');
+  console.log("[LogRepository] Resetting repository instance");
   instance = null;
   currentDb = null;
 }

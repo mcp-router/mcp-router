@@ -20,7 +20,10 @@ export class ServerRepository extends BaseRepository<MCPServer> {
    */
   constructor(db: SqliteManager) {
     super(db, "servers");
-    console.log("[ServerRepository] Initialized with database:", db ? "Present" : "Missing");
+    console.log(
+      "[ServerRepository] Initialized with database:",
+      db ? "Present" : "Missing",
+    );
   }
 
   /**

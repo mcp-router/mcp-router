@@ -37,7 +37,9 @@ import { IconProgress } from "@tabler/icons-react";
 
 // Lazy load components
 const InvitationCode = React.lazy(() => import("./setup/InvitationCode"));
-const WorkspaceManagement = React.lazy(() => import("./setting/WorkspaceManagement"));
+const WorkspaceManagement = React.lazy(
+  () => import("./setting/WorkspaceManagement"),
+);
 
 // Main App component
 const App: React.FC = () => {

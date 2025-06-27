@@ -21,7 +21,7 @@ const LogViewer: React.FC<LogViewerProps> = ({
 }) => {
   const { t } = useTranslation();
   const { currentWorkspace } = useWorkspaceStore();
-  
+
   // Filter state management
   const {
     filters,

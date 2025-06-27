@@ -26,7 +26,10 @@ export interface ChatSession {
 export class SessionRepository extends BaseRepository<ChatSession> {
   constructor(db: SqliteManager) {
     super(db, "chat_sessions");
-    console.log('[SessionRepository] Constructor called with database:', db?.getDbPath?.() || 'database instance');
+    console.log(
+      "[SessionRepository] Constructor called with database:",
+      db?.getDbPath?.() || "database instance",
+    );
   }
 
   /**
@@ -485,14 +488,16 @@ let currentDb: SqliteManager | null = null;
  */
 export function getSessionRepository(): SessionRepository {
   const db = getSqliteManager("mcprouter");
-  
+
   // Check if database instance has changed
   if (!sessionRepositoryInstance || currentDb !== db) {
-    console.log('[SessionRepository] Database instance changed, creating new repository');
+    console.log(
+      "[SessionRepository] Database instance changed, creating new repository",
+    );
     sessionRepositoryInstance = new SessionRepository(db);
     currentDb = db;
   }
-  
+
   return sessionRepositoryInstance;
 }
 
@@ -500,7 +505,7 @@ export function getSessionRepository(): SessionRepository {
  * Reset SessionRepository instance (used when switching workspaces)
  */
 export function resetSessionRepository(): void {
-  console.log('[SessionRepository] Resetting repository instance');
+  console.log("[SessionRepository] Resetting repository instance");
   sessionRepositoryInstance = null;
   currentDb = null;
 }

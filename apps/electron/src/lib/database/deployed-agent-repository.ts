@@ -14,7 +14,10 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
    */
   constructor(db: SqliteManager) {
     super(db, "deployedAgents");
-    console.log('[DeployedAgentRepository] Constructor called with database:', db?.getDbPath?.() || 'database instance');
+    console.log(
+      "[DeployedAgentRepository] Constructor called with database:",
+      db?.getDbPath?.() || "database instance",
+    );
   }
 
   /**
@@ -45,11 +48,13 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
 
       if (!tableExists) {
         // Use centralized schema to create table
-        console.log(`[DeployedAgentRepository] Table ${this.tableName} does not exist, creating it now`);
+        console.log(
+          `[DeployedAgentRepository] Table ${this.tableName} does not exist, creating it now`,
+        );
         // Note: The table will be created by WorkspaceDatabaseMigration using centralized schema
         // This is just a fallback for edge cases
-        const { createTable } = require('./schema');
-        createTable(this.db, 'deployedAgents');
+        const { createTable } = require("./schema");
+        createTable(this.db, "deployedAgents");
       }
     } catch (error) {
       console.error(`Error ensuring ${this.tableName} table exists:`, error);
@@ -246,14 +251,16 @@ let currentDb: SqliteManager | null = null;
 
 export function getDeployedAgentRepository(): DeployedAgentRepository {
   const db = getSqliteManager("mcprouter");
-  
+
   // Check if database instance has changed
   if (!instance || currentDb !== db) {
-    console.log('[DeployedAgentRepository] Database instance changed, creating new repository');
+    console.log(
+      "[DeployedAgentRepository] Database instance changed, creating new repository",
+    );
     instance = new DeployedAgentRepository(db);
     currentDb = db;
   }
-  
+
   return instance;
 }
 
@@ -261,7 +268,7 @@ export function getDeployedAgentRepository(): DeployedAgentRepository {
  * Reset DeployedAgentRepository instance (used when switching workspaces)
  */
 export function resetDeployedAgentRepository(): void {
-  console.log('[DeployedAgentRepository] Resetting repository instance');
+  console.log("[DeployedAgentRepository] Resetting repository instance");
   instance = null;
   currentDb = null;
 }

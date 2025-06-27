@@ -5,7 +5,11 @@ import { getSettingsRepository } from "../../lib/database";
 /**
  * Service for managing application settings
  */
-export class SettingsService extends SingletonService<AppSettings, string, SettingsService> {
+export class SettingsService extends SingletonService<
+  AppSettings,
+  string,
+  SettingsService
+> {
   /**
    * Constructor
    */

@@ -15,7 +15,7 @@ export function createTable(db: SqliteManager, tableName: TableName): void {
 
   // インデックスを作成
   if (schema.indexes && schema.indexes.length > 0) {
-    schema.indexes.forEach(indexSQL => {
+    schema.indexes.forEach((indexSQL) => {
       db.exec(indexSQL);
     });
   }
@@ -26,9 +26,9 @@ export function createTable(db: SqliteManager, tableName: TableName): void {
  */
 export function createAllTables(db: SqliteManager): void {
   const tableNames = Object.keys(DATABASE_SCHEMA) as TableName[];
-  
+
   db.transaction(() => {
-    tableNames.forEach(tableName => {
+    tableNames.forEach((tableName) => {
       createTable(db, tableName);
     });
   });
@@ -37,7 +37,10 @@ export function createAllTables(db: SqliteManager): void {
 /**
  * テーブルのスキーマが最新かチェックする
  */
-export function isTableSchemaOutdated(db: SqliteManager, tableName: TableName): boolean {
+export function isTableSchemaOutdated(
+  db: SqliteManager,
+  tableName: TableName,
+): boolean {
   try {
     const tableInfo = db.all(`PRAGMA table_info(${tableName})`);
     if (tableInfo.length === 0) {
@@ -45,11 +48,14 @@ export function isTableSchemaOutdated(db: SqliteManager, tableName: TableName): 
     }
 
     const existingColumns = tableInfo.map((col: any) => col.name);
-    const requiredColumns = SCHEMA_VERSION.REQUIRED_COLUMNS[tableName as keyof typeof SCHEMA_VERSION.REQUIRED_COLUMNS];
+    const requiredColumns =
+      SCHEMA_VERSION.REQUIRED_COLUMNS[
+        tableName as keyof typeof SCHEMA_VERSION.REQUIRED_COLUMNS
+      ];
 
     if (requiredColumns) {
       // 必須カラムがすべて存在するかチェック
-      return !requiredColumns.every(col => existingColumns.includes(col));
+      return !requiredColumns.every((col) => existingColumns.includes(col));
     }
 
     return false;
@@ -64,8 +70,8 @@ export function isTableSchemaOutdated(db: SqliteManager, tableName: TableName): 
  */
 export function recreateOutdatedTables(db: SqliteManager): void {
   const tableNames = Object.keys(DATABASE_SCHEMA) as TableName[];
-  
-  tableNames.forEach(tableName => {
+
+  tableNames.forEach((tableName) => {
     if (isTableSchemaOutdated(db, tableName)) {
       console.log(`[Schema] Dropping outdated table: ${tableName}`);
       db.exec(`DROP TABLE IF EXISTS ${tableName}`);
@@ -79,7 +85,7 @@ export function recreateOutdatedTables(db: SqliteManager): void {
 export function tableExists(db: SqliteManager, tableName: string): boolean {
   const result = db.get(
     "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
-    [tableName]
+    [tableName],
   );
   return !!result;
 }
