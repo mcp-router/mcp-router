@@ -143,11 +143,11 @@ export class DatabaseMigration {
       execute: (db) => this.migrateUpdateChatSessionsSchema(db),
     });
 
-
     // トークンテーブルをメインDBに確実に作成
     this.migrations.push({
       id: "20250627_ensure_tokens_table_in_main_db",
-      description: "Ensure tokens table exists in main database for workspace sharing",
+      description:
+        "Ensure tokens table exists in main database for workspace sharing",
       execute: (db) => this.migrateEnsureTokensTableInMainDb(db),
     });
   }
@@ -768,7 +768,6 @@ export class DatabaseMigration {
       throw error;
     }
   }
-
 
   /**
    * トークンテーブルをメインDBに確実に作成するマイグレーション

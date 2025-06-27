@@ -94,7 +94,6 @@ export const DATABASE_SCHEMA = {
     ],
   },
 
-
   requestLogs: {
     createSQL: `
       CREATE TABLE IF NOT EXISTS requestLogs (
@@ -131,7 +130,6 @@ export const DATABASE_SCHEMA = {
     `,
     indexes: [],
   },
-
 
   chat_sessions: {
     createSQL: `
@@ -185,6 +183,13 @@ export const SCHEMA_VERSION = {
     ],
     servers: ["server_type"],
     chat_sessions: ["status", "source"],
-    requestLogs: ["client_id", "client_name", "server_id", "server_name", "request_type", "response_status"],
+    requestLogs: [
+      "client_id",
+      "client_name",
+      "server_id",
+      "server_name",
+      "request_type",
+      "response_status",
+    ],
   },
 } as const;

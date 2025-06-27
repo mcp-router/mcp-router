@@ -65,7 +65,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     limit?: number;
   }) => ipcRenderer.invoke("requestLogs:get", options),
 
-
   // Settings Management
   getSettings: () => ipcRenderer.invoke("settings:get"),
   saveSettings: (settings: any) =>

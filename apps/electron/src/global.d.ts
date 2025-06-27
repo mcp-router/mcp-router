@@ -65,7 +65,6 @@ declare global {
         total: number;
       }>;
 
-
       // Settings Management
       getSettings: () => Promise<AppSettings>;
       saveSettings: (settings: AppSettings) => Promise<boolean>;

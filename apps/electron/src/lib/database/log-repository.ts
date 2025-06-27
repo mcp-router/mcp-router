@@ -42,9 +42,11 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
 
       if (!tableExists) {
         // 統一されたスキーマで作成される
-        console.log(`[LogRepository] Table ${this.tableName} will be created by WorkspaceDatabaseMigration`);
-        const { createTable } = require('./schema');
-        createTable(this.db, 'requestLogs');
+        console.log(
+          `[LogRepository] Table ${this.tableName} will be created by WorkspaceDatabaseMigration`,
+        );
+        const { createTable } = require("./schema");
+        createTable(this.db, "requestLogs");
       }
 
       // メタデータテーブルの作成

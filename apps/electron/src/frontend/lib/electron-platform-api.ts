@@ -49,7 +49,6 @@ export class ElectronPlatformAPI implements PlatformAPI {
   getRequestLogs = (options?: any) =>
     window.electronAPI.getRequestLogs(options);
 
-
   // Settings
   getSettings = () => window.electronAPI.getSettings();
   saveSettings = (settings: any) => window.electronAPI.saveSettings(settings);

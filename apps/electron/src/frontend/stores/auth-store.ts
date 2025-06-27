@@ -28,9 +28,7 @@ interface AuthState {
   // Actions
   setAuthenticated: (authenticated: boolean) => void;
   setUserData: (
-    userData: Partial<
-      Pick<AuthState, "userId" | "authToken">
-    >,
+    userData: Partial<Pick<AuthState, "userId" | "authToken">>,
   ) => void;
   setUserInfo: (userInfo: UserInfo | null) => void;
   setCredits: (credits: number) => void;
@@ -69,7 +67,6 @@ export const createAuthStore = (
     // Basic state setters
     setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 
-
     setUserData: (userData) => set((state) => ({ ...state, ...userData })),
 
     setUserInfo: (userInfo) => set({ userInfo }),
@@ -78,9 +75,7 @@ export const createAuthStore = (
 
     setLoggingIn: (isLoggingIn) => set({ isLoggingIn }),
 
-
     setLoginError: (loginError) => set({ loginError }),
-
 
     clearErrors: () => set({ loginError: null }),
 
@@ -129,14 +124,8 @@ export const createAuthStore = (
       }
     },
 
-
     checkAuthStatus: async (forceRefresh = false) => {
-      const {
-        setAuthenticated,
-        setUserData,
-        setUserInfo,
-        setCredits,
-      } = get();
+      const { setAuthenticated, setUserData, setUserInfo, setCredits } = get();
 
       try {
         // Check auth status with optional force refresh

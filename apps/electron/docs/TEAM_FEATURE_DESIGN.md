@@ -73,7 +73,10 @@ interface WorkspaceManager {
   createWorkspace(config: WorkspaceCreateConfig): Promise<Workspace>;
   switchWorkspace(workspaceId: string): Promise<void>;
   deleteWorkspace(workspaceId: string): Promise<void>;
-  updateWorkspace(workspaceId: string, updates: Partial<Workspace>): Promise<void>;
+  updateWorkspace(
+    workspaceId: string,
+    updates: Partial<Workspace>,
+  ): Promise<void>;
 
   // 現在のワークスペース
   getCurrentWorkspace(): Promise<Workspace>;
@@ -294,12 +297,18 @@ export class WorkspaceService
     if (!this.databaseInstances.has(workspaceId)) {
       const workspace = await this.findById(workspaceId);
       if (workspace.type === "local") {
-        const dbPath = workspace.localConfig?.databasePath || 
-          path.join(app.getPath("userData"), "workspaces", workspaceId, "database.db");
-        
+        const dbPath =
+          workspace.localConfig?.databasePath ||
+          path.join(
+            app.getPath("userData"),
+            "workspaces",
+            workspaceId,
+            "database.db",
+          );
+
         // ディレクトリが存在しない場合は作成
         await fs.ensureDir(path.dirname(dbPath));
-        
+
         const db = new SqliteManager(dbPath);
         this.databaseInstances.set(workspaceId, db);
       }
@@ -315,11 +324,13 @@ export class WorkspaceService
     if (safeStorage.isEncryptionAvailable()) {
       const encrypted = safeStorage.encryptString(token);
       const encryptedBase64 = encrypted.toString("base64");
-      
+
       // メタDBに保存
-      this.metaDb.prepare(
-        "UPDATE workspaces SET remoteConfig = json_set(remoteConfig, '$.authToken', ?) WHERE id = ?"
-      ).run(encryptedBase64, workspaceId);
+      this.metaDb
+        .prepare(
+          "UPDATE workspaces SET remoteConfig = json_set(remoteConfig, '$.authToken', ?) WHERE id = ?",
+        )
+        .run(encryptedBase64, workspaceId);
     }
   }
 
@@ -346,9 +357,11 @@ export class WorkspaceService
     // 新しいワークスペースをアクティブに
     this.metaDb.transaction(() => {
       this.metaDb.prepare("UPDATE workspaces SET isActive = 0").run();
-      this.metaDb.prepare(
-        "UPDATE workspaces SET isActive = 1, lastUsedAt = ? WHERE id = ?"
-      ).run(new Date().toISOString(), workspaceId);
+      this.metaDb
+        .prepare(
+          "UPDATE workspaces SET isActive = 1, lastUsedAt = ? WHERE id = ?",
+        )
+        .run(new Date().toISOString(), workspaceId);
     })();
 
     // Platform APIの切り替えをトリガー
@@ -357,9 +370,9 @@ export class WorkspaceService
 
   // アクティブワークスペースを取得
   async getActiveWorkspace(): Promise<Workspace | null> {
-    const row = this.metaDb.prepare(
-      "SELECT * FROM workspaces WHERE isActive = 1"
-    ).get();
+    const row = this.metaDb
+      .prepare("SELECT * FROM workspaces WHERE isActive = 1")
+      .get();
     return row ? this.deserializeWorkspace(row) : null;
   }
 
@@ -425,11 +438,11 @@ CREATE TABLE IF NOT EXISTS workspaces (
 -- デフォルトのローカルワークスペース
 INSERT OR IGNORE INTO workspaces (id, name, type, isActive, createdAt, lastUsedAt, localConfig)
 VALUES (
-  'local-default', 
-  'ローカル', 
-  'local', 
-  1, 
-  datetime('now'), 
+  'local-default',
+  'ローカル',
+  'local',
+  1,
+  datetime('now'),
   datetime('now'),
   json('{"databasePath": "workspaces/local-default/database.db"}')
 );
@@ -490,21 +503,22 @@ class PlatformAPIManager {
 
     if (workspace.type === "local") {
       // ワークスペース固有のDBを取得
-      this.currentDatabase = await workspaceService.getWorkspaceDatabase(workspaceId);
-      
+      this.currentDatabase =
+        await workspaceService.getWorkspaceDatabase(workspaceId);
+
       // 既存のローカル実装を使用（ワークスペース固有のDBを渡す）
       this.currentAPI = createLocalPlatformAPI(this.currentDatabase);
     } else {
       // リモートAPI実装を使用
       this.currentAPI = createRemotePlatformAPI(workspace.remoteConfig);
-      
+
       // キャッシュDBが必要な場合
       if (workspace.remoteConfig?.enableCache) {
         const cacheDbPath = path.join(
-          app.getPath("userData"), 
-          "workspaces", 
-          workspaceId, 
-          "cache.db"
+          app.getPath("userData"),
+          "workspaces",
+          workspaceId,
+          "cache.db",
         );
         this.currentDatabase = new SqliteManager(cacheDbPath);
       }

@@ -227,9 +227,7 @@ export function getTokenRepository(): TokenRepository {
 
   // Check if database instance has changed
   if (!instance || currentDb !== db) {
-    console.log(
-      "[TokenRepository] Creating repository with main database",
-    );
+    console.log("[TokenRepository] Creating repository with main database");
     instance = new TokenRepository(db);
     currentDb = db;
   }
@@ -243,5 +241,7 @@ export function getTokenRepository(): TokenRepository {
  */
 export function resetTokenRepository(): void {
   // トークンはワークスペース間で共有されるため、リセットしない
-  console.log("[TokenRepository] Skip reset - tokens are shared across workspaces");
+  console.log(
+    "[TokenRepository] Skip reset - tokens are shared across workspaces",
+  );
 }

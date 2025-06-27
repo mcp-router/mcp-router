@@ -270,7 +270,6 @@ const Settings: React.FC = () => {
                   </Button>
                 </div>
               </div>
-
             </div>
           ) : (
             <div className="space-y-3">

@@ -8,7 +8,6 @@ import { MCPDisplayRules } from "./rule-types";
  * アプリケーション設定のインターフェース
  */
 export interface AppSettings {
-
   /**
    * ユーザーID
    */

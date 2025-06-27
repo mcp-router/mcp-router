@@ -44,7 +44,9 @@ export class TokenService extends SingletonService<
    */
   public static resetInstance(): void {
     // トークンはワークスペース間で共有されるため、リセットしない
-    console.log("[TokenService] Skip reset - tokens are shared across workspaces");
+    console.log(
+      "[TokenService] Skip reset - tokens are shared across workspaces",
+    );
   }
 
   /**

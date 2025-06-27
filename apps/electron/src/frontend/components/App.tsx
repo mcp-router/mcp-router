@@ -50,11 +50,8 @@ const App: React.FC = () => {
   // Zustand stores
   const { refreshServers } = useServerStore();
 
-  const {
-    isAuthenticated,
-    checkAuthStatus,
-    subscribeToAuthChanges,
-  } = useAuthStore();
+  const { isAuthenticated, checkAuthStatus, subscribeToAuthChanges } =
+    useAuthStore();
 
   const { packageManagerOverlay, setPackageManagerOverlay } = useUIStore();
 
@@ -88,7 +85,6 @@ const App: React.FC = () => {
       unsubscribe();
     };
   }, [subscribeToAuthChanges]);
-
 
   // Subscribe to protocol URL events
   useEffect(() => {
