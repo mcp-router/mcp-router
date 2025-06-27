@@ -94,25 +94,6 @@ export const DATABASE_SCHEMA = {
     ],
   },
 
-  logs: {
-    createSQL: `
-      CREATE TABLE IF NOT EXISTS logs (
-        id TEXT PRIMARY KEY,
-        requestId TEXT NOT NULL,
-        server_id TEXT NOT NULL,
-        timestamp INTEGER NOT NULL,
-        request TEXT NOT NULL,
-        response TEXT,
-        transport TEXT NOT NULL,
-        duration INTEGER
-      )
-    `,
-    indexes: [
-      "CREATE INDEX IF NOT EXISTS idx_logs_server_id ON logs(server_id)",
-      "CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs(timestamp)",
-      "CREATE INDEX IF NOT EXISTS idx_logs_request_id ON logs(requestId)",
-    ],
-  },
 
   requestLogs: {
     createSQL: `
