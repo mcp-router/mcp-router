@@ -109,7 +109,6 @@ export class WebPlatformAPI implements PlatformAPI {
     throw new Error("Web platform not yet implemented");
   };
 
-
   getSettings = async () => {
     throw new Error("Web platform not yet implemented");
   };
@@ -338,6 +337,14 @@ export class WebPlatformAPI implements PlatformAPI {
 
   restartApp = async (): Promise<boolean> => {
     throw new Error("Web platform not yet implemented");
+  };
+
+  getPlatform = async (): Promise<"darwin" | "win32" | "linux"> => {
+    // For web platform, we can try to detect the OS from user agent
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (userAgent.includes("mac")) return "darwin";
+    if (userAgent.includes("win")) return "win32";
+    return "linux";
   };
 }
 

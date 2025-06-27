@@ -234,6 +234,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     };
   },
 
+  // System
+  getPlatform: () => ipcRenderer.invoke("system:getPlatform"),
+
   // Workspace Management
   listWorkspaces: () => ipcRenderer.invoke("workspace:list"),
   createWorkspace: (config: any) =>

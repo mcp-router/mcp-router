@@ -179,6 +179,9 @@ export class ElectronPlatformAPI implements PlatformAPI {
   checkPackageManagers = () => window.electronAPI.checkPackageManagers();
   installPackageManagers = () => window.electronAPI.installPackageManagers();
   restartApp = () => window.electronAPI.restartApp();
+
+  // System utilities
+  getPlatform = () => window.electronAPI.getPlatform();
 }
 
 // Create and export the Electron platform API instance

@@ -114,19 +114,14 @@ let mcpHttpServer: MCPHttpServer;
 (global as any).getMCPServerManager = () => mcpServerManager;
 
 const createWindow = () => {
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
+  // Platform-specific window options
+  const windowOptions: Electron.BrowserWindowConstructorOptions = {
     width: 1200,
     height: 800,
     minWidth: 800,
     minHeight: 600,
     title: "MCP Router",
     icon: path.join(__dirname, "assets/icon.png"),
-    titleBarStyle: "hidden",
-    trafficLightPosition: { x: 20, y: 19 }, // y = (50-12)/2 ≈ 19 for vertical center
-    titleBarOverlay: {
-      height: 50,
-    },
     autoHideMenuBar: true,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
@@ -134,7 +129,28 @@ const createWindow = () => {
       nodeIntegration: false,
       devTools: !app.isPackaged,
     },
-  });
+  };
+
+  // Platform-specific title bar configuration
+  if (process.platform === "darwin") {
+    // macOS: hidden title bar with traffic light buttons
+    windowOptions.titleBarStyle = "hidden";
+    windowOptions.trafficLightPosition = { x: 20, y: 19 }; // y = (50-12)/2 ≈ 19 for vertical center
+  } else if (process.platform === "win32") {
+    // Windows: use titleBarOverlay for custom title bar
+    windowOptions.titleBarStyle = "hidden";
+    windowOptions.titleBarOverlay = {
+      color: "#00000000", // Transparent background
+      symbolColor: "#999999", // Control button colors
+      height: 50,
+    };
+  } else {
+    // Linux: use default title bar
+    windowOptions.frame = true;
+  }
+
+  // Create the browser window.
+  mainWindow = new BrowserWindow(windowOptions);
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
@@ -328,6 +344,11 @@ function setupUpdateHandlers(): void {
     isQuitting = true;
     app.quit();
     return true;
+  });
+
+  // Handle system info request
+  ipcMain.handle("system:getPlatform", () => {
+    return process.platform;
   });
 }
 

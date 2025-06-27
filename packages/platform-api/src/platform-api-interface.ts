@@ -69,7 +69,6 @@ export interface PlatformAPI {
     total: number;
   }>;
 
-
   // Settings
   getSettings: () => Promise<AppSettings>;
   saveSettings: (settings: AppSettings) => Promise<boolean>;
@@ -195,6 +194,9 @@ export interface PlatformAPI {
 
   // Protocol handling
   onProtocolUrl: (callback: (url: string) => void) => () => void;
+
+  // System utilities
+  getPlatform: () => Promise<"darwin" | "win32" | "linux">;
 
   // Package Manager utilities
   checkPackageManagers: () => Promise<{
