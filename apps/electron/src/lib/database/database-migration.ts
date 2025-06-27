@@ -143,12 +143,6 @@ export class DatabaseMigration {
       execute: (db) => this.migrateUpdateChatSessionsSchema(db),
     });
 
-    // Workspace関連のマイグレーション
-    this.migrations.push({
-      id: "20250626_add_workspaces_table",
-      description: "Add workspaces table for multi-workspace support",
-      execute: (db) => this.migrateAddWorkspacesTable(db),
-    });
 
     // トークンテーブルをメインDBに確実に作成
     this.migrations.push({
@@ -775,57 +769,6 @@ export class DatabaseMigration {
     }
   }
 
-  /**
-   * workspacesテーブルを追加するマイグレーション
-   */
-  private migrateAddWorkspacesTable(db: SqliteManager): void {
-    try {
-      // workspacesテーブルの作成
-      db.execute(`
-        CREATE TABLE IF NOT EXISTS workspaces (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          type TEXT NOT NULL CHECK(type IN ('local', 'remote')),
-          isActive INTEGER NOT NULL DEFAULT 0,
-          createdAt TEXT NOT NULL,
-          lastUsedAt TEXT NOT NULL,
-          remoteConfig TEXT,
-          displayInfo TEXT
-        )
-      `);
-
-      // インデックスの作成
-      db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_workspaces_type ON workspaces(type)",
-      );
-      db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_workspaces_active ON workspaces(isActive)",
-      );
-
-      // デフォルトのローカルワークスペースが存在しない場合は作成
-      const existingDefault = db.get("SELECT id FROM workspaces WHERE id = ?", [
-        "local-default",
-      ]);
-
-      if (!existingDefault) {
-        db.execute(
-          `INSERT INTO workspaces (id, name, type, isActive, createdAt, lastUsedAt)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [
-            "local-default",
-            "ローカル",
-            "local",
-            1,
-            new Date().toISOString(),
-            new Date().toISOString(),
-          ],
-        );
-      }
-    } catch (error) {
-      console.error("workspacesテーブルの作成中にエラーが発生しました:", error);
-      throw error;
-    }
-  }
 
   /**
    * トークンテーブルをメインDBに確実に作成するマイグレーション
