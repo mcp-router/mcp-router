@@ -112,9 +112,6 @@ export class MCPServerManager {
       this.serverService = getServerService();
       this._tokenService = getTokenService();
 
-      // Clear existing servers before reloading
-      this.clearAllServers();
-
       // Load servers from database
       await this.loadServersFromDatabase();
 
@@ -130,7 +127,7 @@ export class MCPServerManager {
   /**
    * Clear all servers from memory (used when switching workspaces)
    */
-  private clearAllServers(): void {
+  public clearAllServers(): void {
     // Stop all running servers
     for (const [id, client] of this.clients) {
       try {

@@ -197,6 +197,15 @@ export class PlatformAPIManager {
    * ワークスペース切り替えハンドラー
    */
   private async handleWorkspaceSwitch(workspace: Workspace): Promise<void> {
+    // 先に現在のワークスペースのサーバーを停止
+    const getMCPServerManager = (global as any).getMCPServerManager;
+    if (getMCPServerManager && typeof getMCPServerManager === "function") {
+      const mcpServerManager = getMCPServerManager();
+      // 現在のワークスペースでサーバーを停止（ログは現在のDBに記録される）
+      mcpServerManager.clearAllServers();
+    }
+
+    // その後、新しいワークスペースに切り替え
     this.currentWorkspace = workspace;
     await this.configureForWorkspace(workspace);
 
