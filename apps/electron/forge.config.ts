@@ -9,7 +9,8 @@ import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { mainConfig } from "./webpack.main.config";
 import { rendererConfig } from "./webpack.renderer.config";
 import { MakerDMG } from "@electron-forge/maker-dmg";
-require("dotenv").config();
+import * as path from "path";
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 
 const config: ForgeConfig = {
   packagerConfig: {
