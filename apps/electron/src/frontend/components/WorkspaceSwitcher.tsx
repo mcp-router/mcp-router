@@ -10,14 +10,7 @@ import {
   AvatarImage,
   Button,
 } from "@mcp-router/ui";
-import {
-  Check,
-  ChevronDown,
-  Plus,
-  Settings,
-  Globe,
-  Monitor,
-} from "lucide-react";
+import { Check, ChevronDown, Plus, Settings, Monitor } from "lucide-react";
 import { useWorkspaceStore } from "@/frontend/stores/workspace-store";
 import { WorkspaceDialog } from "./WorkspaceDialog";
 import { useTranslation } from "react-i18next";
@@ -50,8 +43,8 @@ export function WorkspaceSwitcher() {
     navigate("/settings/workspaces");
   };
 
-  const getWorkspaceIcon = (type: string) => {
-    return type === "local" ? Monitor : Globe;
+  const getWorkspaceIcon = () => {
+    return Monitor;
   };
 
   const getWorkspaceInitials = (name: string) => {
@@ -92,7 +85,7 @@ export function WorkspaceSwitcher() {
 
         <DropdownMenuContent align="end" className="w-64">
           {sortedWorkspaces.map((workspace) => {
-            const Icon = getWorkspaceIcon(workspace.type);
+            const Icon = getWorkspaceIcon();
             const isActive = currentWorkspace?.id === workspace.id;
 
             return (
@@ -108,12 +101,6 @@ export function WorkspaceSwitcher() {
                     <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
                     <div className="flex flex-col">
                       <span className="text-sm">{workspace.name}</span>
-                      {workspace.type === "remote" &&
-                        workspace.displayInfo?.teamName && (
-                          <span className="text-xs text-muted-foreground">
-                            {workspace.displayInfo.teamName}
-                          </span>
-                        )}
                     </div>
                   </div>
                 </div>

@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@mcp-router/ui";
-import { Globe, Monitor, Pencil, Trash2, Plus } from "lucide-react";
+import { Monitor, Pencil, Trash2, Plus } from "lucide-react";
 import { useWorkspaceStore } from "@/frontend/stores/workspace-store";
 import { WorkspaceDialog } from "../WorkspaceDialog";
 import { useNavigate } from "react-router-dom";
@@ -78,8 +78,8 @@ const WorkspaceManagement: React.FC = () => {
     }
   };
 
-  const getWorkspaceIcon = (type: string) => {
-    return type === "local" ? Monitor : Globe;
+  const getWorkspaceIcon = () => {
+    return Monitor;
   };
 
   const getWorkspaceInitials = (name: string) => {
@@ -112,7 +112,7 @@ const WorkspaceManagement: React.FC = () => {
             </div>
           ) : (
             sortedWorkspaces.map((workspace) => {
-              const Icon = getWorkspaceIcon(workspace.type);
+              const Icon = getWorkspaceIcon();
               const isActive = currentWorkspace?.id === workspace.id;
 
               return (
@@ -147,12 +147,6 @@ const WorkspaceManagement: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      {workspace.type === "remote" &&
-                        workspace.displayInfo?.teamName && (
-                          <span className="text-sm text-muted-foreground">
-                            {workspace.displayInfo.teamName}
-                          </span>
-                        )}
                     </div>
                   </div>
 
