@@ -32,6 +32,10 @@
     "make": {
       "dependsOn": ["build"],
       "cache": false
+    },
+    "publish": {
+      "dependsOn": ["build"],
+      "cache": false
     }
   }
 }
