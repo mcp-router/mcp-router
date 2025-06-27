@@ -140,8 +140,6 @@ const createWindow = () => {
     // Windows: use titleBarOverlay for custom title bar
     windowOptions.titleBarStyle = "hidden";
     windowOptions.titleBarOverlay = {
-      color: "#00000000", // Transparent background
-      symbolColor: "#999999", // Control button colors
       height: 50,
     };
   } else {
