@@ -33,40 +33,19 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
    */
   protected initializeTable(): void {
     try {
-      // logsテーブルの作成（存在しない場合）
-      this.db.execute(`
-        CREATE TABLE IF NOT EXISTS ${this.tableName} (
-          id TEXT PRIMARY KEY,
-          timestamp INTEGER NOT NULL,
-          client_id TEXT NOT NULL,
-          client_name TEXT NOT NULL,
-          server_id TEXT NOT NULL,
-          server_name TEXT NOT NULL,
-          request_type TEXT NOT NULL,
-          request_params TEXT,
-          response_data TEXT,
-          response_status TEXT NOT NULL,
-          duration INTEGER NOT NULL,
-          error_message TEXT
-        )
-      `);
+      // requestLogsテーブルの作成は統一されたスキーマを使用
+      // WorkspaceDatabaseMigrationで作成されるため、ここでは互換性のために最小限の処理のみ
+      const tableExists = this.db.get(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
+        [this.tableName],
+      );
 
-      // インデックスの作成
-      this.db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON ${this.tableName} (timestamp)`,
-      );
-      this.db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_logs_client_id ON ${this.tableName} (client_id)`,
-      );
-      this.db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_logs_server_id ON ${this.tableName} (server_id)`,
-      );
-      this.db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_logs_request_type ON ${this.tableName} (request_type)`,
-      );
-      this.db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_logs_response_status ON ${this.tableName} (response_status)`,
-      );
+      if (!tableExists) {
+        // 統一されたスキーマで作成される
+        console.log(`[LogRepository] Table ${this.tableName} will be created by WorkspaceDatabaseMigration`);
+        const { createTable } = require('./schema');
+        createTable(this.db, 'requestLogs');
+      }
 
       // メタデータテーブルの作成
       this.db.execute(`
