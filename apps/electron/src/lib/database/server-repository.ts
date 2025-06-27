@@ -483,14 +483,9 @@ export function getServerRepository(): ServerRepository {
     const db = getSqliteManager("mcprouter");
     console.log("[getServerRepository] Creating new ServerRepository instance");
     instance = new ServerRepository(db);
-  } else {
-    // インスタンスが存在する場合、現在のデータベースと一致するか確認
-    const currentDb = getSqliteManager("mcprouter");
-    if (instance.database !== currentDb) {
-      console.log("[getServerRepository] Database changed, creating new instance");
-      instance = new ServerRepository(currentDb);
-    }
   }
+  // ワークスペース切り替え時はresetServerRepository()が呼ばれるため、
+  // ここでデータベースの変更をチェックする必要はない
   return instance;
 }
 

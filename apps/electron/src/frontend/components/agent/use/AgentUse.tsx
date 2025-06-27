@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { DeployedAgent } from "@mcp-router/shared";
 import { Button } from "@mcp-router/ui";
 import { toast } from "sonner";
-import { useAgentStore } from "../../../stores";
+import { useAgentStore, useWorkspaceStore } from "../../../stores";
 import { Settings, Trash2, RefreshCw } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/ui";
 import {
@@ -50,6 +50,7 @@ const AgentUse: React.FC = () => {
     removeDeployedAgent,
     refreshAgents,
   } = useAgentStore();
+  const { currentWorkspace } = useWorkspaceStore();
 
   const [agent, setAgent] = useState<DeployedAgent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -107,7 +108,7 @@ const AgentUse: React.FC = () => {
     };
 
     loadAgent();
-  }, [id, deployedAgents, navigate, refreshAgents, setCurrentDeployedAgent, t]);
+  }, [id, deployedAgents, navigate, refreshAgents, setCurrentDeployedAgent, t, currentWorkspace?.id]);
 
   // Handler for navigating to settings
   const navigateToSettings = () => {

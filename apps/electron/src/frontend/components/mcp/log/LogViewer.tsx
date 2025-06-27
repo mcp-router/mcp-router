@@ -8,6 +8,7 @@ import LogTable from "./components/LogTable";
 import LogDetailModal from "./components/LogDetailModal";
 import ToolCallTimeline from "./components/ToolCallTimeline";
 import { Card } from "@mcp-router/ui";
+import { useWorkspaceStore } from "../../../stores";
 
 interface LogViewerProps {
   serverId?: string; // 特定のサーバのみ表示する場合は指定、なければすべてのサーバ
@@ -19,6 +20,8 @@ const LogViewer: React.FC<LogViewerProps> = ({
   initialLimit = 50,
 }) => {
   const { t } = useTranslation();
+  const { currentWorkspace } = useWorkspaceStore();
+  
   // Filter state management
   const {
     filters,
@@ -64,6 +67,13 @@ const LogViewer: React.FC<LogViewerProps> = ({
       setLastDataUpdate(new Date());
     }
   }, [logs]);
+
+  // Refresh logs when workspace changes
+  useEffect(() => {
+    if (currentWorkspace) {
+      handleManualRefresh();
+    }
+  }, [currentWorkspace?.id, handleManualRefresh]);
 
   return (
     <div className="p-4 flex flex-col h-full">

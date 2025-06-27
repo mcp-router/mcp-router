@@ -4,13 +4,27 @@ import {
 } from "@mcp-router/shared";
 import { logError, logInfo } from "../../../../lib/utils/backend/error-handler";
 import { fetchWithTokenJson } from "../../../../lib/utils/backend/fetch-utils";
-import { Singleton } from "../../../../lib/utils/backend/singleton";
+import { SingletonService } from "../../singleton-service";
 
 /**
  * エージェント共有サービス
  * オンライン共有・インポート機能と開発中/デプロイ済みエージェント間のブリッジ役
  */
-class AgentSharingService extends Singleton<AgentSharingService> {
+class AgentSharingService extends SingletonService<any, string, AgentSharingService> {
+  /**
+   * コンストラクタ
+   */
+  protected constructor() {
+    super();
+  }
+
+  /**
+   * エンティティ名を取得
+   */
+  protected getEntityName(): string {
+    return "Agent Sharing";
+  }
+
   /**
    * シングルトンインスタンスを取得する静的メソッド
    */
@@ -18,8 +32,11 @@ class AgentSharingService extends Singleton<AgentSharingService> {
     return this.getInstanceBase();
   }
 
-  constructor() {
-    super();
+  /**
+   * Reset instance (used when switching workspaces)
+   */
+  public static resetInstance(): void {
+    this.resetInstanceBase(AgentSharingService);
   }
 
   /**

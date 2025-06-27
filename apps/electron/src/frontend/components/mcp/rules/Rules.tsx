@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { usePlatformAPI } from "@mcp-router/platform-api";
+import { useWorkspaceStore } from "../../../stores";
 import {
   MCPDisplayRules,
   DEFAULT_DISPLAY_RULES,
@@ -451,6 +452,7 @@ const EntityTypeSection: React.FC<EntityTypeSectionProps> = ({
 const Rules: React.FC = () => {
   const { t, i18n } = useTranslation();
   const platformAPI = usePlatformAPI();
+  const { currentWorkspace } = useWorkspaceStore();
   const [rules, setRules] = useState<MCPDisplayRules>({
     ...DEFAULT_DISPLAY_RULES,
   });
@@ -481,7 +483,7 @@ const Rules: React.FC = () => {
     };
 
     loadSettings();
-  }, [t]);
+  }, [t, currentWorkspace?.id]);
 
   // Force re-render when language changes to update sample data and translations
   useEffect(() => {

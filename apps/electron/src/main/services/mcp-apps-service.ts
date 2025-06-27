@@ -265,7 +265,35 @@ async function getAppInfo(
 export async function listMcpApps(): Promise<McpApp[]> {
   // 標準アプリ
   const standardApps = await Promise.all(
-    STANDARD_APPS.map((app) => checkApp(app.name, app.configPathFn())),
+    STANDARD_APPS.map(async (app) => {
+      const appInfo = await checkApp(app.name, app.configPathFn());
+      
+      // インストール済みだがトークンがない場合は自動生成
+      if (appInfo.installed && !appInfo.token) {
+        console.log(`[listMcpApps] Auto-generating token for installed app: ${app.name}`);
+        try {
+          const tokenService = getTokenService();
+          const serverService = getServerService();
+          const servers = serverService.getAllServers();
+          const serverIds = servers.map((server: { id: string }) => server.id);
+          
+          const token = tokenService.generateToken({
+            clientId: app.name.toLowerCase(),
+            serverIds: serverIds,
+          });
+          
+          // 設定ファイルを更新
+          await updateAppConfig(app.name, app.configPathFn(), token.id);
+          
+          // 更新されたアプリ情報を再取得
+          return await checkApp(app.name, app.configPathFn(), token.id, serverIds);
+        } catch (error) {
+          console.error(`Failed to auto-generate token for ${app.name}:`, error);
+        }
+      }
+      
+      return appInfo;
+    }),
   );
 
   // 追加アプリを取得して結合
@@ -347,13 +375,24 @@ export async function updateAppServerAccess(
     const clientId = appName.toLowerCase();
 
     // アプリに対応するトークンを検索
-    const appToken = allTokens.find((token) => token.clientId === clientId);
+    let appToken = allTokens.find((token) => token.clientId === clientId);
 
     if (!appToken) {
-      return {
-        success: false,
-        message: `No token found for app "${appName}".`,
-      };
+      // トークンが見つからない場合は新しく生成
+      console.log(`[updateAppServerAccess] Token not found for app "${appName}", creating new token`);
+      
+      appToken = tokenService.generateToken({
+        clientId: clientId,
+        serverIds: serverIds,
+      });
+      
+      // 標準アプリの場合は設定ファイルも更新
+      if (isStandardApp(appName)) {
+        const configPath = getAppConfigPath(appName);
+        if (configPath) {
+          await updateAppConfig(appName, configPath, appToken.id);
+        }
+      }
     }
 
     // トークンのサーバアクセス権限を更新

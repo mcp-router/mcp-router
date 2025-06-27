@@ -15,11 +15,13 @@ import { Badge } from "@mcp-router/ui";
 import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useWorkspaceStore } from "../../../stores";
 
 const AgentBuild: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const platformAPI = usePlatformAPI();
+  const { currentWorkspace } = useWorkspaceStore();
   const [agents, setAgents] = useState<AgentConfig[]>([]);
 
   // エージェント一覧の取得
@@ -31,12 +33,12 @@ const AgentBuild: React.FC = () => {
       console.error("Failed to fetch agents:", error);
       toast.error(t("agents.fetchError"));
     }
-  }, [t]);
+  }, [t, platformAPI]);
 
-  // 初期データ読み込み
+  // 初期データ読み込み & ワークスペース変更時の再読み込み
   useEffect(() => {
     fetchAgents();
-  }, [fetchAgents]);
+  }, [fetchAgents, currentWorkspace?.id]);
 
   // 空のエージェントを作成してから編集ページへ遷移
   const handleCreateAgent = async () => {

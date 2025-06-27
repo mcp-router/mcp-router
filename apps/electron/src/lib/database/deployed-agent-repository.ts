@@ -44,29 +44,12 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
       );
 
       if (!tableExists) {
-        // Create the deployed_agents table if it doesn't exist
-        this.db.execute(`
-                    CREATE TABLE IF NOT EXISTS ${this.tableName} (
-                        id TEXT PRIMARY KEY,
-                        name TEXT NOT NULL,
-                        mcp_servers TEXT NOT NULL,
-                        purpose TEXT NOT NULL,
-                        instructions TEXT NOT NULL,
-                        description TEXT,
-                        tool_permissions TEXT,
-                        auto_execute_tool INTEGER DEFAULT 0,
-                        mcp_server_enabled INTEGER DEFAULT 0,
-                        user_id TEXT,
-                        original_id TEXT NOT NULL DEFAULT '',
-                        created_at INTEGER NOT NULL,
-                        updated_at INTEGER NOT NULL
-                    )
-                `);
-
-        // Create indexes
-        this.db.execute(
-          `CREATE INDEX IF NOT EXISTS idx_deployed_agents_name ON ${this.tableName} (name)`,
-        );
+        // Use centralized schema to create table
+        console.log(`[DeployedAgentRepository] Table ${this.tableName} does not exist, creating it now`);
+        // Note: The table will be created by WorkspaceDatabaseMigration using centralized schema
+        // This is just a fallback for edge cases
+        const { createTable } = require('./schema');
+        createTable(this.db, 'deployedAgents');
       }
     } catch (error) {
       console.error(`Error ensuring ${this.tableName} table exists:`, error);

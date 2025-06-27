@@ -4,46 +4,19 @@ import {
   TokenValidationResult,
   TokenScope,
 } from "@mcp-router/shared";
-import { BaseService } from "./base-service";
-import { Singleton } from "../../lib/utils/backend/singleton";
-import { TokenRepository, getTokenRepository } from "../../lib/database";
+import { SingletonService } from "./singleton-service";
+import { getTokenRepository } from "../../lib/database";
 import crypto from "crypto";
 
 /**
  * Service for managing access tokens
  */
-export class TokenService
-  extends BaseService<Token, string>
-  implements Singleton<TokenService>
-{
-  private static instance: TokenService | null = null;
-
-  /**
-   * Get singleton instance
-   */
-  public static getInstance(): TokenService {
-    if (!TokenService.instance) {
-      TokenService.instance = new TokenService();
-    }
-    return TokenService.instance;
-  }
-
-  /**
-   * Reset instance
-   * Used when switching workspaces
-   */
-  public static resetInstance(): void {
-    TokenService.instance = null;
-  }
-
-  private repository: TokenRepository;
-
+export class TokenService extends SingletonService<Token, string, TokenService> {
   /**
    * Constructor
    */
-  private constructor() {
+  protected constructor() {
     super();
-    this.repository = getTokenRepository();
   }
 
   /**
@@ -51,6 +24,21 @@ export class TokenService
    */
   protected getEntityName(): string {
     return "Token";
+  }
+
+  /**
+   * Get singleton instance
+   */
+  public static getInstance(): TokenService {
+    return this.getInstanceBase();
+  }
+
+  /**
+   * Reset instance
+   * Used when switching workspaces
+   */
+  public static resetInstance(): void {
+    this.resetInstanceBase(TokenService);
   }
 
   /**
@@ -62,9 +50,9 @@ export class TokenService
       const clientId = options.clientId;
 
       // 同じクライアントIDのトークンが存在する場合は削除
-      const clientTokens = this.repository.getTokensByClientId(clientId);
+      const clientTokens = getTokenRepository().getTokensByClientId(clientId);
       if (clientTokens.length > 0) {
-        this.repository.deleteClientTokens(clientId);
+        getTokenRepository().deleteClientTokens(clientId);
       }
 
       // より強固なランダム値を生成（24バイト = 192ビット）
@@ -88,7 +76,7 @@ export class TokenService
       };
 
       // トークンを永続化
-      this.repository.saveToken(token);
+      getTokenRepository().saveToken(token);
       return token;
     } catch (error) {
       return this.handleError("トークン生成", error);
@@ -100,7 +88,7 @@ export class TokenService
    */
   public validateToken(tokenId: string): TokenValidationResult {
     try {
-      const token = this.repository.getToken(tokenId);
+      const token = getTokenRepository().getToken(tokenId);
 
       if (!token) {
         return {
@@ -139,7 +127,7 @@ export class TokenService
    */
   public deleteToken(tokenId: string): boolean {
     try {
-      return this.repository.deleteToken(tokenId);
+      return getTokenRepository().deleteToken(tokenId);
     } catch (error) {
       return this.handleError(`ID:${tokenId}の削除`, error, false);
     }
@@ -150,7 +138,7 @@ export class TokenService
    */
   public deleteClientTokens(clientId: string): number {
     try {
-      return this.repository.deleteClientTokens(clientId);
+      return getTokenRepository().deleteClientTokens(clientId);
     } catch (error) {
       return this.handleError(
         `クライアント${clientId}のトークン削除`,
@@ -165,7 +153,7 @@ export class TokenService
    */
   public listTokens(): Token[] {
     try {
-      return this.repository.listTokens();
+      return getTokenRepository().listTokens();
     } catch (error) {
       return this.handleError("一覧取得", error, []);
     }
@@ -176,7 +164,7 @@ export class TokenService
    */
   public hasServerAccess(tokenId: string, serverId: string): boolean {
     try {
-      const token = this.repository.getToken(tokenId);
+      const token = getTokenRepository().getToken(tokenId);
       if (!token) {
         return false;
       }
@@ -194,7 +182,7 @@ export class TokenService
     serverIds: string[],
   ): boolean {
     try {
-      return this.repository.updateTokenServerIds(tokenId, serverIds);
+      return getTokenRepository().updateTokenServerIds(tokenId, serverIds);
     } catch (error) {
       return this.handleError("サーバアクセス権限更新", error, false);
     }
@@ -205,7 +193,7 @@ export class TokenService
    */
   public hasScope(tokenId: string, requiredScope: TokenScope): boolean {
     try {
-      const token = this.repository.getToken(tokenId);
+      const token = getTokenRepository().getToken(tokenId);
       if (!token) {
         return false;
       }
@@ -220,13 +208,13 @@ export class TokenService
    */
   public updateTokenScopes(tokenId: string, scopes: TokenScope[]): boolean {
     try {
-      const token = this.repository.getToken(tokenId);
+      const token = getTokenRepository().getToken(tokenId);
       if (!token) {
         return false;
       }
 
       token.scopes = scopes;
-      this.repository.saveToken(token);
+      getTokenRepository().saveToken(token);
       return true;
     } catch (error) {
       return this.handleError("スコープ更新", error, false);

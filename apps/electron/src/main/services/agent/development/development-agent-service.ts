@@ -9,15 +9,29 @@ import { getServerService } from "../../server-service";
 import { DevelopmentAgent } from "./development-agent";
 import { v4 as uuidv4 } from "uuid";
 import { logError, logInfo } from "../../../../lib/utils/backend/error-handler";
-import { Singleton } from "../../../../lib/utils/backend/singleton";
+import { SingletonService } from "../../singleton-service";
 
 /**
  * 開発中エージェント管理サービス
  * 開発中のエージェントのCRUD操作とMCPサーバー管理を担当
  */
-class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
+class DevelopmentAgentService extends SingletonService<AgentConfig, string, DevelopmentAgentService> {
   private agents: Map<string, DevelopmentAgent> = new Map();
-  private repository = getAgentRepository();
+
+  /**
+   * コンストラクタ
+   */
+  protected constructor() {
+    super();
+    this.loadAgents();
+  }
+
+  /**
+   * エンティティ名を取得
+   */
+  protected getEntityName(): string {
+    return "Development Agent";
+  }
 
   /**
    * シングルトンインスタンスを取得する静的メソッド
@@ -26,9 +40,11 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
     return this.getInstanceBase();
   }
 
-  constructor() {
-    super();
-    this.loadAgents();
+  /**
+   * Reset instance (used when switching workspaces)
+   */
+  public static resetInstance(): void {
+    this.resetInstanceBase(DevelopmentAgentService);
   }
 
   /**
@@ -36,7 +52,8 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
    */
   private loadAgents(): void {
     try {
-      const agents = this.repository.getAllAgents();
+      const repository = getAgentRepository();
+      const agents = repository.getAllAgents();
 
       for (const agent of agents) {
         this.agents.set(agent.id, new DevelopmentAgent(agent));
@@ -59,7 +76,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
       return this.agents.get(id);
     }
 
-    const agentConfig = this.repository.getAgentById(id);
+    const agentConfig = getAgentRepository().getAgentById(id);
     if (!agentConfig) {
       return undefined;
     }
@@ -75,7 +92,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
    */
   public getAgents(): AgentConfig[] {
     try {
-      return this.repository.getAllAgents();
+      return getAgentRepository().getAllAgents();
     } catch (error) {
       logError("開発中エージェントの取得中にエラーが発生しました", error);
       return [];
@@ -87,7 +104,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
    */
   public getAgentById(id: string): AgentConfig | undefined {
     try {
-      return this.repository.getAgentById(id);
+      return getAgentRepository().getAgentById(id);
     } catch (error) {
       logError(
         `ID: ${id} の開発中エージェントの取得中にエラーが発生しました`,
@@ -147,7 +164,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
         id: uuidv4(),
       };
 
-      const agent = this.repository.addAgent(config);
+      const agent = getAgentRepository().addAgent(config);
 
       // エージェントインスタンスを作成してキャッシュ
       this.agents.set(agent.id, new DevelopmentAgent(agent));
@@ -171,7 +188,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
     config: Partial<AgentConfig>,
   ): Promise<AgentConfig | undefined> {
     try {
-      const currentAgent = this.repository.getAgentById(id);
+      const currentAgent = getAgentRepository().getAgentById(id);
 
       if (!currentAgent) {
         logError(`更新対象の開発中エージェントが見つかりません (ID: ${id})`);
@@ -187,7 +204,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
         await agentInstance.updateConfig(config, true);
         const updatedConfig = agentInstance.getConfig();
 
-        const updatedAgent = this.repository.updateAgent(id, updatedConfig);
+        const updatedAgent = getAgentRepository().updateAgent(id, updatedConfig);
 
         logInfo(
           `開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました`,
@@ -204,7 +221,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
       await newAgentInstance.updateConfig(config, true);
       const updatedConfig = newAgentInstance.getConfig();
 
-      const updatedAgent = this.repository.updateAgent(id, updatedConfig);
+      const updatedAgent = getAgentRepository().updateAgent(id, updatedConfig);
 
       logInfo(
         `開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました (新規インスタンス)`,
@@ -230,7 +247,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
         this.agents.delete(id);
       }
 
-      const result = this.repository.deleteAgent(id);
+      const result = getAgentRepository().deleteAgent(id);
 
       if (result) {
         logInfo(`開発中エージェントが削除されました (ID: ${id})`);
@@ -343,7 +360,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
     updatedServers?: MCPServerConfig[],
   ): AgentConfig | undefined {
     try {
-      const agent = this.repository.getAgentById(id);
+      const agent = getAgentRepository().getAgentById(id);
       if (!agent) {
         return undefined;
       }
@@ -359,7 +376,7 @@ class DevelopmentAgentService extends Singleton<DevelopmentAgentService> {
         }
       }
 
-      const updatedAgent = this.repository.updateAgent(id, updates);
+      const updatedAgent = getAgentRepository().updateAgent(id, updates);
 
       if (updatedAgent) {
         logInfo(

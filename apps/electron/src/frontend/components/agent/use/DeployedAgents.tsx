@@ -23,7 +23,7 @@ import {
 import { Download, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useAgentStore } from "../../../stores";
+import { useAgentStore, useWorkspaceStore } from "../../../stores";
 import { usePlatformAPI } from "@mcp-router/platform-api";
 
 const DeployedAgents: React.FC = () => {
@@ -33,15 +33,16 @@ const DeployedAgents: React.FC = () => {
 
   // Zustand store
   const { deployedAgents, refreshAgents, addDeployedAgent } = useAgentStore();
+  const { currentWorkspace } = useWorkspaceStore();
 
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [importCode, setImportCode] = useState("");
   const [isImporting, setIsImporting] = useState(false);
 
-  // 初期データ読み込み
+  // 初期データ読み込み & ワークスペース変更時の再読み込み
   useEffect(() => {
     refreshAgents();
-  }, [refreshAgents]);
+  }, [refreshAgents, currentWorkspace?.id]);
 
   // エージェントの有効化・使用
   const navigateToAgentPage = async (agent: DeployedAgent) => {

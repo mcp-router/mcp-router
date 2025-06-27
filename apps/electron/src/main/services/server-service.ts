@@ -1,27 +1,18 @@
-import { BaseService } from "./base-service";
+import { SingletonService } from "./singleton-service";
 import { MCPServer, MCPServerConfig } from "@mcp-router/shared";
 import { logInfo } from "../../lib/utils/backend/error-handler";
-import { Singleton } from "../../lib/utils/backend/singleton";
-import { ServerRepository, getServerRepository } from "../../lib/database";
+import { getServerRepository } from "../../lib/database";
 import { getTokenService } from "./token-service";
 
 /**
  * Service class for managing server information
  */
-export class ServerService
-  extends BaseService<MCPServer, string>
-  implements Singleton<ServerService>
-{
-  private static instance: ServerService | null = null;
-
-  private repository: ServerRepository;
-
+export class ServerService extends SingletonService<MCPServer, string, ServerService> {
   /**
    * Constructor
    */
-  private constructor() {
+  protected constructor() {
     super();
-    this.repository = getServerRepository();
   }
 
   /**
@@ -35,17 +26,14 @@ export class ServerService
    * Get singleton instance of ServerService
    */
   public static getInstance(): ServerService {
-    if (!ServerService.instance) {
-      ServerService.instance = new ServerService();
-    }
-    return ServerService.instance;
+    return this.getInstanceBase();
   }
 
   /**
    * Reset instance (used when switching workspaces)
    */
   public static resetInstance(): void {
-    ServerService.instance = null;
+    this.resetInstanceBase(ServerService);
   }
 
   /**
@@ -55,7 +43,7 @@ export class ServerService
    */
   public addServer(serverConfig: MCPServerConfig): MCPServer {
     try {
-      const server = this.repository.addServer(serverConfig);
+      const server = getServerRepository().addServer(serverConfig);
 
       // Give all MCP clients access to this new server
       try {
@@ -88,7 +76,7 @@ export class ServerService
    */
   public getAllServers(): MCPServer[] {
     try {
-      return this.repository.getAllServers();
+      return getServerRepository().getAllServers();
     } catch (error) {
       return this.handleError("取得", error, []);
     }
@@ -101,7 +89,7 @@ export class ServerService
    */
   public getServerById(id: string): MCPServer | undefined {
     try {
-      return this.repository.getServerById(id);
+      return getServerRepository().getServerById(id);
     } catch (error) {
       return this.handleError(`ID:${id}の取得`, error, undefined);
     }
@@ -118,7 +106,7 @@ export class ServerService
     config: Partial<MCPServerConfig>,
   ): MCPServer | undefined {
     try {
-      const result = this.repository.updateServer(id, config);
+      const result = getServerRepository().updateServer(id, config);
       if (result) {
         logInfo(`サーバ "${result.name}" が更新されました (ID: ${id})`);
       }
@@ -136,7 +124,7 @@ export class ServerService
   public deleteServer(id: string): boolean {
     try {
       const server = this.getServerById(id);
-      const result = this.repository.deleteServer(id);
+      const result = getServerRepository().deleteServer(id);
 
       if (result && server) {
         logInfo(`サーバ "${server.name}" が削除されました (ID: ${id})`);

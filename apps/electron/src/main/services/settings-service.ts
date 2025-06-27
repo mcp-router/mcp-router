@@ -1,43 +1,16 @@
 import { AppSettings } from "@mcp-router/shared";
-import { BaseService } from "./base-service";
-import { Singleton } from "../../lib/utils/backend/singleton";
-import { SettingsRepository, getSettingsRepository } from "../../lib/database";
+import { SingletonService } from "./singleton-service";
+import { getSettingsRepository } from "../../lib/database";
 
 /**
  * Service for managing application settings
  */
-export class SettingsService
-  extends BaseService<AppSettings, string>
-  implements Singleton<SettingsService>
-{
-  private static instance: SettingsService | null = null;
-
-  /**
-   * Get singleton instance
-   */
-  public static getInstance(): SettingsService {
-    if (!SettingsService.instance) {
-      SettingsService.instance = new SettingsService();
-    }
-    return SettingsService.instance;
-  }
-
-  /**
-   * Reset instance
-   * Used when switching workspaces
-   */
-  public static resetInstance(): void {
-    SettingsService.instance = null;
-  }
-
-  private repository: SettingsRepository;
-
+export class SettingsService extends SingletonService<AppSettings, string, SettingsService> {
   /**
    * Constructor
    */
-  private constructor() {
+  protected constructor() {
     super();
-    this.repository = getSettingsRepository();
   }
 
   /**
@@ -48,11 +21,26 @@ export class SettingsService
   }
 
   /**
+   * Get singleton instance
+   */
+  public static getInstance(): SettingsService {
+    return this.getInstanceBase();
+  }
+
+  /**
+   * Reset instance
+   * Used when switching workspaces
+   */
+  public static resetInstance(): void {
+    this.resetInstanceBase(SettingsService);
+  }
+
+  /**
    * アプリケーション設定を取得
    */
   public getSettings(): AppSettings {
     try {
-      return this.repository.getSettings();
+      return getSettingsRepository().getSettings();
     } catch (error) {
       return this.handleError("設定取得", error);
     }
@@ -63,7 +51,7 @@ export class SettingsService
    */
   public saveSettings(settings: AppSettings): boolean {
     try {
-      return this.repository.saveSettings(settings);
+      return getSettingsRepository().saveSettings(settings);
     } catch (error) {
       return this.handleError("設定保存", error, false);
     }

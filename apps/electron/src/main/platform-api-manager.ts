@@ -17,6 +17,7 @@ import { ServerService } from "./services/server-service";
 import { TokenService } from "./services/token-service";
 import { LogService } from "./services/log-service";
 import { SettingsService } from "./services/settings-service";
+import { DevelopmentAgentService, DeployedAgentService, AgentSharingService } from "./services/agent";
 
 /**
  * Platform API管理クラス
@@ -162,6 +163,9 @@ export class PlatformAPIManager {
     TokenService.resetInstance();
     LogService.resetInstance();
     SettingsService.resetInstance();
+    DevelopmentAgentService.resetInstance();
+    DeployedAgentService.resetInstance();
+    AgentSharingService.resetInstance();
     
     // MCPServerManagerの再初期化をトリガー
     // グローバル変数からMCPServerManagerを取得して再初期化

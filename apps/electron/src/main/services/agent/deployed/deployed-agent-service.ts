@@ -5,15 +5,29 @@ import {
 import { getDeployedAgentRepository } from "../../../../lib/database";
 import { DeployedAgent } from "./deployed-agent";
 import { logError, logInfo } from "../../../../lib/utils/backend/error-handler";
-import { Singleton } from "../../../../lib/utils/backend/singleton";
+import { SingletonService } from "../../singleton-service";
 
 /**
  * デプロイ済みエージェント管理サービス（軽量版）
  * 読み取り専用の操作とツール実行のみを担当
  */
-class DeployedAgentService extends Singleton<DeployedAgentService> {
+class DeployedAgentService extends SingletonService<DeployedAgentType, string, DeployedAgentService> {
   private agents: Map<string, DeployedAgent> = new Map();
-  private repository = getDeployedAgentRepository();
+
+  /**
+   * コンストラクタ
+   */
+  protected constructor() {
+    super();
+    this.loadAgents();
+  }
+
+  /**
+   * エンティティ名を取得
+   */
+  protected getEntityName(): string {
+    return "Deployed Agent";
+  }
 
   /**
    * シングルトンインスタンスを取得する静的メソッド
@@ -22,9 +36,11 @@ class DeployedAgentService extends Singleton<DeployedAgentService> {
     return this.getInstanceBase();
   }
 
-  constructor() {
-    super();
-    this.loadAgents();
+  /**
+   * Reset instance (used when switching workspaces)
+   */
+  public static resetInstance(): void {
+    this.resetInstanceBase(DeployedAgentService);
   }
 
   /**
@@ -32,7 +48,7 @@ class DeployedAgentService extends Singleton<DeployedAgentService> {
    */
   private loadAgents(): void {
     try {
-      const agents = this.repository.getAllDeployedAgents();
+      const agents = getDeployedAgentRepository().getAllDeployedAgents();
 
       for (const agent of agents) {
         this.agents.set(agent.id, new DeployedAgent(agent));
@@ -57,7 +73,7 @@ class DeployedAgentService extends Singleton<DeployedAgentService> {
       return this.agents.get(id);
     }
 
-    const agentConfig = this.repository.getDeployedAgentById(id);
+    const agentConfig = getDeployedAgentRepository().getDeployedAgentById(id);
     if (!agentConfig) {
       return undefined;
     }
@@ -73,7 +89,7 @@ class DeployedAgentService extends Singleton<DeployedAgentService> {
    */
   public getDeployedAgents(): DeployedAgentType[] {
     try {
-      return this.repository.getAllDeployedAgents();
+      return getDeployedAgentRepository().getAllDeployedAgents();
     } catch (error) {
       logError("デプロイ済みエージェントの取得中にエラーが発生しました", error);
       return [];
@@ -85,7 +101,7 @@ class DeployedAgentService extends Singleton<DeployedAgentService> {
    */
   public getDeployedAgentById(id: string): DeployedAgentType | undefined {
     try {
-      return this.repository.getDeployedAgentById(id);
+      return getDeployedAgentRepository().getDeployedAgentById(id);
     } catch (error) {
       logError(
         `ID: ${id} のデプロイ済みエージェントの取得中にエラーが発生しました`,
@@ -113,7 +129,7 @@ class DeployedAgentService extends Singleton<DeployedAgentService> {
       const updatedConfig = await agentInstance.updateConfig(updates, true);
 
       // データベースに保存
-      const result = this.repository.updateDeployedAgent(id, {
+      const result = getDeployedAgentRepository().updateDeployedAgent(id, {
         ...updatedConfig,
         updatedAt: Date.now(),
       });
@@ -146,7 +162,7 @@ class DeployedAgentService extends Singleton<DeployedAgentService> {
         this.agents.delete(id);
       }
 
-      const result = this.repository.deleteDeployedAgent(id);
+      const result = getDeployedAgentRepository().deleteDeployedAgent(id);
 
       if (result) {
         logInfo(`デプロイ済みエージェントが削除されました (ID: ${id})`);
@@ -327,7 +343,7 @@ class DeployedAgentService extends Singleton<DeployedAgentService> {
     agentData: Omit<DeployedAgentType, "id" | "createdAt" | "updatedAt">,
   ): DeployedAgentType {
     try {
-      const deployedAgent = this.repository.createDeployedAgent(agentData);
+      const deployedAgent = getDeployedAgentRepository().createDeployedAgent(agentData);
 
       // エージェントインスタンスを作成してキャッシュ
       this.agents.set(deployedAgent.id, new DeployedAgent(deployedAgent));
@@ -348,7 +364,7 @@ class DeployedAgentService extends Singleton<DeployedAgentService> {
    */
   public deployFromDevelopmentAgent(sourceAgent: any): DeployedAgentType {
     try {
-      const deployedAgent = this.repository.deployFromAgent(sourceAgent);
+      const deployedAgent = getDeployedAgentRepository().deployFromAgent(sourceAgent);
 
       // エージェントインスタンスを作成してキャッシュ
       this.agents.set(deployedAgent.id, new DeployedAgent(deployedAgent));

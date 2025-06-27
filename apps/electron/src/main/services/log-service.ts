@@ -1,4 +1,4 @@
-import { BaseService } from "./base-service";
+import { SingletonService } from "./singleton-service";
 import {
   RequestLogEntry,
   RequestLogEntryInput,
@@ -7,25 +7,17 @@ import {
   ServerStats,
   RequestTypeStats,
 } from "@mcp-router/shared";
-import { Singleton } from "../../lib/utils/backend/singleton";
-import { LogRepository, getLogRepository } from "../../lib/database";
+import { getLogRepository } from "../../lib/database";
 
 /**
  * Request log service class
  */
-export class LogService
-  extends BaseService<RequestLogEntry, string>
-  implements Singleton<LogService>
-{
-  private static instance: LogService | null = null;
-  private repository: LogRepository;
-
+export class LogService extends SingletonService<RequestLogEntry, string, LogService> {
   /**
    * Constructor
    */
-  private constructor() {
+  protected constructor() {
     super();
-    this.repository = getLogRepository();
   }
 
   /**
@@ -39,10 +31,7 @@ export class LogService
    * Get singleton instance of LogService
    */
   public static getInstance(): LogService {
-    if (!LogService.instance) {
-      LogService.instance = new LogService();
-    }
-    return LogService.instance;
+    return this.getInstanceBase();
   }
 
   /**
@@ -50,7 +39,7 @@ export class LogService
    * Used when switching workspaces
    */
   public static resetInstance(): void {
-    LogService.instance = null;
+    this.resetInstanceBase(LogService);
   }
 
   //--------------------------------------------------------------------------------
@@ -64,7 +53,7 @@ export class LogService
     entry: RequestLogEntryInput,
   ): Promise<RequestLogEntry> {
     try {
-      return await this.repository.addRequestLog(entry);
+      return await getLogRepository().addRequestLog(entry);
     } catch (error) {
       return this.handleError("追加", error);
     }
@@ -77,7 +66,7 @@ export class LogService
     options: RequestLogQueryOptions = {},
   ): Promise<{ logs: RequestLogEntry[]; total: number }> {
     try {
-      return await this.repository.getRequestLogs(options);
+      return await getLogRepository().getRequestLogs(options);
     } catch (error) {
       return this.handleError("取得", error, { logs: [], total: 0 });
     }
@@ -88,7 +77,7 @@ export class LogService
    */
   public getAvailableClientIds(): string[] {
     try {
-      return this.repository.getAvailableClientIds();
+      return getLogRepository().getAvailableClientIds();
     } catch (error) {
       return this.handleError("クライアントIDリストの取得", error, []);
     }
@@ -99,7 +88,7 @@ export class LogService
    */
   public getAvailableRequestTypes(): string[] {
     try {
-      return this.repository.getAvailableRequestTypes();
+      return getLogRepository().getAvailableRequestTypes();
     } catch (error) {
       return this.handleError("リクエストタイプリストの取得", error, []);
     }
@@ -110,7 +99,7 @@ export class LogService
    */
   public getClientStats(): ClientStats[] {
     try {
-      return this.repository.getClientStats();
+      return getLogRepository().getClientStats();
     } catch (error) {
       return this.handleError("クライアント統計情報の取得", error, []);
     }
@@ -121,7 +110,7 @@ export class LogService
    */
   public getServerStats(): ServerStats[] {
     try {
-      return this.repository.getServerStats();
+      return getLogRepository().getServerStats();
     } catch (error) {
       return this.handleError("サーバ統計情報の取得", error, []);
     }
@@ -132,7 +121,7 @@ export class LogService
    */
   public getRequestTypeStats(): RequestTypeStats[] {
     try {
-      return this.repository.getRequestTypeStats();
+      return getLogRepository().getRequestTypeStats();
     } catch (error) {
       return this.handleError("リクエストタイプ統計情報の取得", error, []);
     }
@@ -143,7 +132,7 @@ export class LogService
    */
   public getClientNameById(clientId: string): string {
     try {
-      return this.repository.getClientNameById(clientId);
+      return getLogRepository().getClientNameById(clientId);
     } catch (error) {
       return this.handleError(
         "クライアント名の取得",
@@ -160,7 +149,7 @@ export class LogService
    */
   public getLogById(id: string): RequestLogEntry | undefined {
     try {
-      return this.repository.getById(id);
+      return getLogRepository().getById(id);
     } catch (error) {
       return this.handleError("ID検索", error, undefined);
     }

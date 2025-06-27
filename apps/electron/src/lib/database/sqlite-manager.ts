@@ -200,7 +200,8 @@ export function getSqliteManager(dbName = "mcprouter"): SqliteManager {
   // ワークスペースデータベースが設定されている場合はそれを使用
   // 注意: ワークスペースモードでは引数のdbNameは無視される
   if (currentWorkspaceDb) {
-    console.log("[getSqliteManager] Returning workspace DB (ignoring dbName:", dbName, ")");
+    // デバッグログは開発時のみ（過度なログ出力を防ぐ）
+    // console.log("[getSqliteManager] Returning workspace DB (ignoring dbName:", dbName, ")");
     return currentWorkspaceDb;
   }
   
