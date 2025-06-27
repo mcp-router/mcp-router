@@ -40,9 +40,11 @@ export class TokenService extends SingletonService<
   /**
    * Reset instance
    * Used when switching workspaces
+   * Note: TokenService is not reset as tokens are shared across workspaces
    */
   public static resetInstance(): void {
-    this.resetInstanceBase(TokenService);
+    // トークンはワークスペース間で共有されるため、リセットしない
+    console.log("[TokenService] Skip reset - tokens are shared across workspaces");
   }
 
   /**

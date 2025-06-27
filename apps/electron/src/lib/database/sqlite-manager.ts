@@ -198,8 +198,15 @@ export function setWorkspaceDatabase(db: SqliteManager | null): void {
 /**
  * 現在のワークスペースのSQLiteManagerインスタンスを取得
  * ワークスペース切り替えに対応
+ * @param dbName データベース名
+ * @param forceMain true の場合、ワークスペースが設定されていてもメインDBを返す
  */
-export function getSqliteManager(dbName = "mcprouter"): SqliteManager {
+export function getSqliteManager(dbName = "mcprouter", forceMain = false): SqliteManager {
+  // forceMainがtrueの場合、常にメインデータベースを使用
+  if (forceMain) {
+    return SqliteManagerSingleton.getInstance(dbName);
+  }
+
   // ワークスペースデータベースが設定されている場合はそれを使用
   // 注意: ワークスペースモードでは引数のdbNameは無視される
   if (currentWorkspaceDb) {

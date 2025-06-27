@@ -149,6 +149,13 @@ export class DatabaseMigration {
       description: "Add workspaces table for multi-workspace support",
       execute: (db) => this.migrateAddWorkspacesTable(db),
     });
+
+    // トークンテーブルをメインDBに確実に作成
+    this.migrations.push({
+      id: "20250627_ensure_tokens_table_in_main_db",
+      description: "Ensure tokens table exists in main database for workspace sharing",
+      execute: (db) => this.migrateEnsureTokensTableInMainDb(db),
+    });
   }
 
   /**
@@ -816,6 +823,34 @@ export class DatabaseMigration {
       }
     } catch (error) {
       console.error("workspacesテーブルの作成中にエラーが発生しました:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * トークンテーブルをメインDBに確実に作成するマイグレーション
+   */
+  private migrateEnsureTokensTableInMainDb(db: SqliteManager): void {
+    try {
+      // tokensテーブルの作成（存在しない場合）
+      db.execute(`
+        CREATE TABLE IF NOT EXISTS tokens (
+          id TEXT PRIMARY KEY,
+          client_id TEXT NOT NULL,
+          issued_at INTEGER NOT NULL,
+          server_ids TEXT NOT NULL,
+          scopes TEXT DEFAULT '[]'
+        )
+      `);
+
+      // インデックスの作成
+      db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)",
+      );
+
+      console.log("tokensテーブルがメインDBに作成されました");
+    } catch (error) {
+      console.error("tokensテーブルの作成中にエラーが発生しました:", error);
       throw error;
     }
   }

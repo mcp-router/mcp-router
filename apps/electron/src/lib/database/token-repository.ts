@@ -222,12 +222,13 @@ let instance: TokenRepository | null = null;
 let currentDb: SqliteManager | null = null;
 
 export function getTokenRepository(): TokenRepository {
-  const db = getSqliteManager("mcprouter");
+  // トークンは常にメインデータベースを使用（ワークスペース間で共有）
+  const db = getSqliteManager("mcprouter", true); // forceMain = true
 
   // Check if database instance has changed
   if (!instance || currentDb !== db) {
     console.log(
-      "[TokenRepository] Database instance changed, creating new repository",
+      "[TokenRepository] Creating repository with main database",
     );
     instance = new TokenRepository(db);
     currentDb = db;
@@ -238,9 +239,9 @@ export function getTokenRepository(): TokenRepository {
 
 /**
  * TokenRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
+ * 注意: トークンはメインDBで管理されるため、実際にはリセットしない
  */
 export function resetTokenRepository(): void {
-  console.log("[TokenRepository] Resetting repository instance");
-  instance = null;
-  currentDb = null;
+  // トークンはワークスペース間で共有されるため、リセットしない
+  console.log("[TokenRepository] Skip reset - tokens are shared across workspaces");
 }
