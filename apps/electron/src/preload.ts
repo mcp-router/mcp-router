@@ -65,13 +65,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     limit?: number;
   }) => ipcRenderer.invoke("requestLogs:get", options),
 
-  // Invitation System
-  fetchInvitation: () => ipcRenderer.invoke("invitation:fetch"),
-
-  // Activation System
-  checkActivation: () => ipcRenderer.invoke("activation:check"),
-  submitInvitationCode: (code: string) =>
-    ipcRenderer.invoke("activation:submit", code),
 
   // Settings Management
   getSettings: () => ipcRenderer.invoke("settings:get"),

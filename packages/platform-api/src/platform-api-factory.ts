@@ -109,17 +109,6 @@ export class WebPlatformAPI implements PlatformAPI {
     throw new Error("Web platform not yet implemented");
   };
 
-  fetchInvitation = async () => {
-    throw new Error("Web platform not yet implemented");
-  };
-
-  checkActivation = async (): Promise<boolean> => {
-    throw new Error("Web platform not yet implemented");
-  };
-
-  submitInvitationCode = async (code: string): Promise<boolean> => {
-    throw new Error("Web platform not yet implemented");
-  };
 
   getSettings = async () => {
     throw new Error("Web platform not yet implemented");

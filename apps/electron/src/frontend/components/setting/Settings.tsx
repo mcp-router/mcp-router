@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@mcp-router/ui";
-import { InvitationCode } from "./InvitationCode";
 import { Button } from "@mcp-router/ui";
 import { Badge } from "@mcp-router/ui";
 import { useThemeStore } from "@/frontend/stores";
@@ -272,10 +271,6 @@ const Settings: React.FC = () => {
                 </div>
               </div>
 
-              {/* Invitation Code moved here from the Tokens card */}
-              <div className="border-t pt-6 mt-2">
-                <InvitationCode isLoggedIn={isAuthenticated} />
-              </div>
             </div>
           ) : (
             <div className="space-y-3">

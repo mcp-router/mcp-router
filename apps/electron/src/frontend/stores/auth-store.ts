@@ -12,29 +12,24 @@ interface UserInfo {
 interface AuthState {
   // Authentication data
   isAuthenticated: boolean;
-  isActivated: boolean;
   userId: string | null;
   authToken: string | null;
-  activationCode: string | null;
   userInfo: UserInfo | null;
 
   // Login state
   isLoggingIn: boolean;
-  isActivating: boolean;
 
   // Error states
   loginError: string | null;
-  activationError: string | null;
 
   // Credit information (if applicable)
   credits: number | null;
 
   // Actions
   setAuthenticated: (authenticated: boolean) => void;
-  setActivated: (activated: boolean) => void;
   setUserData: (
     userData: Partial<
-      Pick<AuthState, "userId" | "authToken" | "activationCode">
+      Pick<AuthState, "userId" | "authToken">
     >,
   ) => void;
   setUserInfo: (userInfo: UserInfo | null) => void;
@@ -42,17 +37,14 @@ interface AuthState {
 
   // Loading actions
   setLoggingIn: (loading: boolean) => void;
-  setActivating: (loading: boolean) => void;
 
   // Error actions
   setLoginError: (error: string | null) => void;
-  setActivationError: (error: string | null) => void;
   clearErrors: () => void;
 
   // Auth operations
   login: () => Promise<void>;
   logout: () => Promise<void>;
-  activate: (invitationCode: string) => Promise<void>;
   checkAuthStatus: (forceRefresh?: boolean) => Promise<void>;
   refreshCredits: () => Promise<void>;
   subscribeToAuthChanges: () => () => void;
@@ -67,21 +59,16 @@ export const createAuthStore = (
   create<AuthState>((set, get) => ({
     // Initial state
     isAuthenticated: false,
-    isActivated: false,
     userId: null,
     authToken: null,
-    activationCode: null,
     userInfo: null,
     isLoggingIn: false,
-    isActivating: false,
     loginError: null,
-    activationError: null,
     credits: null,
 
     // Basic state setters
     setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 
-    setActivated: (isActivated) => set({ isActivated }),
 
     setUserData: (userData) => set((state) => ({ ...state, ...userData })),
 
@@ -91,13 +78,11 @@ export const createAuthStore = (
 
     setLoggingIn: (isLoggingIn) => set({ isLoggingIn }),
 
-    setActivating: (isActivating) => set({ isActivating }),
 
     setLoginError: (loginError) => set({ loginError }),
 
-    setActivationError: (activationError) => set({ activationError }),
 
-    clearErrors: () => set({ loginError: null, activationError: null }),
+    clearErrors: () => set({ loginError: null }),
 
     // Auth operations with Platform API integration
     login: async () => {
@@ -144,59 +129,17 @@ export const createAuthStore = (
       }
     },
 
-    activate: async (invitationCode) => {
-      const {
-        setActivating,
-        setActivationError,
-        setActivated,
-        setUserData,
-        checkAuthStatus,
-      } = get();
-
-      try {
-        setActivating(true);
-        setActivationError(null);
-
-        // Call Platform API to activate with the code
-        const result = await platformAPI.submitInvitationCode(invitationCode);
-
-        if (result) {
-          setUserData({
-            activationCode: invitationCode,
-          });
-          setActivated(true);
-
-          // Re-check auth status to get the latest activation state
-          await checkAuthStatus();
-        } else {
-          throw new Error("Activation failed");
-        }
-      } catch (error) {
-        setActivationError(
-          error instanceof Error ? error.message : "Activation failed",
-        );
-        setActivated(false);
-        throw error;
-      } finally {
-        setActivating(false);
-      }
-    },
 
     checkAuthStatus: async (forceRefresh = false) => {
       const {
         setAuthenticated,
-        setActivated,
         setUserData,
         setUserInfo,
         setCredits,
       } = get();
 
       try {
-        // First check activation status
-        const isActivated = await platformAPI.checkActivation();
-        setActivated(isActivated);
-
-        // Then check auth status with optional force refresh
+        // Check auth status with optional force refresh
         const status = await platformAPI.getAuthStatus(forceRefresh);
 
         setAuthenticated(status.authenticated);
@@ -221,11 +164,9 @@ export const createAuthStore = (
         console.error("Failed to check auth status:", error);
         // Reset to unauthenticated state on error
         setAuthenticated(false);
-        setActivated(false);
         setUserData({
           userId: null,
           authToken: null,
-          activationCode: null,
         });
       }
     },
@@ -279,19 +220,14 @@ export const createAuthStore = (
     },
 
     initializeFromSettings: async (settings) => {
-      const { setAuthenticated, setActivated, setUserData } = get();
+      const { setAuthenticated, setUserData } = get();
 
       const isAuthenticated = !!(settings.authToken && settings.userId);
 
-      // Use checkActivation to determine activation status
-      const isActivated = await platformAPI.checkActivation();
-
       setAuthenticated(isAuthenticated);
-      setActivated(isActivated);
       setUserData({
         userId: settings.userId || null,
         authToken: settings.authToken || null,
-        activationCode: settings.invitationCode || null,
       });
     },
   }));
@@ -304,9 +240,6 @@ export const createAuthSelectors = <
 ) => ({
   useIsLoggedIn: () =>
     useStore((state) => state.isAuthenticated && state.authToken),
-
-  useIsActivated: () =>
-    useStore((state) => state.isActivated && state.activationCode),
 
   useAuthToken: () => useStore((state) => state.authToken),
 

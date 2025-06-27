@@ -8,15 +8,6 @@ import { MCPDisplayRules } from "./rule-types";
  * アプリケーション設定のインターフェース
  */
 export interface AppSettings {
-  /**
-   * 招待コード
-   */
-  invitationCode?: string;
-
-  /**
-   * 招待受け入れ日時
-   */
-  invitedAt?: string;
 
   /**
    * ユーザーID
@@ -49,8 +40,6 @@ export interface AppSettings {
  * デフォルトのアプリケーション設定
  */
 export const DEFAULT_APP_SETTINGS: AppSettings = {
-  invitationCode: "",
-  invitedAt: "",
   userId: "",
   authToken: "",
   loggedInAt: "",

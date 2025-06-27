@@ -34,7 +34,6 @@ export const useIsServerUpdating = serverSelectors.useIsServerUpdating;
 
 // Export auth selectors
 export const useIsLoggedIn = authSelectors.useIsLoggedIn;
-export const useIsActivated = authSelectors.useIsActivated;
 export const useAuthToken = authSelectors.useAuthToken;
 export const useUserId = authSelectors.useUserId;
 

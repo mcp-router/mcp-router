@@ -120,7 +120,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
           const result = await platformAPI.executeAgentTool(
             agent.id,
             toolCall.toolName,
-            toolCall.args,
+            toolCall.args as Record<string, any>,
           );
 
           if (result.success) {

@@ -69,10 +69,6 @@ export interface PlatformAPI {
     total: number;
   }>;
 
-  // Invitation & Activation
-  fetchInvitation: () => Promise<any>;
-  checkActivation: () => Promise<boolean>;
-  submitInvitationCode: (code: string) => Promise<boolean>;
 
   // Settings
   getSettings: () => Promise<AppSettings>;

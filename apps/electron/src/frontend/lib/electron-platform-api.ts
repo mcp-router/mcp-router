@@ -49,11 +49,6 @@ export class ElectronPlatformAPI implements PlatformAPI {
   getRequestLogs = (options?: any) =>
     window.electronAPI.getRequestLogs(options);
 
-  // Invitation & Activation
-  fetchInvitation = () => window.electronAPI.fetchInvitation();
-  checkActivation = () => window.electronAPI.checkActivation();
-  submitInvitationCode = (code: string) =>
-    window.electronAPI.submitInvitationCode(code);
 
   // Settings
   getSettings = () => window.electronAPI.getSettings();

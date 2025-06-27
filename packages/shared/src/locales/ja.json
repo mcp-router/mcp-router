@@ -218,7 +218,7 @@
     "credits": "クレジット",
     "freeCredits": "無料クレジット",
     "paidCredits": "有料クレジット",
-    "freeCreditsDescription": "招待成功1件につき50クレジット獲得。共有したエージェントが使用されるたびに1クレジット獲得。",
+    "freeCreditsDescription": "共有したエージェントが使用されるたびに1クレジット獲得。",
     "purchaseCredits": "クレジット購入",
     "refreshCredits": "更新",
     "refreshingCredits": "更新中...",
@@ -610,28 +610,6 @@
     "last": "最後のページ",
     "page": "{{total}} ページ中 {{current}} ページ目",
     "itemsPerPage": "1ページあたりの件数"
-  },
-  "invitation": {
-    "title": "招待コード",
-    "description": "他のユーザーが参加するための招待コードを生成・管理する",
-    "generate": "招待コードを生成",
-    "usesRemaining": "残り {{remaining}} / {{max}} 回使用可能",
-    "fetchError": "招待コードの取得に失敗しました",
-    "pleaseLogin": "招待コードの作成にはログインが必要です"
-  },
-  "activation": {
-    "title": "招待コード（任意）",
-    "description": "招待コードを入力するか、スキップして招待なしでアプリを使用できます。",
-    "codeLabel": "招待コード",
-    "codePlaceholder": "招待コードを入力してください（任意）",
-    "activate": "送信",
-    "skip": "スキップ",
-    "activating": "送信中...",
-    "invalidCode": "無効な招待コードです。もう一度お試しください。",
-    "codeRequired": "招待コードが必要です",
-    "errorOccurred": "招待の処理中にエラーが発生しました",
-    "success": "招待が正常に受け入れられました",
-    "joinDiscord": "Discordコミュニティに参加"
   },
   "updateNotification": {
     "title": "アップデートが利用可能です",

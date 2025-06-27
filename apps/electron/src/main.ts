@@ -30,12 +30,7 @@ import {
 import { updateElectronApp } from "update-electron-app";
 import { machineIdSync } from "node-machine-id";
 import { getDatabaseMigration } from "./lib/database";
-import {
-  validateClientId,
-  isAppActivated,
-  saveInvitationInfo,
-  generateNewInvitation,
-} from "./main/viral";
+// Invitation code functionality has been removed
 import { setApplicationMenu } from "./main/menu";
 import { createTray, updateTrayContextMenu } from "./main/tray";
 import { importExistingServerConfigurations } from "./main/mcp-config-importer";
@@ -874,39 +869,6 @@ function setupFeedbackHandlers(): void {
 }
 
 function setupViralHandlers() {
-  // Activation System Handlers
-  ipcMain.handle("activation:check", () => {
-    return isAppActivated();
-  });
-
-  ipcMain.handle("activation:submit", async (_, invitationCode: string) => {
-    // Validate the code with the API and save it if valid
-    const success = await saveInvitationInfo(invitationCode);
-    return success;
-  });
-
-  // Client ID Validation Handler
-  ipcMain.handle("validation:check", async () => {
-    return await validateClientId();
-  });
-
-  // Invitation System Handlers
-  ipcMain.handle("invitation:fetch", async () => {
-    try {
-      const machineId = machineIdSync();
-      // First, try to get an existing invitation
-      const response = await fetchWithToken(`${API_BASE_URL}/app-invitations`);
-      const data = await response.json();
-      // If successful, return the data
-      if (data.success) {
-        return data;
-      }
-
-      // If no invitation exists, create a new one
-      return await generateNewInvitation(machineId);
-    } catch (error) {
-      console.error("Error fetching invitation:", error);
-      return { success: false, error: "Failed to fetch invitation" };
-    }
-  });
+  // Invitation code functionality has been removed
+  // All activation-related handlers have been deleted
 }

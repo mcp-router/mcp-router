@@ -393,60 +393,11 @@ async getRequestLogs(options?: any) {
 }
 ```
 
-
----
-
-## 4. Invitation & Activation
-
-### `fetchInvitation(): Promise<any>`
-招待情報を取得します。
-
-**Returns:** 招待情報またはnull
-
-**Electron Implementation:**
-- ローカルストレージから招待情報を取得
-
-**Web Implementation:**
-```typescript
-async fetchInvitation() {
-  return null; // Web版では不要
-}
 ```
 
 ---
 
-### `checkActivation(): Promise<boolean>`
-アプリケーションのアクティベーション状態を確認します。
-
-**Returns:** アクティベート済みかどうか
-
-**Web Implementation:**
-```typescript
-async checkActivation(): Promise<boolean> {
-  return true; // Web版では常にアクティベート済み
-}
-```
-
----
-
-### `submitInvitationCode(code: string): Promise<boolean>`
-招待コードを送信してアプリをアクティベートします。
-
-**Parameters:**
-- `code`: 招待コード
-
-**Returns:** アクティベーションが成功したかどうか
-
-**Web Implementation:**
-```typescript
-async submitInvitationCode(code: string): Promise<boolean> {
-  return true; // Web版では常に成功
-}
-```
-
----
-
-## 5. Settings
+## 4. Settings
 
 ### `getSettings(): Promise<AppSettings>`
 アプリケーション設定を取得します。
@@ -505,7 +456,7 @@ async incrementPackageManagerOverlayCount() {
 
 ---
 
-## 6. MCP Apps
+## 5. MCP Apps
 
 ### `listMcpApps(): Promise<McpApp[]>`
 すべてのMCPアプリ設定を取得します。
@@ -608,7 +559,7 @@ async unifyAppConfig(appName: string): Promise<McpAppsManagerResult> {
 
 ---
 
-## 7. Command Utilities
+## 6. Command Utilities
 
 ### `checkCommandExists(command: string): Promise<boolean>`
 指定したコマンドがシステムに存在するか確認します。
@@ -630,7 +581,7 @@ async checkCommandExists(command: string): Promise<boolean> {
 
 ---
 
-## 8. Agent Management
+## 7. Agent Management
 
 ### `listAgents(): Promise<Agent[]>`
 すべての開発中エージェントを取得します。
@@ -780,7 +731,7 @@ async importAgent(shareCode: string): Promise<DeployedAgent | undefined> {
 
 ---
 
-## 9. Agent Deployment
+## 8. Agent Deployment
 
 ### `deployAgent(id: string): Promise<DeployedAgent | undefined>`
 開発中のエージェントをデプロイします。
@@ -860,7 +811,7 @@ async deleteDeployedAgent(id: string): Promise<boolean> {
 
 ---
 
-## 10. Package Management
+## 9. Package Management
 
 ### `resolvePackageVersionsInArgs(argsString: string, packageManager: "pnpm" | "uvx"): Promise<Result>`
 パッケージバージョンを解決します。
@@ -920,7 +871,7 @@ async checkMcpServerPackageUpdates(
 
 ---
 
-## 11. Agent Tools
+## 10. Agent Tools
 
 ### `getAgentMCPServerTools(agentId: string, serverId: string, isDev?: boolean): Promise<Result>`
 エージェントが利用可能なMCPサーバーツールを取得します。
@@ -988,7 +939,7 @@ async executeAgentTool(
 
 ---
 
-## 12. Background Chat
+## 11. Background Chat
 
 ### `startBackgroundChat(sessionId: string | undefined, agentId: string, query: string): Promise<Result>`
 バックグラウンドでチャットを開始します。
@@ -1081,7 +1032,7 @@ onBackgroundChatStop(callback: (data: any) => void): () => void {
 
 ---
 
-## 13. Session Management
+## 12. Session Management
 
 ### `fetchSessionMessages(sessionId: string): Promise<any[]>`
 セッションのメッセージを取得します。
@@ -1195,7 +1146,7 @@ async deleteSession(sessionId: string): Promise<boolean> {
 
 ---
 
-## 14. Chat Stream Communication
+## 13. Chat Stream Communication
 
 ### `sendChatStreamStart(streamData: any): Promise<Result>`
 チャットストリームを開始します。
@@ -1292,7 +1243,7 @@ async sendChatStreamError(errorData: any) {
 
 ---
 
-## 15. Chat Stream Listeners
+## 14. Chat Stream Listeners
 
 ### `onChatStreamStart(callback: (data: any) => void): () => void`
 チャットストリーム開始イベントを監視します。
@@ -1366,7 +1317,7 @@ onChatStreamError(callback: (data: any) => void): () => void {
 
 ---
 
-## 16. Token Management
+## 15. Token Management
 
 ### `updateTokenScopes(tokenId: string, scopes: TokenScope[]): Promise<McpAppsManagerResult>`
 トークンのスコープを更新します。
@@ -1396,7 +1347,7 @@ async updateTokenScopes(
 
 ---
 
-## 17. Feedback
+## 16. Feedback
 
 ### `submitFeedback(feedback: string): Promise<boolean>`
 ユーザーフィードバックを送信します。
@@ -1419,7 +1370,7 @@ async submitFeedback(feedback: string): Promise<boolean> {
 
 ---
 
-## 18. Updates
+## 17. Updates
 
 ### `checkForUpdates(): Promise<{updateAvailable: boolean}>`
 アプリケーションの更新を確認します。
@@ -1469,7 +1420,7 @@ onUpdateAvailable(callback: (available: boolean) => void): () => void {
 
 ---
 
-## 19. Protocol Handling
+## 18. Protocol Handling
 
 ### `onProtocolUrl(callback: (url: string) => void): () => void`
 プロトコルURL（ディープリンク）を監視します。
@@ -1491,7 +1442,7 @@ onProtocolUrl(callback: (url: string) => void): () => void {
 
 ---
 
-## 20. Package Manager Utilities
+## 19. Package Manager Utilities
 
 ### `checkPackageManagers(): Promise<PackageManagerStatus>`
 インストールされているパッケージマネージャーを確認します。

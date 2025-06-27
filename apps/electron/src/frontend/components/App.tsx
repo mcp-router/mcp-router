@@ -36,7 +36,6 @@ import { usePlatformAPI } from "@mcp-router/platform-api";
 import { IconProgress } from "@tabler/icons-react";
 
 // Lazy load components
-const InvitationCode = React.lazy(() => import("./setup/InvitationCode"));
 const WorkspaceManagement = React.lazy(
   () => import("./setting/WorkspaceManagement"),
 );
@@ -52,9 +51,7 @@ const App: React.FC = () => {
   const { refreshServers } = useServerStore();
 
   const {
-    isActivated,
     isAuthenticated,
-    activate,
     checkAuthStatus,
     subscribeToAuthChanges,
   } = useAuthStore();
@@ -62,9 +59,9 @@ const App: React.FC = () => {
   const { packageManagerOverlay, setPackageManagerOverlay } = useUIStore();
 
   // Local state for loading and temporary UI states
-  const [isActivationLoading, setIsActivationLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Initialize stores and check activation status
+  // Initialize stores
   useEffect(() => {
     const initializeApp = async () => {
       try {
@@ -76,7 +73,7 @@ const App: React.FC = () => {
       } catch (error) {
         console.error("Failed to initialize app:", error);
       } finally {
-        setIsActivationLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -92,21 +89,6 @@ const App: React.FC = () => {
     };
   }, [subscribeToAuthChanges]);
 
-  // Submit activation code
-  const handleActivate = useCallback(
-    async (code: string) => {
-      try {
-        await activate(code);
-        // Don't show login screen, the activation state will update automatically
-        // setShowLoginAfterActivation(true);
-        return true;
-      } catch (error) {
-        console.error("Activation error:", error);
-        return false;
-      }
-    },
-    [activate],
-  );
 
   // Subscribe to protocol URL events
   useEffect(() => {
@@ -213,20 +195,9 @@ const App: React.FC = () => {
     </div>
   );
 
-  // If activation status is still loading, show loading indicator
-  if (isActivationLoading) {
+  // If still loading, show loading indicator
+  if (isLoading) {
     return <LoadingIndicator />;
-  }
-
-  // If not activated, show activation screen
-  if (!isActivated) {
-    return (
-      <div className="bg-content-light h-full">
-        <React.Suspense fallback={<LoadingIndicator />}>
-          <InvitationCode onActivate={handleActivate} />
-        </React.Suspense>
-      </div>
-    );
   }
 
   // Login is now optional - user can access app without authentication

@@ -65,12 +65,6 @@ declare global {
         total: number;
       }>;
 
-      // Invitation System
-      fetchInvitation: () => Promise<any>;
-
-      // Activation System
-      checkActivation: () => Promise<boolean>;
-      submitInvitationCode: (code: string) => Promise<boolean>;
 
       // Settings Management
       getSettings: () => Promise<AppSettings>;

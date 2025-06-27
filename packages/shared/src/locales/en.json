@@ -213,7 +213,7 @@
     "credits": "Credits",
     "freeCredits": "Free Credits",
     "paidCredits": "Paid Credits",
-    "freeCreditsDescription": "Earn 50 credits for each successful invitation. Get 1 credit each time your shared agents are used.",
+    "freeCreditsDescription": "Get 1 credit each time your shared agents are used.",
     "purchaseCredits": "Purchase Credits",
     "refreshCredits": "Refresh",
     "refreshingCredits": "Refreshing...",
@@ -594,27 +594,6 @@
     "last": "Last Page",
     "page": "Page {{current}} of {{total}}",
     "itemsPerPage": "Items per page"
-  },
-  "invitation": {
-    "title": "Invitation Code",
-    "description": "Generate and manage invitation codes for others to join",
-    "usesRemaining": "{{remaining}} of {{max}} uses remaining",
-    "fetchError": "Failed to fetch invitation code",
-    "pleaseLogin": "Login required to create invitation codes"
-  },
-  "activation": {
-    "title": "Invitation Code (Optional)",
-    "description": "You can enter your invitation code, or skip to use the app without an invitation.",
-    "codeLabel": "Invitation Code",
-    "codePlaceholder": "Enter your invitation code (optional)",
-    "activate": "Submit",
-    "skip": "Skip",
-    "activating": "Submitting...",
-    "invalidCode": "Invalid invitation code. Please try again.",
-    "codeRequired": "Invitation code is required",
-    "errorOccurred": "An error occurred while processing the invitation",
-    "success": "Invitation accepted successfully",
-    "joinDiscord": "Join Discord Community"
   },
   "updateNotification": {
     "title": "Update Available",

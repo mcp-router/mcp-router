@@ -4,8 +4,8 @@ Platform APIのメソッドのうち、実際に使用されているものと�
 
 ## サマリー
 
-- **総メソッド数**: 67個  
-- **使用中**: 67個 (100%)
+- **総メソッド数**: 64個  
+- **使用中**: 64個 (100%)
 - **未使用**: 0個 (0%)
 
 ## カテゴリー別使用状況
@@ -71,48 +71,43 @@ Platform APIのメソッドのうち、実際に使用されているものと�
 - ✅ `updateDeployedAgent` - agent-store.ts で使用
 - ✅ `deleteDeployedAgent` - agent-store.ts で使用
 
-#### 10. Invitation & Activation (3/3)
-- ✅ `fetchInvitation` - App.tsx で使用
-- ✅ `checkActivation` - App.tsx で使用
-- ✅ `submitInvitationCode` - ActivationModal.tsx で使用
-
-#### 11. MCP Apps (5/5)
+#### 10. MCP Apps (5/5)
 - ✅ `listMcpApps` - McpApps.tsx で使用
 - ✅ `addMcpAppConfig` - McpApps.tsx で使用
 - ✅ `deleteMcpApp` - McpApps.tsx で使用
 - ✅ `updateAppServerAccess` - McpApps.tsx で使用
 - ✅ `unifyAppConfig` - McpApps.tsx で使用
 
-#### 12. Package Management (2/2)
+#### 11. Package Management (2/2)
 - ✅ `resolvePackageVersionsInArgs` - server-store.ts で使用
 - ✅ `checkMcpServerPackageUpdates` - ServerUpdateCheck.tsx で使用
 
-#### 13. Agent Tools (2/2)
+#### 12. Agent Tools (2/2)
 - ✅ `getAgentMCPServerTools` - agent-store.ts で使用
 - ✅ `executeAgentTool` - agent-store.ts で使用
 
-#### 14. Session Management (5/5)
+#### 13. Session Management (5/5)
 - ✅ `fetchSessionMessages` - agent-store.ts で使用
 - ✅ `getSessions` - agent-store.ts で使用
 - ✅ `createSession` - agent-store.ts で使用
 - ✅ `updateSessionMessages` - agent-store.ts で使用
 - ✅ `deleteSession` - agent-store.ts で使用
 
-#### 15. Token Management (1/1)
+#### 14. Token Management (1/1)
 - ✅ `updateTokenScopes` - McpApps.tsx で使用
 
-#### 16. Feedback (1/1)
+#### 15. Feedback (1/1)
 - ✅ `submitFeedback` - Feedback.tsx で使用
 
-#### 17. Updates (3/3)
+#### 16. Updates (3/3)
 - ✅ `checkForUpdates` - UpdateNotification.tsx で使用
 - ✅ `installUpdate` - UpdateNotification.tsx で使用
 - ✅ `onUpdateAvailable` - UpdateNotification.tsx で使用
 
-#### 18. Protocol Handling (1/1)
+#### 17. Protocol Handling (1/1)
 - ✅ `onProtocolUrl` - App.tsx で使用
 
-#### 19. Package Manager Utilities (3/3)
+#### 18. Package Manager Utilities (3/3)
 - ✅ `checkPackageManagers` - PackageManagerOverlay.tsx で使用
 - ✅ `installPackageManagers` - PackageManagerOverlay.tsx で使用
 - ✅ `restartApp` - PackageManagerOverlay.tsx で使用
@@ -151,4 +146,4 @@ Platform APIのメソッドのうち、実際に使用されているものと�
    - 使用頻度は低いが重要な機能（アップデート、パッケージマネージャー、プロトコルハンドリング）
    - すべてのチャットストリーミングAPI（リアルタイム通信に必須）
 
-削除したメソッドにより、Platform APIを91個から67個に削減し、すべてのメソッドが実際に使用されている、より効率的で管理しやすいAPIになりました。
+削除したメソッドにより、Platform APIを91個から64個に削減し、すべてのメソッドが実際に使用されている、より効率的で管理しやすいAPIになりました。
