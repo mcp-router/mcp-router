@@ -11,6 +11,7 @@
     "declaration": true,
     "declarationMap": true,
     "composite": true,
+    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
       "@mcp-router/shared": ["packages/shared/src"],

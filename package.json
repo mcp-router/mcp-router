@@ -24,7 +24,9 @@
     "format": "turbo run format",
     "format:check": "turbo run format:check",
     "lint:all": "turbo run lint",
-    "format:all": "turbo run format"
+    "format:all": "turbo run format",
+    "postinstall": "electron-rebuild",
+    "rebuild": "electron-rebuild"
   },
   "keywords": [],
   "author": {

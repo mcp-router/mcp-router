@@ -18,7 +18,9 @@
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "electron-rebuild",
+    "rebuild": "electron-rebuild"
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",
