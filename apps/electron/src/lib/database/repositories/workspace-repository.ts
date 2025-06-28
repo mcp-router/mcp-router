@@ -30,6 +30,7 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
       isActive: row.isActive === 1,
       createdAt: new Date(row.createdAt),
       lastUsedAt: new Date(row.lastUsedAt),
+      localConfig: row.localConfig ? JSON.parse(row.localConfig) : undefined,
       remoteConfig: row.remoteConfig ? JSON.parse(row.remoteConfig) : undefined,
       displayInfo: row.displayInfo ? JSON.parse(row.displayInfo) : undefined,
     };
@@ -46,6 +47,9 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
       isActive: workspace.isActive ? 1 : 0,
       createdAt: workspace.createdAt.toISOString(),
       lastUsedAt: workspace.lastUsedAt.toISOString(),
+      localConfig: workspace.localConfig
+        ? JSON.stringify(workspace.localConfig)
+        : null,
       remoteConfig: workspace.remoteConfig
         ? JSON.stringify(workspace.remoteConfig)
         : null,

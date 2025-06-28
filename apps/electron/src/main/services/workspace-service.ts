@@ -72,7 +72,8 @@ export class WorkspaceService
   }
 
   private initializeMetaDatabase(): void {
-    const metaDbPath = path.join(app.getPath("userData"), "workspaces.db");
+    // mcprouter.dbを使用するように変更
+    const metaDbPath = path.join(app.getPath("userData"), "mcprouter.db");
     this.metaDb = new SqliteManager(metaDbPath);
     this.createMetaTables();
     this.initializeDefaultWorkspace();
