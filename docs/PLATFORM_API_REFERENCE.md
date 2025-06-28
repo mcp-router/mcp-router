@@ -44,14 +44,6 @@ interface AuthStatus {
 ```
 - **Web Implementation**: ダミーの認証済みユーザーを返す
 
-##### `checkActivation(): Promise<boolean>`
-アプリケーションのアクティベーション状態を確認します。
-- **Web Implementation**: 常に`true`（アクティベーション不要）
-
-##### `submitInvitationCode(code: string): Promise<boolean>`
-招待コードを送信してアプリをアクティベートします。
-- **Web Implementation**: 常に`true`（アクティベーション不要）
-
 #### Event Listeners
 
 ##### `onAuthStatusChanged(callback: (status) => void): () => void`

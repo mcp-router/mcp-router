@@ -30,7 +30,6 @@ import {
 import { updateElectronApp } from "update-electron-app";
 import { machineIdSync } from "node-machine-id";
 import { getDatabaseMigration } from "./lib/database";
-// Invitation code functionality has been removed
 import { setApplicationMenu } from "./main/menu";
 import { createTray, updateTrayContextMenu } from "./main/tray";
 import { importExistingServerConfigurations } from "./main/mcp-config-importer";
@@ -888,6 +887,5 @@ function setupFeedbackHandlers(): void {
 }
 
 function setupViralHandlers() {
-  // Invitation code functionality has been removed
-  // All activation-related handlers have been deleted
+  // Reserved for future viral features
 }

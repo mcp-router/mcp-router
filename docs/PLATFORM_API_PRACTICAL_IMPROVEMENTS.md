@@ -349,8 +349,6 @@ interface VersionedResponse<T> {
 ```typescript
 // 現在の問題：複数の場所で認証チェック
 getAuthStatus(forceRefresh?: boolean): Promise<AuthStatus>;
-checkActivation(): Promise<boolean>;
-fetchInvitation(): Promise<any>;
 ```
 
 **改善案：**

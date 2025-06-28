@@ -35,15 +35,10 @@ This means **33 methods (36%)** are defined but never used.
 ### General Server Methods (0/1 - 0% used)
 21. **getServers** - Not found
 
-### Invitation & Activation (3/3 - 100% used)
-22. **fetchInvitation** - Used in InvitationCode.tsx
-23. **checkActivation** - Used in auth-store.ts
-24. **submitInvitationCode** - Used in auth-store.ts
-
 ### Settings (3/3 - 100% used)
-25. **getSettings** - Used in Rules.tsx
-26. **saveSettings** - Used in Rules.tsx
-27. **incrementPackageManagerOverlayCount** - Used in PackageManagerOverlay.tsx
+22. **getSettings** - Used in Rules.tsx
+23. **saveSettings** - Used in Rules.tsx
+24. **incrementPackageManagerOverlayCount** - Used in PackageManagerOverlay.tsx
 
 ### MCP Apps (6/6 - 100% used)
 28. **listMcpApps** - Used in McpAppsManager.tsx

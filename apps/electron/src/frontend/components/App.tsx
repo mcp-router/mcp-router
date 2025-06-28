@@ -65,7 +65,7 @@ const App: React.FC = () => {
         // Initialize all stores
         await initializeStores();
 
-        // Check activation status using the auth store
+        // Check authentication status
         await checkAuthStatus();
       } catch (error) {
         console.error("Failed to initialize app:", error);
