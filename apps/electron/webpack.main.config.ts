@@ -17,7 +17,7 @@ export const mainConfig: Configuration = {
   plugins,
   resolve: {
     extensions: [".js", ".ts", ".jsx", ".tsx", ".css", ".json"],
-    modules: [path.resolve(__dirname, "../../node_modules"), "node_modules"],
+    modules: ["node_modules", path.resolve(__dirname, "../../node_modules")],
     alias: {
       "@": path.resolve(__dirname, "src"),
       "@mcp-router/shared": path.resolve(
