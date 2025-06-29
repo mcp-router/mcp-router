@@ -27,7 +27,7 @@ export const UsageSettings: React.FC<UsageSettingsProps> = ({
   useEffect(() => {
     const fetchAuthToken = async () => {
       try {
-        const status = await platformAPI.getAuthStatus();
+        const status = await platformAPI.auth.getStatus();
         if (status.authenticated && status.token) {
           setAuthToken(status.token);
         }

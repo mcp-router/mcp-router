@@ -176,7 +176,7 @@ const AgentCreate: React.FC = () => {
       if (!id) return false;
 
       try {
-        const updatedAgent = await platformAPI.updateAgent(id, agentData);
+        const updatedAgent = await platformAPI.agents.update(id, agentData);
         // 更新されたエージェントデータを使用して状態を更新
         setCurrentAgent(updatedAgent);
         // 保存した状態を記録
@@ -311,7 +311,7 @@ const AgentCreate: React.FC = () => {
       };
 
       // エージェントを更新
-      const updated = await platformAPI.updateAgent(id, updatedConfig);
+      const updated = await platformAPI.agents.update(id, updatedConfig);
       if (updated) {
         setCurrentAgent(updated);
         const snapshot = createAgentSnapshot(updated);
@@ -321,12 +321,12 @@ const AgentCreate: React.FC = () => {
         if (isPublicDeploy) {
           // 公開デプロイの場合
           // 1. まず共有リンクを生成
-          const link = await platformAPI.shareAgent(id);
+          const link = await platformAPI.agents.share(id);
           setDeployLink(link);
 
           // 2. 共有されたエージェントを自分のローカルにインポート
           try {
-            await platformAPI.importAgent(link);
+            await platformAPI.agents.import(link);
             toast.success(
               t("agents.success.deployedAndImported", {
                 name: currentAgent.name,
@@ -341,7 +341,7 @@ const AgentCreate: React.FC = () => {
           }
         } else {
           // 非公開デプロイの場合はデプロイのみ実行
-          await platformAPI.deployAgent(id);
+          await platformAPI.agents.deploy(id);
           toast.success(
             t("agents.success.deployed", { name: currentAgent.name }),
           );
@@ -387,7 +387,7 @@ const AgentCreate: React.FC = () => {
 
     setIsDeleting(true);
     try {
-      await platformAPI.deleteAgent(id);
+      await platformAPI.agents.delete(id);
       toast.success(t("agents.success.deleted"));
       navigate("/agents/build");
     } catch (error) {
@@ -405,7 +405,7 @@ const AgentCreate: React.FC = () => {
       return;
     }
     try {
-      const fetchedAgent = await platformAPI.getAgent(id);
+      const fetchedAgent = await platformAPI.agents.get(id);
       if (fetchedAgent) {
         // 取得したエージェントデータで状態を更新
         setCurrentAgent(fetchedAgent);

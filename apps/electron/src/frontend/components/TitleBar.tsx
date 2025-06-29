@@ -18,7 +18,7 @@ export function TitleBar() {
 
   useEffect(() => {
     // プラットフォーム情報の取得
-    platformAPI.getPlatform().then(setPlatform);
+    platformAPI.packages.system.getPlatform().then(setPlatform);
   }, [platformAPI]);
 
   return (

@@ -88,7 +88,7 @@ export const createAuthStore = (
         setLoginError(null);
 
         // Call Platform API to start login flow
-        await platformAPI.login();
+        await platformAPI.auth.signIn();
       } catch (error) {
         setLoginError(error instanceof Error ? error.message : "Login failed");
         throw error;
@@ -102,7 +102,7 @@ export const createAuthStore = (
 
       try {
         // Call Platform API to clear stored auth data
-        await platformAPI.logout();
+        await platformAPI.auth.signOut();
 
         // Clear local state
         setAuthenticated(false);
@@ -129,7 +129,7 @@ export const createAuthStore = (
 
       try {
         // Check auth status with optional force refresh
-        const status = await platformAPI.getAuthStatus(forceRefresh);
+        const status = await platformAPI.auth.getStatus(forceRefresh);
 
         setAuthenticated(status.authenticated);
         setUserData({
@@ -169,7 +169,7 @@ export const createAuthStore = (
 
       try {
         // Refresh credits by getting the full auth status
-        const status = await platformAPI.getAuthStatus();
+        const status = await platformAPI.auth.getStatus();
         // Credits are now part of user info
         if (status.authenticated && status.user) {
           setCredits(status.user.creditBalance || 0);
@@ -184,18 +184,13 @@ export const createAuthStore = (
       const { setAuthenticated, setUserInfo } = get();
 
       // Subscribe to auth status changes from Platform API
-      const unsubscribe = platformAPI.onAuthStatusChanged(
-        (status: {
-          loggedIn: boolean;
-          userId?: string;
-          name?: string;
-          user?: any;
-        }) => {
-          setAuthenticated(status.loggedIn);
-          if (status.loggedIn) {
+      const unsubscribe = platformAPI.auth.onChange(
+        (status) => {
+          setAuthenticated(status.authenticated);
+          if (status.authenticated && status.user) {
             setUserInfo({
               userId: status.userId || "",
-              name: status.name || status.user?.name || "",
+              name: status.user?.name || "",
               creditBalance: status.user?.creditBalance || 0,
               paidCreditBalance: status.user?.paidCreditBalance || 0,
             });

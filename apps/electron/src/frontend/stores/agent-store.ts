@@ -330,7 +330,7 @@ export const createAgentStore = (
     fetchAuthToken: async () => {
       const { setAuthToken } = get();
       try {
-        const status = await platformAPI.getAuthStatus();
+        const status = await platformAPI.auth.getStatus();
         if (status.authenticated && status.token) {
           setAuthToken(status.token);
         } else {
@@ -349,7 +349,7 @@ export const createAgentStore = (
       try {
         setError(null);
 
-        const newAgent = await platformAPI.createAgent(config);
+        const newAgent = await platformAPI.agents.create(config);
         addDevelopmentAgent(newAgent);
         return newAgent;
       } catch (error) {
@@ -366,8 +366,8 @@ export const createAgentStore = (
       try {
         setError(null);
 
-        await platformAPI.updateAgent(id, config);
-        updateDevelopmentAgent(id, config);
+        const updatedAgent = await platformAPI.agents.update(id, config);
+        updateDevelopmentAgent(id, updatedAgent);
       } catch (error) {
         setError(
           error instanceof Error ? error.message : "Failed to update agent",
@@ -382,8 +382,12 @@ export const createAgentStore = (
       try {
         setError(null);
 
-        await platformAPI.deleteAgent(id);
-        removeDevelopmentAgent(id);
+        const success = await platformAPI.agents.delete(id);
+        if (success) {
+          removeDevelopmentAgent(id);
+        } else {
+          throw new Error("Failed to delete agent");
+        }
       } catch (error) {
         setError(
           error instanceof Error ? error.message : "Failed to delete agent",
@@ -398,12 +402,12 @@ export const createAgentStore = (
       try {
         setError(null);
 
-        const deployedAgent = await platformAPI.deployAgent(agentId);
-        if (!deployedAgent) {
-          throw new Error("Failed to deploy agent");
+        const result = await platformAPI.agents.deploy(agentId);
+        if (!result.success || !result.deployedAgent) {
+          throw new Error(result.error || "Failed to deploy agent");
         }
-        addDeployedAgent(deployedAgent);
-        return deployedAgent;
+        addDeployedAgent(result.deployedAgent);
+        return result.deployedAgent;
       } catch (error) {
         setError(
           error instanceof Error ? error.message : "Failed to deploy agent",
@@ -418,8 +422,12 @@ export const createAgentStore = (
       try {
         setError(null);
 
-        await platformAPI.deleteDeployedAgent(agentId);
-        removeDeployedAgent(agentId);
+        const success = await platformAPI.agents.deleteDeployed(agentId);
+        if (success) {
+          removeDeployedAgent(agentId);
+        } else {
+          throw new Error("Failed to undeploy agent");
+        }
       } catch (error) {
         setError(
           error instanceof Error ? error.message : "Failed to undeploy agent",
@@ -451,7 +459,7 @@ export const createAgentStore = (
           order: "DESC" as const,
         };
 
-        const data = await platformAPI.getSessions(agentId, options);
+        const data = await platformAPI.agents.sessions.list(agentId, options);
 
         if (append) {
           set({
@@ -515,7 +523,7 @@ export const createAgentStore = (
         setSessionsError(null);
         setDeletingSession(sessionId, true);
 
-        const success = await platformAPI.deleteSession(sessionId);
+        const success = await platformAPI.agents.sessions.delete(sessionId);
 
         if (!success) {
           throw new Error("Failed to delete session");
@@ -544,7 +552,8 @@ export const createAgentStore = (
       try {
         setSessionsError(null);
 
-        const messages = await platformAPI.fetchSessionMessages(sessionId);
+        const session = await platformAPI.agents.sessions.get(sessionId);
+        const messages = session?.messages || [];
 
         // Update the session with the fetched messages
         set((state) => ({
@@ -594,11 +603,14 @@ export const createAgentStore = (
         addMessageToSession(targetSessionId, userMessage);
 
         // Send message to agent using background chat
-        await platformAPI.startBackgroundChat(
+        const result = await platformAPI.agents.background.start(
           targetSessionId,
           currentAgent.id,
           message,
         );
+        if (!result.success) {
+          throw new Error(result.error || "Failed to start chat");
+        }
       } catch (error) {
         setChatError(
           error instanceof Error ? error.message : "Failed to send message",
@@ -618,8 +630,8 @@ export const createAgentStore = (
         setError(null);
 
         const [developmentAgents, deployedAgents] = await Promise.all([
-          platformAPI.listAgents(),
-          platformAPI.getDeployedAgents() || Promise.resolve([]),
+          platformAPI.agents.list(),
+          platformAPI.agents.getDeployed(),
         ]);
 
         setDevelopmentAgents(developmentAgents);

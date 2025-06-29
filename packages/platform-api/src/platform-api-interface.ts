@@ -16,8 +16,19 @@ import {
   ServerPackageUpdates,
 } from "@mcp-router/shared";
 
-// Platform API interface that matches the current electronAPI
-export interface PlatformAPI {
+// Export the new domain-based API
+export { PlatformAPI } from './types/platform-api';
+export * from './types/domains/auth-api';
+export * from './types/domains/server-api';
+export * from './types/domains/agent-api';
+export * from './types/domains/app-api';
+export * from './types/domains/package-api';
+export * from './types/domains/settings-api';
+export * from './types/domains/log-api';
+export * from './types/domains/workspace-api';
+
+// Legacy Platform API interface for backward compatibility
+export interface LegacyPlatformAPI {
   // Authentication
   login: (idp?: string) => Promise<boolean>;
   logout: () => Promise<boolean>;

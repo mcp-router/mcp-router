@@ -285,7 +285,7 @@ const AgentSettings: React.FC = () => {
         mcpServers: updatedServers,
       };
 
-      await platformAPI.updateDeployedAgent(agent.id, updatedAgent);
+      await platformAPI.agents.updateDeployed(agent.id, updatedAgent);
 
       // Update the Zustand store to reflect changes
       updateDeployedAgent(agent.id, updatedAgent);

@@ -142,7 +142,7 @@ const McpAppsManager: React.FC = () => {
 
     try {
       // サーバーアクセスの更新
-      const serverResult = await platformAPI.updateAppServerAccess(
+      const serverResult = await platformAPI.apps.updateServerAccess(
         selectedApp.name,
         selectedServerIds,
       );
@@ -154,7 +154,7 @@ const McpAppsManager: React.FC = () => {
 
       // トークンスコープの更新（トークンが存在する場合のみ）
       if (selectedApp.token) {
-        const scopeResult = await platformAPI.updateTokenScopes(
+        const scopeResult = await platformAPI.apps.tokens.updateScopes(
           selectedApp.token,
           selectedScopes,
         );
@@ -202,7 +202,7 @@ const McpAppsManager: React.FC = () => {
   // サーバ一覧の読み込み
   const loadServers = async () => {
     try {
-      const serverList = await platformAPI.listMcpServers();
+      const serverList = await platformAPI.servers.list();
       setServers(serverList);
     } catch (error) {
       console.error("Failed to load MCP servers:", error);
@@ -212,7 +212,7 @@ const McpAppsManager: React.FC = () => {
   const loadApps = async () => {
     setLoading(true);
     try {
-      const appsList = await platformAPI.listMcpApps();
+      const appsList = await platformAPI.apps.list();
       setApps(appsList);
     } catch (error) {
       console.error("Failed to load MCP apps:", error);
@@ -232,7 +232,7 @@ const McpAppsManager: React.FC = () => {
     }
 
     try {
-      const result = await platformAPI.addMcpAppConfig(customAppName);
+      const result = await platformAPI.apps.create(customAppName);
 
       if (result.success && result.app) {
         // アプリリストに追加
@@ -251,7 +251,7 @@ const McpAppsManager: React.FC = () => {
   const handleAddConfig = async (appName: string) => {
     try {
       const result: McpAppsManagerResult =
-        await platformAPI.addMcpAppConfig(appName);
+        await platformAPI.apps.create(appName);
 
       if (result.success && result.app) {
         // Update the app in the list
@@ -286,7 +286,7 @@ const McpAppsManager: React.FC = () => {
   const handleUnifyConfig = async (appName: string) => {
     try {
       const result: McpAppsManagerResult =
-        await platformAPI.unifyAppConfig(appName);
+        await platformAPI.apps.unifyConfig(appName);
 
       if (result.success && result.app) {
         // アプリリストを更新
@@ -324,7 +324,7 @@ const McpAppsManager: React.FC = () => {
     if (!appToDelete) return;
 
     try {
-      const success = await platformAPI.deleteMcpApp(appToDelete.name);
+      const success = await platformAPI.apps.delete(appToDelete.name);
 
       if (success) {
         // アプリリストから削除

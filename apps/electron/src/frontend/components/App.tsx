@@ -88,7 +88,7 @@ const App: React.FC = () => {
 
   // Subscribe to protocol URL events
   useEffect(() => {
-    const unsubscribe = platformAPI.onProtocolUrl((url) => {
+    const unsubscribe = platformAPI.packages.system.onProtocolUrl((url) => {
       handleProtocolUrl(url);
     });
 
@@ -103,7 +103,7 @@ const App: React.FC = () => {
       // Check if we're on an agents page
       if (location.pathname.startsWith("/agents")) {
         try {
-          const result = await platformAPI.checkPackageManagers();
+          const result = await platformAPI.packages.checkManagers();
           // Show overlay if either package manager is missing
           if (!result.pnpm || !result.uv) {
             setPackageManagerOverlay(true);
@@ -140,7 +140,7 @@ const App: React.FC = () => {
       try {
         if (url.hostname === "agent") {
           const agentId = url.searchParams.get("id");
-          const result = await platformAPI.importAgent(agentId);
+          const result = await platformAPI.agents.import(agentId);
           if (result) {
             // Show success message for agent import
             toast.success("Agent successfully imported!", {
@@ -155,7 +155,7 @@ const App: React.FC = () => {
           const token = url.searchParams.get("token");
           const state = url.searchParams.get("state");
           if (token && state) {
-            await platformAPI.handleAuthToken(token, state);
+            await platformAPI.auth.handleToken(token, state);
             // Navigate to settings page
             navigate("/settings");
           }

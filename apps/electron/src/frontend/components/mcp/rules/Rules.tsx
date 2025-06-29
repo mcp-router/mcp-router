@@ -467,7 +467,7 @@ const Rules: React.FC = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const settings = await platformAPI.getSettings();
+        const settings = await platformAPI.settings.get();
         if (settings.mcpDisplayRules) {
           setRules({
             ...DEFAULT_DISPLAY_RULES,
@@ -498,13 +498,13 @@ const Rules: React.FC = () => {
       // No validation needed for tool parameter rules as they are schema-based
       // Remove the tool name rule validation since we're not using display rules anymore
 
-      const settings = await platformAPI.getSettings();
+      const settings = await platformAPI.settings.get();
       const updatedSettings = {
         ...settings,
         mcpDisplayRules: rules,
       };
 
-      const success = await platformAPI.saveSettings(updatedSettings);
+      const success = await platformAPI.settings.save(updatedSettings);
 
       if (success) {
         toast.success("Settings saved successfully");

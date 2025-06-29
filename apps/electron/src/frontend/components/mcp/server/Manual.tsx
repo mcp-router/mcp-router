@@ -329,7 +329,7 @@ const Manual: React.FC = () => {
       };
 
       // Add server directly
-      const result = await platformAPI.addMcpServer(serverConfig);
+      const result = await platformAPI.servers.create({ config: serverConfig });
 
       if (result && !result.error) {
         toast.success(t("manual.successCreate", { name: serverName }));
@@ -365,7 +365,7 @@ const Manual: React.FC = () => {
         disabled: false,
       };
 
-      const result = await platformAPI.addMcpServer(config);
+      const result = await platformAPI.servers.create({ config });
 
       if (result && result.success) {
         toast.success(

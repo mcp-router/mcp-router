@@ -27,7 +27,7 @@ const AgentBuild: React.FC = () => {
   // エージェント一覧の取得
   const fetchAgents = useCallback(async () => {
     try {
-      const agents = await platformAPI.listAgents();
+      const agents = await platformAPI.agents.list();
       setAgents(agents);
     } catch (error) {
       console.error("Failed to fetch agents:", error);
@@ -50,7 +50,7 @@ const AgentBuild: React.FC = () => {
       } as AgentConfig;
 
       // 新しいエージェントを作成
-      const createdAgent = await platformAPI.createAgent(emptyAgent);
+      const createdAgent = await platformAPI.agents.create(emptyAgent);
 
       // 作成したエージェントの編集ページへ遷移
       navigate(`/agents/build/edit/${createdAgent.id}`);

@@ -12,7 +12,7 @@ const AgentAuthGuard: React.FC<AgentAuthGuardProps> = ({ children }) => {
   const platformAPI = usePlatformAPI();
 
   const handleLogin = () => {
-    platformAPI.login();
+    platformAPI.auth.signIn();
   };
 
   if (!isAuthenticated) {

@@ -2,10 +2,10 @@
  * Electron-specific Platform API implementation
  */
 
-import { PlatformAPI } from "@mcp-router/platform-api";
+import { LegacyPlatformAPI, LegacyPlatformAPIAdapter } from "@mcp-router/platform-api";
 
-// Electron implementation
-export class ElectronPlatformAPI implements PlatformAPI {
+// Electron implementation of the legacy API
+export class ElectronPlatformAPI implements LegacyPlatformAPI {
   // Authentication
   login = (idp?: string) => window.electronAPI.login(idp);
   logout = () => window.electronAPI.logout();
@@ -184,5 +184,6 @@ export class ElectronPlatformAPI implements PlatformAPI {
   getPlatform = () => window.electronAPI.getPlatform();
 }
 
-// Create and export the Electron platform API instance
-export const electronPlatformAPI = new ElectronPlatformAPI();
+// Create the legacy API instance and wrap it with the adapter
+const legacyAPI = new ElectronPlatformAPI();
+export const electronPlatformAPI = new LegacyPlatformAPIAdapter(legacyAPI);

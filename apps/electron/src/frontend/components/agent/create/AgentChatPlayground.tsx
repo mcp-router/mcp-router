@@ -41,7 +41,7 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({
   useEffect(() => {
     const fetchAuthToken = async () => {
       try {
-        const status = await platformAPI.getAuthStatus();
+        const status = await platformAPI.auth.getStatus();
         if (status.authenticated && status.token) {
           setAuthToken(status.token);
         }
@@ -126,7 +126,7 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({
       if (agent?.autoExecuteTool) {
         // 自動実行が有効な場合、ツールを即座に実行
         try {
-          const result = await platformAPI.executeAgentTool(
+          const result = await platformAPI.agents.tools.execute(
             agent.id,
             toolCall.toolName,
             toolCall.args as any,
@@ -204,7 +204,7 @@ const AgentChatPlayground: FC<AgentChatPlaygroundProps> = ({
     if (confirmed) {
       try {
         // Execute the tool
-        const result = await platformAPI.executeAgentTool(
+        const result = await platformAPI.agents.tools.execute(
           agent!.id,
           toolName,
           args,

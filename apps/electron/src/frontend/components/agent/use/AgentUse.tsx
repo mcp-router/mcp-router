@@ -129,7 +129,7 @@ const AgentUse: React.FC = () => {
 
     setIsDeleting(true);
     try {
-      await platformAPI.deleteDeployedAgent(id);
+      await platformAPI.agents.deleteDeployed(id);
       toast.success(t("agents.success.deleted"));
 
       // Navigate away first before removing from store

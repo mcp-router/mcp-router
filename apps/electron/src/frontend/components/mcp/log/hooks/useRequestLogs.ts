@@ -42,7 +42,7 @@ export const useRequestLogs = (
     try {
       // console.log(`[useRequestLogs] Fetching request log:`, params);
 
-      const result = await platformAPI.getRequestLogs({
+      const result = await platformAPI.logs.query({
         serverId: params.serverId || undefined,
         clientId: params.clientId || undefined,
         startDate: params.startDate,

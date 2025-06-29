@@ -2,38 +2,7 @@
 
 現在のPlatform APIの実装における具体的な問題点（重複、パフォーマンス、一貫性など）と改善案をまとめます。
 
-## 1. API メソッドの重複
-
-### 1.1 同じ機能の重複実装
-
-```typescript
-// 現在の問題：同じデータを取得する複数のメソッド
-interface PlatformAPI {
-  listMcpServers(): Promise<any>;      // MCPサーバーのリストを取得
-  
-  // エージェント関連でも同様の重複
-  getAgent(id: string): Promise<Agent>;
-  // 実際には同じデータ構造で、statusフィールドが違うだけ
-}
-```
-
-**改善案：**
-```typescript
-interface PlatformAPI {
-  servers: {
-    list(options?: { includeStatus?: boolean }): Promise<Server[]>;
-  };
-  
-  agents: {
-    get(id: string, options?: { 
-      type?: 'development' | 'deployed' | 'all' 
-    }): Promise<Agent>;
-    // 単一のメソッドでオプションによって振る舞いを変える
-  };
-}
-```
-
-### 1.2 細分化されすぎたメソッド
+## 1. 細分化されすぎたメソッド
 
 ```typescript
 // 現在の問題：チャットストリーム用に4つの送信メソッド
@@ -137,9 +106,6 @@ getRequestLogs(options?: {
 **改善案：**
 ```typescript
 interface LogAPI {
-  // ストリーミング対応
-  stream(options: LogStreamOptions): AsyncIterable<LogEntry>;
-  
   // カーソルベースのページネーション
   page(cursor?: string, limit: number = 50): Promise<{
     entries: LogEntry[];

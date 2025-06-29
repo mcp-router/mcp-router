@@ -43,7 +43,7 @@ const PackageManagerOverlay: React.FC<PackageManagerOverlayProps> = ({
   // パッケージマネージャーの状態確認
   const checkPackageManagers = useCallback(async () => {
     try {
-      const result = await platformAPI.checkPackageManagers();
+      const result = await platformAPI.packages.checkManagers();
       setPackageManagers(result);
 
       // インストール完了状態でない場合のみ自動クローズを実行
@@ -59,7 +59,7 @@ const PackageManagerOverlay: React.FC<PackageManagerOverlayProps> = ({
   // オーバーレイ表示回数を増加
   const incrementDisplayCount = useCallback(async () => {
     try {
-      const result = await platformAPI.incrementPackageManagerOverlayCount();
+      const result = await platformAPI.settings.incrementOverlayCount();
       if (result.success) {
         setDisplayCount(result.count);
       }
@@ -83,7 +83,7 @@ const PackageManagerOverlay: React.FC<PackageManagerOverlayProps> = ({
   const handleInstallPackageManagers = async () => {
     try {
       setIsInstallingPM(true);
-      const result = await platformAPI.installPackageManagers();
+      const result = await platformAPI.packages.installManagers();
 
       if (result.success) {
         // インストール完了状態に設定
@@ -112,7 +112,7 @@ const PackageManagerOverlay: React.FC<PackageManagerOverlayProps> = ({
   // アプリケーション再起動
   const handleRestart = async () => {
     try {
-      await platformAPI.restartApp();
+      await platformAPI.packages.system.restartApp();
     } catch (error) {
       console.error("Failed to restart app:", error);
       toast.error("Failed to restart application");

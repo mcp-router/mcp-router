@@ -124,7 +124,7 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
 
     try {
       const agentId = agent.id;
-      const response = await platformAPI.getAgentMCPServerTools(
+      const response = await platformAPI.agents.tools.list(
         agentId,
         serverId,
         isDev,
@@ -240,7 +240,7 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
         server.command === "pnpm"
           ? serverArgs.filter((arg) => arg !== "dlx")
           : serverArgs;
-      const response = await platformAPI.checkMcpServerPackageUpdates(
+      const response = await platformAPI.packages.checkUpdates(
         argsList,
         server.command as "pnpm" | "uvx",
       );
@@ -276,7 +276,7 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
         server.command === "pnpm"
           ? serverArgs.filter((arg) => arg !== "dlx")
           : serverArgs;
-      const updateResult = await platformAPI.checkMcpServerPackageUpdates(
+      const updateResult = await platformAPI.packages.checkUpdates(
         argsList,
         server.command as "pnpm" | "uvx",
       );
@@ -436,7 +436,7 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
         }
       });
       const packageManager = commandType === "pnpm dlx" ? "pnpm" : "uvx";
-      const response = await platformAPI.resolvePackageVersionsInArgs(
+      const response = await platformAPI.packages.resolveVersions(
         args,
         packageManager,
       );

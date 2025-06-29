@@ -119,7 +119,7 @@ export const createServerStore = (
         setServerStatus(id, "starting");
 
         // Call Platform API
-        await platformAPI.startMcpServer(id);
+        await platformAPI.servers.start(id);
 
         // The actual status will be updated via server status polling
         // or through IPC events from the main process
@@ -144,7 +144,7 @@ export const createServerStore = (
         setServerStatus(id, "stopping");
 
         // Call Platform API
-        await platformAPI.stopMcpServer(id);
+        await platformAPI.servers.stop(id);
 
         // The actual status will be updated via server status polling
       } catch (error) {
@@ -164,7 +164,7 @@ export const createServerStore = (
         setLoading(true);
         setError(null);
 
-        const servers = await platformAPI.listMcpServers();
+        const servers = await platformAPI.servers.list();
         setServers(servers);
       } catch (error) {
         setError(
@@ -181,7 +181,7 @@ export const createServerStore = (
       try {
         setError(null);
 
-        const newServer = await platformAPI.addMcpServer(config);
+        const newServer = await platformAPI.servers.create({ name: config.name || '', config });
         addServer(newServer);
       } catch (error) {
         setError(
@@ -198,9 +198,9 @@ export const createServerStore = (
         setUpdating(id, true);
         setError(null);
 
-        const updatedServer = await platformAPI.updateMcpServerConfig(
+        const updatedServer = await platformAPI.servers.update(
           id,
-          config,
+          { config },
         );
         updateServer(id, updatedServer);
       } catch (error) {
@@ -220,7 +220,7 @@ export const createServerStore = (
         setUpdating(id, true);
         setError(null);
 
-        await platformAPI.removeMcpServer(id);
+        await platformAPI.servers.delete(id);
         removeServer(id);
       } catch (error) {
         setError(

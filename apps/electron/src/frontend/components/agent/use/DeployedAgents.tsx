@@ -58,7 +58,7 @@ const DeployedAgents: React.FC = () => {
   const handleImportAgent = async () => {
     try {
       setIsImporting(true);
-      const agent = await platformAPI.importAgent(importCode);
+      const agent = await platformAPI.agents.import(importCode);
       addDeployedAgent(agent);
       setIsImportDialogOpen(false);
       setImportCode("");
@@ -87,7 +87,7 @@ const DeployedAgents: React.FC = () => {
       let importedCount = 0;
       for (const agentId of sampleAgentIds) {
         try {
-          const agent = await platformAPI.importAgent(agentId);
+          const agent = await platformAPI.agents.import(agentId);
           addDeployedAgent(agent);
           importedCount++;
         } catch (error) {

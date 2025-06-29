@@ -15,12 +15,11 @@ interface PlatformAPI {
   logout: () => Promise<boolean>;
   startMcpServer: (id: string) => Promise<boolean>;
   stopMcpServer: (id: string) => Promise<boolean>;
-  // ... 91個のメソッド
 }
 ```
 
 **問題点：**
-- メソッド数が多すぎる（91個）
+- メソッド数が多すぎる
 - 責任範囲が不明確
 - Electron特有の設計がWebに適さない
 - テストが困難
@@ -44,456 +43,419 @@ interface PlatformAPI {
 }
 ```
 
-## 2. 改善案：ドメイン駆動設計
+## 2. 改善案：ドメイン分割によるモジュール化
 
-### 2.1 レイヤードアーキテクチャ
+### 2.1 シンプルなドメイン分割
+
+フラットなメソッドを、論理的なドメインごとにグループ化します：
 
 ```typescript
-// レベル1: Platform API（エントリーポイント）
+// 改善前：フラットな構造
 interface PlatformAPI {
-  auth: AuthService;
-  servers: ServerService;
-  agents: AgentService;
-  system: SystemService;
+  login: () => Promise<boolean>;
+  logout: () => Promise<boolean>;
+  listMcpServers: () => Promise<any>;
+  startMcpServer: (id: string) => Promise<boolean>;
+  // ... 87個のメソッドが続く
 }
 
-// レベル2: ドメインサービス
-interface AuthService {
-  getCurrentUser(): Promise<User | null>;
-  signIn(provider?: AuthProvider): Promise<void>;
-  signOut(): Promise<void>;
-  onAuthStateChange(callback: (user: User | null) => void): Unsubscribe;
+// 改善後：ドメインごとにモジュール化
+interface PlatformAPI {
+  auth: AuthAPI;
+  servers: ServerAPI;
+  agents: AgentAPI;
+  chat: ChatAPI;
+  settings: SettingsAPI;
+  // ... 各ドメインが整理される
+}
+```
+
+### 2.2 各ドメインの責任範囲
+
+各ドメインモジュールは明確な責任範囲を持ちます：
+
+- **auth**: 認証・認可に関する操作
+- **servers**: MCPサーバーの管理
+- **agents**: エージェントの作成・管理、チャット機能とストリーミング（統合）
+- **apps**: MCPアプリケーション管理、APIトークン管理（統合）
+- **packages**: パッケージ管理、システムユーティリティ（統合）
+- **settings**: アプリケーション設定
+- **logs**: ログの取得と管理
+- **workspaces**: ワークスペース管理
+
+### 2.3 ドメイン統合の理由
+
+いくつかのドメインは概念的に同じものを扱っているため、統合します：
+
+1. **agents + chat**: エージェントとのチャットは本質的にエージェント機能の一部
+2. **apps + tokens**: トークンはアプリケーションのアクセス管理に使用される
+3. **packages + system**: パッケージ管理とシステムユーティリティは関連性が高い
+
+
+
+
+
+
+
+
+
+## 実装計画：ドメイン分割によるAPI改善
+
+### 選択したアプローチ：シンプルなドメイン分割
+
+フラットなメソッドを、ドメインごとに整理された20個のモジュールに再構成します。DDDの全体を採用するのではなく、必要な概念（ドメイン分割）のみを使用します。
+
+### Phase 1: インターフェース設計（現在のフェーズ）
+
+#### 1.1 新しいPlatform API構造
+
+```typescript
+// packages/platform-api/src/types/platform-api.ts
+export interface PlatformAPI {
+  // 認証ドメイン (5 methods → 1 module)
+  auth: AuthAPI;
+  
+  // サーバー管理ドメイン (8 methods → 1 module)
+  servers: ServerAPI;
+  
+  // エージェント管理ドメイン (20 methods → 1 module)
+  // エージェント管理 + チャット機能を統合
+  agents: AgentAPI;
+  
+  // アプリ管理ドメイン (6 methods → 1 module)
+  // アプリ管理 + トークン管理を統合
+  apps: AppAPI;
+  
+  // パッケージ管理ドメイン (10 methods → 1 module)
+  // パッケージ管理 + システムユーティリティを統合
+  packages: PackageAPI;
+  
+  // 設定管理ドメイン (3 methods → 1 module)
+  settings: SettingsAPI;
+  
+  // ログ管理ドメイン (1 method → 1 module)
+  logs: LogAPI;
+  
+  // ワークスペース管理 (9 methods → 1 module)
+  workspaces: WorkspaceAPI;
+}
+```
+
+#### 1.2 各ドメインAPIの詳細設計
+
+```typescript
+// 認証ドメイン
+export interface AuthAPI {
+  signIn(provider?: AuthProvider): Promise<boolean>;
+  signOut(): Promise<boolean>;
+  getStatus(): Promise<AuthStatus>;
+  handleToken(token: string, refreshToken?: string): Promise<boolean>;
+  onChange(callback: (status: AuthStatus) => void): Unsubscribe;
 }
 
-interface ServerService {
+// サーバー管理ドメイン
+export interface ServerAPI {
   list(): Promise<Server[]>;
   get(id: string): Promise<Server>;
   create(config: CreateServerInput): Promise<Server>;
   update(id: string, updates: UpdateServerInput): Promise<Server>;
   delete(id: string): Promise<void>;
-  
-  // サーバー操作
-  connect(id: string): Promise<ServerConnection>;
-  disconnect(id: string): Promise<void>;
+  start(id: string): Promise<boolean>;
+  stop(id: string): Promise<boolean>;
+  getStatus(id: string): Promise<ServerStatus>;
 }
 
-// レベル3: ドメインオブジェクト
-interface Server {
-  id: string;
-  name: string;
-  type: ServerType;
-  status: ServerStatus;
-  
-  // メソッドを持つドメインオブジェクト
-  start(): Promise<void>;
-  stop(): Promise<void>;
-  getTools(): Promise<Tool[]>;
-  executeCommand(command: ServerCommand): Promise<CommandResult>;
-}
-```
-
-### 2.2 Repository パターンの導入
-
-データアクセスをRepositoryに分離：
-
-```typescript
-interface ServerRepository {
-  findAll(filter?: ServerFilter): Promise<Server[]>;
-  findById(id: string): Promise<Server | null>;
-  save(server: Server): Promise<Server>;
+// エージェント管理ドメイン（チャット機能統合）
+export interface AgentAPI {
+  // エージェント管理
+  list(): Promise<Agent[]>;
+  get(id: string): Promise<Agent | null>;
+  create(input: CreateAgentInput): Promise<Agent>;
+  update(id: string, updates: UpdateAgentInput): Promise<Agent>;
   delete(id: string): Promise<void>;
-}
-
-// Platform固有の実装
-class ElectronServerRepository implements ServerRepository {
-  async findAll(filter?: ServerFilter): Promise<Server[]> {
-    // IPC経由でメインプロセスと通信
-    return window.electronAPI.listMcpServers();
-  }
-}
-
-class WebServerRepository implements ServerRepository {
-  async findAll(filter?: ServerFilter): Promise<Server[]> {
-    // REST API経由で取得
-    const response = await fetch('/api/servers');
-    return response.json();
-  }
-}
-```
-
-## 3. Use Case ベースの設計
-
-### 3.1 現在の問題
-
-現在のAPIは技術的な操作に基づいており、ユーザーのユースケースが見えません：
-
-```typescript
-// 現在：技術的な操作の羅列
-startMcpServer(id: string): Promise<boolean>;
-getMcpServerStatus(id: string): Promise<any>;
-updateMcpServerConfig(id: string, config: any): Promise<any>;
-```
-
-### 3.2 改善案：ユースケース中心
-
-```typescript
-interface ServerUseCases {
-  // ユーザーストーリー：「MCPサーバーを追加して使えるようにしたい」
-  setupNewServer(input: {
-    source: ServerSource; // 'manual' | 'directory' | 'import'
-    config?: ServerConfig;
-    importUrl?: string;
-  }): Promise<SetupResult>;
+  deploy(id: string, target: DeployTarget): Promise<DeploymentResult>;
   
-  // ユーザーストーリー：「サーバーの状態を監視したい」
-  monitorServer(serverId: string): {
-    status: Observable<ServerStatus>;
-    logs: Observable<LogEntry[]>;
-    metrics: Observable<ServerMetrics>;
+  // ツール管理
+  tools: {
+    execute(agentId: string, toolName: string, args: any): Promise<ToolResult>;
+    list(agentId: string): Promise<Tool[]>;
   };
   
-  // ユーザーストーリー：「サーバーをアップデートしたい」
-  updateServer(serverId: string): Promise<UpdateResult>;
-}
-
-interface SetupResult {
-  server: Server;
-  steps: SetupStep[];
-  warnings?: string[];
-}
-
-interface SetupStep {
-  name: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  message?: string;
-}
-```
-
-## 4. イベント駆動アーキテクチャ
-
-### 4.1 現在の問題
-
-現在のコールバックベースのイベントは型安全性に欠け、管理が困難：
-
-```typescript
-// 現在：個別のコールバック登録
-onAuthStatusChanged: (callback: Function) => () => void;
-onBackgroundChatStart: (callback: Function) => () => void;
-onChatStreamChunk: (callback: Function) => () => void;
-```
-
-### 4.2 改善案：統一されたイベントシステム
-
-```typescript
-// イベントバス
-interface EventBus {
-  emit<T extends keyof AppEvents>(event: T, data: AppEvents[T]): void;
-  on<T extends keyof AppEvents>(event: T, handler: Handler<AppEvents[T]>): Unsubscribe;
-  once<T extends keyof AppEvents>(event: T, handler: Handler<AppEvents[T]>): void;
-}
-
-// アプリケーションイベントの定義
-interface AppEvents {
-  // 認証イベント
-  'auth:signIn': { user: User };
-  'auth:signOut': { reason?: string };
-  
-  // サーバーイベント
-  'server:created': { server: Server };
-  'server:updated': { server: Server; changes: Partial<Server> };
-  'server:deleted': { serverId: string };
-  'server:statusChanged': { serverId: string; status: ServerStatus };
-  
-  // エージェントイベント
-  'agent:messageReceived': { agentId: string; message: Message };
-  'agent:toolExecuted': { agentId: string; tool: string; result: any };
-}
-
-// 使用例
-const unsubscribe = platform.events.on('server:statusChanged', ({ serverId, status }) => {
-  console.log(`Server ${serverId} is now ${status}`);
-});
-```
-
-## 5. Command/Query 分離（CQRS）
-
-### 5.1 現在の問題
-
-読み取りと書き込みが混在：
-
-```typescript
-// 現在：読み取りと書き込みが区別されない
-interface PlatformAPI {
-  getAgent(id: string): Promise<Agent>;  // Query
-  createAgent(config: AgentConfig): Promise<Agent>;  // Command
-  updateAgent(id: string, config: any): Promise<Agent>;  // Command
-}
-```
-
-### 5.2 改善案：明確な分離
-
-```typescript
-interface PlatformAPI {
-  // Queries（読み取り専用）
-  queries: {
-    servers: ServerQueries;
-    agents: AgentQueries;
-    logs: LogQueries;
+  // セッション管理
+  sessions: {
+    create(agentId: string): Promise<ChatSession>;
+    get(sessionId: string): Promise<ChatSession | null>;
+    list(agentId?: string): Promise<ChatSession[]>;
+    delete(sessionId: string): Promise<void>;
+    update(sessionId: string, updates: Partial<ChatSession>): Promise<void>;
   };
   
-  // Commands（状態変更）
-  commands: {
-    servers: ServerCommands;
-    agents: AgentCommands;
-  };
-}
-
-interface ServerQueries {
-  list(filter?: ServerFilter): Promise<Server[]>;
-  get(id: string): Promise<Server>;
-  search(query: string): Promise<SearchResult<Server>>;
-}
-
-interface ServerCommands {
-  create(input: CreateServerInput): Promise<CommandResult<Server>>;
-  update(id: string, updates: UpdateServerInput): Promise<CommandResult<Server>>;
-  delete(id: string): Promise<CommandResult<void>>;
-  
-  // バッチコマンド
-  batch(commands: ServerCommand[]): Promise<BatchResult>;
-}
-
-interface CommandResult<T> {
-  success: boolean;
-  data?: T;
-  error?: CommandError;
-  events: AppEvent[];  // 発生したイベント
-}
-```
-
-## 6. ストリーム/リアクティブ設計
-
-### 6.1 現在の問題
-
-ポーリングや個別のコールバック：
-
-```typescript
-// 現在：個別のストリームメソッド
-sendChatStreamStart(...);
-sendChatStreamChunk(...);
-sendChatStreamEnd(...);
-onChatStreamChunk(callback);
-```
-
-### 6.2 改善案：Observable パターン
-
-```typescript
-interface ChatService {
   // ストリーミングチャット
-  chat(agentId: string, input: ChatInput): ChatStream;
+  stream: {
+    start(sessionId: string, message: ChatMessage): Promise<void>;
+    send(sessionId: string, chunk: string): Promise<void>;
+    end(sessionId: string): Promise<void>;
+    error(sessionId: string, error: Error): Promise<void>;
+    onChunk(callback: (sessionId: string, chunk: string) => void): Unsubscribe;
+    onEnd(callback: (sessionId: string) => void): Unsubscribe;
+    onError(callback: (sessionId: string, error: Error) => void): Unsubscribe;
+  };
+  
+  // バックグラウンドチャット
+  background: {
+    start(agentId: string, sessionId: string): Promise<void>;
+    send(message: ChatMessage): Promise<void>;
+    end(): Promise<void>;
+    onStart(callback: () => void): Unsubscribe;
+  };
 }
 
-interface ChatStream {
-  messages: Observable<Message>;
-  status: Observable<StreamStatus>;
+// アプリ管理ドメイン（トークン管理統合）
+export interface AppAPI {
+  // アプリ管理
+  list(): Promise<McpApp[]>;
+  create(appName: string): Promise<AppResult>;
+  delete(appName: string): Promise<void>;
+  updateServerAccess(appName: string, serverIds: string[]): Promise<AppResult>;
+  unifyConfig(appName: string): Promise<AppResult>;
   
-  send(message: string): Promise<void>;
-  stop(): Promise<void>;
+  // トークン管理
+  tokens: {
+    updateScopes(tokenId: string, scopes: TokenScope[]): Promise<TokenResult>;
+    generate(options: TokenGenerateOptions): Promise<string>;
+    revoke(tokenId: string): Promise<void>;
+    list(): Promise<Token[]>;
+  };
 }
 
-// 使用例
-const stream = platform.chat.chat(agentId, { sessionId });
-
-stream.messages.subscribe(message => {
-  // メッセージの処理
-});
-
-stream.status.subscribe(status => {
-  // ステータスの処理
-});
-
-await stream.send("Hello");
-```
-
-## 7. プラグイン/拡張アーキテクチャ
-
-### 7.1 機能の拡張性
-
-```typescript
-interface PlatformPlugin {
-  name: string;
-  version: string;
+// パッケージ管理ドメイン（システムユーティリティ統合）
+export interface PackageAPI {
+  // パッケージ管理
+  resolveVersions(argsString: string, manager: PackageManager): Promise<ResolveResult>;
+  checkUpdates(args: string[], manager: PackageManager): Promise<UpdateResult>;
+  checkManagers(): Promise<ManagerStatus>;
+  installManagers(): Promise<InstallResult>;
   
-  // プラグインの初期化
-  initialize(context: PluginContext): Promise<void>;
-  
-  // APIの拡張
-  extend?(api: PlatformAPI): void;
-  
-  // イベントの購読
-  subscribe?(events: EventBus): void;
-}
-
-interface PluginContext {
-  config: any;
-  logger: Logger;
-  storage: Storage;
-}
-
-// プラグインの例
-class GitHubIntegrationPlugin implements PlatformPlugin {
-  name = 'github-integration';
-  version = '1.0.0';
-  
-  async initialize(context: PluginContext) {
-    // GitHub APIの初期化
-  }
-  
-  extend(api: PlatformAPI) {
-    // GitHub関連のAPIを追加
-    api.github = {
-      importServer: async (repo: string) => { /* ... */ },
-      syncAgents: async () => { /* ... */ }
-    };
-  }
+  // システムユーティリティ
+  system: {
+    getPlatform(): Promise<Platform>;
+    checkCommand(command: string): Promise<boolean>;
+    restartApp(): Promise<void>;
+    checkForUpdates(): Promise<UpdateInfo>;
+    installUpdate(): Promise<boolean>;
+    onUpdateAvailable(callback: (available: boolean) => void): Unsubscribe;
+  };
 }
 ```
 
-## 8. 状態管理の統合
+### Phase 2: 移行戦略
 
-### 8.1 現在の問題
+#### 2.1 アダプター層の実装
 
-Zustandストアが直接Platform APIを呼び出し、状態管理が分散：
+既存のフラットAPIと新しいドメイン分割APIの間にアダプター層を実装し、段階的な移行を可能にします。
 
 ```typescript
-// 現在：ストアが直接APIを呼ぶ
-const useServerStore = create((set, get) => ({
-  servers: [],
-  fetchServers: async () => {
-    const servers = await platformAPI.listMcpServers();
-    set({ servers });
-  }
-}));
+// packages/platform-api/src/adapters/legacy-adapter.ts
+export class LegacyPlatformAPIAdapter implements PlatformAPI {
+  constructor(private legacyAPI: LegacyPlatformAPI) {}
+  
+  auth: AuthAPI = {
+    signIn: (provider) => this.legacyAPI.login(provider),
+    signOut: () => this.legacyAPI.logout(),
+    getStatus: () => this.legacyAPI.getAuthStatus(),
+    handleToken: (token, refreshToken) => 
+      this.legacyAPI.handleAuthToken(token, refreshToken),
+    onChange: (callback) => this.legacyAPI.onAuthStatusChanged(callback)
+  };
+  
+  servers: ServerAPI = {
+    list: () => this.legacyAPI.listMcpServers(),
+    get: (id) => this.legacyAPI.getMcpServer(id),
+    create: (config) => this.legacyAPI.addMcpServer(config),
+    update: (id, updates) => this.legacyAPI.updateMcpServer(id, updates),
+    delete: (id) => this.legacyAPI.removeMcpServer(id),
+    start: (id) => this.legacyAPI.startMcpServer(id),
+    stop: (id) => this.legacyAPI.stopMcpServer(id),
+    getStatus: (id) => this.legacyAPI.getMcpServerStatus(id)
+  };
+  
+  agents: AgentAPI = {
+    // エージェント管理
+    list: () => this.legacyAPI.listAgents(),
+    get: (id) => this.legacyAPI.getAgent(id),
+    create: (input) => this.legacyAPI.createAgent(input),
+    update: (id, updates) => this.legacyAPI.updateAgent(id, updates),
+    delete: (id) => this.legacyAPI.deleteAgent(id),
+    deploy: (id) => this.legacyAPI.deployAgent(id),
+    
+    // ツール管理
+    tools: {
+      execute: (agentId, toolName, args) => 
+        this.legacyAPI.executeAgentTool(agentId, toolName, args),
+      list: (agentId) => this.legacyAPI.getAgentMCPServerTools(agentId)
+    },
+    
+    // セッション管理
+    sessions: {
+      create: (agentId) => this.legacyAPI.createSession(agentId),
+      get: (sessionId) => this.legacyAPI.fetchSessionMessages(sessionId),
+      list: (agentId) => this.legacyAPI.getSessions(agentId),
+      delete: (sessionId) => this.legacyAPI.deleteSession(sessionId),
+      update: (sessionId, updates) => 
+        this.legacyAPI.updateSessionMessages(sessionId, updates)
+    },
+    
+    // ストリーミングチャット
+    stream: {
+      start: (sessionId, message) => 
+        this.legacyAPI.sendChatStreamStart({ sessionId, message }),
+      send: (sessionId, chunk) => 
+        this.legacyAPI.sendChatStreamChunk({ sessionId, chunk }),
+      end: (sessionId) => 
+        this.legacyAPI.sendChatStreamEnd({ sessionId }),
+      error: (sessionId, error) => 
+        this.legacyAPI.sendChatStreamError({ sessionId, error }),
+      onChunk: (callback) => this.legacyAPI.onChatStreamChunk(callback),
+      onEnd: (callback) => this.legacyAPI.onChatStreamEnd(callback),
+      onError: (callback) => this.legacyAPI.onChatStreamError(callback)
+    },
+    
+    // バックグラウンドチャット
+    background: {
+      start: (agentId, sessionId) => 
+        this.legacyAPI.startBackgroundChat(sessionId, agentId, ''),
+      send: () => Promise.resolve(),
+      end: () => this.legacyAPI.stopBackgroundChat(''),
+      onStart: (callback) => this.legacyAPI.onBackgroundChatStart(callback)
+    }
+  };
+  
+  // ... 他の統合ドメインも同様に実装
+}
 ```
 
-### 8.2 改善案：統合された状態管理
+#### 2.2 移行手順
+
+1. **Phase 2a: アダプター実装** (1週間)
+   - LegacyPlatformAPIAdapterの完全実装
+   - 既存のテストケースでの動作確認
+   - パフォーマンステストの実施
+
+2. **Phase 2b: Electron実装の更新** (2週間)
+   - Electronのpreload.jsを新しいドメイン構造で再実装
+   - IPCハンドラーをドメインごとに整理
+   - 既存の機能テストの実行
+
+3. **Phase 2c: UIコンポーネントの移行** (3週間)
+   - 最も使用頻度の高いコンポーネントから順次移行
+   - Zustandストアの更新
+   - E2Eテストの実行
+
+4. **Phase 2d: Web実装** (2週間)
+   - Web版のPlatform API実装
+   - REST APIエンドポイントの設計
+   - 統合テストの実施
+
+### Phase 3: 最適化と改善
+
+#### 3.1 型安全性の強化
 
 ```typescript
-interface PlatformState {
-  auth: AuthState;
-  servers: ServerState;
-  agents: AgentState;
-}
+// 厳密な型定義
+export type ServerStatus = 
+  | { type: 'stopped' }
+  | { type: 'starting'; progress: number }
+  | { type: 'running'; connectedAt: Date; stats: ServerStats }
+  | { type: 'stopping' }
+  | { type: 'error'; error: string };
 
-interface StateManager {
-  // 現在の状態を取得
-  getState(): PlatformState;
-  
-  // 状態の変更を購読
-  subscribe(listener: (state: PlatformState) => void): Unsubscribe;
-  
-  // 特定の部分を選択
-  select<T>(selector: (state: PlatformState) => T): Observable<T>;
+// ジェネリクスを使用した柔軟な設計
+export interface QueryResult<T> {
+  data: T;
+  metadata: {
+    timestamp: Date;
+    cached: boolean;
+    source: 'cache' | 'fresh';
+  };
 }
-
-// Platform APIに統合
-interface PlatformAPI {
-  state: StateManager;
-  // ... その他のサービス
-}
-
-// 使用例
-const servers = platform.state.select(state => state.servers.list);
-servers.subscribe(serverList => {
-  // UIを更新
-});
 ```
 
-## 9. エラー処理の階層化
-
-### 9.1 ビジネスエラーと技術的エラーの分離
+#### 3.2 エラーハンドリングの統一
 
 ```typescript
-// ビジネスエラー
-class BusinessError extends Error {
+// ドメイン固有のエラー型
+export class ServerError extends Error {
   constructor(
-    public code: BusinessErrorCode,
-    public message: string,
-    public context?: any
+    public code: ServerErrorCode,
+    message: string,
+    public serverId?: string
   ) {
     super(message);
   }
 }
 
-enum BusinessErrorCode {
-  SERVER_ALREADY_EXISTS = 'SERVER_ALREADY_EXISTS',
-  AGENT_LIMIT_EXCEEDED = 'AGENT_LIMIT_EXCEEDED',
-  INVALID_SERVER_CONFIG = 'INVALID_SERVER_CONFIG',
-}
-
-// 技術的エラー
-class TechnicalError extends Error {
-  constructor(
-    public code: TechnicalErrorCode,
-    public message: string,
-    public cause?: Error
-  ) {
-    super(message);
-  }
-}
-
-enum TechnicalErrorCode {
-  NETWORK_ERROR = 'NETWORK_ERROR',
-  TIMEOUT = 'TIMEOUT',
-  PLATFORM_NOT_SUPPORTED = 'PLATFORM_NOT_SUPPORTED',
+export enum ServerErrorCode {
+  NOT_FOUND = 'SERVER_NOT_FOUND',
+  ALREADY_RUNNING = 'SERVER_ALREADY_RUNNING',
+  START_FAILED = 'SERVER_START_FAILED',
+  INVALID_CONFIG = 'SERVER_INVALID_CONFIG'
 }
 ```
 
-## 10. テスタビリティの向上
+### Phase 4: 移行完了後の改善
 
-### 10.1 依存性注入
+#### 4.1 パフォーマンス最適化
 
-```typescript
-interface PlatformConfig {
-  repositories: {
-    server: ServerRepository;
-    agent: AgentRepository;
-  };
-  services: {
-    auth: AuthService;
-    notification: NotificationService;
-  };
-  plugins?: PlatformPlugin[];
-}
+- バッチ操作の実装
+- キャッシング戦略の導入
+- 遅延読み込みの実装
 
-class Platform implements PlatformAPI {
-  constructor(private config: PlatformConfig) {
-    // 依存性の注入
-  }
-}
+#### 4.2 開発者体験の向上
 
-// テスト時
-const mockPlatform = new Platform({
-  repositories: {
-    server: new MockServerRepository(),
-    agent: new MockAgentRepository(),
-  },
-  services: {
-    auth: new MockAuthService(),
-    notification: new MockNotificationService(),
-  }
-});
-```
+- 自動補完の改善
+- ドキュメント生成の自動化
+- デバッグツールの提供
+
+## メリットと期待される成果
+
+1. **開発効率の向上**
+   - メソッド検索時間
+   - IDE補完の精度向上
+   - コードレビュー時間の短縮
+
+2. **保守性の改善**
+   - 関連機能がグループ化され、理解しやすい
+   - 新機能追加時の影響範囲が明確
+   - テストの書きやすさ向上
+
+3. **拡張性の確保**
+   - 新しいドメインの追加が容易
+   - プラットフォーム固有の実装を隠蔽
+   - プラグインシステムへの発展が可能
+
+4. **型安全性の向上**
+   - より厳密な型定義
+   - ランタイムエラーの削減
+   - リファクタリングの安全性向上
+
+## リスクと対策
+
+### リスク1: 既存コードの大規模な変更
+**対策**: アダプター層による段階的移行
+
+### リスク2: パフォーマンスの低下
+**対策**: アダプター層のオーバーヘッド測定と最適化
+
+### リスク3: 開発期間の延長
+**対策**: 機能ごとの優先順位付けと段階的リリース
 
 ## まとめ
 
-これらの設計改善により：
+このドメイン分割アプローチにより：
 
-1. **責任の明確化** - 各コンポーネントの役割が明確
-2. **テスタビリティ** - モックやスタブが容易
-3. **拡張性** - 新機能の追加が簡単
-4. **保守性** - コードの理解と変更が容易
-5. **型安全性** - TypeScriptの利点を最大限活用
-6. **プラットフォーム独立性** - 真の抽象化を実現
+1. **フラットなメソッドを論理的なモジュールに整理**
+2. **段階的な移行により、既存機能を維持しながら改善**
+3. **将来の拡張性と保守性を確保**
+4. **開発者体験の大幅な向上**
 
-この設計により、Platform APIは単なるElectron APIのラッパーではなく、アプリケーションのビジネスロジックを表現する真のドメインレイヤーとなります。
+Platform APIは単なるElectron APIのラッパーではなく、アプリケーションの機能を適切に表現する抽象化層となります。

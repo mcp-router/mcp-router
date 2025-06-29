@@ -117,7 +117,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
       if (agent?.autoExecuteTool) {
         // 自動実行が有効な場合、ツールを即座に実行
         try {
-          const result = await platformAPI.executeAgentTool(
+          const result = await platformAPI.agents.tools.execute(
             agent.id,
             toolCall.toolName,
             toolCall.args as Record<string, any>,
@@ -145,7 +145,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
     },
     onFinish: async (_message, { finishReason }) => {
       // ストリーム終了をメインプロセスに送信
-      platformAPI.sendChatStreamEnd({
+      platformAPI.agents.stream.end({
         backgroundSessionKey,
         chatHistorySessionId,
         agentId,
@@ -163,7 +163,7 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
     },
     onError: async (error) => {
       // ストリームエラーをメインプロセスに送信
-      platformAPI.sendChatStreamError({
+      platformAPI.agents.stream.error({
         backgroundSessionKey,
         chatHistorySessionId,
         agentId,
@@ -191,8 +191,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
         stop();
 
         // Also send stream end notification to main window
-        if (platformAPI?.sendChatStreamEnd) {
-          platformAPI.sendChatStreamEnd({
+        if (platformAPI.agents.stream.end) {
+          platformAPI.agents.stream.end({
             backgroundSessionKey,
             chatHistorySessionId,
             agentId,
@@ -210,11 +210,12 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
       }
     };
 
-    platformAPI?.onBackgroundChatStop?.(handleBackgroundChatStop);
+    const unsubscribe = platformAPI.agents.background.onStop(handleBackgroundChatStop);
 
     return () => {
-      // Cleanup listener if needed
+      unsubscribe();
     };
+
   }, [
     agentId,
     stop,
@@ -235,8 +236,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
         processedQueryRef.current = query;
 
         // ストリーム開始をメインプロセスに送信
-        if (platformAPI?.sendChatStreamStart) {
-          platformAPI.sendChatStreamStart({
+        if (platformAPI.agents.stream.start) {
+          platformAPI.agents.stream.start({
             backgroundSessionKey,
             chatHistorySessionId,
             agentId,
@@ -254,8 +255,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
           });
         } catch (error) {
           // エラーをメインプロセスに送信
-          if (platformAPI?.sendChatStreamError) {
-            platformAPI.sendChatStreamError({
+          if (platformAPI.agents.stream.error) {
+            platformAPI.agents.stream.error({
               backgroundSessionKey,
               chatHistorySessionId,
               agentId,
@@ -288,14 +289,14 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
         try {
           if (!chatHistorySessionId) {
             // 新しいセッションを作成
-            const session = await platformAPI.createSession(
+            const session = await platformAPI.agents.sessions.create(
               agent.id || agentId,
               messages,
             );
             console.log("Created new local session:", session.id);
           } else {
             // 既存セッションのメッセージを更新
-            await platformAPI.updateSessionMessages(
+            await platformAPI.agents.sessions.update(
               chatHistorySessionId,
               messages,
             );
@@ -313,8 +314,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
           setShouldSaveSession(false);
 
           // セッション保存エラーもメインプロセスに送信
-          if (platformAPI?.sendChatStreamError) {
-            platformAPI.sendChatStreamError({
+          if (platformAPI.agents.stream.error) {
+            platformAPI.agents.stream.error({
               backgroundSessionKey,
               chatHistorySessionId,
               agentId,
@@ -373,8 +374,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
             // });
 
             // ストリームチャンクを送信
-            if (platformAPI?.sendChatStreamChunk) {
-              platformAPI.sendChatStreamChunk({
+            if (platformAPI.agents.stream.send) {
+              platformAPI.agents.stream.send({
                 backgroundSessionKey,
                 chatHistorySessionId,
                 agentId,
@@ -414,8 +415,8 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
             JSON.stringify(message.parts);
 
         if (messageChanged) {
-          if (platformAPI?.sendChatStreamChunk) {
-            platformAPI.sendChatStreamChunk({
+          if (platformAPI.agents.stream.send) {
+            platformAPI.agents.stream.send({
               backgroundSessionKey,
               chatHistorySessionId,
               agentId,

@@ -74,7 +74,7 @@ const BackgroundChatManager: React.FC = () => {
     // Register IPC listener
     let cleanup: (() => void) | undefined;
 
-    cleanup = electronPlatformAPI.onBackgroundChatStart(
+    cleanup = electronPlatformAPI.agents.background.onStart(
       handleBackgroundChatStart,
     );
 

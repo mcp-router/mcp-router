@@ -4,7 +4,8 @@
  * This module provides utilities for creating platform-specific API instances
  */
 
-import { PlatformAPI } from "./platform-api-interface";
+import { PlatformAPI, LegacyPlatformAPI } from "./platform-api-interface";
+import { LegacyPlatformAPIAdapter } from "./adapters";
 
 // Platform detection
 export const isElectron = () => {
@@ -16,7 +17,7 @@ export const isWeb = () => {
 };
 
 // Web implementation (placeholder for future web support)
-export class WebPlatformAPI implements PlatformAPI {
+export class WebPlatformAPI implements LegacyPlatformAPI {
   // All methods throw "not implemented" errors for now
   // These will be implemented when adding web platform support
 
@@ -350,19 +351,29 @@ export class WebPlatformAPI implements PlatformAPI {
 
 /**
  * Factory function to create platform-specific API instance
- * @param customImplementation Optional custom implementation to use
- * @returns Platform API instance
+ * @param customImplementation Optional custom implementation to use (can be either new or legacy format)
+ * @returns Platform API instance with domain-based structure
  */
 export function createPlatformAPI(
-  customImplementation?: PlatformAPI,
+  customImplementation?: PlatformAPI | LegacyPlatformAPI,
 ): PlatformAPI {
   if (customImplementation) {
-    return customImplementation;
+    // Check if it's already a domain-based API
+    if ('auth' in customImplementation && 'servers' in customImplementation) {
+      return customImplementation as PlatformAPI;
+    }
+    // Otherwise, wrap it with the adapter
+    return new LegacyPlatformAPIAdapter(customImplementation as LegacyPlatformAPI);
   }
 
   if (isElectron()) {
-    throw new Error("Electron platform API must be provided explicitly");
+    // In Electron, window.electronAPI is the legacy API, so we need to adapt it
+    if (window.electronAPI) {
+      return new LegacyPlatformAPIAdapter(window.electronAPI);
+    }
+    throw new Error("Electron platform API not found");
   }
 
-  return new WebPlatformAPI();
+  // For web, create a placeholder implementation wrapped with adapter
+  return new LegacyPlatformAPIAdapter(new WebPlatformAPI());
 }

@@ -28,7 +28,7 @@ const ServerDetailsLogs: React.FC<ServerDetailsLogsProps> = ({
   const fetchLogs = async () => {
     setIsLogLoading(true);
     try {
-      const response = await platformAPI.getRequestLogs({
+      const response = await platformAPI.logs.query({
         limit: 100,
         offset: 0,
       });
