@@ -48,7 +48,7 @@ export function validateMcpServerJson(jsonInput: string | object): {
         };
       }
 
-      if (!Array.isArray(server.args)) {
+      if (server.args !== undefined && !Array.isArray(server.args)) {
         return {
           valid: false,
           error: `Arguments must be an array for server '${serverName}'`,
