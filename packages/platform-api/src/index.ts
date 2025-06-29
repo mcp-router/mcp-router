@@ -10,11 +10,7 @@ export * from "./types/domains/log-api";
 export * from "./types/domains/workspace-api";
 
 // Platform API factory and utilities
-export {
-  isElectron,
-  isWeb,
-  createPlatformAPI,
-} from "./platform-api-factory";
+export { isElectron, isWeb, createPlatformAPI } from "./platform-api-factory";
 
 // Platform API React context and provider
 export { PlatformAPIProvider, usePlatformAPI } from "./platform-api-context";

@@ -2,7 +2,7 @@
  * Server management domain API
  */
 
-import { MCPServerConfig } from '@mcp-router/shared';
+import { MCPServerConfig } from "@mcp-router/shared";
 
 export interface Server {
   id: string;
@@ -12,7 +12,7 @@ export interface Server {
 }
 
 export interface ServerStatus {
-  type: 'stopped' | 'starting' | 'running' | 'stopping' | 'error';
+  type: "stopped" | "starting" | "running" | "stopping" | "error";
   error?: string;
   connectedAt?: Date;
   stats?: ServerStats;
@@ -43,6 +43,11 @@ export interface ServerAPI {
   start(id: string): Promise<boolean>;
   stop(id: string): Promise<boolean>;
   getStatus(id: string): Promise<ServerStatus>;
-  fetchFromIndex(page?: number, limit?: number, search?: string, isVerified?: boolean): Promise<any>;
+  fetchFromIndex(
+    page?: number,
+    limit?: number,
+    search?: string,
+    isVerified?: boolean,
+  ): Promise<any>;
   fetchVersionDetails(displayId: string, version: string): Promise<any>;
 }

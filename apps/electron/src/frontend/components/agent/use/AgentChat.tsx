@@ -492,9 +492,9 @@ const AgentChat: React.FC = () => {
           // Fetch messages from local database
           try {
             setIsLoading(true);
-            const fetchedMessages = await platformAPI.agents.sessions.get(
-              selectedSession.id,
-            ).then(session => session?.messages || []);
+            const fetchedMessages = await platformAPI.agents.sessions
+              .get(selectedSession.id)
+              .then((session) => session?.messages || []);
 
             // Filter out system messages when setting from fetched messages
             const sessionMessages = fetchedMessages.filter(

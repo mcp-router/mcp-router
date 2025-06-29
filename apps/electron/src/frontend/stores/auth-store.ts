@@ -184,21 +184,19 @@ export const createAuthStore = (
       const { setAuthenticated, setUserInfo } = get();
 
       // Subscribe to auth status changes from Platform API
-      const unsubscribe = platformAPI.auth.onChange(
-        (status) => {
-          setAuthenticated(status.authenticated);
-          if (status.authenticated && status.user) {
-            setUserInfo({
-              userId: status.userId || "",
-              name: status.user?.name || "",
-              creditBalance: status.user?.creditBalance || 0,
-              paidCreditBalance: status.user?.paidCreditBalance || 0,
-            });
-          } else {
-            setUserInfo(null);
-          }
-        },
-      );
+      const unsubscribe = platformAPI.auth.onChange((status) => {
+        setAuthenticated(status.authenticated);
+        if (status.authenticated && status.user) {
+          setUserInfo({
+            userId: status.userId || "",
+            name: status.user?.name || "",
+            creditBalance: status.user?.creditBalance || 0,
+            paidCreditBalance: status.user?.paidCreditBalance || 0,
+          });
+        } else {
+          setUserInfo(null);
+        }
+      });
 
       return unsubscribe;
     },

@@ -2,7 +2,7 @@
  * Authentication domain API
  */
 
-export type AuthProvider = 'github' | 'google' | string;
+export type AuthProvider = "github" | "google" | string;
 export type Unsubscribe = () => void;
 
 export interface AuthStatus {

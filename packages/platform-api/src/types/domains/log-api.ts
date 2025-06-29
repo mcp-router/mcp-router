@@ -8,7 +8,7 @@ export interface LogQueryOptions {
   requestType?: string;
   startDate?: Date;
   endDate?: Date;
-  responseStatus?: 'success' | 'error';
+  responseStatus?: "success" | "error";
   offset?: number;
   limit?: number;
 }
@@ -19,7 +19,7 @@ export interface LogEntry {
   clientId: string;
   serverId: string;
   requestType: string;
-  responseStatus: 'success' | 'error';
+  responseStatus: "success" | "error";
   duration?: number;
   error?: string;
   details?: any;

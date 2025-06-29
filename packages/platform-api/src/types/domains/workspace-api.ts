@@ -14,7 +14,7 @@ export interface Workspace {
 export interface WorkspaceSettings {
   defaultAgentId?: string;
   defaultServerIds?: string[];
-  theme?: 'light' | 'dark' | 'system';
+  theme?: "light" | "dark" | "system";
   customConfig?: any;
 }
 

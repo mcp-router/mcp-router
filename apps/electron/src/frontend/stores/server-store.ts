@@ -181,7 +181,10 @@ export const createServerStore = (
       try {
         setError(null);
 
-        const newServer = await platformAPI.servers.create({ name: config.name || '', config });
+        const newServer = await platformAPI.servers.create({
+          name: config.name || "",
+          config,
+        });
         addServer(newServer);
       } catch (error) {
         setError(
@@ -198,10 +201,7 @@ export const createServerStore = (
         setUpdating(id, true);
         setError(null);
 
-        const updatedServer = await platformAPI.servers.update(
-          id,
-          { config },
-        );
+        const updatedServer = await platformAPI.servers.update(id, { config });
         updateServer(id, updatedServer);
       } catch (error) {
         setError(

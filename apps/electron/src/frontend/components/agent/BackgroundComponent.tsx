@@ -210,12 +210,13 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
       }
     };
 
-    const unsubscribe = platformAPI.agents.background.onStop(handleBackgroundChatStop);
+    const unsubscribe = platformAPI.agents.background.onStop(
+      handleBackgroundChatStop,
+    );
 
     return () => {
       unsubscribe();
     };
-
   }, [
     agentId,
     stop,

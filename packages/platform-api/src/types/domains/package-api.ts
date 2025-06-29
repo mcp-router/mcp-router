@@ -2,11 +2,11 @@
  * Package management domain API (includes system utilities)
  */
 
-import { ServerPackageUpdates } from '@mcp-router/shared';
-import { Unsubscribe } from './auth-api';
+import { ServerPackageUpdates } from "@mcp-router/shared";
+import { Unsubscribe } from "./auth-api";
 
-export type PackageManager = 'pnpm' | 'uvx';
-export type Platform = 'darwin' | 'win32' | 'linux';
+export type PackageManager = "pnpm" | "uvx";
+export type Platform = "darwin" | "win32" | "linux";
 
 export interface ResolveResult {
   success: boolean;
@@ -44,11 +44,14 @@ export interface UpdateInfo {
 
 export interface PackageAPI {
   // Package management
-  resolveVersions(argsString: string, manager: PackageManager): Promise<ResolveResult>;
+  resolveVersions(
+    argsString: string,
+    manager: PackageManager,
+  ): Promise<ResolveResult>;
   checkUpdates(args: string[], manager: PackageManager): Promise<UpdateResult>;
   checkManagers(): Promise<ManagerStatus>;
   installManagers(): Promise<InstallResult>;
-  
+
   // System utilities
   system: {
     getPlatform(): Promise<Platform>;
