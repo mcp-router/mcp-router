@@ -1,1 +1,0 @@
-export { LegacyPlatformAPIAdapter } from './legacy-adapter';

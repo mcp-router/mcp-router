@@ -38,9 +38,3 @@ export function usePlatformAPI(): PlatformAPI {
 
   return context;
 }
-
-// Optional: Hook to check if platform API is available
-export function usePlatformAPIAvailable(): boolean {
-  const context = useContext(PlatformAPIContext);
-  return context !== null;
-}
