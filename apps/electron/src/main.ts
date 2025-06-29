@@ -390,8 +390,6 @@ async function initApplication(): Promise<void> {
   // データベース初期化
   await initDatabase();
 
-  // アクティベーションとインビテーションのハンドラをセットアップ
-  setupViralHandlers();
 
   // IPC通信ハンドラの初期化
   setupIpcHandlers();
@@ -884,8 +882,4 @@ function setupFeedbackHandlers(): void {
       return false;
     }
   });
-}
-
-function setupViralHandlers() {
-  // Reserved for future viral features
 }
