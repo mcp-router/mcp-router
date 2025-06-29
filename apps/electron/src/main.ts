@@ -28,14 +28,11 @@ import {
   deleteCustomApp,
 } from "@/main/services/mcp-apps-service";
 import { updateElectronApp } from "update-electron-app";
-import { machineIdSync } from "node-machine-id";
-import { getDatabaseMigration } from "./lib/database";
 import { setApplicationMenu } from "./main/menu";
 import { createTray, updateTrayContextMenu } from "./main/tray";
 import { importExistingServerConfigurations } from "./main/mcp-config-importer";
 import { commandExists } from "./lib/get-env";
 import { handleAuthToken, logout, startAuthFlow, status } from "./main/auth";
-import { fetchWithToken } from "./lib/utils/backend/fetch-utils";
 import { registerPackageVersionHandlers } from "./main/handlers/package-version-handler";
 import { registerPackageManagerHandlers } from "./main/handlers/package-manager-handler";
 import { setupAgentHandlers } from "./main/handlers/agent-handler";

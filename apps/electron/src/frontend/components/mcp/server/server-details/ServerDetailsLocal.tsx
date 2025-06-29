@@ -54,8 +54,8 @@ const ServerDetailsLocal: React.FC<ServerDetailsLocalProps> = ({
       setBaseCommand(cmd);
 
       // Check if command exists using the API we added
-      platformAPI
-        .checkCommandExists(cmd)
+      platformAPI.packages.system
+        .checkCommand(cmd)
         .then((exists: boolean) => setCommandExists(exists))
         .catch(() => setCommandExists(false));
     }

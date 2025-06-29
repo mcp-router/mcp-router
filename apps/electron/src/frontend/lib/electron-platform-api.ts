@@ -12,6 +12,7 @@ import type {
   SettingsAPI,
   LogAPI,
   WorkspaceAPI,
+  Workspace,
 } from "@mcp-router/platform-api";
 
 // Electron implementation of the Platform API
@@ -249,29 +250,29 @@ export class ElectronPlatformAPI implements PlatformAPI {
       query: (options) => window.electronAPI.getRequestLogs(options),
     };
 
-    // Initialize workspaces domain (placeholder - not implemented in Electron yet)
+    // Initialize workspaces domain
     this.workspaces = {
-      list: async () => [],
-      get: async () => null,
-      create: async (input) => ({
-        id: "1",
-        name: input.name,
-        description: input.description,
-        settings: input.settings,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-      update: async (id, updates) => ({
-        id,
-        name: updates.name || "Workspace",
-        description: updates.description,
-        settings: updates.settings,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-      delete: async () => {},
-      setActive: async () => {},
-      getActive: async () => null,
+      list: () => window.electronAPI.listWorkspaces(),
+      get: async (id) => {
+        const workspaces = await window.electronAPI.listWorkspaces();
+        return workspaces.find((w: Workspace) => w.id === id) || null;
+      },
+      create: (input) => window.electronAPI.createWorkspace(input),
+      update: async (id, updates) => {
+        await window.electronAPI.updateWorkspace(id, updates);
+        // Return the updated workspace
+        const workspaces = await window.electronAPI.listWorkspaces();
+        const updated = workspaces.find((w: Workspace) => w.id === id);
+        if (!updated) throw new Error("Workspace not found");
+        return updated;
+      },
+      delete: async (id) => {
+        await window.electronAPI.deleteWorkspace(id);
+      },
+      setActive: async (id) => {
+        await window.electronAPI.switchWorkspace(id);
+      },
+      getActive: () => window.electronAPI.getCurrentWorkspace(),
     };
   }
 }

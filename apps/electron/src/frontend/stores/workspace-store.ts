@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { Workspace } from "@/main/services/workspace-service";
+import { Workspace } from "@mcp-router/platform-api";
+import { electronPlatformAPI } from "../lib/electron-platform-api";
 
 interface WorkspaceState {
   workspaces: Workspace[];
@@ -27,7 +28,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   loadWorkspaces: async () => {
     set({ isLoading: true, error: null });
     try {
-      const workspaces = await window.electronAPI.listWorkspaces();
+      const workspaces = await electronPlatformAPI.workspaces.list();
       set({ workspaces, isLoading: false });
     } catch (error) {
       set({
@@ -42,7 +43,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   loadCurrentWorkspace: async () => {
     try {
-      const workspace = await window.electronAPI.getCurrentWorkspace();
+      const workspace = await electronPlatformAPI.workspaces.getActive();
       set({ currentWorkspace: workspace });
     } catch (error) {
       console.error("Failed to load current workspace:", error);
@@ -52,7 +53,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   createWorkspace: async (config) => {
     set({ isLoading: true, error: null });
     try {
-      const newWorkspace = await window.electronAPI.createWorkspace(config);
+      const newWorkspace = await electronPlatformAPI.workspaces.create(config);
       const workspaces = [...get().workspaces, newWorkspace];
       set({ workspaces, isLoading: false });
       return newWorkspace;
@@ -71,15 +72,15 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   updateWorkspace: async (id, updates) => {
     set({ isLoading: true, error: null });
     try {
-      await window.electronAPI.updateWorkspace(id, updates);
+      const updatedWorkspace = await electronPlatformAPI.workspaces.update(id, updates);
       const workspaces = get().workspaces.map((w) =>
-        w.id === id ? { ...w, ...updates } : w,
+        w.id === id ? updatedWorkspace : w,
       );
       set({ workspaces, isLoading: false });
 
       // 現在のワークスペースが更新された場合
       if (get().currentWorkspace?.id === id) {
-        set({ currentWorkspace: { ...get().currentWorkspace!, ...updates } });
+        set({ currentWorkspace: updatedWorkspace });
       }
     } catch (error) {
       set({
@@ -96,7 +97,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   deleteWorkspace: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      await window.electronAPI.deleteWorkspace(id);
+      await electronPlatformAPI.workspaces.delete(id);
       const workspaces = get().workspaces.filter((w) => w.id !== id);
       set({ workspaces, isLoading: false });
     } catch (error) {
@@ -114,7 +115,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   switchWorkspace: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      await window.electronAPI.switchWorkspace(id);
+      await electronPlatformAPI.workspaces.setActive(id);
       const workspace = get().workspaces.find((w) => w.id === id);
       if (workspace) {
         set({ currentWorkspace: workspace, isLoading: false });
