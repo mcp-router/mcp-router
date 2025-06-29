@@ -46,7 +46,7 @@ export const useSessionsByAgent = agentSelectors.useSessionsByAgent;
 export const initializeStores = async () => {
   // Initialize auth state from settings
   try {
-    const settings = await electronPlatformAPI.getSettings();
+    const settings = await electronPlatformAPI.settings.get();
     await useAuthStore.getState().initializeFromSettings(settings);
   } catch (error) {
     console.error("Failed to initialize auth from settings:", error);

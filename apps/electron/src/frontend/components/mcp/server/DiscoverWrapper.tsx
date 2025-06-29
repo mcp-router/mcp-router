@@ -118,7 +118,7 @@ const DiscoverWrapper: React.FC = () => {
     setIsLoadingVerifiedServers(true);
     try {
       const verifiedResponse: PaginatedResponse<APIMCPServer> =
-        await platformAPI.fetchMcpServersFromIndex(page, limit, search, true);
+        await platformAPI.servers.fetchFromIndex(page, limit, search, true);
       // Convert API servers to LocalMCPServer format
       const localServers = verifiedResponse.data.map(
         convertApiServerToLocalServer,
@@ -146,7 +146,7 @@ const DiscoverWrapper: React.FC = () => {
     setIsLoadingCommunityServers(true);
     try {
       const communityResponse: PaginatedResponse<APIMCPServer> =
-        await platformAPI.fetchMcpServersFromIndex(page, limit, search, false);
+        await platformAPI.servers.fetchFromIndex(page, limit, search, false);
       // Convert API servers to LocalMCPServer format
       const localServers = communityResponse.data.map(
         convertApiServerToLocalServer,
