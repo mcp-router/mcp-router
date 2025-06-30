@@ -16,7 +16,7 @@ import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
 import { useTranslation } from "react-i18next";
 import ChatInterface from "./ChatInterface";
 import ServerSettingsForm from "./ServerSettingsForm";
-import { usePlatformAPI } from "@mcp-router/platform-api";
+import { usePlatformAPI } from "@/lib/platform-api";
 
 interface AgentChatPlaygroundProps {
   agent?: AgentConfig;

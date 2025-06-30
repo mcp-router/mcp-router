@@ -2,7 +2,7 @@ import { create, StoreApi, UseBoundStore } from "zustand";
 import { AgentConfig, DeployedAgent } from "@mcp-router/shared";
 import { AgentChatMessage } from "@mcp-router/shared";
 import { Message } from "@ai-sdk/react";
-import { PlatformAPI } from "@mcp-router/platform-api";
+import { PlatformAPI } from "@/lib/platform-api";
 
 interface ChatSession {
   id: string;

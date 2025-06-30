@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import BackgroundComponent from "@/frontend/components/agent/BackgroundComponent";
-import { PlatformAPIProvider } from "@mcp-router/platform-api";
+import { PlatformAPIProvider } from "@/lib/platform-api";
 import { electronPlatformAPI } from "@/frontend/lib/electron-platform-api";
 import "@mcp-router/tailwind-config/base.css";
 

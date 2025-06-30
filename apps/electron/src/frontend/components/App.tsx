@@ -32,7 +32,7 @@ import {
   useUIStore,
   initializeStores,
 } from "../stores";
-import { usePlatformAPI } from "@mcp-router/platform-api";
+import { usePlatformAPI } from "@/lib/platform-api";
 import { IconProgress } from "@tabler/icons-react";
 
 // Lazy load components

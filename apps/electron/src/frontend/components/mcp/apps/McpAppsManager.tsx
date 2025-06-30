@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Button } from "@mcp-router/ui";
-import { usePlatformAPI } from "@mcp-router/platform-api";
+import { usePlatformAPI } from "@/lib/platform-api";
 import {
   Card,
   CardContent,

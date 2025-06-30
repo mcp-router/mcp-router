@@ -6,7 +6,7 @@ import {
   MCPServer,
   APIMCPServer,
 } from "../../../../types";
-import { usePlatformAPI } from "@mcp-router/platform-api";
+import { usePlatformAPI } from "@/lib/platform-api";
 import DiscoverServerList from "./DiscoverServerList";
 import Manual from "./Manual";
 import ServerSearchBox from "./ServerSearchBox";

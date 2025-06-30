@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { usePlatformAPI } from "@mcp-router/platform-api";
+import { usePlatformAPI } from "@/lib/platform-api";
 import { Terminal, RefreshCw, FileText } from "lucide-react";
 import { ScrollArea } from "@mcp-router/ui";
 import { Switch } from "@mcp-router/ui";

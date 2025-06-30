@@ -11,7 +11,7 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/frontend/stores";
-import { usePlatformAPI } from "@mcp-router/platform-api";
+import { usePlatformAPI } from "@/lib/platform-api";
 // @ts-ignore
 import iconImage from "../../../../../public/images/icon/icon.png";
 import {

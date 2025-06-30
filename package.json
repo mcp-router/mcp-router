@@ -14,7 +14,7 @@
   "scripts": {
     "dev": "pnpm run dev:electron",
     "dev:web": "turbo run dev --filter=@mcp-router/web",
-    "dev:electron": "turbo run dev --filter=@mcp-router/shared --filter=@mcp-router/platform-api --filter=@mcp-router/ui --filter=@mcp-router/electron",
+    "dev:electron": "turbo run dev --filter=@mcp-router/shared --filter=@mcp-router/ui --filter=@mcp-router/electron",
     "make": "turbo run make",
     "publish": "turbo run publish",
     "build": "turbo run build",

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { MCPServer } from "../../../../../types";
-import { usePlatformAPI } from "@mcp-router/platform-api";
+import { usePlatformAPI } from "@/lib/platform-api";
 import { useTranslation } from "react-i18next";
 import {
   Terminal,

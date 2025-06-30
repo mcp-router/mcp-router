@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Workspace } from "@mcp-router/platform-api";
+import { Workspace } from "@/lib/platform-api";
 import { electronPlatformAPI } from "../lib/electron-platform-api";
 
 interface WorkspaceState {

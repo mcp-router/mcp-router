@@ -9,7 +9,7 @@ import ChatInterface from "@/frontend/components/agent/create/ChatInterface";
 import ChatSessions from "./ChatSessions";
 import { isAgentConfigured } from "@/lib/utils/agent-utils";
 import { useAgentStore } from "../../../stores";
-import { usePlatformAPI } from "@mcp-router/platform-api";
+import { usePlatformAPI } from "@/lib/platform-api";
 import { parseErrorMessage } from "@/lib/utils/error-message-utils";
 
 /**

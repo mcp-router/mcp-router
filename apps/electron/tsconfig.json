@@ -13,14 +13,12 @@
       "@/*": ["./src/*"],
       "@mcp-router/shared": ["../../packages/shared/src"],
       "@mcp-router/ui": ["../../packages/ui/src"],
-      "@mcp-router/ui/*": ["../../packages/ui/src/*"],
-      "@mcp-router/platform-api": ["../../packages/platform-api/src"]
+      "@mcp-router/ui/*": ["../../packages/ui/src/*"]
     }
   },
   "include": ["src/**/*"],
   "references": [
     { "path": "../../packages/shared" },
-    { "path": "../../packages/ui" },
-    { "path": "../../packages/platform-api" }
+    { "path": "../../packages/ui" }
   ]
 }

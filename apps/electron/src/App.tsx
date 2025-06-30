@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "@/frontend/components/App";
 import { HashRouter } from "react-router-dom";
-import { PlatformAPIProvider } from "@mcp-router/platform-api";
+import { PlatformAPIProvider } from "@/lib/platform-api";
 import { electronPlatformAPI } from "@/frontend/lib/electron-platform-api";
 import { TitleBar } from "@/frontend/components/TitleBar";
 

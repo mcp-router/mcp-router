@@ -2,10 +2,11 @@
  * Platform API React Context
  *
  * Provides platform API to React components through context
+ * Adapted for Electron-specific use
  */
 
 import React, { createContext, useContext } from "react";
-import { PlatformAPI } from "./platform-api-interface";
+import { PlatformAPI } from "./types/platform-api";
 
 // Create the context
 const PlatformAPIContext = createContext<PlatformAPI | null>(null);

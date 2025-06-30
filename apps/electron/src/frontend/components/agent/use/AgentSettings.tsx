@@ -20,7 +20,7 @@ import { useAgentStore } from "../../../stores";
 import { cn } from "@/lib/utils/tailwind-utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/ui";
 import { toast } from "sonner";
-import { usePlatformAPI } from "@mcp-router/platform-api";
+import { usePlatformAPI } from "@/lib/platform-api";
 
 interface ServerConfigVariable {
   name: string;
