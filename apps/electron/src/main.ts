@@ -387,7 +387,6 @@ async function initApplication(): Promise<void> {
   // データベース初期化
   await initDatabase();
 
-
   // IPC通信ハンドラの初期化
   setupIpcHandlers();
 

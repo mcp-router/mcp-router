@@ -255,11 +255,4 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.removeListener("workspace:switched", listener);
     };
   },
-  onWorkspaceConfigChanged: (callback: (config: any) => void) => {
-    const listener = (_: any, config: any) => callback(config);
-    ipcRenderer.on("workspace:config-changed", listener);
-    return () => {
-      ipcRenderer.removeListener("workspace:config-changed", listener);
-    };
-  },
 });

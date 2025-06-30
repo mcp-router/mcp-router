@@ -357,11 +357,13 @@ const AgentChat: React.FC = () => {
         setIsLoading(false);
         setIsCallingTool(false);
         setCurrentStreamMessage(null);
-        
+
         // Parse error message for better display
-        const parsedError = parseErrorMessage(data.error || "Stream error occurred");
+        const parsedError = parseErrorMessage(
+          data.error || "Stream error occurred",
+        );
         const errorMessage = parsedError.displayMessage;
-        
+
         // Create error object with parsed message
         const error = new Error(errorMessage);
         if (parsedError.isPaymentError) {
@@ -369,7 +371,7 @@ const AgentChat: React.FC = () => {
           (error as any).isPaymentError = true;
           (error as any).purchaseUrl = parsedError.purchaseUrl;
         }
-        
+
         setError(error);
       }
     });
@@ -438,7 +440,7 @@ const AgentChat: React.FC = () => {
         }
       } catch (error) {
         console.error("Failed to start background chat:", error);
-        
+
         // Parse error message if it's an error object
         if (error instanceof Error) {
           const parsedError = parseErrorMessage(error.message);
@@ -451,7 +453,7 @@ const AgentChat: React.FC = () => {
         } else {
           setError(new Error("Unknown error"));
         }
-        
+
         // Only set loading to false on error
         setIsLoading(false);
       }

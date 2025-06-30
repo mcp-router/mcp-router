@@ -13,7 +13,12 @@ import {
   Square,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@mcp-router/ui";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@mcp-router/ui";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@mcp-router/ui";
 import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
 import { extractServerVariables } from "@/lib/utils/server-variable-utils";
 import {
@@ -752,18 +757,19 @@ const ChatInterface: FC<ChatInterfaceProps> = React.memo(
                       <AlertDescription>
                         {error.message || "An error occurred"}
                       </AlertDescription>
-                      {(error as any).isPaymentError && (error as any).purchaseUrl && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-2"
-                          onClick={() => {
-                            window.open((error as any).purchaseUrl, '_blank');
-                          }}
-                        >
-                          Purchase Credits
-                        </Button>
-                      )}
+                      {(error as any).isPaymentError &&
+                        (error as any).purchaseUrl && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="mt-2"
+                            onClick={() => {
+                              window.open((error as any).purchaseUrl, "_blank");
+                            }}
+                          >
+                            Purchase Credits
+                          </Button>
+                        )}
                     </div>
                   </div>
                 </Alert>

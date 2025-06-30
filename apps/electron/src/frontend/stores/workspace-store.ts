@@ -72,7 +72,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   updateWorkspace: async (id, updates) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedWorkspace = await electronPlatformAPI.workspaces.update(id, updates);
+      const updatedWorkspace = await electronPlatformAPI.workspaces.update(
+        id,
+        updates,
+      );
       const workspaces = get().workspaces.map((w) =>
         w.id === id ? updatedWorkspace : w,
       );
