@@ -1,6 +1,6 @@
 {
   "name": "@mcp-router/platform-api",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Platform API abstraction for MCP Router",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
