@@ -12,8 +12,8 @@ import {
   ChevronUp,
   Square,
 } from "lucide-react";
-import { EnhancedErrorDisplay } from "@mcp-router/ui";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp-router/ui";
+import { Alert, AlertDescription } from "@mcp-router/ui";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@mcp-router/ui";
 import { AgentConfig, MCPServerConfig } from "@mcp-router/shared";
 import { extractServerVariables } from "@/lib/utils/server-variable-utils";
 import {
@@ -728,37 +728,60 @@ const ChatInterface: FC<ChatInterfaceProps> = React.memo(
     }, [isCallingTool]);
 
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex-1 overflow-hidden relative">
-          <MessageDisplay
-            agent={agent}
-            messages={messages}
-            servers={servers}
-            enabledTools={enabledTools}
-            onToolConfirmation={onToolConfirmation}
-          />
-          {isCallingTool && (
-            <div className="absolute bottom-4 right-4 bg-muted text-muted-foreground text-xs px-2 py-1 rounded-md border shadow-sm">
-              {toolMessage}
-            </div>
-          )}
-          {error && (
-            <div className="absolute bottom-4 left-4 right-4">
-              <EnhancedErrorDisplay error={error} />
-            </div>
-          )}
+      <TooltipProvider>
+        <div className="flex flex-col h-full">
+          <div className="flex-1 overflow-hidden relative">
+            <MessageDisplay
+              agent={agent}
+              messages={messages}
+              servers={servers}
+              enabledTools={enabledTools}
+              onToolConfirmation={onToolConfirmation}
+            />
+            {isCallingTool && (
+              <div className="absolute bottom-4 right-4 bg-muted text-muted-foreground text-xs px-2 py-1 rounded-md border shadow-sm">
+                {toolMessage}
+              </div>
+            )}
+            {error && (
+              <div className="absolute bottom-4 left-4 right-4">
+                <Alert variant="destructive">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <AlertDescription>
+                        {error.message || "An error occurred"}
+                      </AlertDescription>
+                      {(error as any).isPaymentError && (error as any).purchaseUrl && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-2"
+                          onClick={() => {
+                            window.open((error as any).purchaseUrl, '_blank');
+                          }}
+                        >
+                          Purchase Credits
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Alert>
+              </div>
+            )}
+          </div>
+          <div className="flex-shrink-0">
+            <MessageInput
+              input={input}
+              handleInputChange={handleInputChange}
+              handleSubmit={handleSubmit}
+              placeholder={effectivePlaceholder}
+              isLoading={isLoading}
+              stop={stop}
+            />
+          </div>
         </div>
-        <div className="flex-shrink-0">
-          <MessageInput
-            input={input}
-            handleInputChange={handleInputChange}
-            handleSubmit={handleSubmit}
-            placeholder={effectivePlaceholder}
-            isLoading={isLoading}
-            stop={stop}
-          />
-        </div>
-      </div>
+      </TooltipProvider>
     );
   },
 );

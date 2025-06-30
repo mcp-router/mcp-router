@@ -51,11 +51,3 @@ export function parseErrorMessage(errorMessage: string): ParsedError {
 
   return result;
 }
-
-/**
- * Get user-friendly error messages for common error types
- */
-export function getFriendlyErrorMessage(error: Error): string {
-  const parsed = parseErrorMessage(error.message);
-  return parsed.displayMessage;
-}

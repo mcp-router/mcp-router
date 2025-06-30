@@ -10,6 +10,7 @@ import ChatSessions from "./ChatSessions";
 import { isAgentConfigured } from "@/lib/utils/agent-utils";
 import { useAgentStore } from "../../../stores";
 import { usePlatformAPI } from "@mcp-router/platform-api";
+import { parseErrorMessage } from "@/lib/utils/error-message-utils";
 
 /**
  * エージェントチャットコンポーネント
@@ -108,7 +109,6 @@ const AgentChat: React.FC = () => {
   // 初回ロード時とagentIdが変更された時にセッション一覧を取得
   useEffect(() => {
     if (agent?.id) {
-      console.log("Fetching chat sessions for agent:", agent.id, "authToken:", authToken);
       fetchChatSessions(agent.id);
     }
   }, [agent?.id, fetchChatSessions]);
@@ -357,7 +357,20 @@ const AgentChat: React.FC = () => {
         setIsLoading(false);
         setIsCallingTool(false);
         setCurrentStreamMessage(null);
-        setError(new Error(data.error || "Stream error occurred"));
+        
+        // Parse error message for better display
+        const parsedError = parseErrorMessage(data.error || "Stream error occurred");
+        const errorMessage = parsedError.displayMessage;
+        
+        // Create error object with parsed message
+        const error = new Error(errorMessage);
+        if (parsedError.isPaymentError) {
+          // Add payment error info to error object
+          (error as any).isPaymentError = true;
+          (error as any).purchaseUrl = parsedError.purchaseUrl;
+        }
+        
+        setError(error);
       }
     });
 
@@ -384,11 +397,6 @@ const AgentChat: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setInput(e.target.value);
-  };
-
-  // Dummy functions for compatibility
-  const addToolResult = (_result: any) => {
-    console.log("Tool result (dummy):", _result);
   };
 
   // Custom submit handler - delegates to background component
@@ -430,7 +438,20 @@ const AgentChat: React.FC = () => {
         }
       } catch (error) {
         console.error("Failed to start background chat:", error);
-        setError(error instanceof Error ? error : new Error("Unknown error"));
+        
+        // Parse error message if it's an error object
+        if (error instanceof Error) {
+          const parsedError = parseErrorMessage(error.message);
+          const displayError = new Error(parsedError.displayMessage);
+          if (parsedError.isPaymentError) {
+            (displayError as any).isPaymentError = true;
+            (displayError as any).purchaseUrl = parsedError.purchaseUrl;
+          }
+          setError(displayError);
+        } else {
+          setError(new Error("Unknown error"));
+        }
+        
         // Only set loading to false on error
         setIsLoading(false);
       }
@@ -562,26 +583,9 @@ const AgentChat: React.FC = () => {
         if (!result.success) {
           throw new Error(result.error || "Tool execution failed");
         }
-
-        // Send the result back to the LLM
-        addToolResult({
-          toolCallId,
-          result: result.result,
-        });
       } catch (error) {
         console.error("Tool execution error:", error);
-        addToolResult({
-          toolCallId,
-          result: { error: error.message || "Tool execution failed" },
-        });
-        console.error("Tool execution failed:", error.message);
       }
-    } else {
-      // User denied - return as a result with error information
-      addToolResult({
-        toolCallId,
-        result: { error: "User denied tool execution" },
-      });
     }
   };
 
