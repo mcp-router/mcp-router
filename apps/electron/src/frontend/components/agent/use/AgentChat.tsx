@@ -105,13 +105,13 @@ const AgentChat: React.FC = () => {
     }
   }, [location.pathname, resetChatState, setCurrentSessionId, resetSessions]);
 
-  // 初回ロード時とagentIdが変更された時にセッション一覧を取得（認証がある場合のみ）
+  // 初回ロード時とagentIdが変更された時にセッション一覧を取得
   useEffect(() => {
-    if (agent?.id && authToken) {
+    if (agent?.id) {
+      console.log("Fetching chat sessions for agent:", agent.id, "authToken:", authToken);
       fetchChatSessions(agent.id);
     }
-    // If no auth token, sessions will not be loaded but chat can still work
-  }, [agent?.id, authToken, fetchChatSessions]);
+  }, [agent?.id, fetchChatSessions]);
 
   // Auto-select the newest session after it's created
   useEffect(() => {
@@ -136,8 +136,8 @@ const AgentChat: React.FC = () => {
           // メッセージリセットはuseEffectで処理される
         }
 
-        // セッション一覧を再取得して最新状態にする（認証がある場合のみ）
-        if (agent?.id && authToken) {
+        // セッション一覧を再取得して最新状態にする
+        if (agent?.id) {
           await fetchChatSessions(agent.id);
         }
       } catch (err) {
@@ -314,20 +314,17 @@ const AgentChat: React.FC = () => {
           setIsLoading(false);
           setIsCallingTool(false);
 
-          // Refresh sessions list after a short delay to ensure server has saved the session (only if authenticated)
-          if (authToken) {
-            const wasNewSession = !currentSessionId;
-            setTimeout(async () => {
-              await fetchChatSessions(agent.id);
+          // Refresh sessions list after a short delay to ensure server has saved the session
+          const wasNewSession = !currentSessionId;
+          setTimeout(async () => {
+            await fetchChatSessions(agent.id);
 
-              // If this was a new session, auto-select the most recent session
-              if (wasNewSession) {
-                // Use a state flag to trigger auto-selection after sessions are loaded
-                setNeedsAutoSelection(true);
-              }
-            }, 1000); // 1 second delay
-          }
-          // Without auth, sessions won't be saved to server but local functionality still works
+            // If this was a new session, auto-select the most recent session
+            if (wasNewSession) {
+              // Use a state flag to trigger auto-selection after sessions are loaded
+              setNeedsAutoSelection(true);
+            }
+          }, 1000); // 1 second delay
         } else if (data.finishReason === "tool-calls") {
           setIsCallingTool(true);
         } else if (data.finishReason === "tool-results") {
@@ -643,24 +640,22 @@ const AgentChat: React.FC = () => {
         </div>
       )}
 
-      {/* Sessions Header - Only show if authenticated or if sessions exist */}
-      {(authToken || chatSessions.length > 0) && (
-        <div className="flex-shrink-0">
-          <ChatSessions
-            currentSessionId={currentSessionId}
-            onSessionSelect={handleSessionSelect}
-            onNewSession={handleNewSession}
-            sessions={chatSessions}
-            isLoading={isLoadingSessions}
-            isLoadingMore={isLoadingMoreSessions}
-            hasMore={hasMoreSessions}
-            error={sessionsError}
-            onLoadMore={loadMoreSessions}
-            onDeleteSession={deleteSession}
-            deletingSessions={deletingSessions}
-          />
-        </div>
-      )}
+      {/* Sessions Header - Always show ChatSessions component */}
+      <div className="flex-shrink-0">
+        <ChatSessions
+          currentSessionId={currentSessionId}
+          onSessionSelect={handleSessionSelect}
+          onNewSession={handleNewSession}
+          sessions={chatSessions}
+          isLoading={isLoadingSessions}
+          isLoadingMore={isLoadingMoreSessions}
+          hasMore={hasMoreSessions}
+          error={sessionsError}
+          onLoadMore={loadMoreSessions}
+          onDeleteSession={deleteSession}
+          deletingSessions={deletingSessions}
+        />
+      </div>
 
       {/* Chat Interface */}
       <div
