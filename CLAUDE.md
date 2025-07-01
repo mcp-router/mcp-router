@@ -13,11 +13,9 @@ mcp-router/
 ├── apps/
 │   └── electron/          # Electron desktop application
 ├── packages/
-│   ├── platform-api/      # Platform abstraction layer for multi-platform support
 │   ├── shared/            # Shared types, locales, and utilities
 │   ├── ui/                # Shared UI components (Radix UI + Tailwind)
-│   ├── tailwind-config/   # Shared Tailwind CSS configuration
-│   └── api/               # API package (placeholder for future use)
+│   └── tailwind-config/   # Shared Tailwind CSS configuration
 ├── docs/                  # Documentation assets
 └── public/                # Public assets (icons, images)
 ```
@@ -64,37 +62,23 @@ mcp-router/
 
 ### Platform API Architecture
 
-The codebase uses a **Platform API abstraction** pattern to enable code sharing between Electron and Web platforms:
+The codebase uses a **Platform API abstraction** pattern to enable code sharing between Electron and Web platforms. The Platform API is implemented within the Electron app at `apps/electron/src/lib/platform-api/`:
 
 ```typescript
-// Platform API Interface (simplified)
+// Platform API Interface (located in apps/electron/src/lib/platform-api/types/platform-api.ts)
 interface PlatformAPI {
-  // Server management
-  server: {
-    list(): Promise<Server[]>
-    add(config: ServerConfig): Promise<Server>
-    update(id: string, updates: Partial<Server>): Promise<void>
-    remove(id: string): Promise<void>
-  }
-  // Agent management
-  agent: {
-    list(): Promise<Agent[]>
-    create(agent: AgentCreateInput): Promise<Agent>
-    update(id: string, updates: Partial<Agent>): Promise<void>
-  }
-  // Authentication
-  auth: {
-    getCurrentUser(): Promise<User | null>
-    signIn(email: string, password: string): Promise<User>
-    signOut(): Promise<void>
-  }
-  // Settings
-  settings: {
-    get<T>(key: string): Promise<T | null>
-    set<T>(key: string, value: T): Promise<void>
-  }
+  auth: AuthAPI;         // Authentication management
+  servers: ServerAPI;    // MCP server management
+  agents: AgentAPI;      // Agent management (includes chat)
+  apps: AppAPI;          // Application management (includes tokens)
+  packages: PackageAPI;  // Package management (includes system utils)
+  settings: SettingsAPI; // Settings management
+  logs: LogAPI;          // Log management
+  workspaces: WorkspaceAPI; // Workspace management
 }
 ```
+
+The Electron implementation (`apps/electron/src/frontend/lib/electron-platform-api.ts`) bridges between the React frontend and Electron's main process via IPC.
 
 ### Electron Application Structure
 
@@ -103,8 +87,10 @@ Located in `apps/electron/`:
 #### Main Process (`src/main/`)
 - **Entry Point** (`main.ts`): Electron main process, IPC handlers, system integration
 - **MCP Server Manager** (`mcp-server-manager.ts`): Core service managing MCP server lifecycle
+- **Platform API Manager** (`platform-api-manager.ts`): Manages workspace switching and API routing
 - **Database Layer** (`src/lib/database/`): SQLite-based persistence with repository pattern
-- **Services**: Agent, Log, Settings, Token management services
+- **Services**: Agent, Log, Settings, Token, Workspace management services
+- **Remote API Client** (`services/remote-api-client.ts`): HTTP client for remote workspace operations
 
 #### Renderer Process (`src/`)
 - **React Application** (`app.tsx`): Main React app with HashRouter
@@ -113,10 +99,6 @@ Located in `apps/electron/`:
 - **Platform API Client** (`src/lib/platform-api/`): Electron implementation of Platform API
 
 ### Shared Packages
-
-#### `@mcp-router/platform-api`
-- Abstract interfaces for platform-specific implementations
-- Enables 80%+ code reuse between Electron and Web
 
 #### `@mcp-router/shared`
 - Common types and interfaces
@@ -128,17 +110,21 @@ Located in `apps/electron/`:
 - Tailwind CSS styling
 - Component primitives for consistent UI
 
+#### `@mcp-router/tailwind-config`
+- Shared Tailwind CSS configuration
+- Common theme and design tokens
+
 ## IPC Communication (Electron)
 
 The Electron app uses extensive IPC handlers organized by domain:
 
 ### Server Management
-- `mcp:list-servers` - Get all configured servers
-- `mcp:add-server` - Add new MCP server
-- `mcp:update-server` - Update server configuration
-- `mcp:remove-server` - Remove server
-- `mcp:start-server` - Start MCP server instance
-- `mcp:stop-server` - Stop running server
+- `mcp:list` - Get all configured servers
+- `mcp:add` - Add new MCP server
+- `mcp:update-config` - Update server configuration
+- `mcp:remove` - Remove server
+- `mcp:start` - Start MCP server instance
+- `mcp:stop` - Stop running server
 
 ### Agent Operations
 - `agent:list` - List all agents
@@ -169,6 +155,27 @@ SQLite database with the following main tables:
 
 Migration system located in `src/lib/database/database-migration.ts`
 
+## Workspace Management
+
+MCP Router supports multiple workspaces for organizing MCP servers:
+
+### Workspace Types
+- **Local Workspace**: Uses SQLite database stored locally
+- **Remote Workspace**: Connects to remote API for server management
+
+### Workspace Features
+- Each workspace has its own isolated database
+- Workspace switching updates all services and UI
+- Remote workspaces support team collaboration
+- Credentials are securely stored and encrypted
+
+### Remote Workspace API
+When a workspace is configured as remote, server operations are routed through a Remote API client:
+- All CRUD operations go through HTTP REST endpoints
+- Authentication via Bearer tokens
+- Automatic retry with exponential backoff
+- 30-second timeout for all requests
+
 ## Development Principles
 
 ### SOLID Principles
@@ -190,28 +197,6 @@ Migration system located in `src/lib/database/database-migration.ts`
 - **Boy Scout Rule**: Leave code better than you found it
 - **Test-Driven Development**: Write tests first when possible
 - **Continuous Integration**: Integrate small changes frequently
-
-## Migration Status
-
-The project is actively migrating to support both Electron and Web platforms:
-
-### Completed
-- ✅ Turborepo monorepo structure
-- ✅ Package consolidation into Electron app
-- ✅ Platform API abstraction layer
-- ✅ Shared UI component library
-- ✅ Shared configurations (Tailwind, TypeScript)
-
-### In Progress
-- 🚧 Web application setup (Next.js)
-- 🚧 Web Platform API implementation
-- 🚧 Database abstraction for multi-platform support
-
-### Planned
-- 📋 PostgreSQL support for web version
-- 📋 API routes for web server management
-- 📋 Real-time features (WebSocket/SSE)
-- 📋 Authentication system for web
 
 ## Important Development Notes
 
