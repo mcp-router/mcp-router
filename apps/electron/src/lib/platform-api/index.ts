@@ -22,6 +22,3 @@ export {
   usePlatformAPI,
   type PlatformAPIProviderProps 
 } from "./platform-api-context";
-
-// Re-export window type declaration for Electron
-export * from "./types/window";
