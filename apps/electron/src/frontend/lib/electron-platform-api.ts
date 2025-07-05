@@ -36,6 +36,7 @@ export class ElectronPlatformAPI implements PlatformAPI {
           authenticated: status.authenticated ?? status.loggedIn ?? false,
           userId: status.userId,
           user: status.user,
+          token: status.token,
         })),
       handleToken: (token, state) =>
         window.electronAPI.handleAuthToken(token, state),
