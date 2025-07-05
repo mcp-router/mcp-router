@@ -44,17 +44,6 @@ const ServerDetailsRemoveDialog: React.FC<ServerDetailsRemoveDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
-          <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/20 text-destructive shadow-sm">
-            <div className="flex items-start gap-3">
-              <Server className="h-5 w-5 mt-0.5 text-destructive" />
-              <div>
-                <p className="font-medium">{server.name}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <DialogFooter className="sm:justify-between gap-3 mt-2">
           <Button
             variant="outline"
