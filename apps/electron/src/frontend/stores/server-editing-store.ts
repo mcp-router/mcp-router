@@ -9,6 +9,7 @@ interface ServerEditingState {
   editedCommand: string;
   editedArgs: string[];
   editedBearerToken: string;
+  editedAutoStart: boolean;
   envPairs: { key: string; value: string }[];
 
   // Actions
@@ -17,6 +18,7 @@ interface ServerEditingState {
   setEditedCommand: (command: string) => void;
   setEditedArgs: (args: string[]) => void;
   setEditedBearerToken: (token: string) => void;
+  setEditedAutoStart: (autoStart: boolean) => void;
   setEnvPairs: (pairs: { key: string; value: string }[]) => void;
 
   // Array manipulation actions
@@ -33,6 +35,7 @@ interface ServerEditingState {
     command?: string;
     args?: string[];
     bearerToken?: string;
+    autoStart?: boolean;
     env?: Record<string, string | boolean | number>;
   }) => void;
 
@@ -47,6 +50,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
   editedCommand: "",
   editedArgs: [],
   editedBearerToken: "",
+  editedAutoStart: false,
   envPairs: [],
 
   // Basic setters
@@ -55,6 +59,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
   setEditedCommand: (editedCommand) => set({ editedCommand }),
   setEditedArgs: (editedArgs) => set({ editedArgs }),
   setEditedBearerToken: (editedBearerToken) => set({ editedBearerToken }),
+  setEditedAutoStart: (editedAutoStart) => set({ editedAutoStart }),
   setEnvPairs: (envPairs) => set({ envPairs }),
 
   // Array manipulation
@@ -98,6 +103,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
       editedCommand: server.command || "",
       editedArgs: server.args || [],
       editedBearerToken: server.bearerToken || "",
+      editedAutoStart: server.autoStart || false,
       envPairs: Object.entries(server.env || {}).map(([key, value]) => ({
         key,
         value: String(value),
@@ -113,6 +119,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
       editedCommand: "",
       editedArgs: [],
       editedBearerToken: "",
+      editedAutoStart: false,
       envPairs: [],
     }),
 }));

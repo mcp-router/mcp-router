@@ -24,24 +24,14 @@ const ServerDetails: React.FC<ServerDetailsProps> = ({ server }) => {
   const { t } = useTranslation();
   const { updateServerConfig } = useServerStore();
   const {
-    isAdvancedEditing,
     isLoading,
     editedCommand,
     editedArgs,
     editedBearerToken,
+    editedAutoStart,
     envPairs,
     setIsAdvancedEditing,
     setIsLoading,
-    setEditedCommand,
-    setEditedArgs,
-    setEditedBearerToken,
-    setEnvPairs,
-    updateArg,
-    removeArg,
-    addArg,
-    updateEnvPair,
-    removeEnvPair,
-    addEnvPair,
     initializeFromServer,
     reset,
   } = useServerEditingStore();
@@ -146,6 +136,7 @@ const ServerDetails: React.FC<ServerDetailsProps> = ({ server }) => {
         command: editedCommand,
         args: editedArgs,
         env: envObj,
+        autoStart: editedAutoStart,
         inputParams: server.inputParams,
       };
 

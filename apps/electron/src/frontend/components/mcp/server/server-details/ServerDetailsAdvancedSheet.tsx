@@ -14,6 +14,7 @@ import { Button } from "@mcp-router/ui";
 import ServerDetailsLocal from "./ServerDetailsLocal";
 import ServerDetailsRemote from "./ServerDetailsRemote";
 import ServerDetailsEnvironment from "./ServerDetailsEnvironment";
+import ServerDetailsAutoStart from "./ServerDetailsAutoStart";
 import { useServerEditingStore } from "@/frontend/stores";
 
 interface ServerDetailsAdvancedSheetProps {
@@ -32,11 +33,13 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     editedCommand,
     editedArgs,
     editedBearerToken,
+    editedAutoStart,
     envPairs,
     setIsAdvancedEditing: setIsOpen,
     setEditedCommand,
     setEditedArgs,
     setEditedBearerToken,
+    setEditedAutoStart,
     updateArg,
     removeArg,
     addArg,
@@ -80,6 +83,14 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
               setEditedBearerToken={setEditedBearerToken}
             />
           )}
+
+          {/* Auto Start Configuration (common for both server types) */}
+          <ServerDetailsAutoStart
+            server={server}
+            isEditing={true}
+            editedAutoStart={editedAutoStart}
+            setEditedAutoStart={setEditedAutoStart}
+          />
 
           {/* Environment Variables (common for both server types) */}
           <ServerDetailsEnvironment

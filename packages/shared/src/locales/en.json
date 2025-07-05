@@ -530,7 +530,11 @@
     "exportConfigDescription": "Export server configuration as JSON file",
     "itemsCount": "items",
     "serverStopped": "Server stopped",
-    "commandNotFound": "Command is not installed. Server startup may fail."
+    "commandNotFound": "Command is not installed. Server startup may fail.",
+    "autoStart": "Auto Start",
+    "autoStartDescription": "Automatically start this server when the application launches",
+    "autoStartToggleLabel": "Enable auto-start",
+    "autoStartEnabled": "This server will start automatically when the application launches."
   },
   "server": {
     "status": {

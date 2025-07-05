@@ -201,7 +201,7 @@ export const createServerStore = (
         setUpdating(id, true);
         setError(null);
 
-        const updatedServer = await platformAPI.servers.update(id, { config });
+        const updatedServer = await platformAPI.servers.update(id, config);
         updateServer(id, updatedServer);
       } catch (error) {
         setError(
