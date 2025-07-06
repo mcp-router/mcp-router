@@ -57,7 +57,7 @@ const Home: React.FC = () => {
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const [serverToRemove, setServerToRemove] = useState<MCPServer | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
-  
+
   // State for error modal
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorServer, setErrorServer] = useState<MCPServer | null>(null);
@@ -79,7 +79,7 @@ const Home: React.FC = () => {
     setServerToRemove(server);
     setIsRemoveDialogOpen(true);
   };
-  
+
   // Handle opening error modal
   const openErrorModal = (server: MCPServer, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -292,13 +292,13 @@ const Home: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           {server.status === "error" && (
-                              <button
-                                  className="text-destructive hover:text-destructive/80 p-1.5 rounded-full hover:bg-destructive/10 transition-colors"
-                                  onClick={(e) => openErrorModal(server, e)}
-                                  title={t("serverList.errorDetails")}
-                              >
-                                <AlertCircle className="h-4 w-4" />
-                              </button>
+                            <button
+                              className="text-destructive hover:text-destructive/80 p-1.5 rounded-full hover:bg-destructive/10 transition-colors"
+                              onClick={(e) => openErrorModal(server, e)}
+                              title={t("serverList.errorDetails")}
+                            >
+                              <AlertCircle className="h-4 w-4" />
+                            </button>
                           )}
                           <span className="text-xs text-muted-foreground">
                             {server.status === "running"
@@ -379,7 +379,7 @@ const Home: React.FC = () => {
           handleRemove={handleRemoveServer}
         />
       )}
-      
+
       {/* Error Details Modal */}
       {errorServer && (
         <ServerErrorModal

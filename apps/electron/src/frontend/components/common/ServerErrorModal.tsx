@@ -26,7 +26,7 @@ export const ServerErrorModal: React.FC<ServerErrorModalProps> = ({
   errorMessage,
 }) => {
   const { t } = useTranslation();
-  
+
   // Parse the error message for better display
   const parsedError = errorMessage ? parseErrorMessage(errorMessage) : null;
 
@@ -38,13 +38,13 @@ export const ServerErrorModal: React.FC<ServerErrorModalProps> = ({
             <AlertCircle className="h-5 w-5 text-destructive" />
             {t("serverList.errorDetails")}
           </DialogTitle>
-          <DialogDescription>
-            {serverName}
-          </DialogDescription>
+          <DialogDescription>{serverName}</DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[400px] rounded-md border p-4">
           <pre className="text-sm whitespace-pre-wrap break-words font-mono">
-            {parsedError?.displayMessage || errorMessage || t("serverList.noErrorDetails")}
+            {parsedError?.displayMessage ||
+              errorMessage ||
+              t("serverList.noErrorDetails")}
           </pre>
         </ScrollArea>
         {parsedError?.isPaymentError && parsedError.purchaseUrl && (

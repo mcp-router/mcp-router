@@ -21,13 +21,13 @@ export function setupAuthHandlers(): void {
     const result = await status();
     // Notifying renderer about auth status
     if (mainWindow) {
-      mainWindow.webContents.send('auth:status-changed', {
+      mainWindow.webContents.send("auth:status-changed", {
         loggedIn: result.authenticated,
-        userId: result.userId || '',
-        user: result.user || null
+        userId: result.userId || "",
+        user: result.user || null,
       });
     }
-    
+
     return result;
   });
 

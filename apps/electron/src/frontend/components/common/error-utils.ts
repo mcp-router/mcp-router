@@ -8,14 +8,14 @@ import { parseErrorMessage } from "@/lib/utils/error-message-utils";
  */
 export function showServerError(error: Error, serverName?: string): void {
   const parsedError = parseErrorMessage(error.message);
-  
+
   // Build the error message with server context
   let errorMessage = parsedError.displayMessage;
-  
+
   if (serverName) {
     errorMessage = `${serverName}: ${errorMessage}`;
   }
-  
+
   // Show appropriate toast based on error type
   if (parsedError.isPaymentError) {
     toast.error(errorMessage, {
@@ -35,7 +35,7 @@ export function showServerError(error: Error, serverName?: string): void {
       duration: 5000,
     });
   }
-  
+
   // Log the full error for debugging
   console.error("Server operation failed:", {
     serverName,
@@ -52,11 +52,11 @@ export function showServerError(error: Error, serverName?: string): void {
 export function showError(error: Error | string, context?: string): void {
   const errorMessage = error instanceof Error ? error.message : error;
   const displayMessage = context ? `${context}: ${errorMessage}` : errorMessage;
-  
+
   toast.error(displayMessage, {
     duration: 5000,
   });
-  
+
   // Log for debugging
   console.error("Operation failed:", {
     context,

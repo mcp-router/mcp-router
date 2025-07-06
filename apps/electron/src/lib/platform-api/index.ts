@@ -1,6 +1,6 @@
 /**
  * Platform API exports for Electron
- * 
+ *
  * This module provides all the platform API types and utilities
  * specifically for the Electron application
  */
@@ -17,8 +17,8 @@ export * from "./types/domains/log-api";
 export * from "./types/domains/workspace-api";
 
 // Platform API React context and provider
-export { 
-  PlatformAPIProvider, 
+export {
+  PlatformAPIProvider,
   usePlatformAPI,
-  type PlatformAPIProviderProps 
+  type PlatformAPIProviderProps,
 } from "./platform-api-context";

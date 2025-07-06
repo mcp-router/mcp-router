@@ -129,7 +129,7 @@ export const McpSettings: React.FC<McpSettingsProps> = ({
         serverId,
         isDev,
       );
-      
+
       if (!response) {
         setErrorMessage("Failed to connect to server");
         setIsErrorModalOpen(true);

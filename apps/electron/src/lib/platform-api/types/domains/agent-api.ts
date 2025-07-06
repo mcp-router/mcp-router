@@ -79,7 +79,11 @@ export interface AgentAPI {
   // Tool management
   tools: {
     execute(agentId: string, toolName: string, args: any): Promise<ToolResult>;
-    list(agentId: string, serverId: string, isDev?: boolean): Promise<{
+    list(
+      agentId: string,
+      serverId: string,
+      isDev?: boolean,
+    ): Promise<{
       success: boolean;
       tools: Tool[];
       error?: string;
