@@ -536,9 +536,7 @@
     "serverStopped": "サーバを停止しました",
     "commandNotFound": "コマンドがインストールされていません。サーバの起動に失敗する可能性があります。",
     "autoStart": "自動起動",
-    "autoStartDescription": "アプリケーション起動時にこのサーバを自動的に起動します",
-    "autoStartToggleLabel": "自動起動を有効にする",
-    "autoStartEnabled": "このサーバはアプリケーション起動時に自動的に起動されます。"
+    "autoStartToggleLabel": "自動起動を有効にする"
   },
   "languages": {
     "en": "英語",

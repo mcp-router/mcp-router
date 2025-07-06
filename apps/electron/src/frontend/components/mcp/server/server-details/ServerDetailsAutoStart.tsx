@@ -28,9 +28,6 @@ const ServerDetailsAutoStart: React.FC<ServerDetailsAutoStartProps> = ({
             <h3 className="text-sm font-medium leading-none">
               {t("serverDetails.autoStart")}
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("serverDetails.autoStartDescription")}
-            </p>
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/50">
@@ -47,12 +44,6 @@ const ServerDetailsAutoStart: React.FC<ServerDetailsAutoStartProps> = ({
               disabled={!isEditing}
             />
           </div>
-
-          {(isEditing ? editedAutoStart : server.autoStart) && (
-            <p className="text-xs text-muted-foreground pl-1">
-              {t("serverDetails.autoStartEnabled")}
-            </p>
-          )}
         </div>
       </div>
     </div>
