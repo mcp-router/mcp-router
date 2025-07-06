@@ -45,6 +45,7 @@ export interface MCPPrompt {
 export interface MCPServer extends MCPServerConfig {
   id: string;
   status: "running" | "starting" | "stopping" | "stopped" | "error";
+  errorMessage?: string; // Error message when status is "error"
   logs?: string[];
   // Properties for the MCP Test Page
   tools?: MCPTool[];

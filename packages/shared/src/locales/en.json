@@ -193,7 +193,8 @@
     "serverStopped": "Server stopped successfully",
     "activeNow": "Active Now",
     "start": "Start",
-    "stop": "Stop"
+    "stop": "Stop",
+    "errorDetails": "Error Details"
   },
   "settings": {
     "title": "Settings",

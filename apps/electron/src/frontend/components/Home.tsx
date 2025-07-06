@@ -12,12 +12,14 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils/tailwind-utils";
-import { Trash } from "lucide-react";
+import { Trash, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useServerStore } from "../stores";
+import { showServerError } from "@/frontend/components/common";
 
 // Import components
 import ServerDetails from "@/frontend/components/mcp/server/ServerDetails";
+import { ServerErrorModal } from "@/frontend/components/common/ServerErrorModal";
 import { Link } from "react-router-dom";
 import { Button } from "@mcp-router/ui";
 import {
@@ -55,6 +57,10 @@ const Home: React.FC = () => {
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const [serverToRemove, setServerToRemove] = useState<MCPServer | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+  
+  // State for error modal
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorServer, setErrorServer] = useState<MCPServer | null>(null);
 
   // Toggle expanded server details
   const toggleServerExpand = (serverId: string) => {
@@ -72,6 +78,13 @@ const Home: React.FC = () => {
     e.stopPropagation();
     setServerToRemove(server);
     setIsRemoveDialogOpen(true);
+  };
+  
+  // Handle opening error modal
+  const openErrorModal = (server: MCPServer, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setErrorServer(server);
+    setErrorModalOpen(true);
   };
 
   // Handle server removal
@@ -278,6 +291,15 @@ const Home: React.FC = () => {
                             )}
                         </div>
                         <div className="flex items-center gap-2">
+                          {server.status === "error" && (
+                              <button
+                                  className="text-destructive hover:text-destructive/80 p-1.5 rounded-full hover:bg-destructive/10 transition-colors"
+                                  onClick={(e) => openErrorModal(server, e)}
+                                  title={t("serverList.errorDetails")}
+                              >
+                                <AlertCircle className="h-4 w-4" />
+                              </button>
+                          )}
                           <span className="text-xs text-muted-foreground">
                             {server.status === "running"
                               ? t("serverList.status.running")
@@ -314,12 +336,12 @@ const Home: React.FC = () => {
                                     "Server operation failed:",
                                     error,
                                   );
-                                  toast.error(
-                                    t("serverList.status.error") +
-                                      ": " +
-                                      (error instanceof Error
-                                        ? error.message
-                                        : "Unknown error"),
+                                  // Use enhanced error display with server name context
+                                  showServerError(
+                                    error instanceof Error
+                                      ? error
+                                      : new Error(String(error)),
+                                    server.name,
                                   );
                                 }
                               }}
@@ -355,6 +377,16 @@ const Home: React.FC = () => {
           isLoading={isRemoving}
           setIsOpen={setIsRemoveDialogOpen}
           handleRemove={handleRemoveServer}
+        />
+      )}
+      
+      {/* Error Details Modal */}
+      {errorServer && (
+        <ServerErrorModal
+          isOpen={errorModalOpen}
+          onClose={() => setErrorModalOpen(false)}
+          serverName={errorServer.name}
+          errorMessage={errorServer.errorMessage}
         />
       )}
     </div>

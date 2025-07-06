@@ -198,7 +198,8 @@
     "serverStopped": "サーバーを停止しました",
     "activeNow": "現在アクティブ",
     "start": "開始",
-    "stop": "停止"
+    "stop": "停止",
+    "errorDetails": "エラーの詳細"
   },
   "settings": {
     "title": "設定",

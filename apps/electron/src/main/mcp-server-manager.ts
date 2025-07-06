@@ -458,7 +458,7 @@ export class MCPServerManager {
   public async startServer(id: string, clientId?: string): Promise<boolean> {
     const server = this.servers.get(id);
     if (!server || server.disabled) {
-      return false;
+      throw new Error(server ? "Server is disabled" : "Server not found");
     }
 
     // If the server is already running, do nothing
@@ -466,39 +466,35 @@ export class MCPServerManager {
       return true;
     }
 
-    try {
-      server.status = "starting";
-      const client = await this.connectToServer(id);
-      if (client) {
-        this.clients.set(id, client);
-        server.status = "running";
+    server.status = "starting";
+    const result = await this.connectToServerWithResult(id);
 
-        // Register the client (previously done in MCPAggregatorServer)
-        this.serverStatusMap.set(server.name, true);
-
-        // Record log of client registration with client identification
-        this.recordRequestLog({
-          timestamp: new Date().toISOString(),
-          requestType: "StartServer",
-          params: {
-            serverName: server.name,
-          },
-          result: "success",
-          duration: 0,
-          clientId: clientId || "unknownClient",
-        });
-
-        return true;
-      }
-
-      // Handle the case where connection failed but didn't throw an exception
+    if (result.status === "error") {
       server.status = "error";
-      return false;
-    } catch (error) {
-      console.error(`Failed to start MCP server ${server.name}:`, error);
-      server.status = "error";
-      return false;
+      server.errorMessage = result.error;
+      throw new Error(result.error);
     }
+
+    this.clients.set(id, result.client);
+    server.status = "running";
+    server.errorMessage = undefined; // Clear any previous error message
+
+    // Register the client (previously done in MCPAggregatorServer)
+    this.serverStatusMap.set(server.name, true);
+
+    // Record log of client registration with client identification
+    this.recordRequestLog({
+      timestamp: new Date().toISOString(),
+      requestType: "StartServer",
+      params: {
+        serverName: server.name,
+      },
+      result: "success",
+      duration: 0,
+      clientId: clientId || "unknownClient",
+    });
+
+    return true;
   }
 
   /**
@@ -647,6 +643,51 @@ export class MCPServerManager {
     } catch (error) {
       server.status = "error";
       return null;
+    }
+  }
+
+  /**
+   * Connect to an MCP server and return the full result
+   */
+  private async connectToServerWithResult(
+    id: string,
+  ): Promise<
+    { status: "success"; client: Client } | { status: "error"; error: string }
+  > {
+    const server = this.servers.get(id);
+    if (!server) {
+      return { status: "error", error: "Server not found" };
+    }
+
+    try {
+      // Use the shared utility function for connecting to MCP servers
+      const result = await connectToMCPServer(
+        {
+          id: server.id,
+          name: server.name,
+          serverType: server.serverType,
+          command: server.command,
+          args: server.args
+            ? substituteArgsParameters(
+                server.args,
+                server.env || {},
+                server.inputParams || {},
+              )
+            : undefined,
+          remoteUrl: server.remoteUrl,
+          bearerToken: server.bearerToken,
+          env: server.env,
+          inputParams: server.inputParams,
+        },
+        "mcp-router",
+      );
+
+      return result;
+    } catch (error) {
+      return {
+        status: "error",
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+      };
     }
   }
 

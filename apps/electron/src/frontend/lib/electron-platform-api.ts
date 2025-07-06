@@ -130,7 +130,7 @@ export class ElectronPlatformAPI implements PlatformAPI {
             serverId,
             isDev,
           );
-          return result.tools || [];
+          return result;
         },
       },
 

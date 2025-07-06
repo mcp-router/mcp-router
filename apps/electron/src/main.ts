@@ -586,8 +586,12 @@ function setupMcpServerHandlers(): void {
   });
 
   ipcMain.handle("mcp:start", async (_, id: string) => {
-    const result = await mcpServerManager.startServer(id, "MCP Router UI");
-    return result;
+    try {
+      const result = await mcpServerManager.startServer(id, "MCP Router UI");
+      return result;
+    } catch (error) {
+      throw error;
+    }
   });
 
   ipcMain.handle("mcp:stop", (_, id: string) => {

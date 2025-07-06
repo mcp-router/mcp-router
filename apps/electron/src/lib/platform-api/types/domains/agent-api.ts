@@ -24,6 +24,8 @@ export interface Tool {
   name: string;
   description?: string;
   parameters?: any;
+  enabled?: boolean;
+  inputSchema?: any;
 }
 
 export interface ToolResult {
@@ -77,7 +79,11 @@ export interface AgentAPI {
   // Tool management
   tools: {
     execute(agentId: string, toolName: string, args: any): Promise<ToolResult>;
-    list(agentId: string, serverId: string, isDev?: boolean): Promise<Tool[]>;
+    list(agentId: string, serverId: string, isDev?: boolean): Promise<{
+      success: boolean;
+      tools: Tool[];
+      error?: string;
+    }>;
   };
 
   // Session management
