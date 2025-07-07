@@ -225,7 +225,10 @@
     "refreshingCredits": "更新中...",
     "community": "コミュニティ",
     "communityDescription": "Discordコミュニティに参加して、サポートを受けたり、フィードバックを共有したり、他のユーザーとつながりましょう。",
-    "joinDiscord": "Discordコミュニティに参加"
+    "joinDiscord": "Discordコミュニティに参加",
+    "advanced": "高度な設定",
+    "loadExternalMCPConfigs": "外部アプリケーションからMCP設定を読み込む",
+    "loadExternalMCPConfigsDescription": "Claude for Desktopなどの他のアプリケーションからサーバー設定をインポートできるようにします"
   },
   "agents": {
     "title": "エージェント",

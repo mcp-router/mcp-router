@@ -12,6 +12,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import { app } from "electron";
+import { getSettingsService } from "@/main/services/settings-service";
 
 // Client type definition
 type ClientType = "vscode" | "claude" | "cline" | "windsurf" | "cursor";
@@ -38,6 +39,14 @@ export async function syncServersFromClientConfig(
   }
 
   try {
+    // Check if external MCP configs loading is enabled
+    const settingsService = getSettingsService();
+    const settings = await settingsService.getSettings();
+
+    if (settings.loadExternalMCPConfigs === false) {
+      return;
+    }
+
     // 既存のサーバを取得して重複を避ける
     const serverService = getServerService();
     const existingServers = serverService.getAllServers();
@@ -72,6 +81,14 @@ export async function syncServersFromClientConfig(
  */
 export async function importExistingServerConfigurations(): Promise<void> {
   try {
+    // Check if external MCP configs loading is enabled
+    const settingsService = getSettingsService();
+    const settings = await settingsService.getSettings();
+
+    if (settings.loadExternalMCPConfigs === false) {
+      return;
+    }
+
     console.log(
       "Checking for existing MCP server configurations in client apps...",
     );

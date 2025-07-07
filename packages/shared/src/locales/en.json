@@ -220,7 +220,10 @@
     "refreshingCredits": "Refreshing...",
     "community": "Community",
     "communityDescription": "Join our Discord community to get support, share feedback, and connect with other users.",
-    "joinDiscord": "Join Discord Community"
+    "joinDiscord": "Join Discord Community",
+    "advanced": "Advanced Settings",
+    "loadExternalMCPConfigs": "Load MCP configurations from external applications",
+    "loadExternalMCPConfigsDescription": "Allow MCP Router to import server configurations from other applications like Claude for Desktop"
   },
   "agents": {
     "title": "Agents",

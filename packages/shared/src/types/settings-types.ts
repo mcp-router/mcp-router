@@ -33,6 +33,12 @@ export interface AppSettings {
    * パッケージマネージャーオーバーレイの表示回数
    */
   packageManagerOverlayDisplayCount?: number;
+
+  /**
+   * 外部アプリケーションからのMCP設定の読み込みを有効化するか
+   * デフォルト: true
+   */
+  loadExternalMCPConfigs?: boolean;
 }
 
 /**
@@ -53,4 +59,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
     resourceTemplateDescriptionRule: "[{serverName}] {description}",
   },
   packageManagerOverlayDisplayCount: 0,
+  loadExternalMCPConfigs: true,
 };
