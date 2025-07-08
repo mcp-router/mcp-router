@@ -1,7 +1,7 @@
 {
   "name": "@mcp-router/electron",
   "productName": "MCP Router",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "private": true,
   "main": ".webpack/main",
   "repository": {
