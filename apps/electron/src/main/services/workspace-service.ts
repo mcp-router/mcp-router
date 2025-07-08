@@ -1,7 +1,7 @@
 import { BaseService } from "./base-service";
 import { Singleton } from "../../lib/utils/backend/singleton";
 import { SqliteManager } from "../../lib/database/sqlite-manager";
-import { safeStorage, session, app } from "electron";
+import { session, app } from "electron";
 import { EventEmitter } from "events";
 import path from "path";
 import fs from "fs/promises";
@@ -243,14 +243,12 @@ export class WorkspaceService
         };
       }
 
-      // リモートワークスペースの場合、認証トークンを暗号化
+      // リモートワークスペースの場合、認証トークンをそのまま保存
       if (config.type === "remote" && config.remoteConfig?.authToken) {
-        await this.saveWorkspaceCredentials(
-          workspace.id,
-          config.remoteConfig.authToken,
-        );
-        // 元のトークンは保存しない
-        workspace.remoteConfig!.authToken = undefined;
+        workspace.remoteConfig = {
+          ...workspace.remoteConfig,
+          authToken: config.remoteConfig.authToken,
+        };
       }
 
       this.metaDb
@@ -290,11 +288,7 @@ export class WorkspaceService
       const workspace = await this.findById(id);
       if (!workspace) throw new Error(`Workspace ${id} not found`);
 
-      // 認証トークンが含まれている場合は暗号化
-      if (updates.remoteConfig?.authToken) {
-        await this.saveWorkspaceCredentials(id, updates.remoteConfig.authToken);
-        updates.remoteConfig.authToken = undefined;
-      }
+      // 認証トークンの更新処理は特に必要なし
 
       const updated = { ...workspace, ...updates, lastUsedAt: new Date() };
 
@@ -471,46 +465,14 @@ export class WorkspaceService
     }
   }
 
-  /**
-   * 認証情報の暗号化保存
-   */
-  private async saveWorkspaceCredentials(
-    workspaceId: string,
-    token: string,
-  ): Promise<void> {
-    if (!this.metaDb) throw new Error("Meta database not initialized");
-
-    if (safeStorage.isEncryptionAvailable()) {
-      const encrypted = safeStorage.encryptString(token);
-      const encryptedBase64 = encrypted.toString("base64");
-
-      // メタDBに保存
-      this.metaDb
-        .prepare(
-          "UPDATE workspaces SET remoteConfig = json_set(remoteConfig, '$.authToken', ?) WHERE id = ?",
-        )
-        .run(encryptedBase64, workspaceId);
-    } else {
-      throw new Error("Encryption not available");
-    }
-  }
 
   /**
-   * 認証情報の復号化取得
+   * 認証情報の取得
    */
   async getWorkspaceCredentials(workspaceId: string): Promise<string | null> {
     try {
       const workspace = await this.findById(workspaceId);
-      if (!workspace?.remoteConfig?.authToken) return null;
-
-      if (safeStorage.isEncryptionAvailable()) {
-        const encrypted = Buffer.from(
-          workspace.remoteConfig.authToken,
-          "base64",
-        );
-        return safeStorage.decryptString(encrypted);
-      }
-      return null;
+      return workspace?.remoteConfig?.authToken || null;
     } catch (error) {
       return this.handleError("get credentials", error, null);
     }

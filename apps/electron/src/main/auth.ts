@@ -4,10 +4,6 @@ import crypto from "crypto";
 import { shell } from "electron";
 import { fetchWithToken } from "../lib/utils/backend/fetch-utils";
 import { machineIdSync } from "node-machine-id";
-import {
-  decryptStringSync,
-  encryptStringSync,
-} from "../lib/utils/backend/encryption-utils";
 
 // Store authentication state for PKCE flow
 interface AuthState {
@@ -162,15 +158,12 @@ async function exchangeCodeForToken(
     const tokenData = await tokenResponse.json();
 
     if (tokenData.accessToken) {
-      // Encrypt the token using encryption utility - now async
-      const encryptedAccessToken = encryptStringSync(tokenData.accessToken);
-
       // Get the settings service to store the token
       const settingsService = getSettingsService();
 
       // Get current settings and update with the new token
       const settings = settingsService.getSettings();
-      settings.authToken = encryptedAccessToken;
+      settings.authToken = tokenData.accessToken;
       settings.loggedInAt = new Date().toISOString();
 
       settingsService.saveSettings(settings);
@@ -232,8 +225,8 @@ export function logout(): boolean {
 }
 
 /**
- * Get the decrypted authentication token from settings
- * @returns The decrypted authentication token or null if not available
+ * Get the authentication token from settings
+ * @returns The authentication token or null if not available
  */
 export async function getDecryptedAuthToken(): Promise<string | null> {
   try {
@@ -243,15 +236,10 @@ export async function getDecryptedAuthToken(): Promise<string | null> {
     // Get current settings
     const settings = settingsService.getSettings();
 
-    // If there's no auth token, return null
-    if (!settings.authToken) {
-      return null;
-    }
-
-    // Decrypt the stored token using decryption utility - now async
-    return decryptStringSync(settings.authToken);
+    // Return the auth token directly
+    return settings.authToken || null;
   } catch (error) {
-    console.error("Error decrypting auth token:", error);
+    console.error("Error getting auth token:", error);
     return null;
   }
 }

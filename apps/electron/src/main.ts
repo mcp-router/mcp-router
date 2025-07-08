@@ -12,7 +12,6 @@ import { MCPServerManager } from "./main/mcp-server-manager";
 import { MCPServerConfig } from "@mcp-router/shared";
 import { getTokenService } from "@/main/services/token-service";
 import { TokenScope } from "@mcp-router/shared";
-import { setEncryptionInitialized } from "./lib/utils/backend/encryption-utils";
 import {
   fetchMcpServersFromIndex,
   fetchMcpServerVersionDetails,
@@ -71,7 +70,7 @@ app.on("second-instance", (event, commandLine) => {
   }
 });
 
-// 初回起動時の処理をここでカスタマイズ可能
+// Squirrelの初回起動時の処理
 if (started) app.quit();
 
 // Global references
@@ -381,8 +380,6 @@ async function initApplication(): Promise<void> {
     });
   }
 
-  // 暗号化機能の初期化を待機
-  await setEncryptionInitialized(true);
 
   // データベース初期化
   await initDatabase();

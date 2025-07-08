@@ -2,12 +2,6 @@ import { BaseRepository } from "./base-repository";
 import { SqliteManager, getSqliteManager } from "./sqlite-manager";
 import { MCPServer, MCPServerConfig } from "@mcp-router/shared";
 import { v4 as uuidv4 } from "uuid";
-import {
-  decryptStringSync,
-  encryptObjectSync,
-  decryptObjectSync,
-  encryptStringSync,
-} from "../utils/backend/encryption-utils";
 
 /**
  * サーバ情報用リポジトリクラス
@@ -69,48 +63,25 @@ export class ServerRepository extends BaseRepository<MCPServer> {
     }
   }
 
-  /**
-   * 暗号化された文字列を安全に復号（エラーハンドリング付き）
-   * 復号に失敗した場合は元の値を返す（後方互換性のため）
-   * CryptoJS実装では既にdecryptStringSync内部でエラーハンドリングしているが、
-   * 二重の安全性を確保するためにここでも処理する
-   * @param encryptedValue 暗号化された値
-   * @param errorLabel エラーメッセージ用のラベル
-   * @returns 復号された文字列
-   */
-  private safedecryptString(
-    encryptedValue: string | null,
-    errorLabel: string,
-  ): string | null {
-    if (!encryptedValue) return null;
-    const result = decryptStringSync(encryptedValue);
-    return result;
-  }
 
   /**
-   * 暗号化されたJSONオブジェクトを安全に復号（エラーハンドリング付き）
-   * 復号またはJSONパースに失敗した場合はデフォルト値を返す
-   * @param encryptedValue 暗号化された値
+   * JSON文字列を安全にパース
+   * @param jsonString JSON文字列
    * @param errorLabel エラーメッセージ用のラベル
-   * @param defaultValue 復号失敗時のデフォルト値
-   * @returns 復号されたオブジェクトを解決するPromise
+   * @param defaultValue パース失敗時のデフォルト値
+   * @returns パースされたオブジェクト
    */
-  private safeDecryptJSON<T>(
-    encryptedValue: string | null,
+  private safeParseJSON<T>(
+    jsonString: string | null,
     errorLabel: string,
     defaultValue: T,
   ): T {
-    if (!encryptedValue) return defaultValue;
+    if (!jsonString) return defaultValue;
 
     try {
-      // 暗号化されたデータとして復号を試みる
-      // decryptObjectSync内で非暗号化データのJSONパースも試行されるので、単純化
-      const result = decryptObjectSync<T>(encryptedValue);
-      if (result !== null) {
-        return result;
-      }
-      return defaultValue;
+      return JSON.parse(jsonString) as T;
     } catch (error) {
+      console.error(`${errorLabel}のJSONパースに失敗しました:`, error);
       return defaultValue;
     }
   }
@@ -120,8 +91,8 @@ export class ServerRepository extends BaseRepository<MCPServer> {
    */
   protected mapRowToEntity(row: any): MCPServer {
     try {
-      // 暗号化されたデータを復号（共通化した関数を使用）- 非同期で処理
-      const env = this.safeDecryptJSON<Record<string, any>>(
+      // データをパース
+      const env = this.safeParseJSON<Record<string, any>>(
         row.env,
         "環境変数",
         {},
@@ -129,18 +100,15 @@ export class ServerRepository extends BaseRepository<MCPServer> {
       const requiredParams: string[] = row.required_params
         ? JSON.parse(row.required_params)
         : [];
-      const command = this.safedecryptString(row.command, "コマンド");
-      const bearerToken = this.safedecryptString(
-        row.bearer_token,
-        "認証トークン",
-      );
-      const inputParams = this.safeDecryptJSON<any>(
+      const command = row.command;
+      const bearerToken = row.bearer_token;
+      const inputParams = this.safeParseJSON<any>(
         row.input_params,
         "入力パラメータ",
         undefined,
       );
-      const args = this.safeDecryptJSON<any[]>(row.args, "引数", []);
-      const remoteUrl = this.safedecryptString(row.remote_url, "リモートURL");
+      const args = this.safeParseJSON<any[]>(row.args, "引数", []);
+      const remoteUrl = row.remote_url;
 
       // エンティティオブジェクトを構築
       return {
@@ -170,27 +138,18 @@ export class ServerRepository extends BaseRepository<MCPServer> {
   }
 
   /**
-   * エンティティの機密データをまとめて暗号化（非同期バージョン）
-   * bearerToken, env, inputParams, args, remoteUrlを暗号化
+   * エンティティのデータをJSON文字列に変換
    * @param entity サーバーエンティティ
-   * @returns 暗号化されたデータのオブジェクトを解決するPromise
+   * @returns JSON文字列化されたデータのオブジェクト
    */
-  private encryptSensitiveData(entity: MCPServer) {
+  private serializeEntityData(entity: MCPServer) {
     return {
-      encryptedBearerToken: entity.bearerToken
-        ? encryptStringSync(entity.bearerToken)
-        : null,
-      encryptedEnv: entity.env ? encryptObjectSync(entity.env) : "{}",
-      encryptedInputParams: entity.inputParams
-        ? encryptObjectSync(entity.inputParams)
-        : null,
-      encryptedCommand: entity.command
-        ? encryptStringSync(entity.command)
-        : null,
-      encryptedArgs: encryptStringSync(JSON.stringify(entity.args || [])),
-      encryptedRemoteUrl: entity.remoteUrl
-        ? encryptStringSync(entity.remoteUrl)
-        : null,
+      bearerToken: entity.bearerToken || null,
+      env: JSON.stringify(entity.env || {}),
+      inputParams: entity.inputParams ? JSON.stringify(entity.inputParams) : null,
+      command: entity.command || null,
+      args: JSON.stringify(entity.args || []),
+      remoteUrl: entity.remoteUrl || null,
     };
   }
 
@@ -201,30 +160,30 @@ export class ServerRepository extends BaseRepository<MCPServer> {
     try {
       const now = Date.now();
 
-      // 機密データを暗号化（同期）
+      // データをシリアライズ
       const {
-        encryptedBearerToken,
-        encryptedEnv,
-        encryptedInputParams,
-        encryptedCommand,
-        encryptedArgs,
-        encryptedRemoteUrl,
-      } = this.encryptSensitiveData(entity);
+        bearerToken,
+        env,
+        inputParams,
+        command,
+        args,
+        remoteUrl,
+      } = this.serializeEntityData(entity);
 
       // DB行オブジェクトを構築
       return {
         id: entity.id,
         name: entity.name,
         // For remote servers, command can be null
-        command: encryptedCommand,
-        args: encryptedArgs,
-        env: encryptedEnv,
+        command: command,
+        args: args,
+        env: env,
         auto_start: entity.autoStart ? 1 : 0,
         disabled: entity.disabled ? 1 : 0,
         server_type: entity.serverType,
-        remote_url: encryptedRemoteUrl,
-        bearer_token: encryptedBearerToken,
-        input_params: encryptedInputParams,
+        remote_url: remoteUrl,
+        bearer_token: bearerToken,
+        input_params: inputParams,
         description: entity.description || null,
         version: entity.version || null,
         latest_version: entity.latestVersion || null,
@@ -304,30 +263,30 @@ export class ServerRepository extends BaseRepository<MCPServer> {
     createdAt: number,
   ): Record<string, any> {
     try {
-      // 機密データを暗号化（同期）
+      // データをシリアライズ
       const {
-        encryptedBearerToken,
-        encryptedEnv,
-        encryptedInputParams,
-        encryptedCommand,
-        encryptedArgs,
-        encryptedRemoteUrl,
-      } = this.encryptSensitiveData(entity);
+        bearerToken,
+        env,
+        inputParams,
+        command,
+        args,
+        remoteUrl,
+      } = this.serializeEntityData(entity);
 
       // DB行オブジェクトを構築
       return {
         id: entity.id,
         name: entity.name,
         // For remote servers, command can be null
-        command: encryptedCommand,
-        args: encryptedArgs,
-        env: encryptedEnv,
+        command: command,
+        args: args,
+        env: env,
         auto_start: entity.autoStart ? 1 : 0,
         disabled: entity.disabled ? 1 : 0,
         server_type: entity.serverType,
-        remote_url: encryptedRemoteUrl,
-        bearer_token: encryptedBearerToken,
-        input_params: encryptedInputParams,
+        remote_url: remoteUrl,
+        bearer_token: bearerToken,
+        input_params: inputParams,
         description: entity.description || null,
         version: entity.version || null,
         latest_version: entity.latestVersion || null,
