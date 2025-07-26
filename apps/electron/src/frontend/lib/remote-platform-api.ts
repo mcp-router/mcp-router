@@ -24,7 +24,7 @@ interface RemoteWorkspaceConfig {
  * Only servers and logs are handled remotely, all other operations are delegated to local Electron API
  */
 export class RemotePlatformAPI implements PlatformAPI {
-  private client: RemoteAPIClient;
+  private client!: RemoteAPIClient; // Using definite assignment assertion since it's initialized in constructor
   private config: RemoteWorkspaceConfig;
 
   constructor(config: RemoteWorkspaceConfig) {
@@ -181,10 +181,11 @@ export class RemotePlatformAPI implements PlatformAPI {
       }));
 
       return {
-        logs,
+        items: logs, // CursorPaginationResult requires items property
+        logs, // Keep for backward compatibility
         total: result.total,
         nextCursor: result.nextCursor,
-        hasMore: result.hasMore,
+        hasMore: result.hasMore ?? false,
       };
     },
   };

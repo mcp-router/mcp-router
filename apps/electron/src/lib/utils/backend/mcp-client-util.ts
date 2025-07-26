@@ -75,7 +75,7 @@ export async function connectToMCPServer(
       }
 
       // Use SSE transport for remote servers
-      const headers: HeadersInit = {
+      const headers: Record<string, string> = {
         Accept: "text/event-stream",
       };
 
@@ -103,13 +103,21 @@ export async function connectToMCPServer(
       // Get environment variables from user shell
       const userEnvs = await getUserShellEnv();
 
+      // Filter out undefined values from userEnvs
+      const filteredUserEnvs: Record<string, string> = {};
+      for (const [key, value] of Object.entries(userEnvs)) {
+        if (value !== undefined) {
+          filteredUserEnvs[key] = value;
+        }
+      }
+
       // Use stdio transport for local servers
       const transport = new StdioClientTransport({
         command: server.command,
         args: server.args || [],
         env: {
           ...server.env,
-          ...userEnvs,
+          ...filteredUserEnvs,
         },
         stderr: "pipe",
       });

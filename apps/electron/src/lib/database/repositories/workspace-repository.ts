@@ -93,7 +93,7 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
       throw new Error("ワークスペースが見つかりません");
     }
 
-    const remoteConfig = workspace.remoteConfig || {};
+    const remoteConfig: any = workspace.remoteConfig || {};
     remoteConfig.authToken = encryptedToken.toString("base64");
 
     this.db.execute(

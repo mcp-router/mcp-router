@@ -358,10 +358,10 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
         });
       }
 
-      return { logs, total, nextCursor, hasMore };
+      return { items: logs, logs, total, nextCursor, hasMore };
     } catch (error) {
       console.error("リクエストログの取得中にエラーが発生しました:", error);
-      return { logs: [], total: 0, hasMore: false };
+      return { items: [], logs: [], total: 0, hasMore: false };
     }
   }
 

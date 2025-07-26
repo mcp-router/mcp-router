@@ -17,8 +17,8 @@ import { ServerManager } from "./server-manager";
  * MCP Aggregator Server that combines multiple MCP servers into one
  */
 export class AggregatorServer {
-  private aggregatorServer: Server;
-  private transport: StreamableHTTPServerTransport;
+  private aggregatorServer!: Server;
+  private transport!: StreamableHTTPServerTransport;
   private requestHandlers: RequestHandlers;
   private loggingService: LoggingService;
 
@@ -114,7 +114,7 @@ export class AggregatorServer {
     this.aggregatorServer.setRequestHandler(
       ListToolsRequestSchema,
       async (request) => {
-        const token = request.params._meta?.token as string | undefined;
+        const token = request.params?._meta?.token as string | undefined;
         return await this.requestHandlers.handleListTools(token);
       },
     );
@@ -131,7 +131,7 @@ export class AggregatorServer {
     this.aggregatorServer.setRequestHandler(
       ListResourcesRequestSchema,
       async (request) => {
-        const token = request.params._meta?.token as string | undefined;
+        const token = request.params?._meta?.token as string | undefined;
         return await this.requestHandlers.handleListResources(token);
       },
     );
@@ -140,7 +140,7 @@ export class AggregatorServer {
     this.aggregatorServer.setRequestHandler(
       ListResourceTemplatesRequestSchema,
       async (request) => {
-        const token = request.params._meta?.token as string | undefined;
+        const token = request.params?._meta?.token as string | undefined;
         return await this.requestHandlers.handleListResourceTemplates(token);
       },
     );
@@ -150,7 +150,7 @@ export class AggregatorServer {
       ReadResourceRequestSchema,
       async (request) => {
         const uri = request.params.uri;
-        const token = request.params._meta?.token as string | undefined;
+        const token = request.params?._meta?.token as string | undefined;
         return await this.requestHandlers.readResourceByUri(
           uri,
           undefined,
@@ -163,7 +163,7 @@ export class AggregatorServer {
     this.aggregatorServer.setRequestHandler(
       ListPromptsRequestSchema,
       async (request) => {
-        const token = request.params._meta?.token as string | undefined;
+        const token = request.params?._meta?.token as string | undefined;
         const allPrompts =
           await this.requestHandlers.getAllPromptsInternal(token);
         return { prompts: allPrompts };
@@ -175,7 +175,7 @@ export class AggregatorServer {
       GetPromptRequestSchema,
       async (request) => {
         const promptName = request.params.name;
-        const token = request.params._meta?.token as string | undefined;
+        const token = request.params?._meta?.token as string | undefined;
         return await this.requestHandlers.getPromptByName(
           promptName,
           request.params.arguments,

@@ -181,18 +181,18 @@ const AgentChat: React.FC = () => {
 
       if (toolPermissions) {
         Object.entries(toolPermissions).forEach(([_serverId, toolsArray]) => {
-        if (Array.isArray(toolsArray)) {
-          toolsArray.forEach((tool) => {
-            if (tool.enabled) {
-              tools.push({
-                name: tool.toolName,
-                description: tool.description || "",
-                inputSchema: tool.inputSchema || {},
-              });
-            }
-          });
-        }
-      });
+          if (Array.isArray(toolsArray)) {
+            toolsArray.forEach((tool) => {
+              if (tool.enabled) {
+                tools.push({
+                  name: tool.toolName,
+                  description: tool.description || "",
+                  inputSchema: tool.inputSchema || {},
+                });
+              }
+            });
+          }
+        });
       }
     }
 

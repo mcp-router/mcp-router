@@ -4,6 +4,7 @@
 
 import { Agent, AgentConfig, DeployedAgent } from "@mcp_router/shared";
 import { Unsubscribe } from "./auth-api";
+import type { LocalChatMessage as ChatMessage } from "@/lib/types/chat-types";
 
 export interface CreateAgentInput extends Omit<AgentConfig, "id"> {}
 
@@ -40,12 +41,6 @@ export interface ChatSession {
   messages: ChatMessage[];
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface ChatMessage {
-  role: "user" | "assistant" | "system";
-  content: string;
-  timestamp?: Date;
 }
 
 export interface SessionListOptions {

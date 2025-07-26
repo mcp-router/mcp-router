@@ -9,6 +9,8 @@
     "composite": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "lib": ["ES2020", "dom"],
+    "types": ["node", "electron"],
     "paths": {
       "@/*": ["./src/*"],
       "@mcp_router/shared": ["../../packages/shared/src"],
@@ -16,7 +18,7 @@
       "@mcp_router/ui/*": ["../../packages/ui/src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/**/*.json"],
   "references": [
     { "path": "../../packages/shared" },
     { "path": "../../packages/ui" }

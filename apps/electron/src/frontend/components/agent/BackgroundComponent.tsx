@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useChat, Message } from "@ai-sdk/react";
-import { AgentConfig, ChatMessage as PlatformChatMessage } from "@mcp_router/shared";
+import { AgentConfig } from "@mcp_router/shared";
 import { getServerAgentId } from "@/lib/utils/agent-utils";
 import { usePlatformAPI } from "@/lib/platform-api";
-import type { ChatMessage as LocalChatMessage } from "@/lib/platform-api/types/domains/agent-api";
+import {
+  ExtendedPlatformChatMessage as PlatformChatMessage,
+  convertToLocalChatMessage,
+} from "@/lib/types/chat-types";
 
 interface BackgroundComponentProps {
   chatHistorySessionId?: string; // チャット履歴のsessionId
@@ -18,42 +21,28 @@ interface BackgroundComponentProps {
 }
 
 /**
- * ChatMessageをローカル型に変換する関数
- */
-const convertToLocalChatMessage = (msg: PlatformChatMessage): LocalChatMessage => ({
-  id: msg.id,
-  role: msg.role,
-  content: msg.content,
-  timestamp: new Date(msg.timestamp),
-  toolCalls: msg.toolCalls,
-  toolResults: msg.toolResults?.map(tr => ({
-    success: !tr.isError,
-    result: tr.content,
-    error: tr.isError ? String(tr.content) : undefined,
-  })),
-});
-
-/**
  * UIMessageをChatMessageに変換する関数
  */
-const convertUIMessagesToChatMessages = (messages: Message[]): PlatformChatMessage[] => {
+const convertUIMessagesToChatMessages = (
+  messages: Message[],
+): PlatformChatMessage[] => {
   return messages
-    .filter(msg => msg.role !== 'data') // 'data' roleを除外
-    .map(msg => ({
+    .filter((msg) => msg.role !== "data") // 'data' roleを除外
+    .map((msg) => ({
       id: msg.id,
-      role: msg.role as 'user' | 'assistant' | 'system',
+      role: msg.role as "user" | "assistant" | "system",
       content: msg.content,
       timestamp: msg.createdAt ? new Date(msg.createdAt).getTime() : Date.now(),
-      toolCalls: msg.toolInvocations?.map(ti => ({
+      toolCalls: msg.toolInvocations?.map((ti) => ({
         id: ti.toolCallId,
         name: ti.toolName,
         arguments: ti.args,
       })),
       toolResults: msg.toolInvocations
-        ?.filter(ti => 'result' in ti && ti.result !== undefined)
-        .map(ti => ({
+        ?.filter((ti) => "result" in ti && ti.result !== undefined)
+        .map((ti) => ({
           toolCallId: ti.toolCallId,
-          content: 'result' in ti ? ti.result : undefined,
+          content: "result" in ti ? ti.result : undefined,
           isError: false,
         })),
     }));
@@ -180,7 +169,12 @@ const BackgroundComponent: React.FC<BackgroundComponentProps> = ({
         } catch (error) {
           addToolResult({
             toolCallId: toolCall.toolCallId,
-            result: { error: error instanceof Error ? error.message : "Auto tool execution failed" },
+            result: {
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Auto tool execution failed",
+            },
           });
         }
       }

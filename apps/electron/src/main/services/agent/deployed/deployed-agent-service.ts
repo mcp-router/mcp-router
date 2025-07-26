@@ -37,7 +37,7 @@ class DeployedAgentService extends SingletonService<
    * シングルトンインスタンスを取得する静的メソッド
    */
   public static getInstance(): DeployedAgentService {
-    return this.getInstanceBase();
+    return (this as any).getInstanceBase();
   }
 
   /**

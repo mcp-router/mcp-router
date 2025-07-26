@@ -59,8 +59,12 @@ export async function run(cmd: string, args: string[] = [], useShell = false) {
     return stdout || stderr;
   } catch (err) {
     // For errors, try to extract any useful output from stderr/stdout
-    if (err.stderr || err.stdout) {
-      const errorOutput = err.stdout || err.stderr;
+    if (
+      err &&
+      typeof err === "object" &&
+      ("stderr" in err || "stdout" in err)
+    ) {
+      const errorOutput = (err as any).stdout || (err as any).stderr;
       return errorOutput; // Return any output even on error
     }
     throw err;

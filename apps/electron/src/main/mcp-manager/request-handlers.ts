@@ -95,11 +95,19 @@ export class RequestHandlers {
       serverName,
     );
 
-    const client = this.clients.get(this.getServerIdByName(serverName));
-    if (!client) {
+    const serverId = this.getServerIdByName(serverName);
+    if (!serverId) {
       throw new McpError(
         ErrorCode.InvalidRequest,
         `Unknown server: ${serverName}`,
+      );
+    }
+
+    const client = this.clients.get(serverId);
+    if (!client) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Server ${serverName} is not connected`,
       );
     }
 

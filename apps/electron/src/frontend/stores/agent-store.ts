@@ -5,7 +5,7 @@ import {
   AgentState,
   AgentStoreChatSession,
 } from "@mcp_router/shared";
-import { AgentChatMessage } from "@mcp_router/shared";
+import { AgentChatMessage } from "@/lib/types/chat-types";
 import { Message } from "@ai-sdk/react";
 import { PlatformAPI } from "@/lib/platform-api";
 
@@ -432,15 +432,28 @@ export const createAgentStore = (
           options,
         );
 
+        // Convert ChatSession to AgentStoreChatSession
+        const convertedSessions = (data.sessions || []).map((session) => ({
+          id: session.id,
+          agentId: session.agentId,
+          lastMessage:
+            session.messages && session.messages.length > 0
+              ? session.messages[session.messages.length - 1].content
+              : undefined,
+          createdAt: session.createdAt.getTime(),
+          updatedAt: session.updatedAt.getTime(),
+          messages: session.messages,
+        }));
+
         if (append) {
           set({
-            chatSessions: [...chatSessions, ...(data.sessions || [])],
+            chatSessions: [...chatSessions, ...convertedSessions],
             hasMoreSessions: data.hasMore || false,
             nextCursor: data.nextCursor,
           });
         } else {
           set({
-            chatSessions: data.sessions || [],
+            chatSessions: convertedSessions,
             hasMoreSessions: data.hasMore || false,
             nextCursor: data.nextCursor,
           });

@@ -30,6 +30,15 @@ export class SettingsRepository implements Singleton<SettingsRepository> {
   }
 
   /**
+   * インスタンスをリセット（ワークスペース切り替え時に使用）
+   */
+  public static resetInstance(): void {
+    console.log("[SettingsRepository] Resetting repository instance");
+    SettingsRepository.instance = null;
+    SettingsRepository.currentDb = null;
+  }
+
+  /**
    * コンストラクタ
    */
   private constructor() {
@@ -136,7 +145,5 @@ export function getSettingsRepository(): SettingsRepository {
  * SettingsRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
  */
 export function resetSettingsRepository(): void {
-  console.log("[SettingsRepository] Resetting repository instance");
-  SettingsRepository.instance = null;
-  SettingsRepository.currentDb = null;
+  SettingsRepository.resetInstance();
 }

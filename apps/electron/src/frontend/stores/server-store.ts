@@ -181,8 +181,6 @@ export const createServerStore = (
 
         // Refresh the server list to ensure consistency with remote state
         await refreshServers();
-
-        return newServer;
       } catch (error) {
         setError(
           error instanceof Error ? error.message : "Failed to create server",

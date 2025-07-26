@@ -513,7 +513,9 @@ const Rules: React.FC = () => {
         throw new Error("Failed to save settings");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save settings");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save settings",
+      );
     } finally {
       setSaving(false);
     }

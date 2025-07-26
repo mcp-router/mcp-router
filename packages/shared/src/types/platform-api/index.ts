@@ -52,6 +52,7 @@ export interface ToolResult {
   isError?: boolean;
 }
 
+// Chat message type for platform API
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant" | "system";
@@ -61,6 +62,7 @@ export interface ChatMessage {
   toolResults?: ToolResult[];
 }
 
+// Agent chat session type
 export interface AgentChatSession {
   id: string;
   agentId: string;

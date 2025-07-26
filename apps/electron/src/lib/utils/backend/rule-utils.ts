@@ -50,7 +50,8 @@ export function applyDisplayRules(
     serverName,
   };
 
-  let nameRule, descriptionRule;
+  let nameRule: string;
+  let descriptionRule: string;
 
   // Select the appropriate rule based on entity type
   switch (type) {
@@ -115,13 +116,13 @@ export function applyRulesToInputSchema(
   const displayRules = settings.mcpDisplayRules || DEFAULT_DISPLAY_RULES;
 
   const paramRule =
-    displayRules.toolParameterRule || DEFAULT_DISPLAY_RULES.toolParameterRule;
+    displayRules.toolParameterRule || DEFAULT_DISPLAY_RULES.toolParameterRule!;
 
   // Create a deep clone of the schema to avoid modifying the original
   const modifiedSchema = JSON.parse(JSON.stringify(inputSchema));
 
   // Add additional top-level properties from the rule to the schema
-  if (paramRule.properties) {
+  if (paramRule?.properties) {
     // Ensure properties object exists
     if (!modifiedSchema.properties) {
       modifiedSchema.properties = {};
@@ -130,7 +131,7 @@ export function applyRulesToInputSchema(
     // Add all properties from the rule to the schema
     Object.keys(paramRule.properties).forEach((propKey) => {
       modifiedSchema.properties[propKey] = JSON.parse(
-        JSON.stringify(paramRule.properties[propKey]),
+        JSON.stringify(paramRule.properties![propKey]),
       );
     });
   }
@@ -154,10 +155,10 @@ export function applyRulesToInputSchema(
         // We no longer apply description template
 
         // Add additional properties from the rule
-        if (paramRule.properties) {
+        if (paramRule?.properties) {
           Object.keys(paramRule.properties).forEach((propKey) => {
             param[propKey] = JSON.parse(
-              JSON.stringify(paramRule.properties[propKey]),
+              JSON.stringify(paramRule.properties![propKey]),
             );
           });
         }
@@ -186,10 +187,10 @@ export function applyRulesToInputSchema(
           // We no longer apply description template
 
           // Add additional properties from the rule
-          if (paramRule.properties) {
+          if (paramRule?.properties) {
             Object.keys(paramRule.properties).forEach((propKey) => {
               param.items[propKey] = JSON.parse(
-                JSON.stringify(paramRule.properties[propKey]),
+                JSON.stringify(paramRule.properties![propKey]),
               );
             });
           }
@@ -208,14 +209,14 @@ export function applyRulesToInputSchema(
   }
 
   // Apply additional required fields from the rule if applicable
-  if (paramRule.required && Array.isArray(paramRule.required)) {
+  if (paramRule?.required && Array.isArray(paramRule.required)) {
     // Ensure required array exists
     if (!modifiedSchema.required) {
       modifiedSchema.required = [];
     }
 
     // Add any required fields from the rule that aren't already in the schema
-    paramRule.required.forEach((requiredField) => {
+    paramRule.required!.forEach((requiredField) => {
       if (!modifiedSchema.required.includes(requiredField)) {
         modifiedSchema.required.push(requiredField);
       }

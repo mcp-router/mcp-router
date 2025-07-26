@@ -50,24 +50,24 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
   }
 
   /**
-   * Map database row to ChatSession entity
+   * Map database row to LocalChatSession entity
    */
-  protected mapRowToEntity(row: any): ChatSession {
+  protected mapRowToEntity(row: any): LocalChatSession {
     return {
       id: row.id,
       agentId: row.agent_id,
       messages: JSON.parse(row.messages || "[]"),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-      status: (row.status || "pending") as SessionStatus,
+      status: (row.status || "pending") as LocalSessionStatus,
       source: row.source || "ui",
     };
   }
 
   /**
-   * Map ChatSession entity to database row
+   * Map LocalChatSession entity to database row
    */
-  protected mapEntityToRow(entity: ChatSession): Record<string, any> {
+  protected mapEntityToRow(entity: LocalChatSession): Record<string, any> {
     return {
       id: entity.id,
       agent_id: entity.agentId,
@@ -90,7 +90,7 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
       orderBy?: "created_at" | "updated_at";
       order?: "ASC" | "DESC";
     } = {},
-  ): { sessions: ChatSession[]; hasMore: boolean; nextCursor?: string } {
+  ): { sessions: LocalChatSession[]; hasMore: boolean; nextCursor?: string } {
     try {
       const {
         limit = 10,
@@ -162,10 +162,10 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
     agentId: string,
     initialMessages: any[] = [],
     source: string = "ui",
-    status: SessionStatus = "pending",
-  ): ChatSession {
+    status: LocalSessionStatus = "pending",
+  ): LocalChatSession {
     const now = Date.now();
-    const session: ChatSession = {
+    const session: LocalChatSession = {
       id: uuidv4(),
       agentId,
       messages: initialMessages,
@@ -184,7 +184,7 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
   public updateSessionMessages(
     sessionId: string,
     messages: any[],
-  ): ChatSession | undefined {
+  ): LocalChatSession | undefined {
     const session = this.getById(sessionId);
     if (!session) {
       return undefined;
@@ -202,7 +202,7 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
   public addMessageToSession(
     sessionId: string,
     message: any,
-  ): ChatSession | undefined {
+  ): LocalChatSession | undefined {
     const session = this.getById(sessionId);
     if (!session) {
       return undefined;
@@ -238,8 +238,8 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
    */
   public updateSessionStatus(
     sessionId: string,
-    status: SessionStatus,
-  ): ChatSession | undefined {
+    status: LocalSessionStatus,
+  ): LocalChatSession | undefined {
     const session = this.getById(sessionId);
     if (!session) {
       return undefined;
@@ -255,7 +255,7 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
    * Get sessions by status with optional filtering by agent ID
    */
   public getSessionsByStatus(
-    status: SessionStatus,
+    status: LocalSessionStatus,
     agentId?: string,
     options: {
       limit?: number;
@@ -263,7 +263,7 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
       orderBy?: "created_at" | "updated_at";
       order?: "ASC" | "DESC";
     } = {},
-  ): { sessions: ChatSession[]; hasMore: boolean; nextCursor?: string } {
+  ): { sessions: LocalChatSession[]; hasMore: boolean; nextCursor?: string } {
     try {
       const {
         limit = 10,
@@ -336,7 +336,9 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
   /**
    * Get session by ID with full details (for MCP query results)
    */
-  public getSessionWithResults(sessionId: string): ChatSession | undefined {
+  public getSessionWithResults(
+    sessionId: string,
+  ): LocalChatSession | undefined {
     return this.getById(sessionId);
   }
 
@@ -351,7 +353,7 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
       orderBy?: "created_at" | "updated_at";
       order?: "ASC" | "DESC";
     } = {},
-  ): { sessions: ChatSession[]; hasMore: boolean; nextCursor?: string } {
+  ): { sessions: LocalChatSession[]; hasMore: boolean; nextCursor?: string } {
     try {
       const {
         limit = 10,
