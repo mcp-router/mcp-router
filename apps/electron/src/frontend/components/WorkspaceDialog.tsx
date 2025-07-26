@@ -151,30 +151,30 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
               )}
             </div>
 
-            {/*{!workspace && (*/}
-            {/*  <div className="space-y-2">*/}
-            {/*    <Label>Workspace Type</Label>*/}
-            {/*    <RadioGroup*/}
-            {/*      value={formData.type}*/}
-            {/*      onValueChange={(value: "local" | "remote") =>*/}
-            {/*        setFormData({ ...formData, type: value })*/}
-            {/*      }*/}
-            {/*    >*/}
-            {/*      <div className="flex items-center space-x-2">*/}
-            {/*        <RadioGroupItem value="local" id="local" />*/}
-            {/*        <Label htmlFor="local" className="font-normal">*/}
-            {/*          Local workspace*/}
-            {/*        </Label>*/}
-            {/*      </div>*/}
-            {/*      <div className="flex items-center space-x-2">*/}
-            {/*        <RadioGroupItem value="remote" id="remote" />*/}
-            {/*        <Label htmlFor="remote" className="font-normal">*/}
-            {/*          Remote workspace (Connect to team API)*/}
-            {/*        </Label>*/}
-            {/*      </div>*/}
-            {/*    </RadioGroup>*/}
-            {/*  </div>*/}
-            {/*)}*/}
+            {!workspace && (
+              <div className="space-y-2">
+                <Label>Workspace Type</Label>
+                <RadioGroup
+                  value={formData.type}
+                  onValueChange={(value: "local" | "remote") =>
+                    setFormData({ ...formData, type: value })
+                  }
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="local" id="local" />
+                    <Label htmlFor="local" className="font-normal">
+                      Local workspace
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="remote" id="remote" />
+                    <Label htmlFor="remote" className="font-normal">
+                      Remote workspace (Connect to team API)
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
 
             {formData.type === "remote" && (
               <>
