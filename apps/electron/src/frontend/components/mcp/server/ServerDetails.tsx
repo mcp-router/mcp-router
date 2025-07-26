@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MCPServer } from "../../../../types";
+import { MCPServer } from "@mcp_router/shared";
 import { Settings2, RefreshCw, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@mcp_router/ui";

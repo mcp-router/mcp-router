@@ -161,7 +161,7 @@ export class MCPHttpServer {
           }
 
           // Get user auth token instead of workspace token
-          const { getDecryptedAuthToken } = await import("../auth");
+          const { getDecryptedAuthToken } = await import("../../auth");
           const authToken = await getDecryptedAuthToken();
 
           // Forward the request to remote aggregator

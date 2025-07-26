@@ -128,4 +128,3 @@ function createOrShowMainWindow(): void {
     console.log("No main window found to show");
   }
 }
-

@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { PlayCircle } from "lucide-react";
 import { Switch, Label } from "@mcp_router/ui";
-import { MCPServer } from "../../../../../types";
+import { MCPServer } from "@mcp_router/shared";
 
 interface ServerDetailsAutoStartProps {
   server: MCPServer;

@@ -1,5 +1,5 @@
 import React from "react";
-import { MCPServer } from "../../../../../types";
+import { MCPServer } from "@mcp_router/shared";
 import { useTranslation } from "react-i18next";
 import { Server, Settings, Info } from "lucide-react";
 import { Label } from "@mcp_router/ui";

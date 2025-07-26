@@ -1,5 +1,5 @@
 import React from "react";
-import { LocalMCPServer } from "../../../../types";
+import { LocalMCPServer } from "@mcp_router/shared";
 import { RotateCw, Plus, CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 

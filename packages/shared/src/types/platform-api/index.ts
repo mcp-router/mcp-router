@@ -184,9 +184,7 @@ export interface MCPServerStats {
   cpuUsage?: number;
 }
 
-export interface CreateServerInput extends Omit<MCPServerConfig, "id"> {
-  // id will be generated
-}
+export type CreateServerInput = Omit<MCPServerConfig, "id">;
 
 export interface UpdateServerInput extends Partial<MCPServerConfig> {
   id: string;

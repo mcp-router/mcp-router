@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MCPServer } from "../../../../../types";
+import { MCPServer } from "@mcp_router/shared";
 import { usePlatformAPI } from "@/lib/platform-api";
 import { useTranslation } from "react-i18next";
 import {

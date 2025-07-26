@@ -1,4 +1,5 @@
 // Common UI prop types and patterns
+import type { ReactNode } from "react";
 
 export interface DialogProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ export interface FormProps<T = any> {
 
 export interface ListProps<T = any> {
   items: T[];
-  renderItem: (item: T, index: number) => React.ReactNode;
+  renderItem: (item: T, index: number) => ReactNode;
   onItemClick?: (item: T, index: number) => void;
   emptyMessage?: string;
   className?: string;

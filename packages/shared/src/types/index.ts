@@ -12,7 +12,6 @@ export * from "./workspace";
 export * from "./auth";
 
 // Re-export organized domain types
-export * from "./domains";
 export * from "./api";
 export * from "./ui";
 export * from "./store";

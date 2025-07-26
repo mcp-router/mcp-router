@@ -23,9 +23,6 @@ import {
   VSCodeAppConfig,
 } from "@mcp_router/shared";
 
-// Re-export types that are used in public APIs
-export type { McpApp, McpAppsManagerResult };
-
 // 対応アプリが多くて複雑になってきたら、ストラテジーパターンに分けることを検討
 
 // 標準アプリの定義

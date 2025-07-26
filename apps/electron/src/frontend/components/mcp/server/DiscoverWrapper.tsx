@@ -5,7 +5,7 @@ import {
   PaginatedResponse,
   MCPServer,
   APIMCPServer,
-} from "../../../../types";
+} from "@mcp_router/shared";
 import { usePlatformAPI } from "@/lib/platform-api";
 import DiscoverServerList from "./DiscoverServerList";
 import Manual from "./Manual";

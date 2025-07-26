@@ -1,4 +1,4 @@
-import { CursorData } from "@mcp_router/shared/types/pagination";
+import { CursorData } from "@mcp_router/shared";
 
 /**
  * カーソルのエンコード・デコードユーティリティ

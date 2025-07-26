@@ -22,6 +22,10 @@
     "format:check": {
       "cache": true
     },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "cache": true
+    },
     "start": {
       "dependsOn": ["build"],
       "cache": false

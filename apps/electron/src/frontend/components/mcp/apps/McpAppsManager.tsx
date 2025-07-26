@@ -36,7 +36,7 @@ import windsurfIcon from "../../../../../../../public/images/apps/windsurf.svg";
 import cursorIcon from "../../../../../../../public/images/apps/cursor.svg";
 // @ts-ignore
 import vsCodeIcon from "../../../../../../../public/images/apps/vscode.svg";
-import { McpApp, McpAppsManagerResult } from "@/main/services/mcp-apps-service";
+import { McpApp, McpAppsManagerResult } from "@mcp_router/shared";
 
 // Map standard app names (lowercase) to icons
 const appIcons: { [key: string]: string } = {

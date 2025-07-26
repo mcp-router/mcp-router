@@ -30,6 +30,9 @@
     "knip:ci": "knip --exit-code-on=issues",
     "knip:json": "knip --reporter json",
     "knip:fix": "knip --fix",
+    "typecheck": "turbo run typecheck",
+    "check": "pnpm run lint && pnpm run typecheck",
+    "check:all": "pnpm run lint && pnpm run typecheck && pnpm run knip",
     "postinstall": "electron-rebuild",
     "rebuild": "electron-rebuild"
   },

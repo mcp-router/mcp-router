@@ -4,7 +4,8 @@ import {
   MCPTool,
   MCPAgentToolPermission,
 } from "@mcp_router/shared";
-import { AgentBase, BaseAgentInfo } from "../shared/agent-base";
+import { AgentBase } from "../shared/agent-base";
+import { BaseAgentInfo } from "@mcp_router/shared";
 import { logError, logInfo } from "../../../../lib/utils/backend/error-handler";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {

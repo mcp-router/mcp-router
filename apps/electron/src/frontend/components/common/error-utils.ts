@@ -43,4 +43,3 @@ export function showServerError(error: Error, serverName?: string): void {
     parsedError,
   });
 }
-

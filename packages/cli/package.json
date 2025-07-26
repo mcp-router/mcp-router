@@ -16,6 +16,8 @@
     "dev": "tsc && node dist/mcpr.js",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
     "knip": "cd ../.. && knip --workspace packages/cli",
     "prepublishOnly": "npm run build",
     "publish:npm": "pnpm publish --access public"
