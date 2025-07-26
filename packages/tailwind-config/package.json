@@ -13,7 +13,8 @@
     "lint": "eslint . --ext .js,.mjs",
     "lint:fix": "eslint . --ext .js,.mjs --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "knip": "cd ../.. && knip --workspace packages/tailwind-config"
   },
   "dependencies": {
     "tailwindcss": "^3.4.1",

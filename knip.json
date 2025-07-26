@@ -1,0 +1,235 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": [
+        "scripts/**/*.{js,ts}",
+        "*.config.{js,ts,mjs}",
+        "eslint.config.mjs",
+        "turbo.json"
+      ],
+      "ignore": [
+        "**/*.d.ts",
+        "**/dist/**",
+        "**/out/**",
+        "**/.turbo/**",
+        "**/.webpack/**",
+        "**/coverage/**",
+        "**/build/**",
+        "**/.next/**",
+        "**/node_modules/**",
+        "**/*.min.js"
+      ]
+    },
+    "apps/electron": {
+      "entry": [
+        "src/main.ts",
+        "src/renderer.ts",
+        "src/preload.ts",
+        "src/background.tsx",
+        "src/App.tsx",
+        "forge.config.ts",
+        "webpack.main.config.ts",
+        "webpack.renderer.config.ts",
+        "webpack.plugins.ts",
+        "webpack.rules.ts",
+        "postcss.config.js",
+        "tailwind.config.js"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx,js,jsx}"
+      ],
+      "ignore": [
+        "**/*.d.ts",
+        "**/dist/**",
+        "**/out/**",
+        "**/.turbo/**",
+        "**/.webpack/**",
+        "**/coverage/**",
+        "**/build/**",
+        "**/node_modules/**",
+        "**/*.min.js"
+      ],
+      "ignoreDependencies": [
+        "electron",
+        "@electron/rebuild",
+        "electron-squirrel-startup",
+        "@electron-forge/cli",
+        "@electron-forge/maker-dmg",
+        "@electron-forge/maker-squirrel",
+        "@electron-forge/maker-zip",
+        "@electron-forge/plugin-auto-unpack-natives",
+        "@electron-forge/plugin-fuses",
+        "@electron-forge/plugin-webpack",
+        "@electron-forge/publisher-github",
+        "@electron/fuses",
+        "cross-env",
+        "dotenv",
+        "@types/webpack",
+        "@vercel/webpack-asset-relocator-loader",
+        "css-loader",
+        "html-webpack-plugin",
+        "node-loader",
+        "postcss-loader",
+        "style-loader",
+        "ts-loader",
+        "ts-node",
+        "webpack"
+      ],
+      "ignoreExportsUsedInFile": {
+        "src/frontend/components/**/*.tsx": ["default"],
+        "src/main/**/*.ts": ["default"],
+        "src/lib/**/*.ts": ["default"]
+      }
+    },
+    "packages/shared": {
+      "entry": [
+        "src/index.ts"
+      ],
+      "project": [
+        "src/**/*.ts"
+      ],
+      "ignore": [
+        "**/*.d.ts",
+        "**/dist/**",
+        "**/.turbo/**",
+        "**/node_modules/**",
+        "**/*.test.ts",
+        "**/*.spec.ts"
+      ],
+      "ignoreExportsUsedInFile": {
+        "src/**/*.ts": ["default"]
+      }
+    },
+    "packages/ui": {
+      "entry": [
+        "src/index.ts"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}"
+      ],
+      "ignore": [
+        "**/*.d.ts",
+        "**/dist/**",
+        "**/.turbo/**",
+        "**/node_modules/**",
+        "**/*.test.{ts,tsx}",
+        "**/*.spec.{ts,tsx}",
+        "**/*.stories.{ts,tsx}"
+      ],
+      "ignoreExportsUsedInFile": {
+        "src/components/*.tsx": ["default"],
+        "src/hooks/*.ts": ["default"],
+        "src/lib/*.ts": ["default"]
+      },
+      "ignoreDependencies": [
+        "autoprefixer",
+        "postcss",
+        "tailwindcss"
+      ]
+    },
+    "packages/cli": {
+      "entry": [
+        "src/mcpr.ts",
+        "src/mcp-aggregator.ts"
+      ],
+      "project": [
+        "src/**/*.ts"
+      ],
+      "ignore": [
+        "**/*.d.ts",
+        "**/dist/**",
+        "**/.turbo/**",
+        "**/node_modules/**",
+        "**/*.test.ts",
+        "**/*.spec.ts"
+      ],
+      "ignoreExportsUsedInFile": {
+        "src/**/*.ts": ["default"]
+      }
+    },
+    "packages/remote-api-types": {
+      "entry": [
+        "src/index.ts",
+        "src/schema/index.ts",
+        "tsup.config.ts"
+      ],
+      "project": [
+        "src/**/*.ts"
+      ],
+      "ignore": [
+        "**/*.d.ts",
+        "**/dist/**",
+        "**/.turbo/**",
+        "**/node_modules/**",
+        "**/*.test.ts",
+        "**/*.spec.ts"
+      ],
+      "ignoreExportsUsedInFile": {
+        "src/**/*.ts": ["default"]
+      }
+    },
+    "packages/tailwind-config": {
+      "entry": [
+        "index.js",
+        "tailwind.config.js",
+        "postcss.config.js"
+      ],
+      "project": [
+        "*.js",
+        "*.mjs"
+      ],
+      "ignore": [
+        "**/node_modules/**",
+        "**/.turbo/**",
+        "**/*.test.js",
+        "**/*.spec.js"
+      ],
+      "ignoreDependencies": [
+        "@eslint/js",
+        "eslint-config-prettier",
+        "eslint-plugin-prettier",
+        "prettier"
+      ]
+    }
+  },
+  "ignore": [
+    "**/*.d.ts",
+    "**/dist/**",
+    "**/out/**",
+    "**/.turbo/**",
+    "**/.webpack/**",
+    "**/coverage/**",
+    "**/build/**",
+    "**/.next/**",
+    "**/node_modules/**",
+    "**/*.min.js",
+    "**/*.test.{ts,tsx,js,jsx}",
+    "**/*.spec.{ts,tsx,js,jsx}",
+    "**/forge.config.ts",
+    "**/*.map",
+    "**/*.log",
+    "**/tmp/**",
+    "**/temp/**"
+  ],
+  "ignoreDependencies": [
+    "@electron/rebuild",
+    "electron-rebuild"
+  ],
+  "ignoreWorkspaces": [],
+  "rules": {
+    "dependencies": "error",
+    "devDependencies": "error",
+    "optionalPeerDependencies": "off",
+    "unlisted": "error",
+    "binaries": "error",
+    "unresolved": "error",
+    "exports": "error",
+    "nsExports": "error",
+    "classMembers": "error",
+    "types": "error",
+    "nsTypes": "error",
+    "enumMembers": "error",
+    "duplicates": "error"
+  }
+}

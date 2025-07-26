@@ -4,6 +4,7 @@ import typescriptParser from "@typescript-eslint/parser";
 import prettier from "eslint-plugin-prettier";
 import prettierConfig from "eslint-config-prettier";
 import globals from "globals";
+import customRules from "./tools/eslint-rules/index.js";
 
 export default [
   js.configs.recommended,
@@ -12,6 +13,7 @@ export default [
     plugins: {
       "@typescript-eslint": typescript,
       prettier: prettier,
+      custom: customRules,
     },
     languageOptions: {
       parser: typescriptParser,
@@ -46,6 +48,23 @@ export default [
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "@typescript-eslint/no-var-requires": "off",
       "@typescript-eslint/no-require-imports": "off",
+      "custom/no-scattered-types": [
+        "error",
+        {
+          allowedPaths: [
+            "packages/shared/src/types",
+            "packages/remote-api-types/src",
+            "tools/eslint-rules",
+            ".d.ts",
+          ],
+          allowComponentProps: true,
+          allowedPatterns: [
+            ".*\\.d\\.ts$",
+            ".*\\.test\\.ts$",
+            ".*\\.spec\\.ts$",
+          ],
+        },
+      ],
     },
   },
   {

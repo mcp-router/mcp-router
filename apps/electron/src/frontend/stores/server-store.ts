@@ -1,23 +1,8 @@
 import { create, StoreApi, UseBoundStore } from "zustand";
-import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
+import { MCPServer, MCPServerConfig, ServerState } from "@mcp_router/shared";
 import { PlatformAPI } from "@/lib/platform-api";
 
-interface ServerState {
-  // Server data
-  servers: MCPServer[];
-
-  // Loading states
-  isLoading: boolean;
-  isUpdating: string[]; // Array of server IDs being updated
-
-  // Error states
-  error: string | null;
-
-  // UI state
-  searchQuery: string;
-  expandedServerId: string | null;
-  selectedServerId: string | null;
-
+interface ServerStoreState extends ServerState {
   // Actions
   setServers: (servers: MCPServer[]) => void;
   addServer: (server: MCPServer) => void;
@@ -54,8 +39,8 @@ interface ServerState {
 
 export const createServerStore = (
   getPlatformAPI: () => PlatformAPI,
-): UseBoundStore<StoreApi<ServerState>> =>
-  create<ServerState>((set, get) => ({
+): UseBoundStore<StoreApi<ServerStoreState>> =>
+  create<ServerStoreState>((set, get) => ({
     // Initial state
     servers: [],
     isLoading: false,

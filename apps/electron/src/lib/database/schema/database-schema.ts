@@ -1,12 +1,9 @@
+import { DatabaseTableSchema } from "@mcp_router/shared";
+
 /**
  * 統一されたデータベーススキーマ定義
  * すべてのテーブル定義を一箇所で管理
  */
-
-export interface TableSchema {
-  createSQL: string;
-  indexes?: string[];
-}
 
 /**
  * データベーススキーマ定義

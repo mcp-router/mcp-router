@@ -10,7 +10,8 @@
     "lint": "eslint . --ext .ts,.js",
     "lint:fix": "eslint . --ext .ts,.js --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "knip": "cd ../.. && knip --workspace packages/shared"
   },
   "dependencies": {
     "clsx": "^2.1.1",

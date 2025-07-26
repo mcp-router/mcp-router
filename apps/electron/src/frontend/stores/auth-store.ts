@@ -1,34 +1,12 @@
 import { create, StoreApi, UseBoundStore } from "zustand";
-import { AppSettings } from "@mcp_router/shared";
+import { AppSettings, AuthStoreState, UserInfo } from "@mcp_router/shared";
 import { PlatformAPI } from "@/lib/platform-api";
 
-interface UserInfo {
-  userId: string;
-  name: string;
-  creditBalance: number;
-  paidCreditBalance: number;
-}
-
-interface AuthState {
-  // Authentication data
-  isAuthenticated: boolean;
-  userId: string | null;
-  authToken: string | null;
-  userInfo: UserInfo | null;
-
-  // Login state
-  isLoggingIn: boolean;
-
-  // Error states
-  loginError: string | null;
-
-  // Credit information (if applicable)
-  credits: number | null;
-
+interface AuthStoreInterface extends AuthStoreState {
   // Actions
   setAuthenticated: (authenticated: boolean) => void;
   setUserData: (
-    userData: Partial<Pick<AuthState, "userId" | "authToken">>,
+    userData: Partial<Pick<AuthStoreState, "userId" | "authToken">>,
   ) => void;
   setUserInfo: (userInfo: UserInfo | null) => void;
   setCredits: (credits: number) => void;
@@ -56,8 +34,8 @@ interface AuthState {
 
 export const createAuthStore = (
   getPlatformAPI: () => PlatformAPI,
-): UseBoundStore<StoreApi<AuthState>> =>
-  create<AuthState>((set, get) => ({
+): UseBoundStore<StoreApi<AuthStoreInterface>> =>
+  create<AuthStoreInterface>((set, get) => ({
     // Initial state
     isAuthenticated: false,
     userId: null,

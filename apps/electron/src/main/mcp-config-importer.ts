@@ -1,6 +1,6 @@
 import { promises as fsPromises } from "fs";
 import { getServerService } from "@/main/services/server-service";
-import { MCPServerConfig } from "@mcp_router/shared";
+import { MCPServerConfig, ClientType, ClientConfig } from "@mcp_router/shared";
 import {
   claudeConfig,
   clineConfig,
@@ -13,16 +13,6 @@ import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import { app } from "electron";
 import { getSettingsService } from "@/main/services/settings-service";
-
-// Client type definition
-type ClientType = "vscode" | "claude" | "cline" | "windsurf" | "cursor";
-
-// Configuration with client type
-interface ClientConfig {
-  type: ClientType;
-  path: string;
-  content?: any;
-}
 
 /**
  * Sync server configurations from a provided list of configs

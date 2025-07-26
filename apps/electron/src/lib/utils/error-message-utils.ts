@@ -1,20 +1,14 @@
+import { ParsedPaymentError } from "@mcp_router/shared";
+
 /**
  * Error message parsing utilities for better user experience
  */
 
-export interface ParsedError {
-  isPaymentError: boolean;
-  displayMessage: string;
-  originalMessage: string;
-  code?: string;
-  purchaseUrl?: string;
-}
-
 /**
  * Parse error message to detect payment errors and extract user-friendly messages
  */
-export function parseErrorMessage(errorMessage: string): ParsedError {
-  const result: ParsedError = {
+export function parseErrorMessage(errorMessage: string): ParsedPaymentError {
+  const result: ParsedPaymentError = {
     isPaymentError: false,
     displayMessage: errorMessage,
     originalMessage: errorMessage,

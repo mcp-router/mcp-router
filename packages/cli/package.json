@@ -16,10 +16,12 @@
     "dev": "tsc && node dist/mcpr.js",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
+    "knip": "cd ../.. && knip --workspace packages/cli",
     "prepublishOnly": "npm run build",
     "publish:npm": "pnpm publish --access public"
   },
   "dependencies": {
+    "@mcp_router/shared": "workspace:^",
     "@modelcontextprotocol/sdk": "^1.10.1",
     "node-fetch": "^3.3.2"
   },

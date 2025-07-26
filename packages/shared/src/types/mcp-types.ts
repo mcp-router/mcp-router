@@ -143,3 +143,23 @@ export interface PaginatedResponse<T> {
   data: T[];
   pagination: Pagination;
 }
+
+// Base agent information interface
+export interface BaseAgentInfo {
+  id: string;
+  name: string;
+  purpose: string;
+  description: string;
+  instructions: string;
+  mcpServers: MCPServerConfig[];
+  toolPermissions?: Record<string, MCPAgentToolPermission[]>;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// Agent tool definition
+export interface AgentTool {
+  name: string;
+  description: string;
+  inputSchema: any;
+}

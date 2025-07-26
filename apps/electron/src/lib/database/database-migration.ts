@@ -1,16 +1,7 @@
 import { getSqliteManager, SqliteManager } from "./sqlite-manager";
 import { getServerRepository } from "./server-repository";
-import { TokenScope } from "@mcp_router/shared";
+import { TokenScope, Migration } from "@mcp_router/shared";
 import { safeStorage } from "electron";
-
-/**
- * Migration interface defining structure for each migration
- */
-interface Migration {
-  id: string; // Unique migration identifier (e.g., "20250511_add_scopes_to_tokens")
-  description: string; // Human-readable description of what the migration does
-  execute: (db: SqliteManager) => void; // Function to execute the migration (synchronous)
-}
 
 /**
  * データベースマイグレーション管理クラス

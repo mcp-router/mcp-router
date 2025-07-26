@@ -14,7 +14,14 @@ import {
   syncServersFromClientConfig,
   extractConfigInfo,
 } from "../mcp-config-importer";
-import { TokenScope, McpApp, McpAppsManagerResult } from "@mcp_router/shared";
+import {
+  TokenScope,
+  McpApp,
+  McpAppsManagerResult,
+  McpRouterConfig,
+  StandardAppConfig,
+  VSCodeAppConfig,
+} from "@mcp_router/shared";
 
 // 対応アプリが多くて複雑になってきたら、ストラテジーパターンに分けることを検討
 
@@ -26,31 +33,6 @@ export const STANDARD_APPS = [
   { id: "cursor", name: "Cursor", configPathFn: cursorConfig },
   { id: "vscode", name: "VSCode", configPathFn: vscodeConfig },
 ];
-
-// 基本的なMCP設定の構造
-interface McpRouterConfig {
-  command: string;
-  args: string[];
-  env: {
-    MCPR_TOKEN: string;
-  };
-}
-
-// 通常アプリの設定構造
-interface StandardAppConfig {
-  mcpServers: {
-    "mcp-router": McpRouterConfig;
-  };
-}
-
-// VSCode用の設定構造
-interface VSCodeAppConfig {
-  mcp: {
-    servers: {
-      "mcp-router": McpRouterConfig;
-    };
-  };
-}
 
 /**
  * アプリの設定ファイルパスを取得

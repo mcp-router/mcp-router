@@ -1,12 +1,4 @@
-import { MCPServerConfig } from "@mcp_router/shared";
-
-export interface ServerVariable {
-  name: string;
-  value: string;
-  description?: string;
-  required?: boolean;
-  source?: "env" | "arg" | "param";
-}
+import { MCPServerConfig, ServerVariable } from "@mcp_router/shared";
 
 export function parseServerVariables(
   env: Record<string, string>,
@@ -42,7 +34,7 @@ export function extractServerVariables(
         name,
         value: param.default || "",
         description: param.description,
-        source: "param",
+        source: "inputParam",
         required: server.required?.includes(name),
       });
     });

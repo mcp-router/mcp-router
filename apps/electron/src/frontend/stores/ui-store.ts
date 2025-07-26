@@ -1,41 +1,7 @@
 import { create } from "zustand";
+import { UIState, ToastMessage, DialogState } from "@mcp_router/shared";
 
-interface ToastMessage {
-  id: string;
-  message: string;
-  type: "success" | "error" | "warning" | "info";
-  duration?: number;
-}
-
-interface DialogState {
-  isOpen: boolean;
-  title?: string;
-  content?: string;
-  onConfirm?: () => void;
-  onCancel?: () => void;
-}
-
-interface UIState {
-  // Loading states
-  globalLoading: boolean;
-  loadingMessage: string;
-
-  // Toast notifications
-  toasts: ToastMessage[];
-
-  // Dialog state
-  dialog: DialogState;
-
-  // Modal and overlay states
-  packageManagerOverlay: boolean;
-
-  // Navigation state
-  currentPage: string;
-  sidebarOpen: boolean;
-
-  // Theme
-  theme: "light" | "dark" | "system";
-
+interface UIStoreState extends UIState {
   // Actions for loading
   setGlobalLoading: (loading: boolean, message?: string) => void;
 
@@ -60,7 +26,7 @@ interface UIState {
   setSidebarOpen: (open: boolean) => void;
 
   // Actions for theme
-  setTheme: (theme: "light" | "dark" | "system") => void;
+  setTheme: (theme: UIState["theme"]) => void;
 
   // Utility methods
   showSuccessToast: (message: string) => void;
@@ -71,7 +37,7 @@ interface UIState {
   showConfirmDialog: (title: string, content: string) => Promise<boolean>;
 }
 
-export const useUIStore = create<UIState>((set, get) => ({
+export const useUIStore = create<UIStoreState>((set, get) => ({
   // Initial state
   globalLoading: false,
   loadingMessage: "",

@@ -2,23 +2,9 @@ import {
   MCPServerConfig,
   MCPTool,
   MCPAgentToolPermission,
+  BaseAgentInfo,
 } from "@mcp_router/shared";
 import { logError, logInfo } from "../../../../lib/utils/backend/error-handler";
-
-/**
- * エージェントの基本情報を表すインターフェース
- */
-export interface BaseAgentInfo {
-  id: string;
-  name: string;
-  purpose: string;
-  description: string;
-  instructions: string;
-  mcpServers: MCPServerConfig[];
-  toolPermissions?: Record<string, MCPAgentToolPermission[]>;
-  createdAt: number;
-  updatedAt: number;
-}
 
 /**
  * エージェントの共通ベースクラス

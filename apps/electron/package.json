@@ -19,6 +19,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
+    "knip": "cd ../.. && knip --workspace apps/electron",
     "postinstall": "electron-rebuild",
     "rebuild": "electron-rebuild"
   },

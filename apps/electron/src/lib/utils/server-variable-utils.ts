@@ -1,12 +1,4 @@
-import { MCPServerConfig } from "@mcp_router/shared";
-
-export interface ServerVariable {
-  name: string;
-  value: string;
-  description?: string;
-  source: "env" | "arg" | "inputParam"; // Added source to track where variable comes from
-  required?: boolean;
-}
+import { MCPServerConfig, ServerVariable } from "@mcp_router/shared";
 
 /**
  * Extract variables from a server configuration

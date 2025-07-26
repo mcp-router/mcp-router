@@ -1,29 +1,12 @@
 import { BaseRepository } from "./base-repository";
 import { getSqliteManager, SqliteManager } from "./sqlite-manager";
 import { v4 as uuidv4 } from "uuid";
-
-/**
- * Chat session status enum
- */
-export type SessionStatus = "pending" | "processing" | "completed" | "failed";
-
-/**
- * Chat session entity interface
- */
-export interface ChatSession {
-  id: string;
-  agentId: string;
-  messages: any[]; // Array of messages from @ai-sdk/react
-  createdAt: number;
-  updatedAt: number;
-  status: SessionStatus;
-  source: string; // Where the session originated from (e.g., 'mcp', 'ui'), default: 'ui'
-}
+import { LocalChatSession, LocalSessionStatus } from "@mcp_router/shared";
 
 /**
  * Chat session repository for local database storage
  */
-export class SessionRepository extends BaseRepository<ChatSession> {
+export class SessionRepository extends BaseRepository<LocalChatSession> {
   constructor(db: SqliteManager) {
     super(db, "chat_sessions");
     console.log(

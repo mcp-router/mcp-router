@@ -4,18 +4,10 @@ import crypto from "crypto";
 import { shell } from "electron";
 import { fetchWithToken } from "../lib/utils/backend/fetch-utils";
 import { machineIdSync } from "node-machine-id";
-
-// Store authentication state for PKCE flow
-interface AuthState {
-  codeVerifier: string;
-  codeChallenge: string;
-  state: string;
-  idp?: string; // Identity provider (optional)
-  createdAt: number; // Timestamp for potential expiry checking
-}
+import { PKCEAuthState } from "@mcp_router/shared";
 
 // Store the current authentication state
-let currentAuthState: AuthState | null = null;
+let currentAuthState: PKCEAuthState | null = null;
 
 /**
  * Generate a random string for PKCE code verifier

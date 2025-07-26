@@ -3,16 +3,11 @@ import { getDeployedAgentService } from "@/main/services/agent";
 import { status } from "./auth";
 import { backgroundWindow } from "../main";
 import { getSessionRepository } from "../lib/database";
+import { AgentTool } from "@mcp_router/shared";
 
 /**
  * Agent tools definitions and handlers for DeployedAgent integration
  */
-
-export interface AgentTool {
-  name: string;
-  description: string;
-  inputSchema: any;
-}
 
 /**
  * Format agent name to comply with MCP tool name requirements: ^[a-zA-Z0-9_-]{1,64}$

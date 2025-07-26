@@ -11,12 +11,7 @@ import {
   GetPromptRequestSchema,
   ListPromptsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-
-interface ServerClient {
-  id: string;
-  name: string;
-  client: Client;
-}
+import { ServerClient } from "@mcp_router/shared";
 
 /**
  * Pure MCP Aggregator that combines capabilities from multiple MCP servers
@@ -414,7 +409,7 @@ export class MCPAggregator {
         const promptsResponse = await serverClient.client.listPrompts();
         if (promptsResponse && Array.isArray(promptsResponse.prompts)) {
           const hasPrompt = promptsResponse.prompts.some(
-            (p) => p.name === name,
+            (p: any) => p.name === name,
           );
           if (hasPrompt) {
             return await serverClient.client.getPrompt({
