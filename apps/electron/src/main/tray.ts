@@ -129,9 +129,3 @@ function createOrShowMainWindow(): void {
   }
 }
 
-/**
- * Get the current tray instance
- */
-export function getTray(): Tray | null {
-  return tray;
-}

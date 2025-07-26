@@ -239,7 +239,7 @@ export async function extractConfigInfo(
  * 設定オブジェクトから他のMCPサーバ構成を抽出
  * 標準化されたバージョン - 以前のextractOtherServers関数を置き換え
  */
-export function extractServersFromConfig(
+function extractServersFromConfig(
   servers: Record<string, any>,
 ): MCPServerConfig[] {
   const configs: MCPServerConfig[] = [];

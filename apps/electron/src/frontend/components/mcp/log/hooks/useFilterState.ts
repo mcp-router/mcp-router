@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 
 // Interface for filter state
-export interface FilterState {
+interface FilterState {
   showFilters: boolean;
   startDate?: Date;
   endDate?: Date;

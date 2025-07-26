@@ -7,7 +7,7 @@ import { RequestLogEntry, PlatformLogEntry } from "@mcp_router/shared";
 /**
  * LogEntryをRequestLogEntryに変換
  */
-export function convertLogEntryToRequestLogEntry(
+function convertLogEntryToRequestLogEntry(
   log: PlatformLogEntry,
 ): RequestLogEntry {
   return {
@@ -32,7 +32,7 @@ export function convertLogEntryToRequestLogEntry(
 /**
  * ログエントリが既にRequestLogEntry形式かどうかを判定
  */
-export function isRequestLogEntry(log: any): log is RequestLogEntry {
+function isRequestLogEntry(log: any): log is RequestLogEntry {
   return (
     typeof log === "object" &&
     "clientName" in log &&
@@ -48,5 +48,5 @@ export function normalizeToRequestLogEntry(log: any): RequestLogEntry {
   if (isRequestLogEntry(log)) {
     return log;
   }
-  return convertLogEntryToRequestLogEntry(log as LogEntry);
+  return convertLogEntryToRequestLogEntry(log as PlatformLogEntry);
 }

@@ -243,7 +243,7 @@ const USER_DATA_CACHE_TTL = 15 * 60 * 1000; // 15 minutes cache lifetime
 /**
  * Clear the user data cache
  */
-export function clearStatusCache(): void {
+function clearStatusCache(): void {
   userDataCache = null;
 }
 

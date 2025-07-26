@@ -3,7 +3,7 @@ import { app, Menu, MenuItemConstructorOptions } from "electron";
 /**
  * Creates and returns the application menu
  */
-export function createApplicationMenu(): Menu {
+function createApplicationMenu(): Menu {
   const isMac = process.platform === "darwin";
   const template: MenuItemConstructorOptions[] = [
     // { role: 'appMenu' }

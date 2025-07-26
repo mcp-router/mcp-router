@@ -26,7 +26,7 @@ import {
 // 対応アプリが多くて複雑になってきたら、ストラテジーパターンに分けることを検討
 
 // 標準アプリの定義
-export const STANDARD_APPS = [
+const STANDARD_APPS = [
   { id: "claude", name: "Claude", configPathFn: claudeConfig },
   { id: "cline", name: "Cline", configPathFn: clineConfig },
   { id: "windsurf", name: "Windsurf", configPathFn: windsurfConfig },
