@@ -30,7 +30,7 @@ export class ServerService extends SingletonService<
    * Get singleton instance of ServerService
    */
   public static getInstance(): ServerService {
-    return this.getInstanceBase();
+    return (this as any).getInstanceBase();
   }
 
   /**

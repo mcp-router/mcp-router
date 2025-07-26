@@ -41,7 +41,7 @@ class DevelopmentAgentService extends SingletonService<
    * シングルトンインスタンスを取得する静的メソッド
    */
   public static getInstance(): DevelopmentAgentService {
-    return this.getInstanceBase();
+    return (this as any).getInstanceBase();
   }
 
   /**
@@ -213,9 +213,11 @@ class DevelopmentAgentService extends SingletonService<
           updatedConfig,
         );
 
-        logInfo(
-          `開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました`,
-        );
+        if (updatedAgent) {
+          logInfo(
+            `開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました`,
+          );
+        }
         return updatedAgent;
       }
 
@@ -230,9 +232,11 @@ class DevelopmentAgentService extends SingletonService<
 
       const updatedAgent = getAgentRepository().updateAgent(id, updatedConfig);
 
-      logInfo(
-        `開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました (新規インスタンス)`,
-      );
+      if (updatedAgent) {
+        logInfo(
+          `開発中エージェント "${updatedAgent.name}" (ID: ${id}) が正常に更新されました (新規インスタンス)`,
+        );
+      }
       return updatedAgent;
     } catch (error) {
       logError(

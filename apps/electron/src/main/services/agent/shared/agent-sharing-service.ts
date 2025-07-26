@@ -33,7 +33,7 @@ class AgentSharingService extends SingletonService<
    * シングルトンインスタンスを取得する静的メソッド
    */
   public static getInstance(): AgentSharingService {
-    return this.getInstanceBase();
+    return (this as any).getInstanceBase();
   }
 
   /**
@@ -98,7 +98,7 @@ class AgentSharingService extends SingletonService<
       // URLかどうかをチェック
       if (shareUrl.startsWith("http")) {
         // 共有URLからエージェント情報を取得
-        agentId = shareUrl.split("/").pop();
+        agentId = shareUrl.split("/").pop() || "";
         if (!agentId) {
           throw new Error("無効な共有URLです");
         }
@@ -261,7 +261,7 @@ class AgentSharingService extends SingletonService<
       // 基本的なバリデーション
       this.validateAgentConfig(agentData);
     } catch (error) {
-      errors.push(error.message);
+      errors.push(error instanceof Error ? error.message : String(error));
     }
 
     // MCPサーバーの互換性チェック

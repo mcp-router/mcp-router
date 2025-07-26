@@ -139,6 +139,9 @@ const App: React.FC = () => {
       try {
         if (url.hostname === "agent") {
           const agentId = url.searchParams.get("id");
+          if (!agentId) {
+            throw new Error("No agent ID provided in URL");
+          }
           const result = await platformAPI.agents.import(agentId);
           if (result) {
             // Show success message for agent import

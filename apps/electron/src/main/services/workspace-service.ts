@@ -165,7 +165,7 @@ export class WorkspaceService
       const rows = this.metaDb
         .prepare("SELECT * FROM workspaces ORDER BY lastUsedAt DESC")
         .all();
-      return rows.map((row) => this.deserializeWorkspace(row));
+      return rows.map((row: any) => this.deserializeWorkspace(row));
     } catch (error) {
       return this.handleError("list", error, []);
     }
@@ -327,11 +327,11 @@ export class WorkspaceService
 
               // データを挿入
               for (const row of rows) {
-                const columns = Object.keys(row).join(", ");
-                const placeholders = Object.keys(row)
+                const columns = Object.keys(row as object).join(", ");
+                const placeholders = Object.keys(row as object)
                   .map(() => "?")
                   .join(", ");
-                const values = Object.values(row);
+                const values = Object.values(row as object);
 
                 targetDb
                   .prepare(

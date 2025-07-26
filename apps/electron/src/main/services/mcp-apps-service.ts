@@ -499,8 +499,8 @@ async function checkApp(
 
     const installed = await exists(configPath);
     let configured = false;
-    let token: string = knownToken;
-    let serverIds: string[] = knownServerIds;
+    let token: string = knownToken || "";
+    let serverIds: string[] = knownServerIds || [];
     let isCustom = false;
     let hasOtherServers = false;
 
@@ -510,7 +510,7 @@ async function checkApp(
       (app) => app.name.toLowerCase() === name.toLowerCase(),
     );
     if (customApp) {
-      token = token || customApp.token;
+      token = token || customApp.token || "";
       serverIds = serverIds || customApp.serverIds;
       isCustom = true;
     }
@@ -529,7 +529,7 @@ async function checkApp(
 
       if (!tokenValid) {
         configured = false;
-        token = undefined;
+        token = "";
       } else if (isCustom) {
         // カスタムアプリは設定ファイル不要
         configured = true;
@@ -540,7 +540,7 @@ async function checkApp(
         const configTokenValid =
           configToken && allTokens.some((t) => t.id === configToken);
 
-        configured = hasMcpConfig && configTokenValid;
+        configured = !!(hasMcpConfig && configTokenValid);
 
         // 有効なトークンなら使用
         if (configTokenValid) {
@@ -548,11 +548,11 @@ async function checkApp(
         }
 
         // 他のMCPサーバが設定されているか確認
-        hasOtherServers = otherServers && otherServers.length > 0;
+        hasOtherServers = !!(otherServers && otherServers.length > 0);
 
         // 他のMCPサーバが設定されていたら同期する
         if (hasOtherServers) {
-          await syncServersFromClientConfig(otherServers);
+          await syncServersFromClientConfig(otherServers || []);
         }
       }
     }

@@ -1,0 +1,132 @@
+
+> mcp-router@0.5.2 lint
+> turbo run lint
+
+turbo 2.5.4
+
+• Packages in scope: @mcp_router/cli, @mcp_router/electron, @mcp_router/remote-api-types, @mcp_router/shared, @mcp_router/tailwind-config, @mcp_router/ui
+• Running lint in 6 packages
+• Remote caching disabled
+@mcp_router/shared:lint: cache hit, replaying logs a2901b9aec32048b
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: > @mcp_router/shared@0.5.2 lint /Users/yuki/WebstormProjects/mcp-router/packages/shared
+@mcp_router/shared:lint: > eslint . --ext .ts,.js
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: /Users/yuki/WebstormProjects/mcp-router/packages/shared/src/types/agent-api.ts
+@mcp_router/shared:lint:   20:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: /Users/yuki/WebstormProjects/mcp-router/packages/shared/src/types/cli.ts
+@mcp_router/shared:lint:   6:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: /Users/yuki/WebstormProjects/mcp-router/packages/shared/src/types/database/index.ts
+@mcp_router/shared:lint:   22:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   35:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   48:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: /Users/yuki/WebstormProjects/mcp-router/packages/shared/src/types/log-types.ts
+@mcp_router/shared:lint:   18:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   20:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: /Users/yuki/WebstormProjects/mcp-router/packages/shared/src/types/mcp-apps.ts
+@mcp_router/shared:lint:   35:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: /Users/yuki/WebstormProjects/mcp-router/packages/shared/src/types/mcp-types.ts
+@mcp_router/shared:lint:    26:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    42:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    78:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   164:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: /Users/yuki/WebstormProjects/mcp-router/packages/shared/src/types/platform-api/index.ts
+@mcp_router/shared:lint:    23:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    33:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    46:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    51:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    60:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   109:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   222:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: /Users/yuki/WebstormProjects/mcp-router/packages/shared/src/types/rule-types.ts
+@mcp_router/shared:lint:   67:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: /Users/yuki/WebstormProjects/mcp-router/packages/shared/src/types/ui/index.ts
+@mcp_router/shared:lint:    11:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    18:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    26:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    29:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    34:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    44:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:    77:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   119:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   133:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   141:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   142:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   151:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   156:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   157:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   160:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   161:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   170:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   171:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: /Users/yuki/WebstormProjects/mcp-router/packages/shared/src/types/utils.ts
+@mcp_router/shared:lint:   21:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   36:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   48:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint:   53:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/shared:lint: 
+@mcp_router/shared:lint: ✖ 42 problems (0 errors, 42 warnings)
+@mcp_router/shared:lint: 
+@mcp_router/tailwind-config:lint: cache hit, replaying logs 63da160de4fa042b
+@mcp_router/tailwind-config:lint: 
+@mcp_router/tailwind-config:lint: 
+@mcp_router/tailwind-config:lint: > @mcp_router/tailwind-config@0.5.2 lint /Users/yuki/WebstormProjects/mcp-router/packages/tailwind-config
+@mcp_router/tailwind-config:lint: > eslint . --ext .js,.mjs
+@mcp_router/tailwind-config:lint: 
+@mcp_router/cli:lint: cache miss, executing 19a0fe71d19138f9
+@mcp_router/remote-api-types:lint: cache miss, executing fc5af3012ab88854
+@mcp_router/ui:lint: cache miss, executing 1218ff005fd6cd4d
+@mcp_router/ui:lint: 
+@mcp_router/ui:lint: > @mcp_router/ui@0.1.0 lint /Users/yuki/WebstormProjects/mcp-router/packages/ui
+@mcp_router/ui:lint: > eslint src --ext ts,tsx
+@mcp_router/ui:lint: 
+@mcp_router/remote-api-types:lint: 
+@mcp_router/remote-api-types:lint: > @mcp_router/remote-api-types@0.5.3 lint /Users/yuki/WebstormProjects/mcp-router/packages/remote-api-types
+@mcp_router/remote-api-types:lint: > eslint "src/**/*.{ts,tsx}"
+@mcp_router/remote-api-types:lint: 
+@mcp_router/cli:lint: 
+@mcp_router/cli:lint: > @mcp_router/cli@0.1.7 lint /Users/yuki/WebstormProjects/mcp-router/packages/cli
+@mcp_router/cli:lint: > eslint src --ext .ts
+@mcp_router/cli:lint: 
+@mcp_router/remote-api-types:lint: 
+@mcp_router/remote-api-types:lint: /Users/yuki/WebstormProjects/mcp-router/packages/remote-api-types/src/client.ts
+@mcp_router/remote-api-types:lint:   30:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@mcp_router/remote-api-types:lint: 
+@mcp_router/remote-api-types:lint: /Users/yuki/WebstormProjects/mcp-router/packages/remote-api-types/src/index.ts
+@mcp_router/remote-api-types:lint:   3:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint:   3:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint:   6:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint:   6:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint: 
+@mcp_router/remote-api-types:lint: /Users/yuki/WebstormProjects/mcp-router/packages/remote-api-types/src/schema/index.ts
+@mcp_router/remote-api-types:lint:   11:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint:   11:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint:   12:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint:   12:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint:   25:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint:   25:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint:   31:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint:   31:1  error  Type re-exports are only allowed from @mcp_router/shared package. Import types directly from @mcp_router/shared instead  custom/no-type-reexport
+@mcp_router/remote-api-types:lint: 
+@mcp_router/remote-api-types:lint: ✖ 13 problems (12 errors, 1 warning)
+@mcp_router/remote-api-types:lint: 
+@mcp_router/remote-api-types:lint:  ELIFECYCLE  Command failed with exit code 1.
+@mcp_router/remote-api-types:lint: ERROR: command finished with error: command (/Users/yuki/WebstormProjects/mcp-router/packages/remote-api-types) /Users/yuki/Library/pnpm/pnpm run lint exited (1)
+@mcp_router/remote-api-types#lint: command (/Users/yuki/WebstormProjects/mcp-router/packages/remote-api-types) /Users/yuki/Library/pnpm/pnpm run lint exited (1)
+
+ Tasks:    2 successful, 5 total
+Cached:    2 cached, 5 total
+  Time:    5.093s 
+Failed:    @mcp_router/remote-api-types#lint
+
+ ERROR  run failed: command  exited (1)

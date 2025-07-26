@@ -108,7 +108,7 @@ export function setupAgentHandlers(): void {
           return { success: true, tools: result };
         }
       } catch (error) {
-        return { success: false, error: error.message, tools: [] };
+        return { success: false, error: error instanceof Error ? error.message : String(error), tools: [] };
       }
     },
   );
@@ -152,7 +152,7 @@ export function setupAgentHandlers(): void {
         );
         return {
           success: false,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         };
       }
     },
@@ -221,7 +221,7 @@ export function setupAgentHandlers(): void {
         );
         return {
           success: false,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         };
       }
     },
@@ -278,7 +278,7 @@ export function setupAgentHandlers(): void {
       return { success: true };
     } catch (error) {
       console.error("Chat stream start failed:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
   });
 
@@ -291,7 +291,7 @@ export function setupAgentHandlers(): void {
       return { success: true };
     } catch (error) {
       console.error("Chat stream chunk failed:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
   });
 
@@ -354,7 +354,7 @@ export function setupAgentHandlers(): void {
       return { success: true };
     } catch (error) {
       console.error("Chat stream end failed:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
   });
 
@@ -411,7 +411,7 @@ export function setupAgentHandlers(): void {
       return { success: true };
     } catch (error) {
       console.error("Chat stream error handling failed:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
   });
 

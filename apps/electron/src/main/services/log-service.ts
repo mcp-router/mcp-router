@@ -36,7 +36,7 @@ export class LogService extends SingletonService<
    * Get singleton instance of LogService
    */
   public static getInstance(): LogService {
-    return this.getInstanceBase();
+    return (this as any).getInstanceBase();
   }
 
   /**

@@ -34,7 +34,7 @@ export class TokenService extends SingletonService<
    * Get singleton instance
    */
   public static getInstance(): TokenService {
-    return this.getInstanceBase();
+    return (this as any).getInstanceBase();
   }
 
   /**
@@ -112,7 +112,7 @@ export class TokenService extends SingletonService<
     } catch (error) {
       return this.handleError("トークン検証", error, {
         isValid: false,
-        error: `検証中にエラーが発生しました: ${error.message}`,
+        error: `検証中にエラーが発生しました: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
   }

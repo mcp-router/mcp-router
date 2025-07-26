@@ -131,7 +131,7 @@ const DiscoverServerList: React.FC<DiscoverServerListProps> = ({
             <div
               className="cursor-pointer transition-colors hover:bg-muted/50"
               onClick={() => {
-                const url = `https://mcp-router.net/mcpservers/${encodeURIComponent(server.displayId)}/`;
+                const url = `https://mcp-router.net/mcpservers/${encodeURIComponent(server.displayId || server.id)}/`;
                 window.open(url, "_blank");
               }}
             >

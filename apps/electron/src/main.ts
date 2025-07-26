@@ -47,7 +47,7 @@ if (!gotTheLock) {
 }
 
 // Listen for second instance launches and focus the existing window
-app.on("second-instance", (event, commandLine) => {
+app.on("second-instance", (_event, commandLine) => {
   // Show the app in the Dock on macOS
   if (process.platform === "darwin" && app.dock) {
     app.dock.show();
@@ -419,9 +419,9 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   } else {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.show();
-    mainWindow.focus();
+    if (mainWindow && mainWindow.isMinimized()) mainWindow.restore();
+    if (mainWindow) mainWindow.show();
+    if (mainWindow) mainWindow.focus();
   }
 });
 
@@ -750,7 +750,7 @@ function setupMcpAppsHandlers(): void {
       console.error(`Failed to add MCP config to ${appName}:`, error);
       return {
         success: false,
-        message: `Error adding MCP configuration to ${appName}: ${error.message}`,
+        message: `Error adding MCP configuration to ${appName}: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
   });
@@ -764,7 +764,7 @@ function setupMcpAppsHandlers(): void {
         console.error(`Failed to update server access for ${appName}:`, error);
         return {
           success: false,
-          message: `Error updating server access for ${appName}: ${error.message}`,
+          message: `Error updating server access for ${appName}: ${error instanceof Error ? error.message : String(error)}`,
         };
       }
     },
@@ -777,7 +777,7 @@ function setupMcpAppsHandlers(): void {
       console.error(`Failed to unify config for ${appName}:`, error);
       return {
         success: false,
-        message: `Error unifying configuration for ${appName}: ${error.message}`,
+        message: `Error unifying configuration for ${appName}: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
   });

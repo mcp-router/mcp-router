@@ -28,7 +28,7 @@ export class SettingsService extends SingletonService<
    * Get singleton instance
    */
   public static getInstance(): SettingsService {
-    return this.getInstanceBase();
+    return (this as any).getInstanceBase();
   }
 
   /**

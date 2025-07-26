@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { DeployedAgent } from "@mcp_router/shared";
+import { DeployedAgent, MCPServerConfig } from "@mcp_router/shared";
 import { Button } from "@mcp_router/ui";
 import {
   Card,
@@ -59,10 +59,14 @@ const DeployedAgents: React.FC = () => {
     try {
       setIsImporting(true);
       const agent = await platformAPI.agents.import(importCode);
-      addDeployedAgent(agent);
-      setIsImportDialogOpen(false);
-      setImportCode("");
-      toast.success(t("agents.success.imported", { name: agent.name }));
+      if (agent) {
+        addDeployedAgent(agent);
+        setIsImportDialogOpen(false);
+        setImportCode("");
+        toast.success(t("agents.success.imported", { name: agent.name }));
+      } else {
+        throw new Error("No agent returned from import");
+      }
     } catch (error) {
       console.error("Failed to import agent:", error);
       toast.error(t("agents.errors.importFailed"));
@@ -88,8 +92,10 @@ const DeployedAgents: React.FC = () => {
       for (const agentId of sampleAgentIds) {
         try {
           const agent = await platformAPI.agents.import(agentId);
-          addDeployedAgent(agent);
-          importedCount++;
+          if (agent) {
+            addDeployedAgent(agent);
+            importedCount++;
+          }
         } catch (error) {
           console.error(`Failed to import agent ${agentId}:`, error);
         }
@@ -155,7 +161,7 @@ const DeployedAgents: React.FC = () => {
                 <div className="mb-4">
                   <div className="flex flex-wrap gap-1">
                     {agent.mcpServers.length > 0 &&
-                      agent.mcpServers.map((server) => (
+                      agent.mcpServers.map((server: MCPServerConfig) => (
                         <Badge key={server.id} variant="secondary">
                           {server.name}
                         </Badge>

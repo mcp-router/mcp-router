@@ -1,0 +1,240 @@
+
+> mcp-router@0.5.2 typecheck
+> turbo run typecheck
+
+turbo 2.5.4
+
+• Packages in scope: @mcp_router/cli, @mcp_router/electron, @mcp_router/remote-api-types, @mcp_router/shared, @mcp_router/tailwind-config, @mcp_router/ui
+• Running typecheck in 6 packages
+• Remote caching disabled
+@mcp_router/shared:typecheck: cache hit, replaying logs 5661ccec319590d0
+@mcp_router/shared:typecheck: 
+@mcp_router/shared:typecheck: > @mcp_router/shared@0.5.2 typecheck /Users/yuki/WebstormProjects/mcp-router/packages/shared
+@mcp_router/shared:typecheck: > tsc --noEmit
+@mcp_router/shared:typecheck: 
+@mcp_router/remote-api-types:typecheck: cache hit, replaying logs fba523c8d337ec86
+@mcp_router/remote-api-types:typecheck: 
+@mcp_router/remote-api-types:typecheck: > @mcp_router/remote-api-types@0.5.3 typecheck /Users/yuki/WebstormProjects/mcp-router/packages/remote-api-types
+@mcp_router/remote-api-types:typecheck: > tsc --noEmit
+@mcp_router/remote-api-types:typecheck: 
+@mcp_router/ui:typecheck: cache hit, replaying logs dfdd563a5e6f2572
+@mcp_router/ui:typecheck: 
+@mcp_router/ui:typecheck: > @mcp_router/ui@0.1.0 typecheck /Users/yuki/WebstormProjects/mcp-router/packages/ui
+@mcp_router/ui:typecheck: > tsc --noEmit
+@mcp_router/ui:typecheck: 
+@mcp_router/cli:typecheck: cache hit, replaying logs 6228ee58a71d8260
+@mcp_router/cli:typecheck: 
+@mcp_router/cli:typecheck: > @mcp_router/cli@0.1.7 typecheck /Users/yuki/WebstormProjects/mcp-router/packages/cli
+@mcp_router/cli:typecheck: > tsc --noEmit
+@mcp_router/cli:typecheck: 
+@mcp_router/electron:typecheck: cache miss, executing ea1538c9706ec250
+@mcp_router/electron:typecheck: 
+@mcp_router/electron:typecheck: > @mcp_router/electron@0.5.2 typecheck /Users/yuki/WebstormProjects/mcp-router/apps/electron
+@mcp_router/electron:typecheck: > tsc --noEmit
+@mcp_router/electron:typecheck: 
+@mcp_router/electron:typecheck: src/frontend/components/agent/BackgroundComponent.tsx(140,30): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/BackgroundComponent.tsx(264,22): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/BackgroundComponent.tsx(264,39): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/BackgroundComponent.tsx(295,15): error TS2345: Argument of type 'UIMessage[]' is not assignable to parameter of type 'ChatMessage[]'.
+@mcp_router/electron:typecheck:   Type 'UIMessage' is not assignable to type 'ChatMessage'.
+@mcp_router/electron:typecheck:     Types of property 'role' are incompatible.
+@mcp_router/electron:typecheck:       Type '"data" | "system" | "user" | "assistant"' is not assignable to type '"system" | "user" | "assistant"'.
+@mcp_router/electron:typecheck:         Type '"data"' is not assignable to type '"system" | "user" | "assistant"'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/BackgroundComponent.tsx(302,15): error TS2345: Argument of type 'UIMessage[]' is not assignable to parameter of type 'ChatMessage[]'.
+@mcp_router/electron:typecheck:   Type 'UIMessage' is not assignable to type 'ChatMessage'.
+@mcp_router/electron:typecheck:     Types of property 'role' are incompatible.
+@mcp_router/electron:typecheck:       Type '"data" | "system" | "user" | "assistant"' is not assignable to type '"system" | "user" | "assistant"'.
+@mcp_router/electron:typecheck:         Type '"data"' is not assignable to type '"system" | "user" | "assistant"'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/BackgroundComponent.tsx(323,46): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/BackgroundComponent.tsx(323,63): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/use/AgentChat.tsx(182,22): error TS2769: No overload matches this call.
+@mcp_router/electron:typecheck:   Overload 1 of 2, '(o: { [s: string]: MCPAgentToolPermission[]; } | ArrayLike<MCPAgentToolPermission[]>): [string, MCPAgentToolPermission[]][]', gave the following error.
+@mcp_router/electron:typecheck:     Argument of type 'Record<string, MCPAgentToolPermission[]> | undefined' is not assignable to parameter of type '{ [s: string]: MCPAgentToolPermission[]; } | ArrayLike<MCPAgentToolPermission[]>'.
+@mcp_router/electron:typecheck:       Type 'undefined' is not assignable to type '{ [s: string]: MCPAgentToolPermission[]; } | ArrayLike<MCPAgentToolPermission[]>'.
+@mcp_router/electron:typecheck:   Overload 2 of 2, '(o: {}): [string, any][]', gave the following error.
+@mcp_router/electron:typecheck:     Argument of type 'Record<string, MCPAgentToolPermission[]> | undefined' is not assignable to parameter of type '{}'.
+@mcp_router/electron:typecheck:       Type 'undefined' is not assignable to type '{}'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/use/AgentChat.tsx(533,15): error TS2741: Property 'id' is missing in type 'ChatMessage' but required in type 'Message'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/use/AgentChat.tsx(652,11): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+@mcp_router/electron:typecheck:   Type 'null' is not assignable to type 'string | undefined'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/use/AgentChat.tsx(653,11): error TS2322: Type '(selectedSessionId: string) => void' is not assignable to type '(sessionId: string | null) => void'.
+@mcp_router/electron:typecheck:   Types of parameters 'selectedSessionId' and 'sessionId' are incompatible.
+@mcp_router/electron:typecheck:     Type 'string | null' is not assignable to type 'string'.
+@mcp_router/electron:typecheck:       Type 'null' is not assignable to type 'string'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/use/DeployedAgents.tsx(62,24): error TS2345: Argument of type 'DeployedAgent | undefined' is not assignable to parameter of type 'DeployedAgent'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'DeployedAgent'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/use/DeployedAgents.tsx(65,58): error TS18048: 'agent' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/use/DeployedAgents.tsx(91,28): error TS2345: Argument of type 'DeployedAgent | undefined' is not assignable to parameter of type 'DeployedAgent'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'DeployedAgent'.
+@mcp_router/electron:typecheck: src/frontend/components/agent/use/DeployedAgents.tsx(158,45): error TS7006: Parameter 'server' implicitly has an 'any' type.
+@mcp_router/electron:typecheck: src/frontend/components/App.tsx(142,58): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+@mcp_router/electron:typecheck:   Type 'null' is not assignable to type 'string'.
+@mcp_router/electron:typecheck: src/frontend/components/mcp/rules/Rules.tsx(516,19): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/frontend/components/mcp/rules/Rules.tsx(596,11): error TS2322: Type 'ToolParameterSchemaRule | undefined' is not assignable to type 'ToolParameterSchemaRule'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'ToolParameterSchemaRule'.
+@mcp_router/electron:typecheck: src/frontend/components/mcp/server/DiscoverServerList.tsx(134,85): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | number | boolean'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'string | number | boolean'.
+@mcp_router/electron:typecheck: src/frontend/lib/electron-platform-api.ts(36,57): error TS2339: Property 'loggedIn' does not exist on type '{ authenticated: boolean; userId?: string | undefined; user?: any; token?: string | undefined; }'.
+@mcp_router/electron:typecheck: src/frontend/lib/electron-platform-api.ts(251,27): error TS2322: Type 'Promise<{ logs: any[]; total: number; nextCursor?: string | undefined; hasMore: boolean; }>' is not assignable to type 'Promise<LogQueryResult>'.
+@mcp_router/electron:typecheck:   Property 'items' is missing in type '{ logs: any[]; total: number; nextCursor?: string | undefined; hasMore: boolean; }' but required in type 'LogQueryResult'.
+@mcp_router/electron:typecheck: src/frontend/lib/remote-platform-api.ts(27,11): error TS2564: Property 'client' has no initializer and is not definitely assigned in the constructor.
+@mcp_router/electron:typecheck: src/frontend/lib/remote-platform-api.ts(187,9): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'boolean'.
+@mcp_router/electron:typecheck: src/frontend/stores/agent-store.ts(437,13): error TS2322: Type '(ChatSession | AgentStoreChatSession)[]' is not assignable to type 'AgentStoreChatSession[]'.
+@mcp_router/electron:typecheck:   Type 'ChatSession | AgentStoreChatSession' is not assignable to type 'AgentStoreChatSession'.
+@mcp_router/electron:typecheck:     Type 'ChatSession' is not assignable to type 'AgentStoreChatSession'.
+@mcp_router/electron:typecheck:       Types of property 'createdAt' are incompatible.
+@mcp_router/electron:typecheck:         Type 'Date' is not assignable to type 'number'.
+@mcp_router/electron:typecheck: src/frontend/stores/agent-store.ts(443,13): error TS2322: Type 'ChatSession[]' is not assignable to type 'AgentStoreChatSession[]'.
+@mcp_router/electron:typecheck:   Type 'ChatSession' is not assignable to type 'AgentStoreChatSession'.
+@mcp_router/electron:typecheck:     Types of property 'createdAt' are incompatible.
+@mcp_router/electron:typecheck:       Type 'Date' is not assignable to type 'number'.
+@mcp_router/electron:typecheck: src/frontend/stores/server-store.ts(170,5): error TS2322: Type '(config: MCPServerConfig) => Promise<MCPServer>' is not assignable to type '(config: MCPServerConfig) => Promise<void>'.
+@mcp_router/electron:typecheck:   Type 'Promise<MCPServer>' is not assignable to type 'Promise<void>'.
+@mcp_router/electron:typecheck:     Type 'MCPServer' is not assignable to type 'void'.
+@mcp_router/electron:typecheck: src/lib/database/log-repository.ts(361,7): error TS2741: Property 'items' is missing in type '{ logs: RequestLogEntry[]; total: number; nextCursor: string | undefined; hasMore: boolean; }' but required in type 'RequestLogQueryResult'.
+@mcp_router/electron:typecheck: src/lib/database/log-repository.ts(364,7): error TS2741: Property 'items' is missing in type '{ logs: never[]; total: number; hasMore: false; }' but required in type 'RequestLogQueryResult'.
+@mcp_router/electron:typecheck: src/lib/database/repositories/workspace-repository.ts(97,18): error TS2339: Property 'authToken' does not exist on type '{}'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(55,39): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(62,44): error TS2552: Cannot find name 'SessionStatus'. Did you mean 'PermissionStatus'?
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(70,36): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(93,18): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(165,13): error TS2552: Cannot find name 'SessionStatus'. Did you mean 'PermissionStatus'?
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(166,6): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(168,20): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(187,6): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(205,6): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(241,13): error TS2552: Cannot find name 'SessionStatus'. Did you mean 'PermissionStatus'?
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(242,6): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(258,13): error TS2304: Cannot find name 'SessionStatus'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(266,18): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(339,52): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/session-repository.ts(354,18): error TS2304: Cannot find name 'ChatSession'.
+@mcp_router/electron:typecheck: src/lib/database/settings-repository.ts(140,22): error TS2341: Property 'instance' is private and only accessible within class 'SettingsRepository'.
+@mcp_router/electron:typecheck: src/lib/database/settings-repository.ts(141,22): error TS2341: Property 'currentDb' is private and only accessible within class 'SettingsRepository'.
+@mcp_router/electron:typecheck: src/lib/database/sqlite-manager.ts(6,8): error TS7016: Could not find a declaration file for module 'better-sqlite3'. '/Users/yuki/WebstormProjects/mcp-router/node_modules/better-sqlite3/lib/index.js' implicitly has an 'any' type.
+@mcp_router/electron:typecheck:   Try `npm i --save-dev @types/better-sqlite3` if it exists or add a new declaration (.d.ts) file containing `declare module 'better-sqlite3';`
+@mcp_router/electron:typecheck: src/lib/get-env.ts(62,9): error TS18046: 'err' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/lib/get-env.ts(62,23): error TS18046: 'err' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/lib/get-env.ts(63,27): error TS18046: 'err' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/lib/get-env.ts(63,41): error TS18046: 'err' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/lib/i18n.ts(4,27): error TS6307: File '/Users/yuki/WebstormProjects/mcp-router/apps/electron/src/locales/en.json' is not listed within the file list of project '/Users/yuki/WebstormProjects/mcp-router/apps/electron/tsconfig.json'. Projects must list all files or use an 'include' pattern.
+@mcp_router/electron:typecheck: src/lib/i18n.ts(5,27): error TS6307: File '/Users/yuki/WebstormProjects/mcp-router/apps/electron/src/locales/ja.json' is not listed within the file list of project '/Users/yuki/WebstormProjects/mcp-router/apps/electron/tsconfig.json'. Projects must list all files or use an 'include' pattern.
+@mcp_router/electron:typecheck: src/lib/utils/backend/mcp-client-util.ts(110,9): error TS2322: Type '{ [x: string]: string; } | { [x: string]: string | undefined; TZ?: string | undefined; }' is not assignable to type 'Record<string, string> | undefined'.
+@mcp_router/electron:typecheck:   Type '{ [x: string]: string | undefined; TZ?: string; }' is not assignable to type 'Record<string, string>'.
+@mcp_router/electron:typecheck:     'string' index signatures are incompatible.
+@mcp_router/electron:typecheck:       Type 'string | undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck:         Type 'undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(91,21): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(92,28): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(124,7): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(131,17): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(133,24): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(133,24): error TS18048: 'paramRule.properties' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(157,13): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(158,23): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(160,30): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(160,30): error TS18048: 'paramRule.properties' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(189,15): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(190,25): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(192,32): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(192,32): error TS18048: 'paramRule.properties' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(211,7): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(211,43): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/lib/utils/backend/rule-utils.ts(218,5): error TS18048: 'paramRule' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/main.ts(422,9): error TS18047: 'mainWindow' is possibly 'null'.
+@mcp_router/electron:typecheck: src/main.ts(422,35): error TS18047: 'mainWindow' is possibly 'null'.
+@mcp_router/electron:typecheck: src/main.ts(423,5): error TS18047: 'mainWindow' is possibly 'null'.
+@mcp_router/electron:typecheck: src/main.ts(424,5): error TS18047: 'mainWindow' is possibly 'null'.
+@mcp_router/electron:typecheck: src/main.ts(753,67): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main.ts(767,68): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main.ts(780,66): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/agent-handler.ts(111,41): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/agent-handler.ts(155,18): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/agent-handler.ts(224,18): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/agent-handler.ts(250,16): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/agent-handler.ts(281,39): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/agent-handler.ts(294,39): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/agent-handler.ts(357,39): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/agent-handler.ts(414,39): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/package-manager-handler.ts(55,32): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/package-manager-handler.ts(56,32): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/package-manager-handler.ts(68,30): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/package-manager-handler.ts(87,25): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/package-manager-handler.ts(87,46): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/handlers/package-manager-handler.ts(87,65): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/mcp-manager/aggregator-server.ts(20,11): error TS2564: Property 'aggregatorServer' has no initializer and is not definitely assigned in the constructor.
+@mcp_router/electron:typecheck: src/main/mcp-manager/aggregator-server.ts(21,11): error TS2564: Property 'transport' has no initializer and is not definitely assigned in the constructor.
+@mcp_router/electron:typecheck: src/main/mcp-manager/aggregator-server.ts(117,23): error TS18048: 'request.params' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/main/mcp-manager/aggregator-server.ts(134,23): error TS18048: 'request.params' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/main/mcp-manager/aggregator-server.ts(143,23): error TS18048: 'request.params' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/main/mcp-manager/aggregator-server.ts(166,23): error TS18048: 'request.params' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/main/mcp-manager/request-handlers.ts(98,37): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck: src/main/services/agent/deployed/deployed-agent-service.ts(40,12): error TS2684: The 'this' context of type 'typeof DeployedAgentService' is not assignable to method's 'this' of type 'new (...args: any[]) => any'.
+@mcp_router/electron:typecheck:   Cannot assign a 'protected' constructor type to a 'public' constructor type.
+@mcp_router/electron:typecheck: src/main/services/agent/development/development-agent-service.ts(44,12): error TS2684: The 'this' context of type 'typeof DevelopmentAgentService' is not assignable to method's 'this' of type 'new (...args: any[]) => any'.
+@mcp_router/electron:typecheck:   Cannot assign a 'protected' constructor type to a 'public' constructor type.
+@mcp_router/electron:typecheck: src/main/services/agent/development/development-agent-service.ts(217,25): error TS18048: 'updatedAgent' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/main/services/agent/development/development-agent-service.ts(234,23): error TS18048: 'updatedAgent' is possibly 'undefined'.
+@mcp_router/electron:typecheck: src/main/services/agent/development/development-agent.ts(261,9): error TS2345: Argument of type 'string[] | undefined' is not assignable to parameter of type 'string[]'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'string[]'.
+@mcp_router/electron:typecheck: src/main/services/agent/shared/agent-sharing-service.ts(36,12): error TS2684: The 'this' context of type 'typeof AgentSharingService' is not assignable to method's 'this' of type 'new (...args: any[]) => any'.
+@mcp_router/electron:typecheck:   Cannot assign a 'protected' constructor type to a 'public' constructor type.
+@mcp_router/electron:typecheck: src/main/services/agent/shared/agent-sharing-service.ts(101,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck: src/main/services/agent/shared/agent-sharing-service.ts(264,19): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/services/log-service.ts(39,12): error TS2684: The 'this' context of type 'typeof LogService' is not assignable to method's 'this' of type 'new (...args: any[]) => any'.
+@mcp_router/electron:typecheck:   Cannot assign a 'protected' constructor type to a 'public' constructor type.
+@mcp_router/electron:typecheck: src/main/services/mcp-apps-service.ts(502,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck: src/main/services/mcp-apps-service.ts(503,9): error TS2322: Type 'string[] | undefined' is not assignable to type 'string[]'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'string[]'.
+@mcp_router/electron:typecheck: src/main/services/mcp-apps-service.ts(513,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck: src/main/services/mcp-apps-service.ts(532,9): error TS2322: Type 'undefined' is not assignable to type 'string'.
+@mcp_router/electron:typecheck: src/main/services/mcp-apps-service.ts(543,9): error TS2322: Type 'string | boolean' is not assignable to type 'boolean'.
+@mcp_router/electron:typecheck:   Type 'string' is not assignable to type 'boolean'.
+@mcp_router/electron:typecheck: src/main/services/mcp-apps-service.ts(551,9): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'boolean'.
+@mcp_router/electron:typecheck: src/main/services/mcp-apps-service.ts(555,45): error TS2345: Argument of type 'MCPServerConfig[] | undefined' is not assignable to parameter of type 'MCPServerConfig[]'.
+@mcp_router/electron:typecheck:   Type 'undefined' is not assignable to type 'MCPServerConfig[]'.
+@mcp_router/electron:typecheck: src/main/services/server-service.ts(33,12): error TS2684: The 'this' context of type 'typeof ServerService' is not assignable to method's 'this' of type 'new (...args: any[]) => any'.
+@mcp_router/electron:typecheck:   Cannot assign a 'protected' constructor type to a 'public' constructor type.
+@mcp_router/electron:typecheck: src/main/services/settings-service.ts(31,12): error TS2684: The 'this' context of type 'typeof SettingsService' is not assignable to method's 'this' of type 'new (...args: any[]) => any'.
+@mcp_router/electron:typecheck:   Cannot assign a 'protected' constructor type to a 'public' constructor type.
+@mcp_router/electron:typecheck: src/main/services/token-service.ts(37,12): error TS2684: The 'this' context of type 'typeof TokenService' is not assignable to method's 'this' of type 'new (...args: any[]) => any'.
+@mcp_router/electron:typecheck:   Cannot assign a 'protected' constructor type to a 'public' constructor type.
+@mcp_router/electron:typecheck: src/main/services/token-service.ts(115,35): error TS18046: 'error' is of type 'unknown'.
+@mcp_router/electron:typecheck: src/main/services/workspace-service.ts(168,24): error TS7006: Parameter 'row' implicitly has an 'any' type.
+@mcp_router/electron:typecheck: src/main/services/workspace-service.ts(330,45): error TS2769: No overload matches this call.
+@mcp_router/electron:typecheck:   Overload 1 of 2, '(o: {}): string[]', gave the following error.
+@mcp_router/electron:typecheck:     Argument of type 'unknown' is not assignable to parameter of type '{}'.
+@mcp_router/electron:typecheck:   Overload 2 of 2, '(o: object): string[]', gave the following error.
+@mcp_router/electron:typecheck:     Argument of type 'unknown' is not assignable to parameter of type 'object'.
+@mcp_router/electron:typecheck: src/main/services/workspace-service.ts(331,50): error TS2769: No overload matches this call.
+@mcp_router/electron:typecheck:   Overload 1 of 2, '(o: {}): string[]', gave the following error.
+@mcp_router/electron:typecheck:     Argument of type 'unknown' is not assignable to parameter of type '{}'.
+@mcp_router/electron:typecheck:   Overload 2 of 2, '(o: object): string[]', gave the following error.
+@mcp_router/electron:typecheck:     Argument of type 'unknown' is not assignable to parameter of type 'object'.
+@mcp_router/electron:typecheck: src/main/services/workspace-service.ts(334,46): error TS2769: No overload matches this call.
+@mcp_router/electron:typecheck:   Overload 1 of 2, '(o: ArrayLike<unknown> | { [s: string]: unknown; }): unknown[]', gave the following error.
+@mcp_router/electron:typecheck:     Argument of type 'unknown' is not assignable to parameter of type 'ArrayLike<unknown> | { [s: string]: unknown; }'.
+@mcp_router/electron:typecheck:   Overload 2 of 2, '(o: {}): any[]', gave the following error.
+@mcp_router/electron:typecheck:     Argument of type 'unknown' is not assignable to parameter of type '{}'.
+@mcp_router/electron:typecheck: src/renderer.ts(3,8): error TS1149: File name '/Users/yuki/WebstormProjects/mcp-router/apps/electron/src/app.tsx' differs from already included file name '/Users/yuki/WebstormProjects/mcp-router/apps/electron/src/App.tsx' only in casing.
+@mcp_router/electron:typecheck:   The file is in the program because:
+@mcp_router/electron:typecheck:     Matched by include pattern 'src/**/*' in '/Users/yuki/WebstormProjects/mcp-router/apps/electron/tsconfig.json'
+@mcp_router/electron:typecheck:     Imported via "./app" from file '/Users/yuki/WebstormProjects/mcp-router/apps/electron/src/renderer.ts'
+@mcp_router/electron:typecheck:  ELIFECYCLE  Command failed with exit code 2.
+@mcp_router/electron:typecheck: ERROR: command finished with error: command (/Users/yuki/WebstormProjects/mcp-router/apps/electron) /Users/yuki/Library/pnpm/pnpm run typecheck exited (2)
+@mcp_router/electron#typecheck: command (/Users/yuki/WebstormProjects/mcp-router/apps/electron) /Users/yuki/Library/pnpm/pnpm run typecheck exited (2)
+
+ Tasks:    4 successful, 5 total
+Cached:    4 cached, 5 total
+  Time:    12.26s 
+Failed:    @mcp_router/electron#typecheck
+
+ ERROR  run failed: command  exited (2)

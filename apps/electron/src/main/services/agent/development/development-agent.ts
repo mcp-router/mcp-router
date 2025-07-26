@@ -258,7 +258,7 @@ export class DevelopmentAgent extends AgentBase {
 
     try {
       const args = substituteArgsParameters(
-        server.args,
+        server.args || [],
         server.env || {},
         server.inputParams || {},
       );

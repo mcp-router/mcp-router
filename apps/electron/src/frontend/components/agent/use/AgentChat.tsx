@@ -155,7 +155,7 @@ const AgentChat: React.FC = () => {
   );
 
   // Session management handlers
-  const handleSessionSelect = (selectedSessionId: string) => {
+  const handleSessionSelect = (selectedSessionId: string | null) => {
     setCurrentSessionId(selectedSessionId);
   };
 
@@ -179,7 +179,8 @@ const AgentChat: React.FC = () => {
     if ((agent as AgentConfig).toolPermissions) {
       const toolPermissions = (agent as AgentConfig).toolPermissions;
 
-      Object.entries(toolPermissions).forEach(([_serverId, toolsArray]) => {
+      if (toolPermissions) {
+        Object.entries(toolPermissions).forEach(([_serverId, toolsArray]) => {
         if (Array.isArray(toolsArray)) {
           toolsArray.forEach((tool) => {
             if (tool.enabled) {
@@ -192,6 +193,7 @@ const AgentChat: React.FC = () => {
           });
         }
       });
+      }
     }
 
     return tools;
@@ -517,9 +519,12 @@ const AgentChat: React.FC = () => {
               .then((session) => session?.messages || []);
 
             // Filter out system messages when setting from fetched messages
-            const sessionMessages = fetchedMessages.filter(
-              (msg: any) => msg.role !== "system",
-            );
+            const sessionMessages = fetchedMessages
+              .filter((msg: any) => msg.role !== "system")
+              .map((msg: any, index: number) => ({
+                ...msg,
+                id: msg.id || `msg-${index}`,
+              }));
             setMessages([
               // Always include the system message
               {
@@ -649,7 +654,7 @@ const AgentChat: React.FC = () => {
       {/* Sessions Header - Always show ChatSessions component */}
       <div className="flex-shrink-0">
         <ChatSessions
-          currentSessionId={currentSessionId}
+          currentSessionId={currentSessionId ?? undefined}
           onSessionSelect={handleSessionSelect}
           onNewSession={handleNewSession}
           sessions={chatSessions}
