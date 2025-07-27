@@ -165,7 +165,8 @@ export class SqliteManager {
 }
 
 /**
- * SQLiteManagerのシングルトンインスタンス（互換性のために残す）
+ * SQLiteManagerのシングルトンクラス
+ * 単一のデータベースインスタンスを管理
  */
 export class SqliteManagerSingleton {
   private static instance: SqliteManager | null = null;

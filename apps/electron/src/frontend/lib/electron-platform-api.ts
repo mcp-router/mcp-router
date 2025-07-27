@@ -16,7 +16,7 @@ import type {
 } from "@/lib/platform-api";
 
 // Electron implementation of the Platform API
-export class ElectronPlatformAPI implements PlatformAPI {
+class ElectronPlatformAPI implements PlatformAPI {
   auth: AuthAPI;
   servers: ServerAPI;
   agents: AgentAPI;

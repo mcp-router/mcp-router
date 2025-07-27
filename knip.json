@@ -3,9 +3,7 @@
   "workspaces": {
     ".": {
       "entry": [
-        "scripts/**/*.{js,ts}",
         "*.config.{js,ts,mjs}",
-        "eslint.config.mjs",
         "turbo.json"
       ],
       "ignore": [
@@ -33,8 +31,6 @@
         "webpack.renderer.config.ts",
         "webpack.plugins.ts",
         "webpack.rules.ts",
-        "postcss.config.js",
-        "tailwind.config.js"
       ],
       "project": [
         "src/**/*.{ts,tsx,js,jsx}"
@@ -51,20 +47,7 @@
         "**/*.min.js"
       ],
       "ignoreDependencies": [
-        "electron",
-        "@electron/rebuild",
-        "electron-squirrel-startup",
-        "@electron-forge/cli",
-        "@electron-forge/maker-dmg",
-        "@electron-forge/maker-squirrel",
-        "@electron-forge/maker-zip",
-        "@electron-forge/plugin-auto-unpack-natives",
-        "@electron-forge/plugin-fuses",
-        "@electron-forge/plugin-webpack",
         "@electron-forge/publisher-github",
-        "@electron/fuses",
-        "cross-env",
-        "dotenv",
         "@types/webpack",
         "@vercel/webpack-asset-relocator-loader",
         "css-loader",
@@ -73,8 +56,7 @@
         "postcss-loader",
         "style-loader",
         "ts-loader",
-        "ts-node",
-        "webpack"
+        "ts-node"
       ],
       "ignoreExportsUsedInFile": {
         "src/frontend/components/**/*.tsx": ["default"],
@@ -84,7 +66,6 @@
     },
     "packages/shared": {
       "entry": [
-        "src/index.ts"
       ],
       "project": [
         "src/**/*.ts"
@@ -103,7 +84,6 @@
     },
     "packages/ui": {
       "entry": [
-        "src/index.ts"
       ],
       "project": [
         "src/**/*.{ts,tsx}"
@@ -122,15 +102,10 @@
         "src/hooks/*.ts": ["default"],
         "src/lib/*.ts": ["default"]
       },
-      "ignoreDependencies": [
-        "autoprefixer",
-        "postcss",
-        "tailwindcss"
-      ]
+      "ignoreDependencies": []
     },
     "packages/cli": {
       "entry": [
-        "src/mcpr.ts",
         "src/mcp-aggregator.ts"
       ],
       "project": [
@@ -150,9 +125,6 @@
     },
     "packages/remote-api-types": {
       "entry": [
-        "src/index.ts",
-        "src/schema/index.ts",
-        "tsup.config.ts"
       ],
       "project": [
         "src/**/*.ts"
@@ -171,13 +143,9 @@
     },
     "packages/tailwind-config": {
       "entry": [
-        "index.js",
-        "tailwind.config.js",
-        "postcss.config.js"
       ],
       "project": [
-        "*.js",
-        "*.mjs"
+        "*.js"
       ],
       "ignore": [
         "**/node_modules/**",
@@ -185,12 +153,7 @@
         "**/*.test.js",
         "**/*.spec.js"
       ],
-      "ignoreDependencies": [
-        "@eslint/js",
-        "eslint-config-prettier",
-        "eslint-plugin-prettier",
-        "prettier"
-      ]
+      "ignoreDependencies": []
     }
   },
   "ignore": [
@@ -212,10 +175,7 @@
     "**/tmp/**",
     "**/temp/**"
   ],
-  "ignoreDependencies": [
-    "@electron/rebuild",
-    "electron-rebuild"
-  ],
+  "ignoreDependencies": [],
   "ignoreWorkspaces": [],
   "rules": {
     "dependencies": "error",

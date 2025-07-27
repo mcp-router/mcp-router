@@ -15,7 +15,7 @@ import { PackageUpdateInfo, ServerPackageUpdates } from "@mcp_router/shared";
  * @param packageSpec Package specifier with or without version
  * @returns The package name without version
  */
-export function extractPackageName(packageSpec: string): string {
+function extractPackageName(packageSpec: string): string {
   // Handle scoped packages (@org/package-name)
   if (packageSpec.startsWith("@")) {
     const scopedMatch = packageSpec.match(/^(@[^/]+\/[^@]+)(?:@.*)?$/);
@@ -31,7 +31,7 @@ export function extractPackageName(packageSpec: string): string {
  * @param args Array of command arguments
  * @returns The package name or null if not found
  */
-export function extractPackageNameFromCommand(args: string[]): string | null {
+function extractPackageNameFromCommand(args: string[]): string | null {
   for (let i = 0; i < args.length; i++) {
     if (!args[i].startsWith("-")) {
       return args[i];
@@ -45,7 +45,7 @@ export function extractPackageNameFromCommand(args: string[]): string | null {
  * @param packageSpec Package specifier with or without version
  * @returns The version string if found, otherwise null
  */
-export function extractPackageVersion(packageSpec: string): string | null {
+function extractPackageVersion(packageSpec: string): string | null {
   // Handle scoped packages (@org/package-name@version)
   if (packageSpec.startsWith("@")) {
     const versionMatch = packageSpec.match(/@[^/]+\/[^@]+@(.+)$/);
@@ -62,7 +62,7 @@ export function extractPackageVersion(packageSpec: string): string | null {
  * @param packageSpec Package specifier string
  * @returns True if the package spec includes a version
  */
-export function hasVersionSpecified(packageSpec: string): boolean {
+function hasVersionSpecified(packageSpec: string): boolean {
   // For scoped packages (@org/package-name)
   if (packageSpec.startsWith("@")) {
     return /@[^/]+\/[^@]+@.+/.test(packageSpec);
@@ -206,7 +206,7 @@ async function getLatestVersion(
  * @param packageManager The package manager to use (pnpm or uvx)
  * @returns Object containing the current version, latest version, and update status
  */
-export async function checkPackageUpdate(
+async function checkPackageUpdate(
   packageSpec: string,
   packageManager: "pnpm" | "uvx",
 ): Promise<PackageUpdateInfo> {
@@ -324,7 +324,7 @@ export async function checkMcpServerPackageUpdates(
  * @param packageManager The package manager to use (pnpm or uvx)
  * @returns The package specifier with the latest version
  */
-export async function resolvePackageVersion(
+async function resolvePackageVersion(
   packageSpec: string,
   packageManager: "pnpm" | "uvx",
 ): Promise<string> {

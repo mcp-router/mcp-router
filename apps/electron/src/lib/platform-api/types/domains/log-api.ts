@@ -10,7 +10,7 @@ import {
 /**
  * Platform API用のログフィルター
  */
-export interface LogFilters {
+interface LogFilters {
   clientId?: string;
   serverId?: string;
   requestType?: string;

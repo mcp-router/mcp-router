@@ -5,28 +5,28 @@
 import { ServerPackageUpdates } from "@mcp_router/shared";
 import { Unsubscribe } from "./auth-api";
 
-export type PackageManager = "pnpm" | "uvx";
-export type Platform = "darwin" | "win32" | "linux";
+type PackageManager = "pnpm" | "uvx";
+type Platform = "darwin" | "win32" | "linux";
 
-export interface ResolveResult {
+interface ResolveResult {
   success: boolean;
   resolvedArgs?: string;
   error?: string;
 }
 
-export interface UpdateResult {
+interface UpdateResult {
   success: boolean;
   updates?: ServerPackageUpdates;
   error?: string;
 }
 
-export interface ManagerStatus {
+interface ManagerStatus {
   node: boolean;
   pnpm: boolean;
   uv: boolean;
 }
 
-export interface InstallResult {
+interface InstallResult {
   success: boolean;
   installed: ManagerStatus;
   errors?: {
@@ -36,7 +36,7 @@ export interface InstallResult {
   };
 }
 
-export interface UpdateInfo {
+interface UpdateInfo {
   updateAvailable: boolean;
   version?: string;
   releaseNotes?: string;

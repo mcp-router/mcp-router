@@ -63,24 +63,3 @@ export function extractServerVariables(
 
   return variables;
 }
-
-/**
- * Extract variables from multiple server configurations
- * @param servers Array of MCP server configurations
- * @returns Object with server IDs as keys and array of server variables as values
- */
-export function extractAllServerVariables(
-  servers: MCPServerConfig[],
-): Record<string, ServerVariable[]> {
-  const variables: Record<string, ServerVariable[]> = {};
-
-  if (!servers || !Array.isArray(servers)) return variables;
-
-  servers.forEach((server) => {
-    if (server && server.id) {
-      variables[server.id] = extractServerVariables(server);
-    }
-  });
-
-  return variables;
-}

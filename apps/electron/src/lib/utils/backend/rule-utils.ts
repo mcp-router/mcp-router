@@ -17,7 +17,7 @@ import {
  * @param variables Object containing variable values
  * @returns String with variables replaced by their values
  */
-export function applyRule(rule: string, variables: RuleVariables): string {
+function applyRule(rule: string, variables: RuleVariables): string {
   return rule.replace(/\{([a-zA-Z]+)\}/g, (match, variable) => {
     return variables[variable] !== undefined ? variables[variable] : match;
   });

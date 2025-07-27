@@ -10,7 +10,7 @@ import { AgentConfig, DeployedAgent } from "@mcp_router/shared";
  * @param agent The agent to check
  * @returns true if the agent is a DeployedAgent
  */
-export function isDeployedAgent(
+function isDeployedAgent(
   agent: AgentConfig | DeployedAgent,
 ): agent is DeployedAgent {
   return "originalId" in agent;

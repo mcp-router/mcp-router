@@ -28,14 +28,3 @@ export function PlatformAPIProvider({
     </PlatformAPIContext.Provider>
   );
 }
-
-// Hook to use the platform API
-export function usePlatformAPI(): PlatformAPI {
-  const context = useContext(PlatformAPIContext);
-
-  if (!context) {
-    throw new Error("usePlatformAPI must be used within a PlatformAPIProvider");
-  }
-
-  return context;
-}

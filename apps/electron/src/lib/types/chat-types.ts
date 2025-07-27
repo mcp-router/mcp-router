@@ -4,19 +4,19 @@
  */
 
 // Base chat message interface
-export interface BaseChatMessage {
+interface BaseChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
 }
 
 // Tool-related types
-export interface ToolCall {
+interface ToolCall {
   id: string;
   name: string;
   arguments?: any;
 }
 
-export interface ToolResult {
+interface ToolResult {
   toolCallId?: string;
   content: any;
   isError?: boolean;
@@ -52,7 +52,7 @@ export interface LocalChatMessage extends BaseChatMessage {
  * Platform chat message type used for platform API communication
  * Used in: packages/shared/src/types/platform-api/index.ts
  */
-export interface PlatformChatMessage extends BaseChatMessage {
+interface PlatformChatMessage extends BaseChatMessage {
   id: string;
   timestamp: number;
   toolCalls?: any[];
@@ -72,63 +72,7 @@ export interface ExtendedPlatformChatMessage extends PlatformChatMessage {
   }>;
 }
 
-/**
- * Chat session interface
- */
-export interface ChatSession {
-  id: string;
-  agentId: string;
-  title?: string;
-  messages: PlatformChatMessage[];
-  createdAt: number | Date;
-  updatedAt: number | Date;
-  status?: "active" | "archived" | "deleted";
-}
 
-/**
- * Agent chat session (extended version)
- * Used in: packages/shared/src/types/platform-api/index.ts
- */
-export interface AgentChatSession extends ChatSession {
-  title: string;
-  messages: PlatformChatMessage[];
-  createdAt: number;
-  updatedAt: number;
-  status: "active" | "archived" | "deleted";
-}
-
-
-/**
- * Type guards
- */
-export function isPlatformChatMessage(
-  message: any,
-): message is PlatformChatMessage {
-  return (
-    message &&
-    typeof message.id === "string" &&
-    typeof message.timestamp === "number" &&
-    ["user", "assistant", "system"].includes(message.role) &&
-    typeof message.content === "string"
-  );
-}
-
-export function isLocalChatMessage(message: any): message is LocalChatMessage {
-  return (
-    message &&
-    ["user", "assistant", "system"].includes(message.role) &&
-    typeof message.content === "string" &&
-    (message.timestamp === undefined || message.timestamp instanceof Date)
-  );
-}
-
-export function isAgentChatMessage(message: any): message is AgentChatMessage {
-  return (
-    message &&
-    ["user", "assistant", "system"].includes(message.role) &&
-    typeof message.content === "string"
-  );
-}
 
 /**
  * Conversion utilities
@@ -150,50 +94,3 @@ export function convertToLocalChatMessage(
   };
 }
 
-export function convertToPlatformChatMessage(
-  msg: LocalChatMessage,
-  id?: string,
-): PlatformChatMessage {
-  return {
-    id: id || msg.id || generateMessageId(),
-    role: msg.role,
-    content: msg.content,
-    timestamp: msg.timestamp ? msg.timestamp.getTime() : Date.now(),
-    toolCalls: msg.toolCalls,
-    toolResults: msg.toolResults?.map((tr) => ({
-      content: tr.result,
-      isError: !tr.success,
-      error: tr.error,
-    })),
-  };
-}
-
-export function convertAgentChatMessage(
-  msg: AgentChatMessage,
-  id?: string,
-  timestamp?: number,
-): PlatformChatMessage {
-  return {
-    id: id || generateMessageId(),
-    role: msg.role,
-    content: msg.content,
-    timestamp: timestamp || Date.now(),
-    toolCalls: [],
-    toolResults: [],
-  };
-}
-
-/**
- * Helper function to generate message IDs
- */
-function generateMessageId(): string {
-  return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-
-/**
- * Re-export for convenience
- */
-export type {
-  AgentChatMessage as SimpleChatMessage, // Alias for backward compatibility
-  PlatformChatMessage as ChatMessage, // Default ChatMessage type
-};

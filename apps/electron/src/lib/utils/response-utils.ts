@@ -110,25 +110,3 @@ export function summarizeResponse(response: any): any {
     return response;
   }
 }
-
-/**
- * Create a simple truncated summary of response data
- * @param response The response object to summarize
- * @param maxLength Maximum length of the summary string
- * @returns A string summary of the response
- */
-export function createResponseSummary(response: any, maxLength = 100): string {
-  if (response === undefined || response === null) {
-    return "null";
-  }
-
-  try {
-    const stringValue = JSON.stringify(response);
-    if (stringValue.length <= maxLength) {
-      return stringValue;
-    }
-    return stringValue.substring(0, maxLength) + "...";
-  } catch (error) {
-    return `[Object of type ${typeof response}]`;
-  }
-}

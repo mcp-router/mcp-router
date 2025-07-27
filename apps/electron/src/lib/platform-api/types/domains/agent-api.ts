@@ -6,22 +6,22 @@ import { Agent, AgentConfig, DeployedAgent } from "@mcp_router/shared";
 import { Unsubscribe } from "./auth-api";
 import type { LocalChatMessage as ChatMessage } from "@/lib/types/chat-types";
 
-export interface CreateAgentInput extends Omit<AgentConfig, "id"> {}
+interface CreateAgentInput extends Omit<AgentConfig, "id"> {}
 
-export interface UpdateAgentInput extends Partial<AgentConfig> {}
+interface UpdateAgentInput extends Partial<AgentConfig> {}
 
-export interface DeployTarget {
+interface DeployTarget {
   platform: "cloud" | "local";
   config?: any;
 }
 
-export interface DeploymentResult {
+interface DeploymentResult {
   success: boolean;
   deployedAgent?: DeployedAgent;
   error?: string;
 }
 
-export interface Tool {
+interface Tool {
   name: string;
   description?: string;
   parameters?: any;
@@ -43,13 +43,13 @@ export interface ChatSession {
   updatedAt: Date;
 }
 
-export interface SessionListOptions {
+interface SessionListOptions {
   offset?: number;
   limit?: number;
   cursor?: string;
 }
 
-export interface SessionListResult {
+interface SessionListResult {
   sessions: ChatSession[];
   hasMore: boolean;
   nextCursor?: string;

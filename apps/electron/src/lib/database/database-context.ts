@@ -63,10 +63,3 @@ export function getDatabaseContext(): DatabaseContext {
   return DatabaseContext.getInstance();
 }
 
-/**
- * 現在のワークスペースのデータベースを取得するヘルパー関数
- * 既存のgetSqliteManager()の代替として使用
- */
-export async function getWorkspaceDatabase(): Promise<SqliteManager> {
-  return getDatabaseContext().getCurrentDatabase();
-}

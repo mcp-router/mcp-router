@@ -11,7 +11,7 @@ export interface ServerStatus {
   stats?: ServerStats;
 }
 
-export interface ServerStats {
+interface ServerStats {
   requests: number;
   errors: number;
   uptime: number;
@@ -19,10 +19,6 @@ export interface ServerStats {
 
 export interface CreateServerInput {
   config: MCPServerConfig;
-}
-
-export interface UpdateServerInput {
-  config: Partial<MCPServerConfig>;
 }
 
 export interface ServerAPI {

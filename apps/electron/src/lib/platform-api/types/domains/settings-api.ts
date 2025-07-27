@@ -4,7 +4,7 @@
 
 import { AppSettings } from "@mcp_router/shared";
 
-export interface OverlayCountResult {
+interface OverlayCountResult {
   success: boolean;
   count: number;
 }

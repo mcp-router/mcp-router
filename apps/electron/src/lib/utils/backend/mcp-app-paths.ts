@@ -117,7 +117,6 @@ async function exists(filePath: string) {
 }
 
 export {
-  vscodeGlobalStorageDir,
   claudeConfig,
   cursorConfig,
   windsurfConfig,

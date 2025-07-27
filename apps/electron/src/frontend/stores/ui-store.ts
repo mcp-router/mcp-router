@@ -144,13 +144,3 @@ export const useUIStore = create<UIStoreState>((set, get) => ({
     });
   },
 }));
-
-// Utility hooks
-export const useToasts = () => useUIStore((state) => state.toasts);
-export const useDialog = () => useUIStore((state) => state.dialog);
-export const useGlobalLoading = () =>
-  useUIStore((state) => ({
-    isLoading: state.globalLoading,
-    message: state.loadingMessage,
-  }));
-export const useTheme = () => useUIStore((state) => state.theme);

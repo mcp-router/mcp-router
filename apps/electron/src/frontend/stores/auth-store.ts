@@ -2,7 +2,7 @@ import { create, StoreApi, UseBoundStore } from "zustand";
 import { AppSettings, AuthStoreState, UserInfo } from "@mcp_router/shared";
 import { PlatformAPI } from "@/lib/platform-api";
 
-interface AuthStoreInterface extends AuthStoreState {
+export interface AuthStoreInterface extends AuthStoreState {
   // Actions
   setAuthenticated: (authenticated: boolean) => void;
   setUserData: (

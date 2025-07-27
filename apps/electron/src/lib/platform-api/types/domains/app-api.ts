@@ -18,11 +18,6 @@ export interface TokenGenerateOptions {
   expiresIn?: number;
 }
 
-export interface TokenResult {
-  success: boolean;
-  token?: Token;
-  error?: string;
-}
 
 export interface AppAPI {
   // App management

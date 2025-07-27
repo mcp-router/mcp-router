@@ -43,5 +43,3 @@ i18n
       useSuspense: true,
     },
   });
-
-export default i18n;
