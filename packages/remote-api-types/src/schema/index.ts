@@ -29,4 +29,3 @@ export type {
 } from "./servers";
 
 export type { LogQueryOptions } from "./logs";
-export type { RequestLogEntry, MCPServer } from "@mcp_router/shared";

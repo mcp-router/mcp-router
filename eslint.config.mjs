@@ -81,6 +81,7 @@ export default [
             "packages/remote-api-types/src",
             "tools/eslint-rules",
             ".d.ts",
+            "packages/ui/src",
           ],
           allowComponentProps: true,
           allowedPatterns: [
@@ -116,6 +117,13 @@ export default [
     files: ["**/src/main.ts", "**/src/main/**/*.ts", "**/mcp-http-server.ts"],
     rules: {
       "no-restricted-syntax": "off",
+    },
+  },
+  {
+    // remote-api-types package specific overrides
+    files: ["packages/remote-api-types/**/*.ts"],
+    rules: {
+      "custom/no-type-reexport": "off",
     },
   },
   {

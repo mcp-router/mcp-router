@@ -315,7 +315,7 @@ export class MCPAggregator {
    */
   private async readResource(uri: string): Promise<any> {
     // Parse resource URI (resource://serverName/path)
-    const match = uri.match(/^resource:\/\/([^\/]+)\/(.*)$/);
+    const match = uri.match(/^resource:\/\/([^/]+)\/(.*)$/);
     if (!match) {
       throw new McpError(
         ErrorCode.InvalidRequest,
@@ -360,7 +360,7 @@ export class MCPAggregator {
         if (response && response.contents && response.contents.length > 0) {
           return response;
         }
-      } catch (error) {
+      } catch {
         // Continue to next variant
       }
     }
@@ -418,7 +418,7 @@ export class MCPAggregator {
             });
           }
         }
-      } catch (error) {
+      } catch {
         // Continue to next server
       }
     }
@@ -431,7 +431,7 @@ export class MCPAggregator {
    */
   public getHealthStatus(): Map<string, boolean> {
     const health = new Map<string, boolean>();
-    for (const [id, serverClient] of this.clients) {
+    for (const [id] of this.clients) {
       // Simple health check - client exists and is registered
       health.set(id, true);
     }

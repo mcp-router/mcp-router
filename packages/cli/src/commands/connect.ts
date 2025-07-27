@@ -19,7 +19,6 @@ import {
 import { VERSION, SERVER_NAME } from "../mcpr.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { ConnectApiTestResponse } from "@mcp_router/shared";
 
 /**
  * Executes the connect command, connecting to an existing
@@ -159,7 +158,7 @@ class HttpMcpBridgeServer {
     });
 
     // List Tools
-    this.server.setRequestHandler(ListToolsRequestSchema, async (request) => {
+    this.server.setRequestHandler(ListToolsRequestSchema, async (_request) => {
       try {
         const response = await this.client.listTools();
         return { tools: response.tools || [] };
@@ -347,10 +346,9 @@ class HttpMcpBridgeServer {
       }
 
       // Define the expected response type and handle parsing errors
-      let data: ConnectApiTestResponse;
       try {
-        data = (await response.json()) as ConnectApiTestResponse;
-      } catch (err) {
+        await response.json();
+      } catch {
         throw new Error(
           `Failed to parse server response as JSON. Server may not be fully initialized.`,
         );
