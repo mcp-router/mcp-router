@@ -58,33 +58,33 @@ export function applyDisplayRules(
     case "resource":
       nameRule =
         effectiveRules.resourceNameRule ||
-        DEFAULT_DISPLAY_RULES.resourceNameRule;
+        DEFAULT_DISPLAY_RULES.resourceNameRule!;
       descriptionRule =
         effectiveRules.resourceDescriptionRule ||
-        DEFAULT_DISPLAY_RULES.resourceDescriptionRule;
+        DEFAULT_DISPLAY_RULES.resourceDescriptionRule!;
       break;
     case "prompt":
       nameRule =
-        effectiveRules.promptNameRule || DEFAULT_DISPLAY_RULES.promptNameRule;
+        effectiveRules.promptNameRule || DEFAULT_DISPLAY_RULES.promptNameRule!;
       descriptionRule =
         effectiveRules.promptDescriptionRule ||
-        DEFAULT_DISPLAY_RULES.promptDescriptionRule;
+        DEFAULT_DISPLAY_RULES.promptDescriptionRule!;
       break;
     case "resourceTemplate":
       nameRule =
         effectiveRules.resourceTemplateNameRule ||
-        DEFAULT_DISPLAY_RULES.resourceTemplateNameRule;
+        DEFAULT_DISPLAY_RULES.resourceTemplateNameRule!;
       descriptionRule =
         effectiveRules.resourceTemplateDescriptionRule ||
-        DEFAULT_DISPLAY_RULES.resourceTemplateDescriptionRule;
+        DEFAULT_DISPLAY_RULES.resourceTemplateDescriptionRule!;
       break;
     case "tool":
     default:
       nameRule =
-        effectiveRules.toolNameRule || DEFAULT_DISPLAY_RULES.toolNameRule;
+        effectiveRules.toolNameRule || DEFAULT_DISPLAY_RULES.toolNameRule!;
       descriptionRule =
         effectiveRules.toolDescriptionRule ||
-        DEFAULT_DISPLAY_RULES.toolDescriptionRule;
+        DEFAULT_DISPLAY_RULES.toolDescriptionRule!;
       break;
   }
 
@@ -143,17 +143,6 @@ export function applyRulesToInputSchema(
       const param = modifiedSchema.properties[paramName];
 
       if (param && param.description) {
-        // Apply parameter rule with variables
-        const variables: RuleVariables = {
-          description: param.description,
-          serverName,
-          name: toolName,
-          toolName, // alias for backward compatibility
-          paramName,
-        };
-
-        // We no longer apply description template
-
         // Add additional properties from the rule
         if (paramRule?.properties) {
           Object.keys(paramRule.properties).forEach((propKey) => {
@@ -176,16 +165,6 @@ export function applyRulesToInputSchema(
       // Process items for array types
       if (param.items && typeof param.items === "object") {
         if (param.items.description) {
-          const variables: RuleVariables = {
-            description: param.items.description,
-            serverName,
-            name: toolName,
-            toolName,
-            paramName: `${paramName}[]`,
-          };
-
-          // We no longer apply description template
-
           // Add additional properties from the rule
           if (paramRule?.properties) {
             Object.keys(paramRule.properties).forEach((propKey) => {
