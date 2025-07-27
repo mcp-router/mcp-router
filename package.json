@@ -48,9 +48,9 @@
     "@types/node-fetch": "^2.6.12",
     "@types/react": "^19.1.8",
     "@types/react-router-dom": "^5.3.3",
-    "@typescript-eslint/eslint-plugin": "^8.34.0",
-    "@typescript-eslint/parser": "^8.34.0",
-    "eslint": "^9.29.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.4.1",
     "globals": "^16.2.0",
@@ -61,7 +61,12 @@
   },
   "pnpm": {
     "overrides": {
-      "webpack-dev-server": "^5.2.1"
+      "webpack-dev-server": "^5.2.1",
+      "@octokit/request-error@>=1.0.0 <5.1.1": ">=5.1.1",
+      "@octokit/request@>=1.0.0 <8.4.1": ">=8.4.1",
+      "@octokit/plugin-paginate-rest@>=1.0.0 <9.2.2": ">=9.2.2",
+      "on-headers@<1.1.0": ">=1.1.0",
+      "@eslint/plugin-kit@<0.3.3": ">=0.3.3"
     }
   }
 }
