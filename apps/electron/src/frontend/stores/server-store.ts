@@ -2,7 +2,7 @@ import { create, StoreApi, UseBoundStore } from "zustand";
 import { MCPServer, MCPServerConfig, ServerState } from "@mcp_router/shared";
 import { PlatformAPI } from "@/lib/platform-api";
 
-export interface ServerStoreState extends ServerState {
+interface ServerStoreState extends ServerState {
   // Actions
   setServers: (servers: MCPServer[]) => void;
   addServer: (server: MCPServer) => void;

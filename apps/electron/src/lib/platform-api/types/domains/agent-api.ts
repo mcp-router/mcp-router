@@ -29,13 +29,13 @@ interface Tool {
   inputSchema?: any;
 }
 
-export interface ToolResult {
+interface ToolResult {
   success: boolean;
   result?: any;
   error?: string;
 }
 
-export interface ChatSession {
+interface ChatSession {
   id: string;
   agentId: string;
   messages: ChatMessage[];

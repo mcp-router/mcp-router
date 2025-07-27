@@ -114,7 +114,7 @@ export async function getUserShellEnv() {
  * Detect the default shell for the current platform
  * @returns The path to the default shell
  */
-export const detectDefaultShell = () => {
+const detectDefaultShell = () => {
   const { env } = process;
 
   if (process.platform === "win32") {

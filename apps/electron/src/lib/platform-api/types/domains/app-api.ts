@@ -4,7 +4,7 @@
 
 import { McpApp, McpAppsManagerResult, TokenScope } from "@mcp_router/shared";
 
-export interface Token {
+interface Token {
   id: string;
   name: string;
   scopes: TokenScope[];
@@ -12,7 +12,7 @@ export interface Token {
   lastUsed?: Date;
 }
 
-export interface TokenGenerateOptions {
+interface TokenGenerateOptions {
   name: string;
   scopes: TokenScope[];
   expiresIn?: number;

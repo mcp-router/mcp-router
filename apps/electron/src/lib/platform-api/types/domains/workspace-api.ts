@@ -9,7 +9,7 @@ import type {
 } from "@mcp_router/shared";
 
 // Re-export the shared types for convenience
-export type { Workspace, WorkspaceCreateConfig, WorkspaceUpdateConfig };
+export type { Workspace,   };
 
 export interface WorkspaceAPI {
   list(): Promise<Workspace[]>;
