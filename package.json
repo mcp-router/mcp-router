@@ -44,7 +44,7 @@
     "@electron/rebuild": "^3.7.2",
     "@eslint/js": "^9.29.0",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^24.1.0",
+    "@types/node": "^22.16.5",
     "@types/node-fetch": "^2.6.12",
     "@types/react": "^19.1.8",
     "@types/react-router-dom": "^5.3.3",
