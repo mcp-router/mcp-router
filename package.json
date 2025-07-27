@@ -27,8 +27,6 @@
     "lint:all": "turbo run lint",
     "format:all": "turbo run format",
     "knip": "knip",
-    "knip:ci": "knip --exit-code-on=issues",
-    "knip:json": "knip --reporter json",
     "knip:fix": "knip --fix",
     "typecheck": "turbo run typecheck",
     "check": "pnpm run lint && pnpm run typecheck",
