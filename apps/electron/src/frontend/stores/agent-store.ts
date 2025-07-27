@@ -9,7 +9,7 @@ import { AgentChatMessage } from "@/lib/types/chat-types";
 import { Message } from "@ai-sdk/react";
 import { PlatformAPI } from "@/lib/platform-api";
 
-export interface AgentStoreInterface extends AgentState {
+interface AgentStoreInterface extends AgentState {
   // Actions for development agents
   setDevelopmentAgents: (agents: AgentConfig[]) => void;
   addDevelopmentAgent: (agent: AgentConfig) => void;

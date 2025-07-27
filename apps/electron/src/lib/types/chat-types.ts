@@ -97,26 +97,6 @@ export interface AgentChatSession extends ChatSession {
   status: "active" | "archived" | "deleted";
 }
 
-/**
- * Session list options for querying sessions
- */
-export interface SessionListOptions {
-  agentId?: string;
-  status?: "active" | "archived" | "deleted";
-  limit?: number;
-  offset?: number;
-  cursor?: string;
-}
-
-/**
- * Session list result
- */
-export interface SessionListResult {
-  sessions: AgentChatSession[];
-  total?: number;
-  hasMore?: boolean;
-  nextCursor?: string;
-}
 
 /**
  * Type guards
