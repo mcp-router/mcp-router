@@ -14,7 +14,6 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
-    "lint": "eslint src --ext ts,tsx",
     "typecheck": "tsc --noEmit",
     "knip": "cd ../.. && knip --workspace packages/ui"
   },
