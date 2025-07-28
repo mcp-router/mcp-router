@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { RequestLogEntry } from "@mcp_router/shared";
-import { EMPTY_CURSOR, isEmptyCursor } from "../../../../shared/types/cursor";
+import { EMPTY_CURSOR, isEmptyCursor } from "@mcp_router/shared";
 import { useFilterState } from "./hooks/useFilterState";
 import { useRequestLogs } from "./hooks/useRequestLogs";
 import LogTable from "./components/LogTable";

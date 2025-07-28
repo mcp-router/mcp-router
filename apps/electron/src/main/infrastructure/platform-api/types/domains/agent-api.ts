@@ -4,7 +4,7 @@
 
 import { Agent, AgentConfig, DeployedAgent } from "@mcp_router/shared";
 import { Unsubscribe } from "./auth-api";
-import type { LocalChatMessage as ChatMessage } from "@/shared/types/chat-types";
+import type { LocalChatMessage as ChatMessage } from "@mcp_router/shared";
 
 interface CreateAgentInput extends Omit<AgentConfig, "id"> {}
 

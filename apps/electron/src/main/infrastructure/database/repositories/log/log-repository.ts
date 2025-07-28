@@ -9,7 +9,7 @@ import {
   ServerStats,
   RequestTypeStats,
 } from "@mcp_router/shared";
-import { encodeCursor, decodeCursor } from "../../../../../shared/types/cursor";
+import { encodeCursor, decodeCursor } from "@mcp_router/shared";
 
 /**
  * リクエストログ用リポジトリクラス

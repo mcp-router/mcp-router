@@ -20,3 +20,5 @@ export * from "./platform-api";
 export * from "./mcp-apps";
 export * from "./utils";
 export * from "./cli";
+export * from "./chat-types";
+export * from "./cursor";

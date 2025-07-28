@@ -6,7 +6,7 @@ import { usePlatformAPI } from "@/main/infrastructure/platform-api";
 import {
   ExtendedPlatformChatMessage as PlatformChatMessage,
   convertToLocalChatMessage,
-} from "@/shared/types/chat-types";
+} from "@mcp_router/shared";
 
 interface BackgroundComponentProps {
   chatHistorySessionId?: string; // チャット履歴のsessionId

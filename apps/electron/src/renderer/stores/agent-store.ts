@@ -5,7 +5,7 @@ import {
   AgentState,
   AgentStoreChatSession,
 } from "@mcp_router/shared";
-import { AgentChatMessage } from "@/shared/types/chat-types";
+import type { AgentChatMessage } from "@mcp_router/shared";
 import { Message } from "@ai-sdk/react";
 import { PlatformAPI } from "@/main/infrastructure/platform-api";
 

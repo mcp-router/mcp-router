@@ -25,13 +25,7 @@ interface ToolResult {
   error?: string;
 }
 
-/**
- * Agent chat message type used for API communication
- * Used in: @mcp_router/shared/types/agent-api.ts
- */
-export interface AgentChatMessage extends BaseChatMessage {
-  // Inherits role and content from BaseChatMessage
-}
+// AgentChatMessage is already exported from agent-api.ts
 
 /**
  * Local chat message type used in platform API
