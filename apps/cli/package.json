@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "knip": "cd ../.. && knip --workspace packages/cli",
+    "knip": "cd ../.. && knip --workspace apps/cli",
     "prepublishOnly": "npm run build",
     "publish:npm": "pnpm publish --access public"
   },
@@ -42,9 +42,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fjm2u/mcp-router.git",
-    "directory": "packages/cli"
+    "directory": "apps/cli"
   },
-  "homepage": "https://github.com/fjm2u/mcp-router/tree/main/packages/cli#readme",
+  "homepage": "https://github.com/fjm2u/mcp-router/tree/main/apps/cli#readme",
   "bugs": {
     "url": "https://github.com/fjm2u/mcp-router/issues"
   },

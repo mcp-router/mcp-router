@@ -16,7 +16,7 @@ Each workspace in the monorepo has its own Knip configuration:
 - **Electron app (`apps/electron`)**: Main process, renderer, and preload scripts
 - **Shared package (`packages/shared`)**: Common utilities and types
 - **UI package (`packages/ui`)**: React components and hooks
-- **CLI package (`packages/cli`)**: Command-line interface
+- **CLI package (`apps/cli`)**: Command-line interface
 - **Remote API types (`packages/remote-api-types`)**: Type definitions
 - **Tailwind config (`packages/tailwind-config`)**: Styling configuration
 

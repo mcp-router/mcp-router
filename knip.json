@@ -104,7 +104,7 @@
       },
       "ignoreDependencies": []
     },
-    "packages/cli": {
+    "apps/cli": {
       "entry": [
         "src/mcp-aggregator.ts"
       ],
