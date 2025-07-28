@@ -5,9 +5,9 @@ import {
   getDeployedAgentService,
   getAgentSharingService,
 } from "@/main/services/agent";
-import { backgroundWindow, mainWindow } from "../../main";
-import { status } from "../auth";
-import { getSessionRepository } from "../../lib/database";
+import { backgroundWindow, mainWindow } from "../../../main";
+import { status } from "../../auth";
+import { getSessionRepository } from "../../../lib/database";
 
 /**
  * エージェント関連のIPC通信ハンドラをセットアップ

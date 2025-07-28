@@ -4,12 +4,12 @@ import {
   checkUvExists,
   installPNPM,
   installUV,
-} from "../../lib/utils/backend/install-package-manager";
+} from "../../../lib/utils/backend/install-package-manager";
 
 /**
  * Register package manager-related IPC handlers
  */
-export function registerPackageManagerHandlers(): void {
+export function setupPackageManagerHandlers(): void {
   // Check both package managers and Node.js
   ipcMain.handle("packageManager:checkAll", async () => {
     try {

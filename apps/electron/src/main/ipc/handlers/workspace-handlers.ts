@@ -1,11 +1,11 @@
 import { ipcMain } from "electron";
-import { getWorkspaceService } from "../services/workspace-service";
+import { getWorkspaceService } from "../../services/workspace-service";
 import type { WorkspaceCreateConfig } from "@mcp_router/shared";
 
 /**
  * ワークスペース関連のIPCハンドラーを登録
  */
-export function registerWorkspaceHandlers(): void {
+export function setupWorkspaceHandlers(): void {
   // ワークスペース一覧取得
   ipcMain.handle("workspace:list", async () => {
     return getWorkspaceService().list();

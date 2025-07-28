@@ -7,10 +7,10 @@ import { setupTokenHandlers } from "./handlers/token-handler";
 import { setupFeedbackHandlers } from "./handlers/feedback-handler";
 import { setupUtilityHandlers } from "./handlers/utility-handler";
 import { setupUpdateHandlers } from "./handlers/update-handler";
-import { registerPackageVersionHandlers } from "@/main/handlers/package-version-handler";
-import { registerPackageManagerHandlers } from "@/main/handlers/package-manager-handler";
-import { setupAgentHandlers } from "@/main/handlers/agent-handler";
-import { registerWorkspaceHandlers } from "@/main/handlers/workspace-handlers";
+import { setupPackageVersionHandlers } from "./handlers/package-version-handlers";
+import { setupPackageManagerHandlers } from "./handlers/package-manager-handlers";
+import { setupAgentHandlers } from "./handlers/agent-handlers";
+import { setupWorkspaceHandlers } from "./handlers/workspace-handlers";
 
 /**
  * IPC通信ハンドラのセットアップを行う関数
@@ -45,14 +45,14 @@ export function setupIpcHandlers(): void {
   setupUpdateHandlers();
 
   // パッケージバージョン解決関連
-  registerPackageVersionHandlers();
+  setupPackageVersionHandlers();
 
   // パッケージマネージャー関連
-  registerPackageManagerHandlers();
+  setupPackageManagerHandlers();
 
   // エージェント関連
   setupAgentHandlers();
 
   // ワークスペース関連
-  registerWorkspaceHandlers();
+  setupWorkspaceHandlers();
 }

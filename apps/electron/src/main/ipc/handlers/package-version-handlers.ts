@@ -9,12 +9,12 @@ import { ipcMain } from "electron";
 import {
   resolvePackageVersionsInArgs,
   checkMcpServerPackageUpdates,
-} from "../../lib/utils/backend/package-version-resolver";
+} from "../../../lib/utils/backend/package-version-resolver";
 
 /**
  * Register the IPC handlers for package version resolution
  */
-export function registerPackageVersionHandlers(): void {
+export function setupPackageVersionHandlers(): void {
   // Handler for resolving package versions in arguments
   ipcMain.handle(
     "package:resolve-versions",
