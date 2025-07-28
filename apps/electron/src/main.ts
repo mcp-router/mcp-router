@@ -1,43 +1,16 @@
-import {
-  app,
-  autoUpdater,
-  BrowserWindow,
-  ipcMain,
-  session,
-  shell,
-} from "electron";
-import { getSettingsService } from "@/main/services/settings-service";
+import { app, BrowserWindow, session, shell } from "electron";
 import path from "node:path";
 import { MCPServerManager } from "./main/mcp-manager";
-import { MCPServerConfig } from "@mcp_router/shared";
-import { getTokenService } from "@/main/services/token-service";
-import { TokenScope } from "@mcp_router/shared";
-import {
-  fetchMcpServersFromIndex,
-  fetchMcpServerVersionDetails,
-} from "./main/mcp-fetcher";
 import { MCPHttpServer } from "./main/mcp-manager/http/mcp-http-server";
-import { logService } from "@/main/services/log-service";
 import started from "electron-squirrel-startup";
-import {
-  listMcpApps,
-  updateAppServerAccess,
-  addApp,
-  unifyAppConfig,
-  deleteCustomApp,
-} from "@/main/services/mcp-apps-service";
 import { updateElectronApp } from "update-electron-app";
 import { setApplicationMenu } from "./main/menu";
 import { createTray, updateTrayContextMenu } from "./main/tray";
 import { importExistingServerConfigurations } from "./main/mcp-config-importer";
-import { commandExists } from "./lib/get-env";
-import { handleAuthToken, logout, startAuthFlow, status } from "./main/auth";
-import { registerPackageVersionHandlers } from "./main/handlers/package-version-handler";
-import { registerPackageManagerHandlers } from "./main/handlers/package-manager-handler";
-import { setupAgentHandlers } from "./main/handlers/agent-handler";
-import { registerWorkspaceHandlers } from "./main/handlers/workspace-handlers";
 import { getPlatformAPIManager } from "./main/platform-api-manager";
 import { getWorkspaceService } from "./main/services/workspace-service";
+import { setupIpcHandlers } from "./main/ipc";
+import { getIsAutoUpdateInProgress } from "./main/ipc/handlers/update-handler";
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -78,10 +51,6 @@ export let mainWindow: BrowserWindow | null = null;
 export let backgroundWindow: BrowserWindow | null = null;
 // Flag to track if app.quit() was explicitly called
 let isQuitting = false;
-// Flag to track if auto-update is in progress
-let isAutoUpdateInProgress = false;
-// Flag to track if update is available
-let isUpdateAvailable = false;
 // Timer for updating tray context menu
 let trayUpdateTimer: NodeJS.Timeout | null = null;
 
@@ -155,7 +124,7 @@ const createWindow = () => {
   // Handle window close event - hide instead of closing completely
   mainWindow.on("close", (event) => {
     // If app.quit() was called explicitly (from tray menu) or auto-update is in progress, don't prevent the window from closing
-    if (isQuitting || isAutoUpdateInProgress) return;
+    if (isQuitting || getIsAutoUpdateInProgress()) return;
 
     // Otherwise prevent the window from closing by default
     event.preventDefault();
@@ -301,50 +270,6 @@ function initUI(): void {
   setupTrayUpdateTimer(mcpServerManager);
 }
 
-// Set up autoUpdater event listeners
-autoUpdater.on("update-downloaded", () => {
-  isUpdateAvailable = true;
-  // Notify renderer process about available update
-  if (mainWindow) {
-    mainWindow.webContents.send("update:downloaded", true);
-  }
-});
-
-/**
- * Update functions
- */
-function setupUpdateHandlers(): void {
-  // Handle update checking from renderer
-  ipcMain.handle("update:check", () => {
-    return {
-      updateAvailable: isUpdateAvailable,
-    };
-  });
-
-  // Handle update installation request from renderer
-  ipcMain.handle("update:install", () => {
-    if (isUpdateAvailable) {
-      isAutoUpdateInProgress = true;
-      autoUpdater.quitAndInstall();
-      app.quit();
-      return true;
-    }
-    return false;
-  });
-
-  // Handle package manager restart request from renderer
-  ipcMain.handle("packageManager:restart", () => {
-    isQuitting = true;
-    app.quit();
-    return true;
-  });
-
-  // Handle system info request
-  ipcMain.handle("system:getPlatform", () => {
-    return process.platform;
-  });
-}
-
 /**
  * アプリケーション全体の初期化を行う
  */
@@ -385,9 +310,6 @@ async function initApplication(): Promise<void> {
 
   // IPC通信ハンドラの初期化
   setupIpcHandlers();
-
-  // Update handlers
-  setupUpdateHandlers();
 
   // MCPサービス初期化
   await initMCPServices();
@@ -494,375 +416,4 @@ export async function handleProtocolUrl(urlString: string) {
   } catch (error) {
     console.error("Failed to process protocol URL:", error);
   }
-}
-
-/**
- * IPC通信ハンドラのセットアップを行う関数
- * アプリケーション初期化時に呼び出される
- */
-function setupIpcHandlers(): void {
-  // 認証関連
-  setupAuthHandlers();
-
-  // MCPサーバー関連
-  setupMcpServerHandlers();
-
-  // ログ関連
-  setupLogHandlers();
-
-  // 設定関連
-  setupSettingsHandlers();
-
-  // MCPアプリ設定関連
-  setupMcpAppsHandlers();
-
-  // ユーティリティ関連
-  setupUtilityHandlers();
-
-  // トークン関連
-  setupTokenHandlers();
-
-  // フィードバック関連
-  setupFeedbackHandlers();
-
-  // パッケージバージョン解決関連
-  registerPackageVersionHandlers();
-
-  // パッケージマネージャー関連
-  registerPackageManagerHandlers();
-
-  // エージェント関連
-  setupAgentHandlers();
-
-  // ワークスペース関連
-  registerWorkspaceHandlers();
-}
-
-/**
- * 認証関連のIPC通信ハンドラをセットアップ
- */
-function setupAuthHandlers(): void {
-  ipcMain.handle("auth:login", (_, idp?: string) => {
-    startAuthFlow(idp);
-    return true;
-  });
-
-  ipcMain.handle("auth:logout", () => {
-    const result = logout();
-    // Status change is now handled directly in the logout function
-    return result;
-  });
-
-  ipcMain.handle("auth:status", async (_, forceRefresh?: boolean) => {
-    const result = await status(forceRefresh);
-    // Notifying renderer about auth status
-    if (mainWindow) {
-      mainWindow.webContents.send("auth:status-changed", {
-        loggedIn: result.authenticated,
-        userId: result.userId || "",
-        user: result.user || null,
-      });
-    }
-
-    return result;
-  });
-
-  ipcMain.handle("auth:handle-token", (_, token: string, state?: string) => {
-    handleAuthToken(token, state);
-    return true;
-  });
-}
-
-/**
- * MCPサーバー関連のIPC通信ハンドラをセットアップ
- */
-function setupMcpServerHandlers(): void {
-  ipcMain.handle("mcp:list", () => {
-    return mcpServerManager.getServers();
-  });
-
-  ipcMain.handle("mcp:start", async (_, id: string) => {
-    const result = await mcpServerManager.startServer(id, "MCP Router UI");
-    return result;
-  });
-
-  ipcMain.handle("mcp:stop", (_, id: string) => {
-    const result = mcpServerManager.stopServer(id, "MCP Router UI");
-    return result;
-  });
-
-  ipcMain.handle("mcp:add", async (_, serverConfig: MCPServerConfig) => {
-    let server = null;
-    try {
-      // Add the server to the manager
-      server = mcpServerManager.addServer(serverConfig);
-
-      // For remote servers, test the connection
-      if (serverConfig.serverType !== "local") {
-        await mcpServerManager.startServer(server.id);
-        mcpServerManager.stopServer(server.id);
-      }
-      return server;
-    } catch (error: any) {
-      if (serverConfig.serverType !== "local" && server && server?.id) {
-        mcpServerManager.removeServer(server?.id);
-      }
-      throw error;
-    }
-  });
-
-  ipcMain.handle("mcp:remove", (_, id: string) => {
-    const result = mcpServerManager.removeServer(id);
-    return result;
-  });
-
-  ipcMain.handle(
-    "mcp:update-config",
-    (_, id: string, config: Partial<MCPServerConfig>) => {
-      const result = mcpServerManager.updateServer(id, config);
-      return result;
-    },
-  );
-
-  ipcMain.handle(
-    "mcp:fetch-from-index",
-    async (
-      _,
-      page?: number,
-      limit?: number,
-      search?: string,
-      isVerified?: boolean,
-    ) => {
-      return await fetchMcpServersFromIndex(page, limit, search, isVerified);
-    },
-  );
-
-  ipcMain.handle(
-    "mcp:fetch-server-version-details",
-    async (_, displayId: string, version: string) => {
-      return await fetchMcpServerVersionDetails(displayId, version);
-    },
-  );
-}
-
-/**
- * ログ関連のIPC通信ハンドラをセットアップ
- */
-function setupLogHandlers(): void {
-  ipcMain.handle(
-    "requestLogs:get",
-    async (
-      _,
-      options?: {
-        clientId?: string;
-        serverId?: string;
-        requestType?: string;
-        startDate?: Date;
-        endDate?: Date;
-        responseStatus?: "success" | "error";
-        cursor?: string;
-        limit?: number;
-      },
-    ) => {
-      try {
-        const result = await logService.getRequestLogs(options || {});
-        return result;
-      } catch (error) {
-        console.error("[RequestLogs] Error retrieving request logs:", error);
-        return { logs: [], total: 0 };
-      }
-    },
-  );
-}
-
-/**
- * 設定関連のIPC通信ハンドラをセットアップ
- */
-function setupSettingsHandlers(): void {
-  ipcMain.handle("settings:get", () => {
-    try {
-      const settingsService = getSettingsService();
-      return settingsService.getSettings();
-    } catch (error) {
-      console.error("Failed to get settings:", error);
-      return { authBypassEnabled: false };
-    }
-  });
-
-  ipcMain.handle("settings:save", (_, settings: any) => {
-    try {
-      const settingsService = getSettingsService();
-      return settingsService.saveSettings(settings);
-    } catch (error) {
-      console.error("Failed to save settings:", error);
-      return false;
-    }
-  });
-
-  ipcMain.handle("settings:increment-package-manager-overlay-count", () => {
-    try {
-      const settingsService = getSettingsService();
-      const currentSettings = settingsService.getSettings();
-      const newCount =
-        (currentSettings.packageManagerOverlayDisplayCount || 0) + 1;
-      const updatedSettings = {
-        ...currentSettings,
-        packageManagerOverlayDisplayCount: newCount,
-      };
-      const success = settingsService.saveSettings(updatedSettings);
-      return { success, count: newCount };
-    } catch (error) {
-      console.error(
-        "Failed to increment package manager overlay display count:",
-        error,
-      );
-      return { success: false, count: 0 };
-    }
-  });
-}
-
-/**
- * MCPアプリ設定関連のIPC通信ハンドラをセットアップ
- */
-function setupMcpAppsHandlers(): void {
-  ipcMain.handle("mcp-apps:list", async () => {
-    try {
-      return await listMcpApps();
-    } catch (error) {
-      console.error("Failed to list MCP apps:", error);
-      return [];
-    }
-  });
-
-  ipcMain.handle("mcp-apps:delete", async (_, appName: string) => {
-    try {
-      return await deleteCustomApp(appName);
-    } catch (error) {
-      console.error(`Failed to delete custom app ${appName}:`, error);
-      return false;
-    }
-  });
-
-  ipcMain.handle("mcp-apps:add", async (_, appName: string) => {
-    try {
-      return await addApp(appName);
-    } catch (error) {
-      console.error(`Failed to add MCP config to ${appName}:`, error);
-      return {
-        success: false,
-        message: `Error adding MCP configuration to ${appName}: ${error instanceof Error ? error.message : String(error)}`,
-      };
-    }
-  });
-
-  ipcMain.handle(
-    "mcp-apps:update-server-access",
-    async (_, appName: string, serverIds: string[]) => {
-      try {
-        return await updateAppServerAccess(appName, serverIds);
-      } catch (error) {
-        console.error(`Failed to update server access for ${appName}:`, error);
-        return {
-          success: false,
-          message: `Error updating server access for ${appName}: ${error instanceof Error ? error.message : String(error)}`,
-        };
-      }
-    },
-  );
-
-  ipcMain.handle("mcp-apps:unify", async (_, appName: string) => {
-    try {
-      return await unifyAppConfig(appName);
-    } catch (error) {
-      console.error(`Failed to unify config for ${appName}:`, error);
-      return {
-        success: false,
-        message: `Error unifying configuration for ${appName}: ${error instanceof Error ? error.message : String(error)}`,
-      };
-    }
-  });
-}
-
-/**
- * ユーティリティ関連のIPC通信ハンドラをセットアップ
- */
-function setupUtilityHandlers(): void {
-  // Check if a command exists in user shell environment
-  ipcMain.handle("command:exists", async (_, command: string) => {
-    const result = await commandExists(command);
-    return result;
-  });
-}
-
-/**
- * トークン関連のIPC通信ハンドラをセットアップ
- */
-function setupTokenHandlers(): void {
-  ipcMain.handle(
-    "token:updateScopes",
-    (_, tokenId: string, scopes: TokenScope[]) => {
-      try {
-        const tokenService = getTokenService();
-        const success = tokenService.updateTokenScopes(tokenId, scopes);
-
-        if (success) {
-          // Get the updated token
-          const tokens = tokenService.listTokens();
-          const token = tokens.find((t) => t.id === tokenId);
-
-          // Get the app name from the token client ID (assuming client ID = app name)
-          const appName = token?.clientId;
-
-          // Build a basic McpApp object to return
-          if (token && appName) {
-            return {
-              success: true,
-              message: "Token scopes updated successfully",
-              app: {
-                name: appName,
-                installed: true,
-                configured: true,
-                configPath: "", // Required field but we don't have it here
-                token: token.id,
-                serverIds: token.serverIds,
-                scopes: token.scopes,
-              },
-            };
-          }
-        }
-
-        return {
-          success: false,
-          message: "Failed to update token scopes",
-        };
-      } catch (error: any) {
-        console.error("Failed to update token scopes:", error);
-        return {
-          success: false,
-          message: `Error updating token scopes: ${error.message}`,
-        };
-      }
-    },
-  );
-}
-
-/**
- * フィードバック関連のIPC通信ハンドラをセットアップ
- */
-function setupFeedbackHandlers(): void {
-  ipcMain.handle("feedback:submit", async (_, feedback: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/feedback`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ feedback }),
-      });
-      return response.ok;
-    } catch (error) {
-      console.error("Failed to submit feedback:", error);
-      return false;
-    }
-  });
 }
