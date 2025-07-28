@@ -408,8 +408,6 @@ app.quit = function (...args) {
 // Process protocol URLs (mcpr://) - replaces the old protocol.registerHttpProtocol handler
 export async function handleProtocolUrl(urlString: string) {
   try {
-    const url = new URL(urlString);
-    // Notify renderer process about the protocol URL
     if (mainWindow) {
       mainWindow.webContents.send("protocol:url", urlString);
     }
