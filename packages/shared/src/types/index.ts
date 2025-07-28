@@ -12,13 +12,10 @@ export * from "./workspace";
 export * from "./auth";
 
 // Re-export organized domain types
-export * from "./api";
 export * from "./ui";
-export * from "./store";
 export * from "./database";
 export * from "./platform-api";
 export * from "./mcp-apps";
 export * from "./utils";
 export * from "./cli";
 export * from "./chat-types";
-export * from "./cursor";
