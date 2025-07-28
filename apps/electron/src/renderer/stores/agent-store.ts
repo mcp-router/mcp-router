@@ -530,7 +530,6 @@ export const createAgentStore = (
       }
     },
 
-
     sendMessage: async (message, sessionId) => {
       const {
         setProcessingMessage,

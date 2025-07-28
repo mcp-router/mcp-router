@@ -4,7 +4,7 @@ import { DATABASE_SCHEMA, SCHEMA_VERSION, TableName } from "./database-schema";
 /**
  * テーブルを作成する
  */
-export function createTable(db: SqliteManager, tableName: TableName): void {
+function createTable(db: SqliteManager, tableName: TableName): void {
   const schema = DATABASE_SCHEMA[tableName];
   if (!schema) {
     throw new Error(`Unknown table: ${tableName}`);
@@ -37,7 +37,7 @@ export function createAllTables(db: SqliteManager): void {
 /**
  * テーブルのスキーマが最新かチェックする
  */
-export function isTableSchemaOutdated(
+function isTableSchemaOutdated(
   db: SqliteManager,
   tableName: TableName,
 ): boolean {
@@ -82,7 +82,7 @@ export function recreateOutdatedTables(db: SqliteManager): void {
 /**
  * テーブルの存在をチェックする
  */
-export function tableExists(db: SqliteManager, tableName: string): boolean {
+function tableExists(db: SqliteManager, tableName: string): boolean {
   const result = db.get(
     "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
     [tableName],

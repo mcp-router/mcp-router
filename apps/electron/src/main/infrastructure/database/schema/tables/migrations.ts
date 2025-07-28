@@ -16,4 +16,4 @@ export const MIGRATIONS_SCHEMA: DatabaseTableSchema = {
 /**
  * 必須カラム定義
  */
-export const MIGRATIONS_REQUIRED_COLUMNS: string[] = [];
+const MIGRATIONS_REQUIRED_COLUMNS: string[] = [];

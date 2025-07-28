@@ -17,4 +17,4 @@ export const SETTINGS_SCHEMA: DatabaseTableSchema = {
 /**
  * 必須カラム定義
  */
-export const SETTINGS_REQUIRED_COLUMNS: string[] = [];
+const SETTINGS_REQUIRED_COLUMNS: string[] = [];

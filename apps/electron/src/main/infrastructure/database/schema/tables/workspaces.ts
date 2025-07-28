@@ -27,4 +27,4 @@ export const WORKSPACES_SCHEMA: DatabaseTableSchema = {
 /**
  * 必須カラム定義
  */
-export const WORKSPACES_REQUIRED_COLUMNS: string[] = [];
+const WORKSPACES_REQUIRED_COLUMNS: string[] = [];
