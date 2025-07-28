@@ -4,7 +4,7 @@
  * by applying templates to their names and descriptions.
  */
 
-import { getSettingsService } from "@/main/services/settings-service";
+import { getSettingsService } from "@/main/application/settings-service";
 import {
   MCPEntityType,
   DEFAULT_DISPLAY_RULES,
@@ -195,7 +195,7 @@ export function applyRulesToInputSchema(
     }
 
     // Add any required fields from the rule that aren't already in the schema
-    paramRule.required!.forEach((requiredField) => {
+    paramRule.required!.forEach((requiredField: string) => {
       if (!modifiedSchema.required.includes(requiredField)) {
         modifiedSchema.required.push(requiredField);
       }

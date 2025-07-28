@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
-import BackgroundComponent from "@/frontend/components/agent/BackgroundComponent";
-import { PlatformAPIProvider } from "@/lib/platform-api";
-import { electronPlatformAPI } from "@/frontend/lib/electron-platform-api";
+import BackgroundComponent from "@/renderer/components/agent/BackgroundComponent";
+import { PlatformAPIProvider } from "@/main/infrastructure/platform-api";
+import { electronPlatformAPI } from "@/renderer/lib/electron-platform-api";
 import "@mcp_router/tailwind-config/base.css";
 
 // Create a container component that manages chat sessions

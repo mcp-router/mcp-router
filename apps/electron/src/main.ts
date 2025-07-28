@@ -1,16 +1,16 @@
 import { app, BrowserWindow, session, shell } from "electron";
 import path from "node:path";
-import { MCPServerManager } from "./main/mcp-manager";
-import { MCPHttpServer } from "./main/mcp-manager/http/mcp-http-server";
+import { MCPServerManager } from "./main/application/mcp-manager";
+import { MCPHttpServer } from "./main/application/mcp-manager/http/mcp-http-server";
 import started from "electron-squirrel-startup";
 import { updateElectronApp } from "update-electron-app";
-import { setApplicationMenu } from "./main/menu";
-import { createTray, updateTrayContextMenu } from "./main/tray";
-import { importExistingServerConfigurations } from "./main/mcp-config-importer";
-import { getPlatformAPIManager } from "./main/platform-api-manager";
-import { getWorkspaceService } from "./main/services/workspace-service";
-import { setupIpcHandlers } from "./main/ipc";
-import { getIsAutoUpdateInProgress } from "./main/ipc/handlers/update-handler";
+import { setApplicationMenu } from "./main/application/menu";
+import { createTray, updateTrayContextMenu } from "./main/application/tray";
+import { importExistingServerConfigurations } from "./main/application/mcp-config-importer";
+import { getPlatformAPIManager } from "./main/application/platform-api-manager";
+import { getWorkspaceService } from "./main/domain/workspace/workspace-service";
+import { setupIpcHandlers } from "./main/infrastructure/ipc";
+import { getIsAutoUpdateInProgress } from "./main/infrastructure/ipc/handlers/update-handler";
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {

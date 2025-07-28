@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "@/frontend/components/App";
+import App from "@/renderer/components/App";
 import { HashRouter } from "react-router-dom";
-import { TitleBar } from "@/frontend/components/TitleBar";
+import { TitleBar } from "@/renderer/components/TitleBar";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,

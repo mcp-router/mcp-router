@@ -10,7 +10,7 @@ import {
   DeployedAgent,
   MCPServerConfig,
 } from "@mcp_router/shared";
-import { McpAppsManagerResult, McpApp } from "@/main/services/mcp-apps-service";
+import { McpAppsManagerResult, McpApp } from "@/main/domain/mcp-apps-service";
 import { ServerPackageUpdates } from "./lib/utils/backend/package-version-resolver";
 
 declare global {

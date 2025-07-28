@@ -1,4 +1,4 @@
-import { getDecryptedAuthToken } from "../../../main/auth";
+import { getDecryptedAuthToken } from "../../../main/domain/auth/auth";
 import { API_BASE_URL } from "../../../main";
 
 /**
