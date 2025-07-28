@@ -1,5 +1,5 @@
-import { BaseRepository } from "./base-repository";
-import { SqliteManager, getSqliteManager } from "./sqlite-manager";
+import { BaseRepository } from "../../core/base-repository";
+import { SqliteManager } from "../../core/sqlite-manager";
 import { Token, TokenScope } from "@mcp_router/shared";
 
 /**
@@ -20,31 +20,11 @@ export class TokenRepository extends BaseRepository<Token> {
   }
 
   /**
-   * テーブルとインデックスを初期化
-   * 注: このメソッドはテーブルの初期作成のみを行います
-   * スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
+   * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
+   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    try {
-      // tokensテーブルの作成（存在しない場合）
-      this.db.execute(`
-        CREATE TABLE IF NOT EXISTS ${this.tableName} (
-          id TEXT PRIMARY KEY,
-          client_id TEXT NOT NULL,
-          issued_at INTEGER NOT NULL,
-          server_ids TEXT NOT NULL,
-          scopes TEXT DEFAULT '[]'
-        )
-      `);
-
-      // インデックスの作成
-      this.db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON ${this.tableName} (client_id)`,
-      );
-    } catch (error) {
-      console.error("トークンテーブルの初期化中にエラーが発生しました:", error);
-      throw error;
-    }
+    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
   }
 
   /**
@@ -213,35 +193,4 @@ export class TokenRepository extends BaseRepository<Token> {
       throw error;
     }
   }
-}
-
-/**
- * TokenRepositoryのシングルトンインスタンスを取得
- */
-let instance: TokenRepository | null = null;
-let currentDb: SqliteManager | null = null;
-
-export function getTokenRepository(): TokenRepository {
-  // トークンは常にメインデータベースを使用（ワークスペース間で共有）
-  const db = getSqliteManager("mcprouter", true); // forceMain = true
-
-  // Check if database instance has changed
-  if (!instance || currentDb !== db) {
-    console.log("[TokenRepository] Creating repository with main database");
-    instance = new TokenRepository(db);
-    currentDb = db;
-  }
-
-  return instance;
-}
-
-/**
- * TokenRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
- * 注意: トークンはメインDBで管理されるため、実際にはリセットしない
- */
-export function resetTokenRepository(): void {
-  // トークンはワークスペース間で共有されるため、リセットしない
-  console.log(
-    "[TokenRepository] Skip reset - tokens are shared across workspaces",
-  );
 }

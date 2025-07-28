@@ -1,67 +1,23 @@
-import { Singleton } from "./utils/singleton";
-import { SqliteManager, getSqliteManager } from "./sqlite-manager";
+import { SqliteManager } from "../../core/sqlite-manager";
 import { AppSettings, DEFAULT_APP_SETTINGS } from "@mcp_router/shared";
 
 /**
  * アプリケーション設定を管理するリポジトリ
  */
-export class SettingsRepository implements Singleton<SettingsRepository> {
-  private static instance: SettingsRepository | null = null;
-  private static currentDb: SqliteManager | null = null;
+export class SettingsRepository {
   private db: SqliteManager;
   private settingsCache: AppSettings | null = null;
 
   /**
-   * シングルトンインスタンスを取得
-   */
-  public static getInstance(): SettingsRepository {
-    const db = getSqliteManager("mcprouter");
-
-    // Check if database instance has changed
-    if (!SettingsRepository.instance || SettingsRepository.currentDb !== db) {
-      console.log(
-        "[SettingsRepository] Database instance changed, creating new repository",
-      );
-      SettingsRepository.instance = new SettingsRepository();
-      SettingsRepository.currentDb = db;
-    }
-
-    return SettingsRepository.instance;
-  }
-
-  /**
-   * インスタンスをリセット（ワークスペース切り替え時に使用）
-   */
-  public static resetInstance(): void {
-    console.log("[SettingsRepository] Resetting repository instance");
-    SettingsRepository.instance = null;
-    SettingsRepository.currentDb = null;
-  }
-
-  /**
    * コンストラクタ
    */
-  private constructor() {
-    this.db = getSqliteManager("mcprouter");
+  constructor(db: SqliteManager) {
+    this.db = db;
     console.log(
       "[SettingsRepository] Constructor called with database:",
       this.db?.getDbPath?.() || "database instance",
     );
-    this.initializeTable();
     this.loadSettingsToCache();
-  }
-
-  /**
-   * テーブルを初期化
-   */
-  private initializeTable(): void {
-    const sql = `
-      CREATE TABLE IF NOT EXISTS settings (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL
-      )
-    `;
-    this.db.execute(sql);
   }
 
   /**
@@ -132,18 +88,4 @@ export class SettingsRepository implements Singleton<SettingsRepository> {
       return false;
     }
   }
-}
-
-/**
- * SettingsRepositoryのシングルトンインスタンスを取得
- */
-export function getSettingsRepository(): SettingsRepository {
-  return SettingsRepository.getInstance();
-}
-
-/**
- * SettingsRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
- */
-export function resetSettingsRepository(): void {
-  SettingsRepository.resetInstance();
 }

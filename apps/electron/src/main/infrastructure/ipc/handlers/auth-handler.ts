@@ -1,5 +1,10 @@
 import { ipcMain } from "electron";
-import { startAuthFlow, logout, status, handleAuthToken } from "@/main/domain/auth/auth";
+import {
+  startAuthFlow,
+  logout,
+  status,
+  handleAuthToken,
+} from "@/main/domain/auth/auth";
 import { mainWindow } from "@/main";
 
 export function setupAuthHandlers(): void {

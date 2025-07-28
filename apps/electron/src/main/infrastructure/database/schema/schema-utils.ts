@@ -1,4 +1,4 @@
-import { SqliteManager } from "../sqlite-manager";
+import { SqliteManager } from "../core/sqlite-manager";
 import { DATABASE_SCHEMA, SCHEMA_VERSION, TableName } from "./database-schema";
 
 /**

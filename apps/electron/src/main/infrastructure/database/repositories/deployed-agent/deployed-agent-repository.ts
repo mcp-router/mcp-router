@@ -1,6 +1,6 @@
 import { DeployedAgent } from "@mcp_router/shared";
-import { BaseRepository } from "./base-repository";
-import { SqliteManager, getSqliteManager } from "./sqlite-manager";
+import { BaseRepository } from "../../core/base-repository";
+import { SqliteManager } from "../../core/sqlite-manager";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -21,45 +21,11 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
   }
 
   /**
-   * Initialize table and indexes
-   * Note: This method only handles initial table creation
-   * Schema migrations are centrally managed by the DatabaseMigration class
+   * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
+   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    try {
-      this.ensureTableExists();
-    } catch (error) {
-      console.error("Error initializing deployed agents table:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Ensure the deployedAgents table exists and create if needed
-   * This method is safe to call multiple times
-   */
-  private ensureTableExists(): void {
-    try {
-      // Check if table exists
-      const tableExists = this.db.get(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
-        [this.tableName],
-      );
-
-      if (!tableExists) {
-        // Use centralized schema to create table
-        console.log(
-          `[DeployedAgentRepository] Table ${this.tableName} does not exist, creating it now`,
-        );
-        // Note: The table will be created by WorkspaceDatabaseMigration using centralized schema
-        // This is just a fallback for edge cases
-        const { createTable } = require("./schema");
-        createTable(this.db, "deployedAgents");
-      }
-    } catch (error) {
-      console.error(`Error ensuring ${this.tableName} table exists:`, error);
-      throw error;
-    }
+    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
   }
 
   /**
@@ -130,7 +96,6 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
    */
   public getAllDeployedAgents(): DeployedAgent[] {
     try {
-      this.ensureTableExists();
       return this.getAll();
     } catch (error) {
       console.error("Error retrieving deployed agents:", error);
@@ -241,34 +206,4 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
       throw error;
     }
   }
-}
-
-/**
- * Get singleton instance of DeployedAgentRepository
- */
-let instance: DeployedAgentRepository | null = null;
-let currentDb: SqliteManager | null = null;
-
-export function getDeployedAgentRepository(): DeployedAgentRepository {
-  const db = getSqliteManager("mcprouter");
-
-  // Check if database instance has changed
-  if (!instance || currentDb !== db) {
-    console.log(
-      "[DeployedAgentRepository] Database instance changed, creating new repository",
-    );
-    instance = new DeployedAgentRepository(db);
-    currentDb = db;
-  }
-
-  return instance;
-}
-
-/**
- * Reset DeployedAgentRepository instance (used when switching workspaces)
- */
-export function resetDeployedAgentRepository(): void {
-  console.log("[DeployedAgentRepository] Resetting repository instance");
-  instance = null;
-  currentDb = null;
 }

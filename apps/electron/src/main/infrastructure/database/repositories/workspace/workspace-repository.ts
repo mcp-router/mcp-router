@@ -1,5 +1,5 @@
-import { BaseRepository } from "./base-repository";
-import { SqliteManager, getSqliteManager } from "./sqlite-manager";
+import { BaseRepository } from "../../core/base-repository";
+import { SqliteManager } from "../../core/sqlite-manager";
 import { Workspace } from "@mcp_router/shared";
 
 export class WorkspaceRepository extends BaseRepository<Workspace> {
@@ -12,11 +12,11 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
   }
 
   /**
-   * テーブルを初期化
+   * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
+   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    // テーブルの作成はマイグレーションで行うため、ここでは何もしない
-    // デフォルトワークスペースの作成は後で行う
+    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
   }
 
   /**
@@ -116,34 +116,4 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
 
     return workspace.remoteConfig.authToken || null;
   }
-}
-
-let workspaceRepository: WorkspaceRepository | null = null;
-let currentDb: SqliteManager | null = null;
-
-/**
- * Get WorkspaceRepository singleton instance
- */
-export function getWorkspaceRepository(): WorkspaceRepository {
-  const db = getSqliteManager("mcprouter");
-
-  // Check if database instance has changed
-  if (!workspaceRepository || currentDb !== db) {
-    console.log(
-      "[WorkspaceRepository] Database instance changed, creating new repository",
-    );
-    workspaceRepository = new WorkspaceRepository(db);
-    currentDb = db;
-  }
-
-  return workspaceRepository;
-}
-
-/**
- * Reset WorkspaceRepository instance (used when switching workspaces)
- */
-export function resetWorkspaceRepository(): void {
-  console.log("[WorkspaceRepository] Resetting repository instance");
-  workspaceRepository = null;
-  currentDb = null;
 }

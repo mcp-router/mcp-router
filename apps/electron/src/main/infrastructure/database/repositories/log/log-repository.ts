@@ -1,5 +1,5 @@
-import { BaseRepository } from "./base-repository";
-import { SqliteManager, getSqliteManager } from "./sqlite-manager";
+import { BaseRepository } from "../../core/base-repository";
+import { SqliteManager } from "../../core/sqlite-manager";
 import {
   RequestLogEntry,
   RequestLogEntryInput,
@@ -9,7 +9,7 @@ import {
   ServerStats,
   RequestTypeStats,
 } from "@mcp_router/shared";
-import { encodeCursor, decodeCursor } from "../../../shared/types/cursor";
+import { encodeCursor, decodeCursor } from "../../../../../shared/types/cursor";
 
 /**
  * リクエストログ用リポジトリクラス
@@ -31,64 +31,11 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
   }
 
   /**
-   * テーブルとインデックスを初期化
+   * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
+   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    try {
-      // requestLogsテーブルの作成は統一されたスキーマを使用
-      // WorkspaceDatabaseMigrationで作成されるため、ここでは互換性のために最小限の処理のみ
-      const tableExists = this.db.get(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
-        [this.tableName],
-      );
-
-      if (!tableExists) {
-        // 統一されたスキーマで作成される
-        console.log(
-          `[LogRepository] Table ${this.tableName} will be created by WorkspaceDatabaseMigration`,
-        );
-        const { createTable } = require("./schema");
-        createTable(this.db, "requestLogs");
-      }
-
-      // メタデータテーブルの作成
-      this.db.execute(`
-        CREATE TABLE IF NOT EXISTS logs_metadata (
-          key TEXT PRIMARY KEY,
-          value TEXT NOT NULL
-        )
-      `);
-
-      // 初期メタデータの設定（存在しない場合のみ）
-      const metadata = this.db.get<{ count: number }>(
-        "SELECT COUNT(*) as count FROM logs_metadata WHERE key = :key",
-        { key: "client_ids" },
-      );
-      if (!metadata || metadata.count === 0) {
-        this.db.execute(
-          "INSERT INTO logs_metadata (key, value) VALUES (:key, :value)",
-          { key: "client_ids", value: "[]" },
-        );
-        this.db.execute(
-          "INSERT INTO logs_metadata (key, value) VALUES (:key, :value)",
-          { key: "server_ids", value: "[]" },
-        );
-        this.db.execute(
-          "INSERT INTO logs_metadata (key, value) VALUES (:key, :value)",
-          { key: "request_types", value: "[]" },
-        );
-        this.db.execute(
-          "INSERT INTO logs_metadata (key, value) VALUES (:key, :value)",
-          { key: "last_cleanup", value: String(Date.now()) },
-        );
-      }
-    } catch (error) {
-      console.error(
-        "リクエストログテーブルの初期化中にエラーが発生しました:",
-        error,
-      );
-      throw error;
-    }
+    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
   }
 
   /**
@@ -528,34 +475,4 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
       return `client-${clientId.substring(0, Math.min(8, clientId.length))}`;
     }
   }
-}
-
-/**
- * LogRepositoryのシングルトンインスタンスを取得
- */
-let instance: LogRepository | null = null;
-let currentDb: SqliteManager | null = null;
-
-export function getLogRepository(): LogRepository {
-  const db = getSqliteManager("mcprouter");
-
-  // Check if database instance has changed
-  if (!instance || currentDb !== db) {
-    console.log(
-      "[LogRepository] Database instance changed, creating new repository",
-    );
-    instance = new LogRepository(db);
-    currentDb = db;
-  }
-
-  return instance;
-}
-
-/**
- * LogRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
- */
-export function resetLogRepository(): void {
-  console.log("[LogRepository] Resetting repository instance");
-  instance = null;
-  currentDb = null;
 }

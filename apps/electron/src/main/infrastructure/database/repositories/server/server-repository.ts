@@ -1,5 +1,5 @@
-import { BaseRepository } from "./base-repository";
-import { SqliteManager, getSqliteManager } from "./sqlite-manager";
+import { BaseRepository } from "../../core/base-repository";
+import { SqliteManager } from "../../core/sqlite-manager";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
 
@@ -21,46 +21,11 @@ export class ServerRepository extends BaseRepository<MCPServer> {
   }
 
   /**
-   * テーブルとインデックスを初期化
-   * 注: このメソッドはテーブルの初期作成のみを行います
-   * スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
+   * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
+   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    try {
-      // serversテーブルの作成（存在しない場合）
-      this.db.execute(`
-        CREATE TABLE IF NOT EXISTS ${this.tableName} (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          command TEXT,
-          args TEXT,
-          env TEXT,
-          auto_start INTEGER NOT NULL,
-          disabled INTEGER NOT NULL,
-          auto_approve TEXT,
-          context_path TEXT,
-          server_type TEXT NOT NULL DEFAULT 'local',
-          remote_url TEXT,
-          bearer_token TEXT,
-          input_params TEXT,
-          description TEXT,
-          version TEXT,
-          latest_version TEXT,
-          verification_status TEXT,
-          required_params TEXT,
-          created_at INTEGER NOT NULL,
-          updated_at INTEGER NOT NULL
-        )
-      `);
-
-      // インデックスの作成
-      this.db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_servers_name ON ${this.tableName} (name)`,
-      );
-    } catch (error) {
-      console.error("サーバテーブルの初期化中にエラーが発生しました:", error);
-      throw error;
-    }
+    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
   }
 
   /**
@@ -378,29 +343,4 @@ export class ServerRepository extends BaseRepository<MCPServer> {
       throw error;
     }
   }
-}
-
-/**
- * ServerRepositoryのシングルトンインスタンスを取得
- */
-let instance: ServerRepository | null = null;
-
-export function getServerRepository(): ServerRepository {
-  if (!instance) {
-    // SqliteManagerのインスタンスを取得
-    const db = getSqliteManager("mcprouter");
-    console.log("[getServerRepository] Creating new ServerRepository instance");
-    instance = new ServerRepository(db);
-  }
-  // ワークスペース切り替え時はresetServerRepository()が呼ばれるため、
-  // ここでデータベースの変更をチェックする必要はない
-  return instance;
-}
-
-/**
- * ServerRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
- */
-export function resetServerRepository(): void {
-  console.log("[resetServerRepository] Resetting ServerRepository instance");
-  instance = null;
 }

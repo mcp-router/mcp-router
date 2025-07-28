@@ -1,5 +1,8 @@
-import { SqliteManager } from "./sqlite-manager";
-import { createAllTables, recreateOutdatedTables } from "./schema";
+import { SqliteManager } from "../core/sqlite-manager";
+import {
+  createAllTables,
+  recreateOutdatedTables,
+} from "../schema/schema-utils";
 
 /**
  * Workspace-specific database migration

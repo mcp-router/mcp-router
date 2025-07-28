@@ -1,5 +1,5 @@
-import { BaseRepository } from "./base-repository";
-import { getSqliteManager, SqliteManager } from "./sqlite-manager";
+import { BaseRepository } from "../../core/base-repository";
+import { SqliteManager } from "../../core/sqlite-manager";
 import { v4 as uuidv4 } from "uuid";
 import { LocalChatSession, LocalSessionStatus } from "@mcp_router/shared";
 
@@ -16,37 +16,11 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
   }
 
   /**
-   * Initialize the chat_sessions table
+   * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
+   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    const createTableSql = `
-      CREATE TABLE IF NOT EXISTS chat_sessions (
-        id TEXT PRIMARY KEY,
-        agent_id TEXT NOT NULL,
-        messages TEXT NOT NULL DEFAULT '[]',
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL,
-        status TEXT NOT NULL DEFAULT 'pending',
-        source TEXT NOT NULL DEFAULT 'ui'
-      )
-    `;
-
-    this.db.execute(createTableSql);
-
-    // Create index for agent_id to improve query performance
-    this.db.execute(
-      "CREATE INDEX IF NOT EXISTS idx_chat_sessions_agent_id ON chat_sessions(agent_id)",
-    );
-
-    // Create index for created_at to improve sorting performance
-    this.db.execute(
-      "CREATE INDEX IF NOT EXISTS idx_chat_sessions_created_at ON chat_sessions(created_at)",
-    );
-
-    // Create index for status to improve filtering performance
-    this.db.execute(
-      "CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status)",
-    );
+    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
   }
 
   /**
@@ -462,35 +436,4 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
       throw error;
     }
   }
-}
-
-// Singleton instance
-let sessionRepositoryInstance: SessionRepository | null = null;
-let currentDb: SqliteManager | null = null;
-
-/**
- * Get the singleton instance of SessionRepository
- */
-export function getSessionRepository(): SessionRepository {
-  const db = getSqliteManager("mcprouter");
-
-  // Check if database instance has changed
-  if (!sessionRepositoryInstance || currentDb !== db) {
-    console.log(
-      "[SessionRepository] Database instance changed, creating new repository",
-    );
-    sessionRepositoryInstance = new SessionRepository(db);
-    currentDb = db;
-  }
-
-  return sessionRepositoryInstance;
-}
-
-/**
- * Reset SessionRepository instance (used when switching workspaces)
- */
-export function resetSessionRepository(): void {
-  console.log("[SessionRepository] Resetting repository instance");
-  sessionRepositoryInstance = null;
-  currentDb = null;
 }

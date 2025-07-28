@@ -1,6 +1,5 @@
 import { BaseService } from "../../application/base-service";
-import { Singleton } from "../../../lib/utils/backend/singleton";
-import { SqliteManager } from "../../infrastructure/database/sqlite-manager";
+import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
 import { session, app } from "electron";
 import { EventEmitter } from "events";
 import path from "path";
@@ -9,10 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import * as fsSync from "fs";
 import type { Workspace, WorkspaceCreateConfig } from "@mcp_router/shared";
 
-export class WorkspaceService
-  extends BaseService<Workspace, string>
-  implements Singleton<WorkspaceService>
-{
+export class WorkspaceService extends BaseService<Workspace, string> {
   private static instance: WorkspaceService | null = null;
   private electronSessions: Map<string, Electron.Session> = new Map();
   private databaseInstances: Map<string, SqliteManager> = new Map();

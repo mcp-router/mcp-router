@@ -37,7 +37,9 @@ export async function syncServersFromClientConfig(
     // 既存のサーバを取得して重複を避ける
     const serverService = getServerService();
     const existingServers = serverService.getAllServers();
-    const existingServerNames = new Set(existingServers.map((s: any) => s.name));
+    const existingServerNames = new Set(
+      existingServers.map((s: any) => s.name),
+    );
 
     let importedCount = 0;
 
@@ -83,7 +85,9 @@ export async function importExistingServerConfigurations(): Promise<void> {
     // Get existing servers to avoid duplicates
     const serverService = getServerService();
     const existingServers = serverService.getAllServers();
-    const existingServerNames = new Set(existingServers.map((s: any) => s.name));
+    const existingServerNames = new Set(
+      existingServers.map((s: any) => s.name),
+    );
 
     // Load all client configurations
     const clientConfigs = await loadAllClientConfigs();

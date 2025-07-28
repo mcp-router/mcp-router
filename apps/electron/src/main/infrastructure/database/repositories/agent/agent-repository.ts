@@ -1,5 +1,5 @@
-import { BaseRepository } from "./base-repository";
-import { SqliteManager, getSqliteManager } from "./sqlite-manager";
+import { BaseRepository } from "../../core/base-repository";
+import { SqliteManager } from "../../core/sqlite-manager";
 import { AgentConfig } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
 
@@ -21,40 +21,11 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
   }
 
   /**
-   * テーブルとインデックスを初期化
-   * 注: このメソッドはテーブルの初期作成のみを行います
-   * スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
+   * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
+   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    try {
-      // agentsテーブルの作成（存在しない場合）
-      this.db.execute(`
-        CREATE TABLE IF NOT EXISTS ${this.tableName} (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          mcp_servers TEXT NOT NULL,
-          purpose TEXT NOT NULL,
-          instructions TEXT NOT NULL,
-          description TEXT DEFAULT '',
-          tool_permissions TEXT DEFAULT '{}',
-          auto_execute_tool INTEGER DEFAULT 0,
-          setup_completed INTEGER DEFAULT 0,
-          created_at INTEGER NOT NULL,
-          updated_at INTEGER NOT NULL
-        )
-      `);
-
-      // インデックスの作成
-      this.db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_agents_name ON ${this.tableName} (name)`,
-      );
-    } catch (error) {
-      console.error(
-        "エージェントテーブルの初期化中にエラーが発生しました:",
-        error,
-      );
-      throw error;
-    }
+    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
   }
 
   /**
@@ -297,34 +268,4 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
       throw error;
     }
   }
-}
-
-/**
- * AgentRepositoryのシングルトンインスタンスを取得
- */
-let instance: AgentRepository | null = null;
-let currentDb: SqliteManager | null = null;
-
-export function getAgentRepository(): AgentRepository {
-  const db = getSqliteManager("mcprouter");
-
-  // Check if database instance has changed
-  if (!instance || currentDb !== db) {
-    console.log(
-      "[AgentRepository] Database instance changed, creating new repository",
-    );
-    instance = new AgentRepository(db);
-    currentDb = db;
-  }
-
-  return instance;
-}
-
-/**
- * AgentRepositoryのインスタンスをリセット（ワークスペース切り替え時に使用）
- */
-export function resetAgentRepository(): void {
-  console.log("[AgentRepository] Resetting repository instance");
-  instance = null;
-  currentDb = null;
 }

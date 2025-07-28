@@ -1,5 +1,5 @@
-import { getSqliteManager, SqliteManager } from "./sqlite-manager";
-import { getServerRepository } from "./server-repository";
+import { getSqliteManager, SqliteManager } from "../core/sqlite-manager";
+import { getServerRepository } from "../index";
 import { TokenScope, Migration } from "@mcp_router/shared";
 import { safeStorage } from "electron";
 
@@ -870,7 +870,7 @@ export class DatabaseMigration {
     const rows = db.all<{ id: string }>("SELECT id FROM migrations");
 
     // Set に変換して返す
-    return new Set(rows.map((row) => row.id));
+    return new Set(rows.map((row: any) => row.id));
   }
 
   /**
