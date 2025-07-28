@@ -12,7 +12,7 @@
 </div>
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/intro.gif" alt="MCP Router デモ" width="80%">
+  <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/intro.gif" alt="MCP Router デモ" width="80%">
 </div>
 
 ## 🎯 概要
@@ -49,22 +49,22 @@
 ### 📊 一元的なサーバ管理
 単一のダッシュボードからMCPサーバのオン/オフを簡単に切り替え
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/toggle.png" alt="サーバ管理" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/toggle.png" alt="サーバ管理" width="600">
 
 ### 🌐 ユニバーサル接続
 ローカルおよびリモートサーバに対応し、あらゆるMCPサーバの追加と接続が可能
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/add-mcp-manual.png" alt="ユニバーサル接続" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/add-mcp-manual.png" alt="ユニバーサル接続" width="600">
 
 ### 🔗 ワンクリック連携
 Claude、Cline、Windsurf、Cursorなどの人気AIツールやカスタムクライアントとシームレスに接続
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/token.png" alt="ワンクリック連携" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/token.png" alt="ワンクリック連携" width="600">
 
 ### 📈 包括的なロギングと分析
 詳細なリクエストログの監視と表示
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/stats.png" alt="ログと統計" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/stats.png" alt="ログと統計" width="600">
 
 ## 🎯 開発ロードマップ
 

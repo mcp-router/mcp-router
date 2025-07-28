@@ -12,7 +12,7 @@
 </div>
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/intro.gif" alt="MCP Router Demo" width="80%">
+  <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/intro.gif" alt="MCP Router Demo" width="80%">
 </div>
 
 ## 🎯 Overview
@@ -49,22 +49,22 @@ Download from our [installation page](http://mcp-router.net/install) or [release
 ### 📊 Centralized Server Management
 Easily toggle MCP servers on/off from a single dashboard
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/toggle.png" alt="Server Management" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/toggle.png" alt="Server Management" width="600">
 
 ### 🌐 Universal Connectivity
 Add and connect to any MCP server with support for both local and remote servers
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/add-mcp-manual.png" alt="Universal Connectivity" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/add-mcp-manual.png" alt="Universal Connectivity" width="600">
 
 ### 🔗 One-Click Integration
 Seamlessly connect with popular AI tools like Claude, Cline, Windsurf, Cursor, or your custom client
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/token.png" alt="One-Click Integration" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/token.png" alt="One-Click Integration" width="600">
 
 ### 📈 Comprehensive Logging & Analytics
 Monitor and display detailed request logs
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/docs/static/img/readme/stats.png" alt="Logs and Statistics" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/stats.png" alt="Logs and Statistics" width="600">
 
 ## 🎯 Development Roadmap
 
