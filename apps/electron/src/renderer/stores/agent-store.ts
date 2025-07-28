@@ -82,7 +82,6 @@ export interface AgentStoreInterface extends AgentState {
   ) => Promise<void>;
   loadMoreSessions: () => void;
   deleteChatSession: (sessionId: string) => Promise<void>;
-  fetchSessionMessages: (sessionId: string) => Promise<any[]>;
 
   sendMessage: (message: string, sessionId?: string) => Promise<void>;
 
@@ -440,8 +439,8 @@ export const createAgentStore = (
             session.messages && session.messages.length > 0
               ? session.messages[session.messages.length - 1].content
               : undefined,
-          createdAt: session.createdAt.getTime(),
-          updatedAt: session.updatedAt.getTime(),
+          createdAt: session.createdAt,
+          updatedAt: session.updatedAt,
           messages: session.messages,
         }));
 
@@ -531,32 +530,6 @@ export const createAgentStore = (
       }
     },
 
-    fetchSessionMessages: async (sessionId) => {
-      const { setSessionsError } = get();
-
-      try {
-        setSessionsError(null);
-
-        const session = await getPlatformAPI().agents.sessions.get(sessionId);
-        const messages = session?.messages || [];
-
-        // Update the session with the fetched messages
-        set((state) => ({
-          chatSessions: state.chatSessions.map((session) =>
-            session.id === sessionId ? { ...session, messages } : session,
-          ),
-        }));
-
-        return messages;
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Failed to load session messages";
-        setSessionsError(errorMessage);
-        throw new Error(errorMessage);
-      }
-    },
 
     sendMessage: async (message, sessionId) => {
       const {

@@ -39,8 +39,8 @@ interface ChatSession {
   id: string;
   agentId: string;
   messages: ChatMessage[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
 }
 
 interface SessionListOptions {

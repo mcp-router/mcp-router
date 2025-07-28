@@ -146,8 +146,8 @@ class ElectronPlatformAPI implements PlatformAPI {
                 id: sessionId,
                 agentId: "",
                 messages,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
               }
             : null;
         },
@@ -160,8 +160,8 @@ class ElectronPlatformAPI implements PlatformAPI {
             id: sessionId,
             agentId: "",
             messages,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
           };
         },
       },
