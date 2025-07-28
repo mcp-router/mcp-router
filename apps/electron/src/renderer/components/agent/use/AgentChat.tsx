@@ -490,77 +490,53 @@ const AgentChat: React.FC = () => {
 
   // Set messages from selected session when currentSessionId changes
   useEffect(() => {
-    const loadSessionMessages = async () => {
-      if (selectedSession) {
-        // If session has cached messages, use them
-        if (selectedSession.messages) {
-          // Filter out system messages when setting from session to avoid duplication
-          const sessionMessages = selectedSession.messages.filter(
-            (msg) => msg.role !== "system",
-          );
-          setMessages([
-            // Always include the system message
-            {
-              id: "system-1",
-              role: "system",
-              content: agent?.instructions || "",
-              parts: [
-                { type: "text" as const, text: agent?.instructions || "" },
-              ],
-            },
-            ...sessionMessages,
-          ]);
-        } else {
-          // Fetch messages from local database
-          try {
-            setIsLoading(true);
-            const fetchedMessages = await platformAPI.agents.sessions
-              .get(selectedSession.id)
-              .then((session) => session?.messages || []);
-
-            // Filter out system messages when setting from fetched messages
-            const sessionMessages = fetchedMessages
-              .filter((msg: any) => msg.role !== "system")
-              .map((msg: any, index: number) => ({
-                ...msg,
-                id: msg.id || `msg-${index}`,
-              }));
-            setMessages([
-              // Always include the system message
-              {
-                id: "system-1",
-                role: "system",
-                content: agent?.instructions || "",
-                parts: [
-                  { type: "text" as const, text: agent?.instructions || "" },
-                ],
-              },
-              ...sessionMessages,
-            ]);
-          } catch (error) {
-            console.error("Failed to fetch session messages:", error);
-            setError(
-              error instanceof Error
-                ? error
-                : new Error("Failed to load session messages"),
-            );
-          } finally {
-            setIsLoading(false);
-          }
-        }
-      } else if (currentSessionId === null) {
-        // New session - reset chat state
-        resetChatState(agent?.id || "", agent?.instructions || "");
-
-        // Also reset all related local state when starting new session
-        setIsLoading(false);
-        setIsCallingTool(false);
-        setError(undefined);
-        setInput(""); // Clear input field for new session
+    if (selectedSession) {
+      // Use messages from the session (already fetched by fetchChatSessions)
+      if (selectedSession.messages && selectedSession.messages.length > 0) {
+        console.log(selectedSession.messages);
+        // Filter out system messages when setting from session to avoid duplication
+        const sessionMessages = selectedSession.messages
+          .filter((msg) => msg.role !== "system")
+          .map((msg) => ({
+            id: msg.id,
+            role: msg.role,
+            content: msg.content || "",
+            parts: msg.parts || [
+              { type: "text" as const, text: msg.content || "" },
+            ],
+          }));
+        setMessages([
+          // Always include the system message
+          {
+            id: "system-1",
+            role: "system",
+            content: agent?.instructions || "",
+            parts: [{ type: "text" as const, text: agent?.instructions || "" }],
+          },
+          ...sessionMessages,
+        ]);
+      } else {
+        // Session exists but has no messages (empty session)
+        setMessages([
+          // Always include the system message
+          {
+            id: "system-1",
+            role: "system",
+            content: agent?.instructions || "",
+            parts: [{ type: "text" as const, text: agent?.instructions || "" }],
+          },
+        ]);
       }
-    };
+    } else if (currentSessionId === null) {
+      // New session - reset chat state
+      resetChatState(agent?.id || "", agent?.instructions || "");
 
-    loadSessionMessages();
+      // Also reset all related local state when starting new session
+      setIsLoading(false);
+      setIsCallingTool(false);
+      setError(undefined);
+      setInput(""); // Clear input field for new session
+    }
   }, [
     currentSessionId,
     selectedSession?.messages,

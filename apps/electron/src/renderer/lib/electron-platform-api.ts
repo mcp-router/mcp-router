@@ -138,19 +138,6 @@ class ElectronPlatformAPI implements PlatformAPI {
       sessions: {
         create: (agentId, initialMessages) =>
           window.electronAPI.createSession(agentId, initialMessages),
-        get: async (sessionId) => {
-          const messages =
-            await window.electronAPI.fetchSessionMessages(sessionId);
-          return messages
-            ? {
-                id: sessionId,
-                agentId: "",
-                messages,
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-              }
-            : null;
-        },
         list: (agentId, options) =>
           window.electronAPI.getSessions(agentId, options),
         delete: (sessionId) => window.electronAPI.deleteSession(sessionId),

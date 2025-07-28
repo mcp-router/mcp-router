@@ -473,26 +473,6 @@ export function setupAgentHandlers(): void {
     },
   );
 
-  // セッションメッセージ取得のIPC通信ハンドラ（ローカルDB使用）
-  ipcMain.handle(
-    "agent:fetch-session-messages",
-    async (_: IpcMainInvokeEvent, sessionId: string) => {
-      try {
-        const session = sessionRepository.getById(sessionId);
-        if (!session) {
-          throw new Error(`Session not found (ID: ${sessionId})`);
-        }
-        return session.messages;
-      } catch (error) {
-        console.error(
-          `Failed to fetch session messages for session (ID: ${sessionId}):`,
-          error,
-        );
-        throw error;
-      }
-    },
-  );
-
   // ローカルセッション管理のIPC通信ハンドラ
   ipcMain.handle(
     "agent:get-sessions",

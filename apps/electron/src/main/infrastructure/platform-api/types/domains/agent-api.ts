@@ -91,7 +91,6 @@ export interface AgentAPI {
       agentId: string,
       initialMessages?: ChatMessage[],
     ): Promise<ChatSession>;
-    get(sessionId: string): Promise<ChatSession | null>;
     list(
       agentId: string,
       options?: SessionListOptions,

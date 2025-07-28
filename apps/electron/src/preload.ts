@@ -146,8 +146,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
 
   // Session Messages (Local Database)
-  fetchSessionMessages: (sessionId: string) =>
-    ipcRenderer.invoke("agent:fetch-session-messages", sessionId),
   getSessions: (agentId: string, options?: any) =>
     ipcRenderer.invoke("agent:get-sessions", agentId, options),
   createSession: (agentId: string, initialMessages?: any[]) =>
