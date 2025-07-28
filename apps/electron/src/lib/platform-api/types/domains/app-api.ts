@@ -18,7 +18,6 @@ interface TokenGenerateOptions {
   expiresIn?: number;
 }
 
-
 export interface AppAPI {
   // App management
   list(): Promise<McpApp[]>;

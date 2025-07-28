@@ -30,7 +30,7 @@
         "webpack.main.config.ts",
         "webpack.renderer.config.ts",
         "webpack.plugins.ts",
-        "webpack.rules.ts",
+        "webpack.rules.ts"
       ],
       "project": [
         "src/**/*.{ts,tsx,js,jsx}"

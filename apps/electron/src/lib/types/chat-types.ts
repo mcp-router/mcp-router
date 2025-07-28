@@ -72,8 +72,6 @@ export interface ExtendedPlatformChatMessage extends PlatformChatMessage {
   }>;
 }
 
-
-
 /**
  * Conversion utilities
  */
@@ -93,4 +91,3 @@ export function convertToLocalChatMessage(
     })),
   };
 }
-

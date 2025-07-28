@@ -684,7 +684,7 @@ export class RequestHandlers {
     // return await AgentToolHandler.handleTool(toolName, args);
     throw new McpError(
       ErrorCode.MethodNotFound,
-      `Agent tool ${toolName} not available`
+      `Agent tool ${toolName} not available`,
     );
   }
 }

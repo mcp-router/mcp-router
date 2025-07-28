@@ -27,8 +27,6 @@ function formatDateBucket(date?: string | number | Date | dayjs.Dayjs) {
   return getDateInstance(date).format("YYYY-MM-DD");
 }
 
-
-
 /**
  * i18nを使用して時間をフォーマット
  */
@@ -44,4 +42,3 @@ export function formatDateI18n(
   const format = t(`logs.viewer.dateFormat.${formatKey}`);
   return instance.format(format);
 }
-

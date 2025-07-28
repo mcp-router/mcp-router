@@ -62,4 +62,3 @@ export class DatabaseContext {
 export function getDatabaseContext(): DatabaseContext {
   return DatabaseContext.getInstance();
 }
-

@@ -4,7 +4,6 @@
 
 import { app } from "electron";
 
-
 /**
  * ログ出力のヘルパー関数
  * @param message ログメッセージ
