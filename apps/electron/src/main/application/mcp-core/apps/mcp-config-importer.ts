@@ -12,7 +12,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import { app } from "electron";
-import { getSettingsService } from "@/main/application/settings-service";
+import { getSettingsService } from "@/main/application/settings/settings-service";
 
 /**
  * Sync server configurations from a provided list of configs

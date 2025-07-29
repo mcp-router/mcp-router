@@ -1,7 +1,7 @@
 import path from "path";
 import { promises as fsPromises } from "fs";
-import { getTokenService } from "../domain/mcp-core/token/token-service";
-import { getServerService } from "../domain/mcp-core/server/server-service";
+import { getTokenService } from "../../../domain/mcp-core/token/token-service";
+import { getServerService } from "../../../domain/mcp-core/server/server-service";
 import {
   claudeConfig,
   clineConfig,

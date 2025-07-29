@@ -2,16 +2,16 @@ import express from "express";
 import cors from "cors";
 import * as http from "http";
 import { MCPServerManager } from "..";
-import { getLogService } from "@/main/application/log-service";
+import { getLogService } from "@/main/application/mcp-core/log/log-service";
 import { getTokenService } from "@/main/domain/mcp-core/token/token-service";
-import { listMcpApps } from "@/main/application/mcp-apps-service";
+import { listMcpApps } from "@/main/application/mcp-core/apps/mcp-apps-service";
 import {
   validateMcpServerJson,
   processMcpServerConfigs,
 } from "@/main/domain/mcp-core/server/shared/mcp-server-utils";
 import { TokenScope } from "@mcp_router/shared";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
-import { getPlatformAPIManager } from "../../platform-api-manager";
+import { getPlatformAPIManager } from "../../../workspace/platform-api-manager";
 
 /**
  * HTTP server that exposes MCP functionality through REST endpoints
@@ -162,7 +162,7 @@ export class MCPHttpServer {
 
           // Get user auth token instead of workspace token
           const { getDecryptedAuthToken } = await import(
-            "../../../domain/auth/auth"
+            "../../../../domain/auth/auth"
           );
           const authToken = await getDecryptedAuthToken();
 

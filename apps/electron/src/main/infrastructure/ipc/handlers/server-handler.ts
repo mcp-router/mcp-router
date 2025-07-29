@@ -3,7 +3,7 @@ import { MCPServerConfig } from "@mcp_router/shared";
 import {
   fetchMcpServersFromIndex,
   fetchMcpServerVersionDetails,
-} from "@/main/application/mcp-fetcher";
+} from "@/main/application/mcp-core/registry/mcp-fetcher";
 
 export function setupMcpServerHandlers(): void {
   const getMCPServerManager = () => (global as any).getMCPServerManager();

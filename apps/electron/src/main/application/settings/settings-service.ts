@@ -1,6 +1,6 @@
 import { AppSettings } from "@mcp_router/shared";
-import { SingletonService } from "./singleton-service";
-import { getSettingsRepository } from "../infrastructure/database";
+import { SingletonService } from "../core/singleton-service";
+import { getSettingsRepository } from "../../infrastructure/database";
 
 /**
  * Service for managing application settings
@@ -36,7 +36,7 @@ export class SettingsService extends SingletonService<
    * Used when switching workspaces
    */
   public static resetInstance(): void {
-    this.resetInstanceBase(SettingsService);
+    (this as any).resetInstanceBase(SettingsService);
   }
 
   /**

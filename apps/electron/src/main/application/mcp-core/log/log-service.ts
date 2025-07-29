@@ -1,4 +1,4 @@
-import { SingletonService } from "./singleton-service";
+import { SingletonService } from "../../core/singleton-service";
 import {
   RequestLogEntry,
   RequestLogEntryInput,
@@ -8,7 +8,7 @@ import {
   ServerStats,
   RequestTypeStats,
 } from "@mcp_router/shared";
-import { getLogRepository } from "../infrastructure/database";
+import { getLogRepository } from "../../../infrastructure/database";
 
 /**
  * Request log service class
@@ -44,7 +44,7 @@ export class LogService extends SingletonService<
    * Used when switching workspaces
    */
   public static resetInstance(): void {
-    this.resetInstanceBase(LogService);
+    (this as any).resetInstanceBase(LogService);
   }
 
   //--------------------------------------------------------------------------------

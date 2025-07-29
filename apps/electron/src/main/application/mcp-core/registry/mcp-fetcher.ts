@@ -1,5 +1,5 @@
 import { APIMCPServer, PaginatedResponse } from "@mcp_router/shared";
-import { API_BASE_URL } from "../../main";
+import { API_BASE_URL } from "../../../../main";
 
 // Use dynamic import for ESM-only modules
 let fetchFunc: any = null;

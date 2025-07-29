@@ -4,7 +4,7 @@
  * by applying templates to their names and descriptions.
  */
 
-import { getSettingsService } from "@/main/application/settings-service";
+import { getSettingsService } from "@/main/application/settings/settings-service";
 import {
   MCPEntityType,
   DEFAULT_DISPLAY_RULES,

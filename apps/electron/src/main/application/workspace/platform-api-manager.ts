@@ -1,12 +1,12 @@
 import { BrowserWindow } from "electron";
-import { getWorkspaceService } from "../domain/workspace/workspace-service";
+import { getWorkspaceService } from "../../domain/workspace/workspace-service";
 import type { Workspace } from "@mcp_router/shared";
 import {
   SqliteManager,
   setWorkspaceDatabase,
-} from "../infrastructure/database/core/sqlite-manager";
-import { WorkspaceDatabaseMigration } from "../infrastructure/database/migrations/workspace-database-migration";
-import { getDatabaseContext } from "../infrastructure/database/core/database-context";
+} from "../../infrastructure/database/core/sqlite-manager";
+import { WorkspaceDatabaseMigration } from "../../infrastructure/database/migrations/workspace-database-migration";
+import { getDatabaseContext } from "../../infrastructure/database/core/database-context";
 import {
   getDatabaseMigration,
   resetAgentRepository,
@@ -17,16 +17,16 @@ import {
   resetSettingsRepository,
   resetTokenRepository,
   resetWorkspaceRepository,
-} from "../infrastructure/database";
-import { ServerService } from "../domain/mcp-core/server/server-service";
-import { TokenService } from "../domain/mcp-core/token/token-service";
-import { LogService } from "./log-service";
-import { SettingsService } from "./settings-service";
+} from "../../infrastructure/database";
+import { ServerService } from "../../domain/mcp-core/server/server-service";
+import { TokenService } from "../../domain/mcp-core/token/token-service";
+import { LogService } from "../mcp-core/log/log-service";
+import { SettingsService } from "../settings/settings-service";
 import {
   DevelopmentAgentService,
   DeployedAgentService,
   AgentSharingService,
-} from "../domain/agent";
+} from "../../domain/agent";
 
 /**
  * Platform API管理クラス
