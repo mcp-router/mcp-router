@@ -18,8 +18,8 @@ import {
   resetTokenRepository,
   resetWorkspaceRepository,
 } from "../infrastructure/database";
-import { ServerService } from "../domain/server/server-service";
-import { TokenService } from "./token-service";
+import { ServerService } from "../domain/mcp-core/server/server-service";
+import { TokenService } from "../domain/mcp-core/token/token-service";
 import { LogService } from "./log-service";
 import { SettingsService } from "./settings-service";
 import {

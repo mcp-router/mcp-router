@@ -7,16 +7,6 @@ import { logError, logInfo } from "@/shared/utils/logger";
 import { MCPConnectionResult, IMCPServerConfig } from "@mcp_router/shared";
 
 /**
- * Helper function to prefix each line with a given string
- */
-function prefixLines(text: string, prefix: string): string {
-  return text
-    .split("\n")
-    .map((line) => prefix + line)
-    .join("\n");
-}
-
-/**
  * Creates an MCP client and connects to the specified server
  * @param server Server configuration
  * @param clientName Name for the client

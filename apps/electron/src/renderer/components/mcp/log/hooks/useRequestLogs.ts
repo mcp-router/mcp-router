@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { RequestLogEntry } from "@mcp_router/shared";
-import { normalizeToRequestLogEntry } from "@/main/domain/log/log-conversion";
+import { normalizeToRequestLogEntry } from "@/main/domain/mcp-core/log/log-conversion";
 import { usePlatformAPI } from "@/main/infrastructure/platform-api";
 
 interface RequestLogsParams {

@@ -12,7 +12,7 @@ import {
   connectToMCPServer,
   fetchServerTools,
   substituteArgsParameters,
-} from "@/main/infrastructure/mcp/mcp-client-util";
+} from "@/main/domain/mcp-core/client/mcp-client-util";
 
 /**
  * サーバー情報を表す型

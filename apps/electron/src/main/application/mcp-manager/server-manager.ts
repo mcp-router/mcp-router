@@ -5,12 +5,12 @@ import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import {
   getServerService,
   ServerService,
-} from "@/main/domain/server/server-service";
+} from "@/main/domain/mcp-core/server/server-service";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   connectToMCPServer,
   substituteArgsParameters,
-} from "@/main/infrastructure/mcp/mcp-client-util";
+} from "@/main/domain/mcp-core/client/mcp-client-util";
 import { RequestLogEntry } from "./types";
 import { LoggingService } from "./logging";
 
@@ -187,7 +187,7 @@ export class ServerManager {
   private removeServerFromTokens(serverId: string): void {
     try {
       const tokenService =
-        require("@/main/application/token-service").getTokenService();
+        require("@/main/domain/mcp-core/token/token-service").getTokenService();
       const allTokens = tokenService.listTokens();
 
       for (const token of allTokens) {

@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getTokenService } from "@/main/application/token-service";
+import { getTokenService } from "@/main/domain/mcp-core/token/token-service";
 import { TokenScope } from "@mcp_router/shared";
 
 export function setupTokenHandlers(): void {

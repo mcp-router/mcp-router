@@ -20,7 +20,7 @@ import {
   TooltipProvider,
 } from "@mcp_router/ui";
 import { AgentConfig, MCPServerConfig } from "@mcp_router/shared";
-import { extractServerVariables } from "@/main/domain/server/shared/server-variable-utils";
+import { extractServerVariables } from "@/main/domain/mcp-core/server/shared/server-variable-utils";
 import {
   Card,
   CardContent,

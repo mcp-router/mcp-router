@@ -4,8 +4,8 @@ import {
   TokenValidationResult,
   TokenScope,
 } from "@mcp_router/shared";
-import { SingletonService } from "./singleton-service";
-import { getTokenRepository } from "../infrastructure/database";
+import { SingletonService } from "../../../application/singleton-service";
+import { getTokenRepository } from "../../../infrastructure/database";
 import crypto from "crypto";
 
 /**

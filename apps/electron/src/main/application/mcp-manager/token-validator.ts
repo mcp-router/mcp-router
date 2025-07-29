@@ -1,5 +1,5 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
-import { getTokenService } from "@/main/application/token-service";
+import { getTokenService } from "@/main/domain/mcp-core/token/token-service";
 
 export class TokenValidator {
   private tokenService: any;

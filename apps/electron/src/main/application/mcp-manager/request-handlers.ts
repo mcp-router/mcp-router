@@ -4,7 +4,7 @@ import { MCPServer } from "@mcp_router/shared";
 import {
   applyDisplayRules,
   applyRulesToInputSchema,
-} from "@/main/domain/rule/rule-utils";
+} from "@/main/domain/mcp-core/rule/rule-utils";
 import {
   parseResourceUri,
   createResourceUri,
