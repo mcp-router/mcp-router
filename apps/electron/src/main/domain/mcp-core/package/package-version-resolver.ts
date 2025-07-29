@@ -5,9 +5,9 @@
  */
 
 import * as semver from "semver";
-import { run, commandExists } from "@/lib/get-env";
+import { run, commandExists } from "@/main/utils/env-utils";
 import { installPNPM, installUV } from "./install-package-manager";
-import { logError } from "@/shared/utils/logger";
+import { logError } from "@/main/infrastructure/logger/logger";
 import { PackageUpdateInfo, ServerPackageUpdates } from "@mcp_router/shared";
 
 /**

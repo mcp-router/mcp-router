@@ -9,7 +9,7 @@ import {
   parseResourceUri,
   createResourceUri,
   createUriVariants,
-} from "@/shared/utils/uri-utils";
+} from "@/main/utils/uri-utils";
 import { RequestLogEntry } from "./types";
 import { LoggingService } from "./logging";
 import { ServerManager } from "./server-manager";

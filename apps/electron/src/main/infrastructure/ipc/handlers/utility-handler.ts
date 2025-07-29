@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { commandExists } from "@/lib/get-env";
+import { commandExists } from "@/main/utils/env-utils";
 
 export function setupUtilityHandlers(): void {
   // Check if a command exists in user shell environment

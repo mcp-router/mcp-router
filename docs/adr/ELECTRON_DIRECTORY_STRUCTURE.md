@@ -20,29 +20,17 @@ Electron アプリケーションのディレクトリ構造が複雑化し、�
 apps/electron/src/
 ├── main/                    # メインプロセス
 │   ├── domain/             # ドメイン層（ビジネスロジック）
-│   │   ├── server/         # MCPサーバー管理
-│   │   ├── workspace/      # ワークスペース管理
-│   │   ├── auth/           # 認証・認可
-│   │   └── agent/          # エージェント管理
-│   │       ├── development/
-│   │       ├── deployed/
-│   │       └── shared/
 │   ├── infrastructure/     # インフラストラクチャ層
 │   │   ├── database/       # データベースアクセス
 │   │   ├── ipc/            # IPC通信
 │   │   │   └── handlers/   # IPCハンドラー
 │   │   └── platform-api/   # Platform API実装
 │   └── application/        # アプリケーション層
-│       ├── mcp-manager/    # MCPマネージャー
-│       └── *.ts            # アプリケーションサービス
 ├── renderer/               # レンダラープロセス（旧frontend）
 │   ├── components/         # UIコンポーネント
 │   ├── stores/             # 状態管理（Zustand）
 │   ├── hooks/              # カスタムフック
 │   └── lib/                # レンダラー用ユーティリティ
-├── shared/                 # 共有コード
-│   ├── types/              # 型定義
-│   └── constants/          # 定数
 └── lib/                    # 共通ユーティリティ
     └── utils/
         └── backend/        # バックエンド用ユーティリティ

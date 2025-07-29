@@ -2,8 +2,8 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { getUserShellEnv } from "@/lib/get-env";
-import { logError, logInfo } from "@/shared/utils/logger";
+import { getUserShellEnv } from "@/main/utils/env-utils";
+import { logError, logInfo } from "@/main/infrastructure/logger/logger";
 import { MCPConnectionResult, IMCPServerConfig } from "@mcp_router/shared";
 
 /**

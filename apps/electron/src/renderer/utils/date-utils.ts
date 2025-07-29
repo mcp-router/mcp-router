@@ -21,13 +21,6 @@ export function getDateInstance(date?: string | number | Date | dayjs.Dayjs) {
 }
 
 /**
- * 日付をYYYY-MM-DD形式に変換
- */
-function formatDateBucket(date?: string | number | Date | dayjs.Dayjs) {
-  return getDateInstance(date).format("YYYY-MM-DD");
-}
-
-/**
  * i18nを使用して時間をフォーマット
  */
 export function formatDateI18n(

@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import { isAgentConfigured } from "@/main/domain/agent/shared/agent-utils";
 import { McpSettings } from "@/renderer/components/agent/create/McpSettings";
 import { useAgentStore } from "../../../stores";
-import { cn } from "@/shared/ui/tailwind-utils";
+import { cn } from "@/renderer/utils/tailwind-utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp_router/ui";
 import { toast } from "sonner";
 import { usePlatformAPI } from "@/main/infrastructure/platform-api";

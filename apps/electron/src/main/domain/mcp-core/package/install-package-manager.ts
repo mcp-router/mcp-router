@@ -8,7 +8,7 @@
  */
 
 import * as os from "os";
-import { commandExists, run } from "@/lib/get-env";
+import { commandExists, run } from "@/main/utils/env-utils";
 
 /* ---------- uv ---------- */
 export async function installUV() {

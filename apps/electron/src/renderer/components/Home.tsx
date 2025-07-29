@@ -12,7 +12,7 @@ import {
   IconRefresh,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/shared/ui/tailwind-utils";
+import { cn } from "@/renderer/utils/tailwind-utils";
 import { Trash, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useServerStore, useWorkspaceStore, useAuthStore } from "../stores";

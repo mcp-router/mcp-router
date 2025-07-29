@@ -9,7 +9,7 @@ import {
 import { AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@mcp_router/ui";
-import { parseErrorMessage } from "@/shared/error/error-message-utils";
+import { parseErrorMessage } from "@/renderer/utils/error-message-utils";
 import { Button } from "@mcp_router/ui";
 
 interface ServerErrorModalProps {

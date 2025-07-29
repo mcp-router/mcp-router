@@ -4,7 +4,7 @@ import {
   MCPAgentToolPermission,
   BaseAgentInfo,
 } from "@mcp_router/shared";
-import { logError, logInfo } from "@/shared/utils/logger";
+import { logError, logInfo } from "@/main/infrastructure/logger/logger";
 
 /**
  * エージェントの共通ベースクラス
