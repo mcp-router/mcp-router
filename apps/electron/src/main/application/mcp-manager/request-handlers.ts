@@ -4,13 +4,13 @@ import { MCPServer } from "@mcp_router/shared";
 import {
   applyDisplayRules,
   applyRulesToInputSchema,
-} from "@/lib/utils/backend/rule-utils";
+} from "@/main/domain/rule/rule-utils";
 import {
   parseResourceUri,
   createResourceUri,
   createUriVariants,
-} from "@/lib/utils/uri-utils";
-import { summarizeResponse } from "@/lib/utils/response-utils";
+} from "@/shared/utils/uri-utils";
+import { summarizeResponse } from "@/main/infrastructure/api/response-utils";
 import { RequestLogEntry } from "./types";
 import { LoggingService } from "./logging";
 import { ServerManager } from "./server-manager";

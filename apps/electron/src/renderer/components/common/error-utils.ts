@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { parseErrorMessage } from "@/lib/utils/error-message-utils";
+import { parseErrorMessage } from "@/shared/error/error-message-utils";
 
 /**
  * Display server-specific error messages with enhanced context

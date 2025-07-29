@@ -4,7 +4,7 @@ import {
 } from "@mcp_router/shared";
 import { getDeployedAgentRepository } from "../../../infrastructure/database";
 import { DeployedAgent } from "./deployed-agent";
-import { logError, logInfo } from "../../../../lib/utils/backend/error-handler";
+import { logError, logInfo } from "@/main/infrastructure/error/error-handler";
 import { SingletonService } from "../../../application/singleton-service";
 
 /**

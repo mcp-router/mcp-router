@@ -10,7 +10,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   connectToMCPServer,
   substituteArgsParameters,
-} from "@/lib/utils/backend/mcp-client-util";
+} from "@/main/infrastructure/mcp/mcp-client-util";
 import { RequestLogEntry } from "./types";
 import { LoggingService } from "./logging";
 

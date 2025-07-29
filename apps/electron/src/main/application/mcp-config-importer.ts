@@ -8,7 +8,7 @@ import {
   cursorConfig,
   vscodeConfig,
   exists,
-} from "../../lib/utils/backend/mcp-app-paths";
+} from "@/main/infrastructure/mcp/mcp-app-paths";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import { app } from "electron";

@@ -2,8 +2,8 @@ import {
   AgentConfig,
   DeployedAgent as DeployedAgentType,
 } from "@mcp_router/shared";
-import { logError, logInfo } from "../../../../lib/utils/backend/error-handler";
-import { fetchWithTokenJson } from "../../../../lib/utils/backend/fetch-utils";
+import { logError, logInfo } from "@/main/infrastructure/error/error-handler";
+import { fetchWithTokenJson } from "@/shared/http/fetch-utils";
 import { SingletonService } from "../../../application/singleton-service";
 
 /**

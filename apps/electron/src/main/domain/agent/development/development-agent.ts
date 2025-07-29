@@ -6,7 +6,7 @@ import {
 } from "@mcp_router/shared";
 import { AgentBase } from "../shared/agent-base";
 import { BaseAgentInfo } from "@mcp_router/shared";
-import { logError, logInfo } from "../../../../lib/utils/backend/error-handler";
+import { logError, logInfo } from "@/main/infrastructure/error/error-handler";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   connectToMCPServer,
@@ -14,7 +14,7 @@ import {
   fetchServerResources,
   readServerResource,
   substituteArgsParameters,
-} from "../../../../lib/utils/backend/mcp-client-util";
+} from "@/main/infrastructure/mcp/mcp-client-util";
 
 /**
  * サーバー情報を表す型

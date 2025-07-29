@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { formatDateI18n } from "@/lib/utils/date-utils";
+import { formatDateI18n } from "@/shared/utils/date-utils";
 import { RequestLogEntry } from "@mcp_router/shared";
 import { Card } from "@mcp_router/ui";
 

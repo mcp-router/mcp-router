@@ -12,7 +12,7 @@ import { Button } from "@mcp_router/ui";
 import { Card } from "@mcp_router/ui";
 import { ScrollArea } from "@mcp_router/ui";
 import { useTranslation } from "react-i18next";
-import { formatDateI18n } from "@/lib/utils/date-utils";
+import { formatDateI18n } from "@/shared/utils/date-utils";
 
 interface LogDetailModalProps {
   log: RequestLogEntry;

@@ -22,7 +22,7 @@ import {
 import {
   validateMcpServerJson,
   processMcpServerConfigs,
-} from "../../../../lib/utils/mcp-server-utils";
+} from "@/main/domain/server/shared/mcp-server-utils";
 import { toast } from "sonner";
 import { Textarea } from "@mcp_router/ui";
 import { Alert, AlertDescription, AlertTitle } from "@mcp_router/ui";
@@ -204,7 +204,7 @@ const Manual: React.FC = () => {
         }
       }
 
-      const success = results.some((r) => r.success);
+      const success = results.some((r: any) => r.success);
 
       if (success) {
         // Show success message

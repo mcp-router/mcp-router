@@ -2,7 +2,7 @@ import process from "node:process";
 import { execa } from "execa";
 import stripAnsi from "strip-ansi";
 import { userInfo } from "node:os";
-import { logInfo } from "./utils/backend/error-handler";
+import { logInfo } from "@/main/infrastructure/error/error-handler";
 
 const DELIMITER = "_ENV_DELIMITER_";
 
@@ -121,12 +121,10 @@ const detectDefaultShell = () => {
     return env.COMSPEC || "cmd.exe";
   }
 
-  try {
-    const { shell } = userInfo();
-    if (shell) {
-      return shell;
-    }
-  } catch {}
+  const { shell } = userInfo();
+  if (shell) {
+    return shell;
+  }
 
   if (process.platform === "darwin") {
     return env.SHELL || "/bin/zsh";

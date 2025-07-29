@@ -9,7 +9,7 @@ import {
   cursorConfig,
   vscodeConfig,
   exists,
-} from "../../lib/utils/backend/mcp-app-paths";
+} from "@/main/infrastructure/mcp/mcp-app-paths";
 import {
   syncServersFromClientConfig,
   extractConfigInfo,

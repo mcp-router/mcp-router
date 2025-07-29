@@ -3,14 +3,14 @@ import { useOutletContext, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AgentConfig, DeployedAgent } from "@mcp_router/shared";
 import { AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils/tailwind-utils";
+import { cn } from "@/shared/ui/tailwind-utils";
 import { Message } from "@ai-sdk/react";
 import ChatInterface from "@/renderer/components/agent/create/ChatInterface";
 import ChatSessions from "./ChatSessions";
-import { isAgentConfigured } from "@/lib/utils/agent-utils";
+import { isAgentConfigured } from "@/main/domain/agent/shared/agent-utils";
 import { useAgentStore } from "../../../stores";
 import { usePlatformAPI } from "@/main/infrastructure/platform-api";
-import { parseErrorMessage } from "@/lib/utils/error-message-utils";
+import { parseErrorMessage } from "@/shared/error/error-message-utils";
 
 /**
  * エージェントチャットコンポーネント
