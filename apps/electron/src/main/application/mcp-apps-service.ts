@@ -511,7 +511,7 @@ async function checkApp(
     );
     if (customApp) {
       token = token || customApp.token || "";
-      serverIds = serverIds || customApp.serverIds;
+      serverIds = customApp.serverIds || serverIds;
       isCustom = true;
     }
 
@@ -519,7 +519,7 @@ async function checkApp(
     let scopes: TokenScope[] = [];
     if (!token && appTokens.length > 0) {
       token = appTokens[0].id;
-      serverIds = serverIds || appTokens[0].serverIds;
+      serverIds = appTokens[0].serverIds || serverIds;
       scopes = appTokens[0].scopes || [];
     }
 
@@ -557,11 +557,17 @@ async function checkApp(
       }
     }
 
-    // トークンからスコープを取得
-    if (token && !scopes.length) {
+    // トークンからスコープとserverIdsを取得
+    if (token) {
       const tokenObj = allTokens.find((t) => t.id === token);
       if (tokenObj) {
-        scopes = tokenObj.scopes || [];
+        if (!scopes.length) {
+          scopes = tokenObj.scopes || [];
+        }
+        // serverIdsがまだ空の場合、トークンから取得
+        if (!serverIds.length) {
+          serverIds = tokenObj.serverIds || [];
+        }
       }
     }
 
