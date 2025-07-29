@@ -7,7 +7,7 @@
 import * as semver from "semver";
 import { run, commandExists } from "@/main/utils/env-utils";
 import { installPNPM, installUV } from "./install-package-manager";
-import { logError } from "@/main/infrastructure/logger/logger";
+import { logError } from "@/main/utils/logger";
 import { PackageUpdateInfo, ServerPackageUpdates } from "@mcp_router/shared";
 
 /**

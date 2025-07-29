@@ -2,7 +2,7 @@ import { getSettingsService } from "@/main/application/settings/settings-service
 import { API_BASE_URL, mainWindow } from "../../../main";
 import crypto from "crypto";
 import { shell } from "electron";
-import { fetchWithToken } from "@/main/infrastructure/http/fetch-utils";
+import { fetchWithToken } from "@/main/utils/fetch-utils";
 import { machineIdSync } from "node-machine-id";
 import { PKCEAuthState } from "@mcp_router/shared";
 

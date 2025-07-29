@@ -3,7 +3,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { getUserShellEnv } from "@/main/utils/env-utils";
-import { logError, logInfo } from "@/main/infrastructure/logger/logger";
+import { logError, logInfo } from "@/main/utils/logger";
 import { MCPConnectionResult, IMCPServerConfig } from "@mcp_router/shared";
 
 /**
