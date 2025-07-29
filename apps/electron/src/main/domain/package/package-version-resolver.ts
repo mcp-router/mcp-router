@@ -10,7 +10,7 @@ import {
   installPNPM,
   installUV,
 } from "@/main/infrastructure/package/install-package-manager";
-import { logError } from "@/main/infrastructure/error/error-handler";
+import { logError } from "@/shared/utils/logger";
 import { PackageUpdateInfo, ServerPackageUpdates } from "@mcp_router/shared";
 
 /**

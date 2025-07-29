@@ -1,4 +1,4 @@
-import { logError } from "@/main/infrastructure/error/error-handler";
+import { logError } from "@/shared/utils/logger";
 
 /**
  * 基本サービスクラス

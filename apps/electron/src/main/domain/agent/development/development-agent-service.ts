@@ -8,7 +8,7 @@ import { getAgentRepository } from "../../../infrastructure/database";
 import { getServerService } from "../../server/server-service";
 import { DevelopmentAgent } from "./development-agent";
 import { v4 as uuidv4 } from "uuid";
-import { logError, logInfo } from "@/main/infrastructure/error/error-handler";
+import { logError, logInfo } from "@/shared/utils/logger";
 import { SingletonService } from "../../../application/singleton-service";
 
 /**

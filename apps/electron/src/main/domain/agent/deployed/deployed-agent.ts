@@ -6,7 +6,7 @@ import {
 } from "@mcp_router/shared";
 import { AgentBase } from "../shared/agent-base";
 import { BaseAgentInfo } from "@mcp_router/shared";
-import { logError, logInfo } from "@/main/infrastructure/error/error-handler";
+import { logError, logInfo } from "@/shared/utils/logger";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   connectToMCPServer,
