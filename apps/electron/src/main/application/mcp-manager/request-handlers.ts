@@ -10,7 +10,6 @@ import {
   createResourceUri,
   createUriVariants,
 } from "@/shared/utils/uri-utils";
-import { summarizeResponse } from "@/main/infrastructure/api/response-utils";
 import { RequestLogEntry } from "./types";
 import { LoggingService } from "./logging";
 import { ServerManager } from "./server-manager";
@@ -138,7 +137,7 @@ export class RequestHandlers {
       });
 
       // Log success
-      logEntry.response = summarizeResponse(result);
+      logEntry.response = result;
       logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
       this.loggingService.recordRequestLog(logEntry, serverName);
 
@@ -484,7 +483,7 @@ export class RequestHandlers {
       }
 
       // Log success
-      logEntry.response = summarizeResponse(response);
+      logEntry.response = response;
       logEntry.duration = Date.now() - startTime;
       this.loggingService.recordRequestLog(logEntry, serverName);
 
@@ -643,7 +642,7 @@ export class RequestHandlers {
       });
 
       // Log success
-      logEntry.response = summarizeResponse(result);
+      logEntry.response = result;
       logEntry.duration = Date.now() - startTime;
       this.loggingService.recordRequestLog(logEntry, serverName);
 
