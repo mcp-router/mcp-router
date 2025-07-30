@@ -95,3 +95,4 @@ out/
 test-results/
 playwright-report/
 e2e/screenshots/
+.test-data/

@@ -22,10 +22,10 @@
     "knip": "cd ../.. && knip --workspace apps/electron",
     "postinstall": "electron-rebuild",
     "rebuild": "electron-rebuild",
-    "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e": "playwright test --config=e2e/playwright-electron.config.ts",
+    "test:e2e:headed": "playwright test --config=e2e/playwright-electron.config.ts --headed",
+    "test:e2e:debug": "playwright test --config=e2e/playwright-electron.config.ts --debug",
+    "test:e2e:ui": "playwright test --config=e2e/playwright-electron.config.ts --ui"
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",
