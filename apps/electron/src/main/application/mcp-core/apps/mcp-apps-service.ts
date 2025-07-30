@@ -8,6 +8,7 @@ import {
   windsurfConfig,
   cursorConfig,
   vscodeConfig,
+  claudeCodeConfig,
   exists,
 } from "@/main/domain/mcp-core/client/mcp-app-paths";
 import {
@@ -28,6 +29,7 @@ import {
 // 標準アプリの定義
 const STANDARD_APPS = [
   { id: "claude", name: "Claude", configPathFn: claudeConfig },
+  { id: "claudeCode", name: "Claude Code", configPathFn: claudeCodeConfig },
   { id: "cline", name: "Cline", configPathFn: clineConfig },
   { id: "windsurf", name: "Windsurf", configPathFn: windsurfConfig },
   { id: "cursor", name: "Cursor", configPathFn: cursorConfig },
@@ -156,7 +158,7 @@ async function updateAppConfig(
   // 既存の設定を読み込む
   let config = installed ? await readConfigFile(configPath) : {};
 
-  // VSCodeとその他のアプリで異なる設定構造を処理
+  // VSCodeとClaude Codeとその他のアプリで異なる設定構造を処理
   if (isVSCodeApp(appName)) {
     config = createVSCodeConfig(tokenId, config);
   } else {

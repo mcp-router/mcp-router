@@ -105,6 +105,10 @@ function vscodeConfig() {
   }
 }
 
+function claudeCodeConfig() {
+  return path.join(HOME, ".claude", "settings.json");
+}
+
 /* ── 補助：存在チェック付きで返すユーティリティ (optional) ───────────────── */
 
 async function exists(filePath: string) {
@@ -122,5 +126,6 @@ export {
   windsurfConfig,
   clineConfig,
   vscodeConfig,
+  claudeCodeConfig,
   exists,
 };

@@ -41,6 +41,7 @@ import { McpApp, McpAppsManagerResult } from "@mcp_router/shared";
 // Map standard app names (lowercase) to icons
 const appIcons: { [key: string]: string } = {
   claude: claudeIcon,
+  claudecode: claudeIcon,
   cline: clineIcon,
   windsurf: windsurfIcon,
   cursor: cursorIcon,
