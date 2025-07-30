@@ -1,5 +1,6 @@
 import path from "path";
 import { promises as fsPromises } from "fs";
+import { app } from "electron";
 import { getTokenService } from "../../../domain/mcp-core/token/token-service";
 import { getServerService } from "../../../domain/mcp-core/server/server-service";
 import {
@@ -28,12 +29,22 @@ import {
 
 // 標準アプリの定義
 const STANDARD_APPS = [
-  { id: "claude", name: "Claude", configPathFn: claudeConfig },
-  { id: "claudeCode", name: "Claude Code", configPathFn: claudeCodeConfig },
-  { id: "cline", name: "Cline", configPathFn: clineConfig },
-  { id: "windsurf", name: "Windsurf", configPathFn: windsurfConfig },
-  { id: "cursor", name: "Cursor", configPathFn: cursorConfig },
-  { id: "vscode", name: "VSCode", configPathFn: vscodeConfig },
+  { id: "claude", name: "Claude", configPathFn: claudeConfig, icon: "claude" },
+  {
+    id: "claudeCode",
+    name: "Claude Code",
+    configPathFn: claudeCodeConfig,
+    icon: "claude",
+  },
+  { id: "cline", name: "Cline", configPathFn: clineConfig, icon: "cline" },
+  {
+    id: "windsurf",
+    name: "Windsurf",
+    configPathFn: windsurfConfig,
+    icon: "windsurf",
+  },
+  { id: "cursor", name: "Cursor", configPathFn: cursorConfig, icon: "cursor" },
+  { id: "vscode", name: "VSCode", configPathFn: vscodeConfig, icon: "vscode" },
 ];
 
 /**
@@ -42,7 +53,7 @@ const STANDARD_APPS = [
  */
 function getAppConfigPath(name: string): string {
   const standardApp = STANDARD_APPS.find(
-    (app) => app.id === name.toLowerCase(),
+    (app) => app.id.toLowerCase() === name.toLowerCase(),
   );
   return standardApp ? standardApp.configPathFn() : "";
 }
@@ -53,9 +64,44 @@ function getAppConfigPath(name: string): string {
 function isStandardApp(name: string): boolean {
   return STANDARD_APPS.some(
     (app) =>
-      app.id === name.toLowerCase() ||
+      app.id.toLowerCase() === name.toLowerCase() ||
       app.name.toLowerCase() === name.toLowerCase(),
   );
+}
+
+/**
+ * アイコンSVGファイルを読み込む
+ */
+async function loadIconSvg(iconName: string): Promise<string | undefined> {
+  try {
+    const iconPath = path.join(
+      app.getAppPath(),
+      "public",
+      "images",
+      "apps",
+      `${iconName}.svg`,
+    );
+    const svgContent = await fsPromises.readFile(iconPath, "utf8");
+    return svgContent;
+  } catch (error) {
+    console.error(`Failed to load icon ${iconName}:`, error);
+    return undefined;
+  }
+}
+
+/**
+ * 標準アプリのアイコンを取得
+ */
+async function getStandardAppIcon(name: string): Promise<string | undefined> {
+  const standardApp = STANDARD_APPS.find(
+    (app) =>
+      app.id.toLowerCase() === name.toLowerCase() ||
+      app.name.toLowerCase() === name.toLowerCase(),
+  );
+  if (standardApp?.icon) {
+    return await loadIconSvg(standardApp.icon);
+  }
+  return undefined;
 }
 
 /**
@@ -178,7 +224,7 @@ async function getAdditionalApps(): Promise<McpApp[]> {
     const tokens = tokenService.listTokens();
 
     // 標準アプリでないトークンだけをフィルタリング
-    const standardAppIds = STANDARD_APPS.map((app) => app.id);
+    const standardAppIds = STANDARD_APPS.map((app) => app.id.toLowerCase());
 
     const additionalAppTokens = tokens.filter(
       (token) => !standardAppIds.includes(token.clientId),
@@ -198,6 +244,7 @@ async function getAdditionalApps(): Promise<McpApp[]> {
           serverIds: token.serverIds,
           isCustom: true,
           scopes: token.scopes || [],
+          icon: undefined,
         };
       }),
     );
@@ -241,6 +288,7 @@ async function getAppInfo(
       serverIds: token.serverIds,
       isCustom: true,
       scopes,
+      icon: undefined,
     };
   }
 }
@@ -507,15 +555,15 @@ async function checkApp(
     let hasOtherServers = false;
 
     // カスタムアプリ情報の取得
-    const customApps = await getAdditionalApps();
-    const customApp = customApps.find(
-      (app) => app.name.toLowerCase() === name.toLowerCase(),
-    );
-    if (customApp) {
-      token = token || customApp.token || "";
-      serverIds = customApp.serverIds || serverIds;
-      isCustom = true;
-    }
+    // const customApps = await getAdditionalApps();
+    // const customApp = customApps.find(
+    //   (app) => app.name.toLowerCase() === name.toLowerCase(),
+    // );
+    // if (customApp) {
+    //   token = token || customApp.token || "";
+    //   serverIds = customApp.serverIds || serverIds;
+    //   isCustom = true;
+    // }
 
     // トークンがまだ不明な場合は、アプリトークンから取得
     let scopes: TokenScope[] = [];
@@ -583,6 +631,7 @@ async function checkApp(
       isCustom,
       hasOtherServers,
       scopes,
+      icon: await getStandardAppIcon(name),
     };
   } catch (error) {
     return {
@@ -591,6 +640,7 @@ async function checkApp(
       configPath,
       configured: false,
       scopes: [],
+      icon: await getStandardAppIcon(name),
     };
   }
 }

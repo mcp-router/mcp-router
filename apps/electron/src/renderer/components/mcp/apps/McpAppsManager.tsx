@@ -26,27 +26,7 @@ import { toast } from "sonner";
 import { TokenScope } from "@mcp_router/shared";
 import { ScrollArea } from "@mcp_router/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp_router/ui";
-// @ts-ignore
-import claudeIcon from "../../../../../../../public/images/apps/claude.svg";
-// @ts-ignore
-import clineIcon from "../../../../../../../public/images/apps/cline.svg";
-// @ts-ignore
-import windsurfIcon from "../../../../../../../public/images/apps/windsurf.svg";
-// @ts-ignore
-import cursorIcon from "../../../../../../../public/images/apps/cursor.svg";
-// @ts-ignore
-import vsCodeIcon from "../../../../../../../public/images/apps/vscode.svg";
 import { McpApp, McpAppsManagerResult } from "@mcp_router/shared";
-
-// Map standard app names (lowercase) to icons
-const appIcons: { [key: string]: string } = {
-  claude: claudeIcon,
-  claudecode: claudeIcon,
-  cline: clineIcon,
-  windsurf: windsurfIcon,
-  cursor: cursorIcon,
-  vscode: vsCodeIcon,
-};
 
 const McpAppsManager: React.FC = () => {
   const { t } = useTranslation();
@@ -378,20 +358,26 @@ const McpAppsManager: React.FC = () => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
           {apps.map((app) => {
-            const appNameLower = app.name.toLowerCase();
-            const iconSrc = appIcons[appNameLower]; // Get icon based on lowercase name
-
             return (
               <Card key={app.name} className="overflow-hidden">
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      {/* Display icon if it's a standard app */}
-                      {iconSrc && (
-                        <img
-                          src={iconSrc}
-                          alt={`${app.name} icon`}
-                          className="w-6 h-6"
+                      {/* Display icon if available from backend */}
+                      {app.icon && (
+                        <div
+                          className="w-6 h-6 flex items-center justify-center"
+                          style={{ 
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: app.icon.replace(
+                              /<svg/g,
+                              '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"'
+                            )
+                          }}
                         />
                       )}
                       <CardTitle className="truncate max-w-[150px]">

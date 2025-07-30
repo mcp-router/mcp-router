@@ -10,6 +10,7 @@ export interface McpApp {
   isCustom?: boolean; // カスタムアプリかどうか
   hasOtherServers?: boolean; // McpAppで、他のMCPサーバが設定されているかどうか（例：VSCodeで他のMCPサーバも設定されている）
   scopes: TokenScope[]; // トークンのスコープ
+  icon?: string; // アプリのアイコン（SVGやBase64など）
 }
 
 export interface McpAppsManagerResult {
