@@ -30,12 +30,6 @@ import {
 // 標準アプリの定義
 const STANDARD_APPS = [
   { id: "claude", name: "Claude", configPathFn: claudeConfig, icon: "claude" },
-  {
-    id: "claudeCode",
-    name: "Claude Code",
-    configPathFn: claudeCodeConfig,
-    icon: "claude",
-  },
   { id: "cline", name: "Cline", configPathFn: clineConfig, icon: "cline" },
   {
     id: "windsurf",
