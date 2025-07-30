@@ -367,16 +367,16 @@ const McpAppsManager: React.FC = () => {
                       {app.icon && (
                         <div
                           className="w-6 h-6 flex items-center justify-center"
-                          style={{ 
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
-                          dangerouslySetInnerHTML={{ 
+                          dangerouslySetInnerHTML={{
                             __html: app.icon.replace(
                               /<svg/g,
-                              '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"'
-                            )
+                              '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
+                            ),
                           }}
                         />
                       )}
