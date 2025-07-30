@@ -55,6 +55,24 @@
       "dependsOn": ["^build"],
       "env": ["NODE_ENV"],
       "passThroughEnv": ["CI"]
+    },
+    "test:e2e": {
+      "dependsOn": ["package"],
+      "cache": false,
+      "env": ["CI", "NODE_ENV"],
+      "passThroughEnv": ["DISPLAY", "XAUTHORITY"]
+    },
+    "test:e2e:headed": {
+      "dependsOn": ["package"],
+      "cache": false
+    },
+    "test:e2e:debug": {
+      "dependsOn": ["package"],
+      "cache": false
+    },
+    "test:e2e:ui": {
+      "dependsOn": ["package"],
+      "cache": false
     }
   }
 }

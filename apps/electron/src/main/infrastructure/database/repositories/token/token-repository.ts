@@ -21,10 +21,30 @@ export class TokenRepository extends BaseRepository<Token> {
 
   /**
    * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
-   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
+    try {
+      // tokensテーブルを作成（存在しない場合）
+      this.db.execute(`
+        CREATE TABLE IF NOT EXISTS tokens (
+          id TEXT PRIMARY KEY,
+          client_id TEXT NOT NULL,
+          issued_at INTEGER NOT NULL,
+          server_ids TEXT NOT NULL,
+          scopes TEXT DEFAULT '[]'
+        )
+      `);
+
+      // インデックスを作成
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)",
+      );
+
+      console.log("[TokenRepository] テーブルの初期化が完了しました");
+    } catch (error) {
+      console.error("[TokenRepository] テーブルの初期化中にエラー:", error);
+      throw error;
+    }
   }
 
   /**

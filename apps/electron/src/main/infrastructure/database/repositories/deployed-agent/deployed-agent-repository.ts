@@ -22,10 +22,49 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
 
   /**
    * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
-   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
+    try {
+      // deployedAgentsテーブルを作成（存在しない場合）
+      this.db.execute(`
+        CREATE TABLE IF NOT EXISTS deployedAgents (
+          id TEXT PRIMARY KEY,
+          original_id TEXT NOT NULL DEFAULT '',
+          name TEXT NOT NULL,
+          description TEXT NOT NULL DEFAULT '',
+          mcp_servers TEXT NOT NULL,
+          purpose TEXT NOT NULL,
+          instructions TEXT NOT NULL,
+          tool_permissions TEXT NOT NULL DEFAULT '{}',
+          auto_execute_tool INTEGER NOT NULL DEFAULT 0,
+          mcp_server_enabled INTEGER DEFAULT 0,
+          tags TEXT NOT NULL DEFAULT '[]',
+          status TEXT NOT NULL DEFAULT 'development',
+          deployed_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          deployment_config TEXT,
+          last_used_at TEXT,
+          user_id TEXT
+        )
+      `);
+
+      // インデックスを作成
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_deployed_agents_deployed ON deployedAgents(deployed_at)",
+      );
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_deployed_agents_last_used ON deployedAgents(last_used_at)",
+      );
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_deployed_agents_status ON deployedAgents(status)",
+      );
+
+      console.log("[DeployedAgentRepository] テーブルの初期化が完了しました");
+    } catch (error) {
+      console.error("[DeployedAgentRepository] テーブルの初期化中にエラー:", error);
+      throw error;
+    }
   }
 
   /**

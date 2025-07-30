@@ -35,6 +35,7 @@ export class DatabaseMigration {
    * 新しいマイグレーションを追加する場合はここに追加する
    */
   private registerMigrations(): void {
+
     // ServerRepository関連のマイグレーション
     this.migrations.push({
       id: "20250601_add_server_type_column",
@@ -185,6 +186,7 @@ export class DatabaseMigration {
   // ==========================================================================
   // Server Repository関連のマイグレーション
   // ==========================================================================
+
 
   /**
    * server_type列を追加するマイグレーション
@@ -765,23 +767,8 @@ export class DatabaseMigration {
    */
   private migrateEnsureTokensTableInMainDb(db: SqliteManager): void {
     try {
-      // tokensテーブルの作成（存在しない場合）
-      db.execute(`
-        CREATE TABLE IF NOT EXISTS tokens (
-          id TEXT PRIMARY KEY,
-          client_id TEXT NOT NULL,
-          issued_at INTEGER NOT NULL,
-          server_ids TEXT NOT NULL,
-          scopes TEXT DEFAULT '[]'
-        )
-      `);
-
-      // インデックスの作成
-      db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)",
-      );
-
-      console.log("tokensテーブルがメインDBに作成されました");
+      // tokensテーブルの作成はTokenRepositoryで行うため、ここでは何もしない
+      console.log("tokensテーブルの作成はTokenRepositoryに委譲されます");
     } catch (error) {
       console.error("tokensテーブルの作成中にエラーが発生しました:", error);
       throw error;

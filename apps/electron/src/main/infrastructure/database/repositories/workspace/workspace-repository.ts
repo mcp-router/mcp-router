@@ -13,10 +13,40 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
 
   /**
    * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
-   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
+    try {
+      // workspacesテーブルを作成（存在しない場合）
+      this.db.execute(`
+        CREATE TABLE IF NOT EXISTS workspaces (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          type TEXT NOT NULL CHECK(type IN ('local', 'remote')),
+          isActive INTEGER NOT NULL DEFAULT 0,
+          createdAt TEXT NOT NULL,
+          lastUsedAt TEXT NOT NULL,
+          localConfig TEXT,
+          remoteConfig TEXT,
+          displayInfo TEXT
+        )
+      `);
+
+      // インデックスを作成
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_workspaces_active ON workspaces(isActive)",
+      );
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_workspaces_type ON workspaces(type)",
+      );
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_workspaces_last_used ON workspaces(lastUsedAt)",
+      );
+
+      console.log("[WorkspaceRepository] テーブルの初期化が完了しました");
+    } catch (error) {
+      console.error("[WorkspaceRepository] テーブルの初期化中にエラー:", error);
+      throw error;
+    }
   }
 
   /**

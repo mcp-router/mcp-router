@@ -32,10 +32,73 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
 
   /**
    * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
-   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
+    try {
+      // requestLogsテーブルを作成（存在しない場合）
+      this.db.execute(`
+        CREATE TABLE IF NOT EXISTS requestLogs (
+          id TEXT PRIMARY KEY,
+          timestamp INTEGER NOT NULL,
+          client_id TEXT NOT NULL,
+          client_name TEXT NOT NULL,
+          server_id TEXT NOT NULL,
+          server_name TEXT NOT NULL,
+          request_type TEXT NOT NULL,
+          request_params TEXT,
+          response_data TEXT,
+          response_status TEXT NOT NULL,
+          duration INTEGER NOT NULL,
+          error_message TEXT
+        )
+      `);
+
+      // インデックスを作成
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_request_logs_timestamp ON requestLogs(timestamp)",
+      );
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_request_logs_client_id ON requestLogs(client_id)",
+      );
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_request_logs_server_id ON requestLogs(server_id)",
+      );
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_request_logs_request_type ON requestLogs(request_type)",
+      );
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_request_logs_response_status ON requestLogs(response_status)",
+      );
+
+      // logs_metadataテーブルを作成（存在しない場合）
+      this.db.execute(`
+        CREATE TABLE IF NOT EXISTS logs_metadata (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+        )
+      `);
+
+      // メタデータの初期値を設定
+      const metadataKeys = ["client_ids", "server_ids", "request_types"];
+      for (const key of metadataKeys) {
+        const exists = this.db.get(
+          "SELECT 1 FROM logs_metadata WHERE key = :key",
+          { key },
+        );
+        if (!exists) {
+          this.db.execute(
+            "INSERT INTO logs_metadata (key, value) VALUES (:key, :value)",
+            { key, value: JSON.stringify([]) },
+          );
+        }
+      }
+
+      console.log("[LogRepository] テーブルの初期化が完了しました");
+    } catch (error) {
+      console.error("[LogRepository] テーブルの初期化中にエラー:", error);
+      throw error;
+    }
   }
 
   /**

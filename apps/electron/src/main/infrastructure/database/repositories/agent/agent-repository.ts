@@ -22,10 +22,41 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
 
   /**
    * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
-   * 注: スキーマのマイグレーションはDatabaseMigrationクラスで一元管理されます
    */
   protected initializeTable(): void {
-    // 初期化処理はDatabaseMigrationで行うため、ここでは何もしない
+    try {
+      // agentsテーブルを作成（存在しない場合）
+      this.db.execute(`
+        CREATE TABLE IF NOT EXISTS agents (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          mcp_servers TEXT NOT NULL,
+          tool_permissions TEXT NOT NULL DEFAULT '{}',
+          purpose TEXT NOT NULL,
+          instructions TEXT NOT NULL,
+          description TEXT,
+          auto_execute_tool INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+          version TEXT NOT NULL DEFAULT '1.0.0',
+          status TEXT NOT NULL DEFAULT 'development',
+          tags TEXT NOT NULL DEFAULT '[]'
+        )
+      `);
+
+      // インデックスを作成
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_agents_status ON agents(status)",
+      );
+      this.db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_agents_created ON agents(created_at)",
+      );
+
+      console.log("[AgentRepository] テーブルの初期化が完了しました");
+    } catch (error) {
+      console.error("[AgentRepository] テーブルの初期化中にエラー:", error);
+      throw error;
+    }
   }
 
   /**
