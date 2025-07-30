@@ -167,17 +167,15 @@ export class RemotePlatformAPI implements PlatformAPI {
         id: log.id,
         timestamp: new Date(log.timestamp),
         clientId: log.clientId,
+        clientName: log.clientName,
         serverId: log.serverId,
+        serverName: log.serverName,
         requestType: log.requestType,
+        requestParams: log.requestParams,
         responseStatus: log.responseStatus,
+        responseData: log.responseData,
         duration: log.duration,
-        error: log.errorMessage,
-        details: {
-          clientName: log.clientName,
-          serverName: log.serverName,
-          requestParams: log.requestParams,
-          responseData: log.responseData,
-        },
+        errorMessage: log.errorMessage,
       }));
 
       return {

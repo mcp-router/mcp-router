@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { RequestLogEntry } from "@mcp_router/shared";
-import { normalizeToRequestLogEntry } from "@/main/domain/mcp-core/log/log-conversion";
 import { usePlatformAPI } from "@/main/infrastructure/platform-api";
 
 interface RequestLogsParams {
@@ -64,12 +63,8 @@ export const useRequestLogs = (
       });
 
       if (Array.isArray(result.logs)) {
-        // 型変換ユーティリティを使用して正規化
-        const requestLogs: RequestLogEntry[] = result.logs.map(
-          normalizeToRequestLogEntry,
-        );
-
-        setLogs(requestLogs);
+        // result.logsは既にRequestLogEntry[]型として扱う
+        setLogs(result.logs as RequestLogEntry[]);
         setTotal(result.total);
         setNextCursor(result.nextCursor);
         setHasMore(result.hasMore);

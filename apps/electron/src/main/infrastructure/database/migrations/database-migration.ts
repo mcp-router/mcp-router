@@ -35,7 +35,6 @@ export class DatabaseMigration {
    * 新しいマイグレーションを追加する場合はここに追加する
    */
   private registerMigrations(): void {
-
     // ServerRepository関連のマイグレーション
     this.migrations.push({
       id: "20250601_add_server_type_column",
@@ -186,7 +185,6 @@ export class DatabaseMigration {
   // ==========================================================================
   // Server Repository関連のマイグレーション
   // ==========================================================================
-
 
   /**
    * server_type列を追加するマイグレーション

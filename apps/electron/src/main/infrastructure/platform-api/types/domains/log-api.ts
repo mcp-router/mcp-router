@@ -26,14 +26,17 @@ export interface LogQueryOptions extends LogFilters, CursorPaginationOptions {}
 
 export interface LogEntry {
   id: string;
-  timestamp: Date;
+  timestamp: Date | number;
   clientId: string;
+  clientName: string;
   serverId: string;
+  serverName: string;
   requestType: string;
+  requestParams?: any;
   responseStatus: "success" | "error";
+  responseData?: any;
   duration?: number;
-  error?: string;
-  details?: any;
+  errorMessage?: string;
 }
 
 /**

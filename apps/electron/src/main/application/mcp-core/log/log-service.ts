@@ -4,9 +4,6 @@ import {
   RequestLogEntryInput,
   RequestLogQueryOptions,
   RequestLogQueryResult,
-  ClientStats,
-  ServerStats,
-  RequestTypeStats,
 } from "@mcp_router/shared";
 import { getLogRepository } from "../../../infrastructure/database";
 
@@ -78,76 +75,6 @@ export class LogService extends SingletonService<
         total: 0,
         hasMore: false,
       });
-    }
-  }
-
-  /**
-   * 利用可能なクライアントIDのリストを取得
-   */
-  public getAvailableClientIds(): string[] {
-    try {
-      return getLogRepository().getAvailableClientIds();
-    } catch (error) {
-      return this.handleError("クライアントIDリストの取得", error, []);
-    }
-  }
-
-  /**
-   * リクエストタイプのリストを取得
-   */
-  public getAvailableRequestTypes(): string[] {
-    try {
-      return getLogRepository().getAvailableRequestTypes();
-    } catch (error) {
-      return this.handleError("リクエストタイプリストの取得", error, []);
-    }
-  }
-
-  /**
-   * クライアント別リクエスト統計情報を取得
-   */
-  public getClientStats(): ClientStats[] {
-    try {
-      return getLogRepository().getClientStats();
-    } catch (error) {
-      return this.handleError("クライアント統計情報の取得", error, []);
-    }
-  }
-
-  /**
-   * サーバ別リクエスト統計情報を取得
-   */
-  public getServerStats(): ServerStats[] {
-    try {
-      return getLogRepository().getServerStats();
-    } catch (error) {
-      return this.handleError("サーバ統計情報の取得", error, []);
-    }
-  }
-
-  /**
-   * リクエストタイプ別統計情報を取得
-   */
-  public getRequestTypeStats(): RequestTypeStats[] {
-    try {
-      return getLogRepository().getRequestTypeStats();
-    } catch (error) {
-      return this.handleError("リクエストタイプ統計情報の取得", error, []);
-    }
-  }
-
-  /**
-   * クライアントIDから名前を取得
-   */
-  public getClientNameById(clientId: string): string {
-    try {
-      return getLogRepository().getClientNameById(clientId);
-    } catch (error) {
-      return this.handleError(
-        "クライアント名の取得",
-        error,
-        `client-${clientId.substring(0, 8)}`,
-      );
     }
   }
 
