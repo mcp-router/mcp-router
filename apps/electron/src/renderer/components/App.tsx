@@ -207,52 +207,54 @@ const App: React.FC = () => {
       />
 
       <SidebarComponent />
-      <main className="flex flex-col flex-1 w-full min-w-0 overflow-auto pt-8">
-        {/*<SidebarTrigger />*/}
+      <main className="flex flex-col flex-1 w-full min-w-0 overflow-auto">
+        <div className="flex flex-col flex-1 pt-8">
+          {/*<SidebarTrigger />*/}
 
-        <Routes>
-          {/* Public routes - no authentication required */}
-          <Route element={<PageLayout />}>
-            <Route path="/" element={<Navigate to="/servers" replace />} />
-            <Route path="/servers" element={<Home />} />
-            <Route path="/servers/add" element={<DiscoverWrapper />} />
-            <Route path="/clients" element={<McpAppsManager />} />
-            <Route path="/logs" element={<LogViewer />} />
-            <Route path="/rules" element={<Rules />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route
-              path="/settings/workspaces"
-              element={
-                <React.Suspense fallback={<LoadingIndicator />}>
-                  <WorkspaceManagement />
-                </React.Suspense>
-              }
-            />
-          </Route>
-
-          {/* Agent routes - authentication required */}
-          <Route
-            path="/agents"
-            element={
-              <AgentAuthGuard>
-                <PageLayout />
-              </AgentAuthGuard>
-            }
-          >
-            <Route path="build" element={<AgentBuild />} />
-            <Route path="build/edit/:id" element={<AgentCreate />} />
-            <Route path="use" element={<DeployedAgents />} />
-            <Route path="use/:id" element={<AgentUse />}>
-              <Route path="chat" element={<AgentChat key="chat" />} />
+          <Routes>
+            {/* Public routes - no authentication required */}
+            <Route element={<PageLayout />}>
+              <Route path="/" element={<Navigate to="/servers" replace />} />
+              <Route path="/servers" element={<Home />} />
+              <Route path="/servers/add" element={<DiscoverWrapper />} />
+              <Route path="/clients" element={<McpAppsManager />} />
+              <Route path="/logs" element={<LogViewer />} />
+              <Route path="/rules" element={<Rules />} />
+              <Route path="/settings" element={<Settings />} />
               <Route
-                path="settings"
-                element={<AgentSettings key="settings" />}
+                path="/settings/workspaces"
+                element={
+                  <React.Suspense fallback={<LoadingIndicator />}>
+                    <WorkspaceManagement />
+                  </React.Suspense>
+                }
               />
             </Route>
-          </Route>
 
-          <Route path="*" element={<Navigate to="/servers" />} />
-        </Routes>
+            {/* Agent routes - authentication required */}
+            <Route
+              path="/agents"
+              element={
+                <AgentAuthGuard>
+                  <PageLayout />
+                </AgentAuthGuard>
+              }
+            >
+              <Route path="build" element={<AgentBuild />} />
+              <Route path="build/edit/:id" element={<AgentCreate />} />
+              <Route path="use" element={<DeployedAgents />} />
+              <Route path="use/:id" element={<AgentUse />}>
+                <Route path="chat" element={<AgentChat key="chat" />} />
+                <Route
+                  path="settings"
+                  element={<AgentSettings key="settings" />}
+                />
+              </Route>
+            </Route>
+
+            <Route path="*" element={<Navigate to="/servers" />} />
+          </Routes>
+        </div>
       </main>
     </SidebarProvider>
   );
