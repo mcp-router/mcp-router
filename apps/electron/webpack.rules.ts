@@ -40,7 +40,12 @@ export const rules: Required<ModuleOptions>["rules"] = [
   },
   // Add support for image files
   {
-    test: /\.(png|jpe?g|gif|svg|ico)$/i,
+    test: /\.(png|jpe?g|gif|ico)$/i,
     type: "asset/resource",
+  },
+  // Add support for SVG files as strings
+  {
+    test: /\.svg$/i,
+    type: "asset/source",
   },
 ];

@@ -1,6 +1,5 @@
 import path from "path";
 import { promises as fsPromises } from "fs";
-import { app } from "electron";
 import { getTokenService } from "../../../domain/mcp-core/token/token-service";
 import { getServerService } from "../../../domain/mcp-core/server/server-service";
 import {
@@ -23,6 +22,22 @@ import {
   StandardAppConfig,
   VSCodeAppConfig,
 } from "@mcp_router/shared";
+
+// SVGアイコンのインポート
+import claudeIcon from "../../../../../public/images/apps/claude.svg";
+import clineIcon from "../../../../../public/images/apps/cline.svg";
+import windsurfIcon from "../../../../../public/images/apps/windsurf.svg";
+import cursorIcon from "../../../../../public/images/apps/cursor.svg";
+import vscodeIcon from "../../../../../public/images/apps/vscode.svg";
+
+// アイコンのマッピング
+const ICON_MAP: Record<string, string> = {
+  claude: claudeIcon,
+  cline: clineIcon,
+  windsurf: windsurfIcon,
+  cursor: cursorIcon,
+  vscode: vscodeIcon,
+};
 
 // 標準アプリの定義
 const STANDARD_APPS = [
@@ -61,36 +76,16 @@ function isStandardApp(name: string): boolean {
 }
 
 /**
- * アイコンSVGファイルを読み込む
- */
-async function loadIconSvg(iconName: string): Promise<string | undefined> {
-  try {
-    const iconPath = path.join(
-      app.getAppPath(),
-      "public",
-      "images",
-      "apps",
-      `${iconName}.svg`,
-    );
-    const svgContent = await fsPromises.readFile(iconPath, "utf8");
-    return svgContent;
-  } catch (error) {
-    console.error(`Failed to load icon ${iconName}:`, error);
-    return undefined;
-  }
-}
-
-/**
  * 標準アプリのアイコンを取得
  */
-async function getStandardAppIcon(name: string): Promise<string | undefined> {
+function getStandardAppIcon(name: string): string | undefined {
   const standardApp = STANDARD_APPS.find(
     (app) =>
       app.id.toLowerCase() === name.toLowerCase() ||
       app.name.toLowerCase() === name.toLowerCase(),
   );
   if (standardApp?.icon) {
-    return await loadIconSvg(standardApp.icon);
+    return ICON_MAP[standardApp.icon];
   }
   return undefined;
 }
@@ -622,7 +617,7 @@ async function checkApp(
       isCustom,
       hasOtherServers,
       scopes,
-      icon: await getStandardAppIcon(name),
+      icon: getStandardAppIcon(name),
     };
   } catch (error) {
     return {
@@ -631,7 +626,7 @@ async function checkApp(
       configPath,
       configured: false,
       scopes: [],
-      icon: await getStandardAppIcon(name),
+      icon: getStandardAppIcon(name),
     };
   }
 }
