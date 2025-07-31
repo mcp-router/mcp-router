@@ -1,4 +1,5 @@
 import { app, Menu, MenuItemConstructorOptions } from "electron";
+import { isProduction } from "@/main/utils/environment";
 
 /**
  * Creates and returns the application menu
@@ -82,7 +83,7 @@ function createApplicationMenu(): Menu {
  */
 export function setApplicationMenu(): void {
   const menu = createApplicationMenu();
-  if (app.isPackaged) {
+  if (isProduction()) {
     Menu.setApplicationMenu(menu);
   }
 }

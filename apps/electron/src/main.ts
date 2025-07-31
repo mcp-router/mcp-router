@@ -11,6 +11,11 @@ import { getPlatformAPIManager } from "@/main/application/workspace/platform-api
 import { getWorkspaceService } from "./main/domain/workspace/workspace-service";
 import { setupIpcHandlers } from "./main/infrastructure/ipc";
 import { getIsAutoUpdateInProgress } from "./main/infrastructure/ipc/handlers/update-handler";
+import {
+  initializeEnvironment,
+  isDevelopment,
+  isProduction,
+} from "@/main/utils/environment";
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -91,7 +96,7 @@ const createWindow = () => {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       contextIsolation: true,
       nodeIntegration: false,
-      devTools: !app.isPackaged,
+      devTools: isDevelopment(),
     },
   };
 
@@ -145,7 +150,7 @@ const createWindow = () => {
     mainWindow = null;
   });
 
-  if (!app.isPackaged) {
+  if (isDevelopment()) {
     mainWindow.webContents.openDevTools();
   }
 };
@@ -153,17 +158,17 @@ const createWindow = () => {
 const createBackgroundWindow = () => {
   // Create the background window for agent chat processing
   backgroundWindow = new BrowserWindow({
-    width: app.isPackaged ? 1 : 800,
-    height: app.isPackaged ? 1 : 600,
-    show: !app.isPackaged, // Show during development for debugging
-    frame: !app.isPackaged,
-    skipTaskbar: app.isPackaged,
+    width: isProduction() ? 1 : 800,
+    height: isProduction() ? 1 : 600,
+    show: isDevelopment(), // Show during development for debugging
+    frame: isDevelopment(),
+    skipTaskbar: isProduction(),
     title: "Background Chat Window",
     webPreferences: {
       preload: BACKGROUND_WINDOW_PRELOAD_WEBPACK_ENTRY,
       contextIsolation: true,
       nodeIntegration: false,
-      devTools: !app.isPackaged,
+      devTools: isDevelopment(),
     },
   });
 
@@ -174,7 +179,7 @@ const createBackgroundWindow = () => {
     backgroundWindow = null;
   });
 
-  if (!app.isPackaged) {
+  if (isDevelopment()) {
     // Open dev tools for debugging background window
     backgroundWindow.webContents.openDevTools();
   }
@@ -274,6 +279,8 @@ function initUI(): void {
  * アプリケーション全体の初期化を行う
  */
 async function initApplication(): Promise<void> {
+  // 環境設定を初期化
+  initializeEnvironment();
   const DEV_CSP = `
     default-src 'self' 'unsafe-inline' http://localhost:* ws://localhost:*;
     script-src 'self' 'unsafe-eval' 'unsafe-inline';

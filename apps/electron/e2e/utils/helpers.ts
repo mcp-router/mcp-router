@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, ElectronApplication } from '@playwright/test';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -13,50 +13,52 @@ export async function waitForAppReady(page: Page) {
   await page.waitForTimeout(1000);
 }
 
-export async function clearTestData() {
-  // Clear test workspace data if exists
-  const testDataPath = path.join(process.env.HOME || '', '.mcp-router-test');
-  try {
-    await fs.rm(testDataPath, { recursive: true, force: true });
-  } catch (error) {
-    // Ignore if doesn't exist
-  }
-}
-
-export async function takeScreenshot(page: Page, name: string) {
-  const screenshotDir = path.join(__dirname, '../screenshots');
-  await fs.mkdir(screenshotDir, { recursive: true });
+/**
+ * Get the main window (the one with #root element, not the background window)
+ */
+export async function getMainWindow(electronApp: ElectronApplication): Promise<Page | null> {
+  const allWindows = await electronApp.windows();
   
-  await page.screenshot({
-    path: path.join(screenshotDir, `${name}-${Date.now()}.png`),
-    fullPage: true,
-  });
+  for (const window of allWindows) {
+    try {
+      // Check if this window has #root element (main window)
+      const hasRootElement = await window.evaluate(() => {
+        return document.querySelector('#root') !== null;
+      });
+      
+      if (hasRootElement) {
+        return window;
+      }
+    } catch (error) {
+      // Window might be closed or not ready
+      console.log('Failed to check window for #root element:', error);
+    }
+  }
+  
+  return null;
 }
 
-export async function mockElectronAPI(page: Page) {
-  await page.addInitScript(() => {
-    // Mock electron API for testing
-    window.electronAPI = {
-      auth: {
-        login: async () => ({ success: true }),
-        logout: async () => ({ success: true }),
-        getAuthState: async () => ({ isAuthenticated: true }),
-      },
-      workspace: {
-        list: async () => [{ id: '1', name: 'Default' }],
-        create: async () => ({ id: '2', name: 'Test Workspace' }),
-        switch: async () => ({ success: true }),
-      },
-      server: {
-        list: async () => [],
-        create: async () => ({ id: '1', name: 'Test Server' }),
-        start: async () => ({ success: true }),
-        stop: async () => ({ success: true }),
-      },
-    };
-  });
-}
-
-export function generateTestId(): string {
-  return `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+/**
+ * Get the background window (the one with #background-root element)
+ */
+export async function getBackgroundWindow(electronApp: ElectronApplication): Promise<Page | null> {
+  const allWindows = await electronApp.windows();
+  
+  for (const window of allWindows) {
+    try {
+      // Check if this window has #background-root element (background window)
+      const hasBackgroundRootElement = await window.evaluate(() => {
+        return document.querySelector('#background-root') !== null;
+      });
+      
+      if (hasBackgroundRootElement) {
+        return window;
+      }
+    } catch (error) {
+      // Window might be closed or not ready
+      console.log('Failed to check window for #background-root element:', error);
+    }
+  }
+  
+  return null;
 }

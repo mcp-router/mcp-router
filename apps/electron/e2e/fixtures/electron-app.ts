@@ -1,5 +1,6 @@
 import { test as base, Page, ElectronApplication, _electron as electron } from '@playwright/test';
 import path from 'path';
+import { getMainWindow } from '../utils/helpers';
 
 export type TestFixtures = {
   electronApp: ElectronApplication;
@@ -12,15 +13,21 @@ export const test = base.extend<TestFixtures>({
     const appPath = path.join(__dirname, '../../.webpack/arm64/main/index.js');
     
     const app = await electron.launch({
-      args: [appPath],
+      args: [appPath, '--env=production'],
     });
     
-    // Wait for the first window to open
-    const window = await app.firstWindow();
+    // Wait for app to start up
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Get the main visible window
+    const mainWindow = await getMainWindow(app);
+    if (!mainWindow) {
+      throw new Error('No visible window found');
+    }
     
     // Wait for app to be ready
-    await window.waitForLoadState('domcontentloaded');
-    await window.waitForTimeout(2000); // Give app time to initialize
+    await mainWindow.waitForLoadState('domcontentloaded');
+    await mainWindow.waitForTimeout(1000); // Give app time to initialize
     
     await use(app);
     
@@ -29,16 +36,14 @@ export const test = base.extend<TestFixtures>({
   },
   
   page: async ({ electronApp }, use) => {
-    const page = await electronApp.firstWindow();
+    const page = await getMainWindow(electronApp);
+    if (!page) {
+      throw new Error('No visible window found');
+    }
     
     // Wait for app to be ready
     await page.waitForLoadState('domcontentloaded');
-    
-    // Add custom test attributes for better element selection
-    await page.addInitScript(() => {
-      window.electronAPI = window.electronAPI || {};
-    });
-    
+
     await use(page);
   },
 });
