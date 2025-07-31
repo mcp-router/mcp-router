@@ -24,8 +24,6 @@ import {
   VSCodeAppConfig,
 } from "@mcp_router/shared";
 
-// 対応アプリが多くて複雑になってきたら、ストラテジーパターンに分けることを検討
-
 // 標準アプリの定義
 const STANDARD_APPS = [
   { id: "claude", name: "Claude", configPathFn: claudeConfig, icon: "claude" },
