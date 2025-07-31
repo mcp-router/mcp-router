@@ -6,11 +6,8 @@ export async function waitForAppReady(page: Page) {
   // Wait for the app to be fully loaded
   await page.waitForLoadState('domcontentloaded');
   
-  // Wait for React to render
-  await page.waitForFunction(() => {
-    const root = document.getElementById('root');
-    return root && root.children.length > 0;
-  });
+  // Wait for React to render - using locator instead of waitForFunction to avoid CSP issues
+  await page.locator('#root > *').waitFor({ state: 'visible' });
   
   // Additional wait for any initial loading states
   await page.waitForTimeout(1000);

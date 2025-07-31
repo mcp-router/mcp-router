@@ -11,14 +11,14 @@ const BackgroundChatManager: React.FC = () => {
 
   // セッション完了時のコールバック
   const handleSessionComplete = (backgroundSessionKey: string) => {
-    console.log(
-      "Removing completed session from memory:",
-      backgroundSessionKey,
-    );
+    // console.log(
+    //   "Removing completed session from memory:",
+    //   backgroundSessionKey,
+    // );
     setChatSessions((prev) => {
       const newSessions = new Map(prev);
       newSessions.delete(backgroundSessionKey);
-      console.log("Remaining sessions:", newSessions.size);
+      // console.log("Remaining sessions:", newSessions.size);
       return newSessions;
     });
   };

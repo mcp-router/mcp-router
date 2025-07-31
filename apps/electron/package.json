@@ -23,6 +23,7 @@
     "postinstall": "electron-rebuild",
     "rebuild": "electron-rebuild",
     "test:e2e": "pnpm make && cp package.json .webpack/arm64/main/ && playwright test --config=e2e/playwright-electron.config.ts",
+    "test:e2e:only": "playwright test --config=e2e/playwright-electron.config.ts",
     "test:e2e:headed": "pnpm make && cp package.json .webpack/arm64/main/ && playwright test --config=e2e/playwright-electron.config.ts --headed"
   },
   "dependencies": {

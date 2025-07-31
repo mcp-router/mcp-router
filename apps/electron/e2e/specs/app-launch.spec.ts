@@ -61,7 +61,13 @@ test.describe('App Launch', () => {
     await electronApp.close();
     
     // Verify app is closed
-    const finalWindows = await electronApp.windows().catch(() => []);
+    let finalWindows: any[] = [];
+    try {
+      finalWindows = await electronApp.windows();
+    } catch (error) {
+      // App is closed, windows() will throw
+      finalWindows = [];
+    }
     expect(finalWindows.length).toBe(0);
   });
 });
