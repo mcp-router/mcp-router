@@ -1,6 +1,5 @@
 import { test, expect } from '../fixtures/electron-app';
 import { waitForAppReady } from '../utils/helpers';
-import { TIMEOUTS } from '../utils/constants';
 
 test.describe('App Launch', () => {
   test('should launch the application successfully', async ({ electronApp, page }) => {
