@@ -31,8 +31,7 @@ export type ClientType =
   | "claude"
   | "cline"
   | "windsurf"
-  | "cursor"
-  | "claudeCode";
+  | "cursor";
 
 // Configuration with client type
 export interface ClientConfig {

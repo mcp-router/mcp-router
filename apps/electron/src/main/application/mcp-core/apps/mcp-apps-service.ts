@@ -9,7 +9,6 @@ import {
   windsurfConfig,
   cursorConfig,
   vscodeConfig,
-  claudeCodeConfig,
   exists,
 } from "@/main/domain/mcp-core/client/mcp-app-paths";
 import {
