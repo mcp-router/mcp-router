@@ -31,10 +31,3 @@ jobs:
         
       - name: Run typecheck
         run: pnpm run typecheck
-        
-#      - name: Run knip
-#        run: pnpm run knip
-#
-#      - name: Run lint
-#        run: pnpm run lint
-        
