@@ -3,6 +3,7 @@ export * from "./theme-store";
 export * from "./ui-store";
 export * from "./server-editing-store";
 export * from "./workspace-store";
+export * from "./view-preferences-store";
 
 // Platform-dependent store factories
 export * from "./server-store";

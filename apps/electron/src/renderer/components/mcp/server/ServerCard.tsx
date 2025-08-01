@@ -35,7 +35,9 @@ export const ServerCard: React.FC<ServerCardProps> = ({
   return (
     <Card>
       <div
-        className={onClick ? "cursor-pointer transition-colors hover:bg-muted/50" : ""}
+        className={
+          onClick ? "cursor-pointer transition-colors hover:bg-muted/50" : ""
+        }
         onClick={onClick}
       >
         <CardHeader className="pb-2">
@@ -94,11 +96,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({
             {server.tags && server.tags.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {server.tags.map((tag, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="text-xs"
-                  >
+                  <Badge key={index} variant="secondary" className="text-xs">
                     {tag}
                   </Badge>
                 ))}

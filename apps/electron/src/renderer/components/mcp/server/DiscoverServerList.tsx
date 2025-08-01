@@ -11,7 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@mcp_router/ui";
-import { LoadingState, EmptyState, ServerCard } from "../common";
+import { LoadingCard, MessageCard } from "../common";
+import { ServerCard } from "@/renderer/components/mcp/server/ServerCard";
 
 interface DiscoverServerListProps {
   remoteServers: LocalMCPServer[];
@@ -33,12 +34,12 @@ const DiscoverServerList: React.FC<DiscoverServerListProps> = ({
   const { t } = useTranslation();
 
   if (isLoading) {
-    return <LoadingState message={t("discoverServers.loading")} />;
+    return <LoadingCard message={t("discoverServers.loading")} />;
   }
 
   if (remoteServers.length === 0) {
     return (
-      <EmptyState
+      <MessageCard
         icon={
           <svg
             xmlns="http://www.w3.org/2000/svg"

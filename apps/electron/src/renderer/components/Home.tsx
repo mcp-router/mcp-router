@@ -13,14 +13,20 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/renderer/utils/tailwind-utils";
-import { Trash, AlertCircle } from "lucide-react";
+import { Trash, AlertCircle, Grid3X3, List } from "lucide-react";
 import { toast } from "sonner";
-import { useServerStore, useWorkspaceStore, useAuthStore } from "../stores";
+import {
+  useServerStore,
+  useWorkspaceStore,
+  useAuthStore,
+  useViewPreferencesStore,
+} from "../stores";
 import { showServerError } from "@/renderer/components/common";
 
 // Import components
 import ServerDetails from "@/renderer/components/mcp/server/ServerDetails";
 import { ServerErrorModal } from "@/renderer/components/common/ServerErrorModal";
+import { ServerCardCompact } from "@/renderer/components/mcp/server/ServerCardCompact";
 import { Link } from "react-router-dom";
 import { Button } from "@mcp_router/ui";
 import {
@@ -51,6 +57,7 @@ const Home: React.FC = () => {
   // Get workspace and auth state
   const { currentWorkspace } = useWorkspaceStore();
   const { isAuthenticated, login } = useAuthStore();
+  const { serverViewMode, setServerViewMode } = useViewPreferencesStore();
 
   // Filter servers based on search query and sort them
   const filteredServers = servers
@@ -156,6 +163,26 @@ const Home: React.FC = () => {
           />
           <IconSearch className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         </div>
+        <div className="flex gap-1">
+          <Button
+            variant={serverViewMode === "list" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setServerViewMode("list")}
+            className="h-8 w-8 p-0"
+            title="List View"
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={serverViewMode === "grid" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setServerViewMode("grid")}
+            className="h-8 w-8 p-0"
+            title="Grid View"
+          >
+            <Grid3X3 className="h-4 w-4" />
+          </Button>
+        </div>
         <Button
           variant="outline"
           size="sm"
@@ -193,7 +220,7 @@ const Home: React.FC = () => {
               </div>
             </div>
           </div>
-        ) : (
+        ) : serverViewMode === "list" ? (
           <ScrollArea className="h-full">
             <div className="divide-y divide-border">
               {filteredServers.map((server) => {
@@ -393,6 +420,56 @@ const Home: React.FC = () => {
                     {/* Expanded Server Details Section */}
                     {isExpanded && <ServerDetails server={server} />}
                   </div>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        ) : (
+          <ScrollArea className="h-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+              {filteredServers.map((server) => {
+                const isExpanded = expandedServerId === server.id;
+
+                return (
+                  <React.Fragment key={server.id}>
+                    <ServerCardCompact
+                      server={server}
+                      isExpanded={isExpanded}
+                      onClick={() => toggleServerExpand(server.id)}
+                      onToggle={async (checked) => {
+                        try {
+                          if (checked) {
+                            await startServer(server.id);
+                            toast.success(t("serverList.serverStarted"));
+                          } else {
+                            await stopServer(server.id);
+                            toast.success(t("serverList.serverStopped"));
+                          }
+                        } catch (error) {
+                          console.error("Server operation failed:", error);
+                          showServerError(
+                            error instanceof Error
+                              ? error
+                              : new Error(String(error)),
+                            server.name,
+                          );
+                        }
+                      }}
+                      onRemove={() => {
+                        setServerToRemove(server);
+                        setIsRemoveDialogOpen(true);
+                      }}
+                      onError={() => {
+                        setErrorServer(server);
+                        setErrorModalOpen(true);
+                      }}
+                    />
+                    {isExpanded && (
+                      <div className="md:col-span-2 lg:col-span-3 -mt-4 mb-4">
+                        <ServerDetails server={server} />
+                      </div>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </div>

@@ -63,14 +63,20 @@ class PostHogService {
     }
   }
 
-  private sanitizeProperties(properties?: Record<string, any>): Record<string, any> {
+  private sanitizeProperties(
+    properties?: Record<string, any>,
+  ): Record<string, any> {
     if (!properties) {
       return {};
     }
 
     const sanitized: Record<string, any> = {};
     for (const [key, value] of Object.entries(properties)) {
-      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
         sanitized[key] = value;
       } else if (Array.isArray(value)) {
         sanitized[key] = value.length;

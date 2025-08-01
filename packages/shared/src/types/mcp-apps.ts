@@ -26,12 +26,7 @@ export interface VSCodeAppConfig {
 }
 
 // Client type definition
-export type ClientType =
-  | "vscode"
-  | "claude"
-  | "cline"
-  | "windsurf"
-  | "cursor";
+export type ClientType = "vscode" | "claude" | "cline" | "windsurf" | "cursor";
 
 // Configuration with client type
 export interface ClientConfig {

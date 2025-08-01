@@ -1,3 +1,2 @@
-export { LoadingState } from './LoadingState';
-export { EmptyState } from './EmptyState';
-export { ServerCard } from './ServerCard';
+export { LoadingCard } from "./LoadingCard";
+export { MessageCard } from "./MessageCard";
