@@ -34,6 +34,7 @@ import {
 } from "../stores";
 import { usePlatformAPI } from "@/main/infrastructure/platform-api";
 import { IconProgress } from "@tabler/icons-react";
+import { postHogService } from "../services/posthog-service";
 
 // Lazy load components
 const WorkspaceManagement = React.lazy(
@@ -66,6 +67,13 @@ const App: React.FC = () => {
 
         // Check authentication status
         await checkAuthStatus();
+
+        // Initialize PostHog after getting settings
+        const settings = await platformAPI.settings.get();
+        postHogService.initialize({
+          analyticsEnabled: settings.analyticsEnabled ?? true,
+          userId: settings.userId,
+        });
       } catch (error) {
         console.error("Failed to initialize app:", error);
       } finally {
@@ -74,16 +82,26 @@ const App: React.FC = () => {
     };
 
     initializeApp();
-  }, [checkAuthStatus]);
+  }, [checkAuthStatus, platformAPI]);
 
   // Subscribe to authentication changes
   useEffect(() => {
     const unsubscribe = subscribeToAuthChanges();
 
+    // Also subscribe to auth changes for PostHog
+    const authUnsubscribe = platformAPI.auth.onChange(async (status) => {
+      const settings = await platformAPI.settings.get();
+      postHogService.updateConfig({
+        analyticsEnabled: settings.analyticsEnabled ?? true,
+        userId: status.authenticated ? status.userId : undefined,
+      });
+    });
+
     return () => {
       unsubscribe();
+      authUnsubscribe();
     };
-  }, [subscribeToAuthChanges]);
+  }, [subscribeToAuthChanges, platformAPI]);
 
   // Subscribe to protocol URL events
   useEffect(() => {

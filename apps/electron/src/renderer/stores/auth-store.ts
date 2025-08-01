@@ -162,7 +162,7 @@ export const createAuthStore = (
     },
 
     subscribeToAuthChanges: () => {
-      const { setAuthenticated, setUserInfo } = get();
+      const { setAuthenticated, setUserInfo, setUserData } = get();
 
       // Subscribe to auth status changes from Platform API
       const unsubscribe = getPlatformAPI().auth.onChange((status) => {
@@ -174,8 +174,14 @@ export const createAuthStore = (
             creditBalance: status.user?.creditBalance || 0,
             paidCreditBalance: status.user?.paidCreditBalance || 0,
           });
+          setUserData({
+            userId: status.userId,
+          });
         } else {
           setUserInfo(null);
+          setUserData({
+            userId: null,
+          });
         }
       });
 

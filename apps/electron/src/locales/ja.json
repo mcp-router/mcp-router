@@ -224,7 +224,9 @@
     "joinDiscord": "Discordコミュニティに参加",
     "advanced": "高度な設定",
     "loadExternalMCPConfigs": "外部アプリケーションからMCP設定を読み込む",
-    "loadExternalMCPConfigsDescription": "Claude for Desktopなどの他のアプリケーションからサーバー設定をインポートできるようにします"
+    "loadExternalMCPConfigsDescription": "Claude for Desktopなどの他のアプリケーションからサーバー設定をインポートできるようにします",
+    "analytics": "使用状況の送信",
+    "analyticsDescription": "アプリの改善のため、匿名の使用状況データを送信します"
   },
   "agents": {
     "title": "エージェント",

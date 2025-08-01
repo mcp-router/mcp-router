@@ -39,6 +39,12 @@ export interface AppSettings {
    * デフォルト: true
    */
   loadExternalMCPConfigs?: boolean;
+
+  /**
+   * アナリティクスの送信を有効化するか
+   * デフォルト: true
+   */
+  analyticsEnabled?: boolean;
 }
 
 /**
@@ -60,4 +66,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   },
   packageManagerOverlayDisplayCount: 0,
   loadExternalMCPConfigs: true,
+  analyticsEnabled: true,
 };

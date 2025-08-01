@@ -219,7 +219,9 @@
     "joinDiscord": "Join Discord Community",
     "advanced": "Advanced Settings",
     "loadExternalMCPConfigs": "Load MCP configurations from external applications",
-    "loadExternalMCPConfigsDescription": "Allow MCP Router to import server configurations from other applications like Claude for Desktop"
+    "loadExternalMCPConfigsDescription": "Allow MCP Router to import server configurations from other applications like Claude for Desktop",
+    "analytics": "Send usage analytics",
+    "analyticsDescription": "Send anonymous usage data to help improve the app"
   },
   "agents": {
     "title": "Agents",

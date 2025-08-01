@@ -15,12 +15,14 @@ import { useThemeStore } from "@/renderer/stores";
 import { useAuthStore } from "../../stores";
 import { IconBrandDiscord } from "@tabler/icons-react";
 import { electronPlatformAPI as platformAPI } from "../../lib/electron-platform-api";
+import { postHogService } from "../../services/posthog-service";
 
 const Settings: React.FC = () => {
   const { t, i18n } = useTranslation();
   const [isRefreshingCredits, setIsRefreshingCredits] = useState(false);
   const [loadExternalMCPConfigs, setLoadExternalMCPConfigs] =
     useState<boolean>(true);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState<boolean>(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Zustand stores
@@ -67,6 +69,7 @@ const Settings: React.FC = () => {
       try {
         const settings = await platformAPI.settings.get();
         setLoadExternalMCPConfigs(settings.loadExternalMCPConfigs ?? true);
+        setAnalyticsEnabled(settings.analyticsEnabled ?? true);
       } catch {
         // Ignore error and use default value
         console.log("Failed to load settings, using defaults");
@@ -136,6 +139,32 @@ const Settings: React.FC = () => {
       console.error("Failed to save settings:", error);
       // Revert on error
       setLoadExternalMCPConfigs(!checked);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
+  // Handle analytics toggle
+  const handleAnalyticsToggle = async (checked: boolean) => {
+    setAnalyticsEnabled(checked);
+    setIsSavingSettings(true);
+
+    try {
+      const currentSettings = await platformAPI.settings.get();
+      await platformAPI.settings.save({
+        ...currentSettings,
+        analyticsEnabled: checked,
+      });
+
+      // Update PostHog service
+      postHogService.updateConfig({
+        analyticsEnabled: checked,
+        userId: currentSettings.userId,
+      });
+    } catch (error) {
+      console.error("Failed to save analytics settings:", error);
+      // Revert on error
+      setAnalyticsEnabled(!checked);
     } finally {
       setIsSavingSettings(false);
     }
@@ -356,23 +385,36 @@ const Settings: React.FC = () => {
         <CardHeader>
           <CardTitle className="text-xl">{t("settings.advanced")}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <label className="text-sm font-medium">
-                  {t("settings.loadExternalMCPConfigs")}
-                </label>
-                <p className="text-xs text-muted-foreground">
-                  {t("settings.loadExternalMCPConfigsDescription")}
-                </p>
-              </div>
-              <Switch
-                checked={loadExternalMCPConfigs}
-                onCheckedChange={handleExternalMCPConfigsToggle}
-                disabled={isSavingSettings}
-              />
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <label className="text-sm font-medium">
+                {t("settings.loadExternalMCPConfigs")}
+              </label>
+              <p className="text-xs text-muted-foreground">
+                {t("settings.loadExternalMCPConfigsDescription")}
+              </p>
             </div>
+            <Switch
+              checked={loadExternalMCPConfigs}
+              onCheckedChange={handleExternalMCPConfigsToggle}
+              disabled={isSavingSettings}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <label className="text-sm font-medium">
+                {t("settings.analytics")}
+              </label>
+              <p className="text-xs text-muted-foreground">
+                {t("settings.analyticsDescription")}
+              </p>
+            </div>
+            <Switch
+              checked={analyticsEnabled}
+              onCheckedChange={handleAnalyticsToggle}
+              disabled={isSavingSettings}
+            />
           </div>
         </CardContent>
       </Card>

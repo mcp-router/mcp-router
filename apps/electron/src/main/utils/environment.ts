@@ -7,7 +7,7 @@ import { app } from "electron";
 /**
  * 環境タイプの定義
  */
-export type EnvironmentType = "development" | "production";
+type EnvironmentType = "development" | "production";
 
 /**
  * 現在の環境タイプを保持する変数
@@ -52,18 +52,4 @@ export function isProduction(): boolean {
  */
 export function isDevelopment(): boolean {
   return currentEnvironment === "development";
-}
-
-/**
- * 現在の環境タイプを取得
- */
-export function getEnvironment(): EnvironmentType {
-  return currentEnvironment;
-}
-
-/**
- * 環境タイプを動的に設定（主にテスト用）
- */
-export function setEnvironment(env: EnvironmentType): void {
-  currentEnvironment = env;
 }
