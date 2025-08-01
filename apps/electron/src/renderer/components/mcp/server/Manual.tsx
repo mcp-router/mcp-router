@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { usePlatformAPI } from "@/main/infrastructure/platform-api";
 import {
@@ -18,6 +18,7 @@ import {
   ExternalLink,
   HardDrive,
   Globe,
+  FileCode2,
 } from "lucide-react";
 import {
   validateMcpServerJson,
@@ -76,6 +77,12 @@ const Manual: React.FC = () => {
     serverUrl?: string;
   }>({});
   const [autoStart, setAutoStart] = useState(false);
+
+  // DXT Import State
+  const [dxtFile, setDxtFile] = useState<File | null>(null);
+  const [isLoadingDxt, setIsLoadingDxt] = useState(false);
+  const [dxtError, setDxtError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addEnvVar = () => {
     setEnvVars([...envVars, { key: "", value: "" }]);
@@ -142,7 +149,7 @@ const Manual: React.FC = () => {
       }
 
       return { valid: true, jsonData: result.jsonData };
-    } catch (error) {
+    } catch {
       return { valid: false, error: t("importFromJson.errorInvalidJson") };
     }
   };
@@ -227,7 +234,7 @@ const Manual: React.FC = () => {
       } else {
         toast.error(t("importFromJson.errorFailedImport"));
       }
-    } catch (error) {
+    } catch {
       toast.error(t("importFromJson.errorFailedImport"));
       setJsonError(t("importFromJson.errorUnknown"));
     } finally {
@@ -256,6 +263,37 @@ const Manual: React.FC = () => {
     setRemoteValidationErrors({});
     setRemoteServerType("remote");
     setAutoStart(false);
+  };
+
+  const handleDxtFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith(".dxt")) {
+      setDxtError(t("importFromDxt.errorInvalidFile"));
+      return;
+    }
+
+    setDxtFile(file);
+    setDxtError(null);
+  };
+
+  const handleDxtImport = async () => {
+    if (!dxtFile) return;
+
+    setIsLoadingDxt(true);
+    setDxtError(null);
+    // For Electron, we need to save the file to a temporary location
+    // and pass the file path to the main process
+    const arrayBuffer = await dxtFile.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Process the DXT file on the main process
+    const result = await platformAPI.servers.create();
+
+    setIsLoadingDxt(false);
   };
 
   const validateForm = (): boolean => {
@@ -382,10 +420,14 @@ const Manual: React.FC = () => {
   return (
     <div className="p-2 space-y-6">
       <Tabs defaultValue="json" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="json">
             <FileJson className="h-4 w-4 mr-2" />
             {t("manual.importFromJson")}
+          </TabsTrigger>
+          <TabsTrigger value="dxt">
+            <FileCode2 className="h-4 w-4 mr-2" />
+            DXT Import
           </TabsTrigger>
           <TabsTrigger value="local">
             <HardDrive className="h-4 w-4 mr-2" />
@@ -482,6 +524,113 @@ const Manual: React.FC = () => {
                     </Button>
                   </>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* DXT Import Section */}
+        <TabsContent value="dxt">
+          <Card className="w-full">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-lg font-medium">
+                    <FileCode2 className="h-5 w-5 inline-block mr-2" />
+                    Import from DXT File
+                  </CardTitle>
+                  <CardDescription className="mt-1">
+                    Upload a DXT configuration file to import MCP servers
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="pb-4">
+              <div className="flex flex-col space-y-4">
+                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".dxt"
+                    onChange={handleDxtFileSelect}
+                    className="hidden"
+                  />
+                  {dxtFile ? (
+                    <div className="space-y-4">
+                      <FileCode2 className="h-12 w-12 mx-auto text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">{dxtFile.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(dxtFile.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                      <div className="flex gap-2 justify-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setDxtFile(null);
+                            setDxtError(null);
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = "";
+                            }
+                          }}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Remove
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Change File
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-sm text-muted-foreground">
+                        Click to upload or drag and drop
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        DXT files only
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {dxtError && (
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{dxtError}</AlertDescription>
+                  </Alert>
+                )}
+
+                <Button
+                  onClick={handleDxtImport}
+                  disabled={isLoadingDxt || !dxtFile}
+                  className="flex items-center justify-center gap-2 w-full"
+                >
+                  {isLoadingDxt ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                      {t("common.loading")}
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" />
+                      Import Servers
+                    </>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
