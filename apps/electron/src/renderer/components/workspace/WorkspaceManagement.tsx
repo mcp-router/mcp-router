@@ -20,7 +20,7 @@ import {
 } from "@mcp_router/ui";
 import { Monitor, Pencil, Trash2, Plus } from "lucide-react";
 import { useWorkspaceStore } from "@/renderer/stores/workspace-store";
-import { WorkspaceDialog } from "../WorkspaceDialog";
+import { WorkspaceDialog } from "./WorkspaceDialog";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 

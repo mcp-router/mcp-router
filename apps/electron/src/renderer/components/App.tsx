@@ -38,7 +38,7 @@ import { postHogService } from "../services/posthog-service";
 
 // Lazy load components
 const WorkspaceManagement = React.lazy(
-  () => import("./setting/WorkspaceManagement"),
+  () => import("./workspace/WorkspaceManagement"),
 );
 
 // Main App component

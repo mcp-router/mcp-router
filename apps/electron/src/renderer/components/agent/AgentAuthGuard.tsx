@@ -1,7 +1,7 @@
 import React from "react";
 import { useAuthStore } from "@/renderer/stores";
 import { usePlatformAPI } from "@/main/infrastructure/platform-api";
-import { LoginScreen } from "../setup/LoginScreen";
+import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
 
 interface AgentAuthGuardProps {
   children: React.ReactNode;

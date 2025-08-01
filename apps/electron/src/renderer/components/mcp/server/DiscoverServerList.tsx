@@ -1,24 +1,17 @@
 import React from "react";
 import { LocalMCPServer } from "@mcp_router/shared";
-import { RotateCw, Plus, CheckCircle } from "lucide-react";
+import { RotateCw, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@mcp_router/ui";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@mcp_router/ui";
-import { Badge } from "@mcp_router/ui";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@mcp_router/ui";
+import { LoadingState, EmptyState, ServerCard } from "../common";
 
 interface DiscoverServerListProps {
   remoteServers: LocalMCPServer[];
@@ -40,43 +33,32 @@ const DiscoverServerList: React.FC<DiscoverServerListProps> = ({
   const { t } = useTranslation();
 
   if (isLoading) {
-    return (
-      <div className="p-8 text-center flex flex-col items-center justify-center">
-        <RotateCw className="h-8 w-8 animate-spin mb-4" />
-        <p>{t("discoverServers.loading")}</p>
-      </div>
-    );
+    return <LoadingState message={t("discoverServers.loading")} />;
   }
 
   if (remoteServers.length === 0) {
     return (
-      <Card className="mx-auto max-w-md">
-        <CardContent className="pt-6 text-center">
-          <div className="mb-4 text-muted-foreground">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mx-auto opacity-50"
-            >
-              <path d="M18 6 6 18" />
-              <path d="m6 6 12 12" />
-            </svg>
-          </div>
-          <CardTitle className="text-xl mb-2">
-            {t("discoverServers.noServersFound")}
-          </CardTitle>
-          <CardDescription>
-            {t("discoverServers.tryRefreshing")}
-          </CardDescription>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mx-auto opacity-50"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        }
+        title={t("discoverServers.noServersFound")}
+        description={t("discoverServers.tryRefreshing")}
+      />
     );
   }
 
@@ -127,85 +109,14 @@ const DiscoverServerList: React.FC<DiscoverServerListProps> = ({
         )}
 
         {remoteServers.map((server) => (
-          <Card key={server.id}>
-            <div
-              className="cursor-pointer transition-colors hover:bg-muted/50"
-              onClick={() => {
-                const url = `https://mcp-router.net/mcpservers/${encodeURIComponent(server.displayId || server.id)}/`;
-                window.open(url, "_blank");
-              }}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-start">
-                  <div className="flex items-center">
-                    {server.iconUrl && (
-                      <img
-                        src={server.iconUrl}
-                        alt={`${server.name} icon`}
-                        className="w-6 h-6 rounded-sm mr-2 object-cover"
-                      />
-                    )}
-                    <div className="flex items-center">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-lg font-medium">
-                          {server.name}
-                        </CardTitle>
-                        {server.latestVersion && (
-                          <Badge
-                            variant="outline"
-                            className="bg-blue-500/10 text-blue-600 border-blue-200 text-xs"
-                          >
-                            v{server.latestVersion}
-                          </Badge>
-                        )}
-                      </div>
-                      {server.verificationStatus == "verified" && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="ml-1">
-                                <CheckCircle className="h-4 w-4 text-blue-500 inline" />
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{t("discoverServers.verified")}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <CardDescription className="line-clamp-2 mt-1">
-                  {server.description}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="pb-2">
-                <div className="text-xs text-muted-foreground">
-                  <p>
-                    {t("discoverServers.updated")}:{" "}
-                    {new Date(server.updatedAt).toLocaleDateString()}
-                  </p>
-
-                  {server.tags && server.tags.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {server.tags.map((tag, index) => (
-                        <Badge
-                          key={index}
-                          variant="secondary"
-                          className="text-xs"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </div>
-
-            <CardFooter>
+          <ServerCard
+            key={server.id}
+            server={server}
+            onClick={() => {
+              const url = `https://mcp-router.net/mcpservers/${encodeURIComponent(server.displayId || server.id)}/`;
+              window.open(url, "_blank");
+            }}
+            footer={
               <Button
                 onClick={() => onImportServer(server)}
                 disabled={
@@ -231,8 +142,8 @@ const DiscoverServerList: React.FC<DiscoverServerListProps> = ({
                   </>
                 )}
               </Button>
-            </CardFooter>
-          </Card>
+            }
+          />
         ))}
       </div>
     </div>

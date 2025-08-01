@@ -13,7 +13,7 @@ import ServerSearchBox from "./ServerSearchBox";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp_router/ui";
-import { CustomPagination } from "../../ui/CustomPagination";
+import { CustomPagination } from "./CustomPagination";
 import {
   Breadcrumb,
   BreadcrumbList,

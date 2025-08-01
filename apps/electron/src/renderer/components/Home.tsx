@@ -29,7 +29,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
 } from "@mcp_router/ui";
-import { LoginScreen } from "@/renderer/components/setup/LoginScreen";
+import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
 
 const Home: React.FC = () => {
   const { t } = useTranslation();
