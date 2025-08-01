@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",
+    "@anthropic-ai/dxt": "^0.2.6",
     "@mcp_router/remote-api-types": "workspace:*",
     "@mcp_router/shared": "workspace:*",
     "@mcp_router/tailwind-config": "workspace:*",
