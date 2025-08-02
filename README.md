@@ -68,13 +68,6 @@ Monitor and display detailed request logs
 
 ## 🎯 Development Roadmap
 
-### 🖥️ Headless Mode Support
-**Goal**: Enable MCP Router usage in environments without GUI
-
-- [ ] Share code between headless mode and GUI
-- [ ] Provide CLI interface
-- [ ] Optimize for container environments
-
 ### 🔧 Enhanced MCP Management Features
 **Goal**: Make MCP server management more flexible and powerful
 

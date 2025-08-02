@@ -52,15 +52,3 @@ export interface PlatformLogEntry {
 export type MCPConnectionResult =
   | { status: "success"; client: any } // Client from @modelcontextprotocol/sdk
   | { status: "error"; error: string };
-
-export interface IMCPServerConfig {
-  id: string;
-  name: string;
-  serverType: "local" | "remote" | "remote-streamable";
-  command?: string;
-  args?: string[];
-  remoteUrl?: string;
-  bearerToken?: string;
-  env?: Record<string, string>;
-  inputParams?: Record<string, { default: string; description: string }>;
-}

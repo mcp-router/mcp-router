@@ -4,6 +4,7 @@ import {
   fetchMcpServersFromIndex,
   fetchMcpServerVersionDetails,
 } from "@/main/application/mcp-core/registry/mcp-fetcher";
+import { processDxtFile } from "@/main/application/mcp-core/server-processors/dxt-processor";
 
 export function setupMcpServerHandlers(): void {
   const getMCPServerManager = () => (global as any).getMCPServerManager();
@@ -32,11 +33,12 @@ export function setupMcpServerHandlers(): void {
     try {
       let serverConfig: MCPServerConfig;
 
+      // Process based on input type
       if (input.type === "dxt" && input.dxtFile) {
-        // TODO: Parse DXT file to extract MCPServerConfig
-        // For now, throw an error as DXT parsing logic needs to be implemented
-        throw new Error("DXT file parsing not yet implemented");
+        // Process DXT file
+        serverConfig = await processDxtFile(input.dxtFile);
       } else if (input.type === "config" && input.config) {
+        // Use config directly (validation will be done by addServer)
         serverConfig = input.config;
       } else {
         throw new Error("Invalid input: missing config or dxtFile");
@@ -50,6 +52,7 @@ export function setupMcpServerHandlers(): void {
         await mcpServerManager.startServer(server.id);
         mcpServerManager.stopServer(server.id);
       }
+
       return server;
     } catch (error: any) {
       if (server && server?.id && server?.serverType !== "local") {

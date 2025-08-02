@@ -11,7 +11,6 @@ import {
   connectToMCPServer,
   substituteArgsParameters,
 } from "@/main/domain/mcp-core/client/mcp-client-util";
-import { RequestLogEntry } from "./types";
 import { LoggingService } from "./logging";
 
 /**

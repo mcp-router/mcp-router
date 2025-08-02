@@ -48,12 +48,12 @@ const ServerDetailsInputParams: React.FC<ServerDetailsInputParamsProps> = ({
             value={
               inputParamValues[key] !== undefined
                 ? inputParamValues[key]
-                : param.default || ""
+                : (param.default !== undefined ? String(param.default) : "")
             }
             onChange={(e) =>
               updateInputParam && updateInputParam(key, e.target.value)
             }
-            placeholder={param.default || ""}
+            placeholder={param.default !== undefined ? String(param.default) : ""}
             className="font-mono"
           />
         </div>

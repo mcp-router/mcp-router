@@ -48,7 +48,7 @@ const ServerDetails: React.FC<ServerDetailsProps> = ({ server }) => {
     if (server.inputParams) {
       const initialValues: Record<string, string> = {};
       Object.entries(server.inputParams).forEach(([key, param]) => {
-        initialValues[key] = param.default || "";
+        initialValues[key] = param.default !== undefined ? String(param.default) : "";
       });
       setInputParamValues(initialValues);
       setInitialInputParamValues(initialValues);

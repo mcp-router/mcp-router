@@ -52,10 +52,10 @@ export function extractServerVariables(
       if (!variables.some((v) => v.name === name)) {
         variables.push({
           name,
-          value: server.env?.[name]?.toString() || param.default || "",
+          value: server.env?.[name]?.toString() || (param.default !== undefined ? String(param.default) : ""),
           description: param.description,
           source: "inputParam",
-          required: server.required?.includes(name),
+          required: server.required?.includes(name) || param.required,
         });
       }
     });
