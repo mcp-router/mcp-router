@@ -1,5 +1,10 @@
 import { create, StoreApi, UseBoundStore } from "zustand";
-import { AppSettings, AuthStoreState, UserInfo, PlatformAPI } from "@mcp_router/shared";
+import {
+  AppSettings,
+  AuthStoreState,
+  UserInfo,
+  PlatformAPI,
+} from "@mcp_router/shared";
 
 export interface AuthStoreInterface extends AuthStoreState {
   // Actions

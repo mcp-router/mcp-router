@@ -32,7 +32,9 @@ export const mcpServerConfigSchema = z.object({
 
 // CreateServerInput Zodスキーマ
 export const createServerSchema = z.object({
-  config: mcpServerConfigSchema,
+  type: z.enum(["config", "dxt"]),
+  config: mcpServerConfigSchema.optional(),
+  dxtFile: z.instanceof(Uint8Array).optional(),
 });
 
 // UpdateServerInput Zodスキーマ

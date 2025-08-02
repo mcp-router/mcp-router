@@ -8,7 +8,7 @@ import {
   Agent,
   AgentConfig,
   DeployedAgent,
-  MCPServerConfig,
+  CreateServerInput,
 } from "@mcp_router/shared";
 import { McpAppsManagerResult, McpApp } from "@/main/domain/mcp-apps-service";
 import { ServerPackageUpdates } from "./lib/utils/backend/package-version-resolver";
@@ -37,7 +37,7 @@ declare global {
       listMcpServers: () => Promise<any>;
       startMcpServer: (id: string) => Promise<boolean>;
       stopMcpServer: (id: string) => Promise<boolean>;
-      addMcpServer: (serverConfig: MCPServerConfig) => Promise<any>;
+      addMcpServer: (input: CreateServerInput) => Promise<any>;
       removeMcpServer: (id: string) => Promise<any>;
       updateMcpServerConfig: (id: string, config: any) => Promise<any>;
       fetchMcpServersFromIndex: (

@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { MCPServerConfig } from "@mcp_router/shared";
+import { MCPServerConfig, CreateServerInput } from "@mcp_router/shared";
 import {
   fetchMcpServersFromIndex,
   fetchMcpServerVersionDetails,
@@ -25,10 +25,23 @@ export function setupMcpServerHandlers(): void {
     return result;
   });
 
-  ipcMain.handle("mcp:add", async (_, serverConfig: MCPServerConfig) => {
+  ipcMain.handle("mcp:add", async (_, input: CreateServerInput) => {
     const mcpServerManager = getMCPServerManager();
     let server = null;
+
     try {
+      let serverConfig: MCPServerConfig;
+
+      if (input.type === "dxt" && input.dxtFile) {
+        // TODO: Parse DXT file to extract MCPServerConfig
+        // For now, throw an error as DXT parsing logic needs to be implemented
+        throw new Error("DXT file parsing not yet implemented");
+      } else if (input.type === "config" && input.config) {
+        serverConfig = input.config;
+      } else {
+        throw new Error("Invalid input: missing config or dxtFile");
+      }
+
       // Add the server to the manager
       server = mcpServerManager.addServer(serverConfig);
 
@@ -39,7 +52,7 @@ export function setupMcpServerHandlers(): void {
       }
       return server;
     } catch (error: any) {
-      if (serverConfig.serverType !== "local" && server && server?.id) {
+      if (server && server?.id && server?.serverType !== "local") {
         mcpServerManager.removeServer(server?.id);
       }
       throw error;

@@ -53,4 +53,3 @@ export interface RequestLogQueryResult
   extends CursorPaginationResult<RequestLogEntry> {
   logs: RequestLogEntry[]; // 互換性のため残す
 }
-

@@ -230,7 +230,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
             apiUrl: currentWorkspace.remoteConfig.apiUrl,
             userToken: authToken,
           },
-          electronPlatformAPI
+          electronPlatformAPI,
         );
         cache.set(cacheKey, remoteAPI);
 

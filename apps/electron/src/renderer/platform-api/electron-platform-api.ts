@@ -57,7 +57,7 @@ class ElectronPlatformAPI implements PlatformAPI {
         const servers = await window.electronAPI.listMcpServers();
         return servers.find((s: any) => s.id === id) || null;
       },
-      create: (input) => window.electronAPI.addMcpServer(input.config),
+      create: (input) => window.electronAPI.addMcpServer(input),
       update: (id, updates) =>
         window.electronAPI.updateMcpServerConfig(id, updates),
       delete: (id) => window.electronAPI.removeMcpServer(id),

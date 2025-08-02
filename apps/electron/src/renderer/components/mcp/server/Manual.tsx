@@ -200,6 +200,7 @@ const Manual: React.FC = () => {
           try {
             // Add the server
             const serverResponse = await platformAPI.servers.create({
+              type: "config",
               config: result.server,
             });
             result.server = serverResponse;

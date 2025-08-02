@@ -1,5 +1,10 @@
 import { create, StoreApi, UseBoundStore } from "zustand";
-import { MCPServer, MCPServerConfig, ServerState, PlatformAPI } from "@mcp_router/shared";
+import {
+  MCPServer,
+  MCPServerConfig,
+  ServerState,
+  PlatformAPI,
+} from "@mcp_router/shared";
 
 export interface ServerStoreState extends ServerState {
   // Actions
@@ -174,6 +179,7 @@ export const createServerStore = (
 
         const platformAPI = getPlatformAPI();
         const newServer = await platformAPI.servers.create({
+          type: "config",
           config,
         });
         addServer(newServer);
