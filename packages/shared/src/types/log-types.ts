@@ -28,20 +28,6 @@ export interface RequestLogEntry {
 export type RequestLogEntryInput = Omit<RequestLogEntry, "id" | "timestamp">;
 
 /**
- * 時系列データポイントのインターフェース
- */
-export interface TimeSeriesDataPoint {
-  timestamp: number;
-  timeBucket: string;
-  requestType: string;
-  count: number;
-  clientId: string; // クライアント識別子
-  clientName?: string; // クライアント名 (オプショナル)
-  serverId?: string; // サーバ識別子 (オプショナル)
-  serverName?: string; // サーバ名 (オプショナル)
-}
-
-/**
  * リクエストログクエリのフィルターオプション
  */
 export interface RequestLogFilters {
@@ -68,28 +54,3 @@ export interface RequestLogQueryResult
   logs: RequestLogEntry[]; // 互換性のため残す
 }
 
-/**
- * クライアント統計情報
- */
-export interface ClientStats {
-  clientId: string;
-  clientName: string;
-  requestCount: number;
-}
-
-/**
- * サーバ統計情報
- */
-export interface ServerStats {
-  serverId: string;
-  serverName: string;
-  requestCount: number;
-}
-
-/**
- * リクエストタイプ統計情報
- */
-export interface RequestTypeStats {
-  requestType: string;
-  count: number;
-}

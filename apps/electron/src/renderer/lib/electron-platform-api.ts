@@ -237,10 +237,11 @@ class ElectronPlatformAPI implements PlatformAPI {
     this.logs = {
       query: async (options) => {
         const result = await window.electronAPI.getRequestLogs(options);
-        // RequestLogQueryResultをLogQueryResultに変換
+        // Ensure consistent return type with LogQueryResult
         return {
           ...result,
-          items: result.logs, // LogQueryResultにはitemsプロパティが必要
+          items: result.logs, // LogQueryResult extends CursorPaginationResult which requires items
+          // logs property is already included from spread operator
         };
       },
     };

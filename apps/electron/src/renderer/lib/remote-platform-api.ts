@@ -10,7 +10,7 @@ import type {
   LogQueryOptions,
   LogQueryResult,
 } from "@mcp_router/shared";
-import type { RequestLogEntry as LogEntry } from "@mcp_router/shared";
+import type { RequestLogEntry } from "@mcp_router/shared";
 
 interface RemoteWorkspaceConfig {
   apiUrl: string;
@@ -160,8 +160,8 @@ export class RemotePlatformAPI implements PlatformAPI {
         hasMore?: boolean;
       }>(response);
 
-      // Convert to LogEntry format (LogEntry is an alias for RequestLogEntry)
-      const logs: LogEntry[] = result.logs.map((log) => ({
+      // Convert to RequestLogEntry format
+      const logs: RequestLogEntry[] = result.logs.map((log) => ({
         id: log.id,
         timestamp: log.timestamp, // Keep as number, not Date
         clientId: log.clientId,
@@ -177,7 +177,7 @@ export class RemotePlatformAPI implements PlatformAPI {
       }));
 
       return {
-        items: logs, // CursorPaginationResult requires items property
+        items: logs, // LogQueryResult extends CursorPaginationResult which requires items
         logs, // Keep for backward compatibility
         total: result.total,
         nextCursor: result.nextCursor,
