@@ -14,7 +14,7 @@ import { Switch } from "@mcp_router/ui";
 import { useThemeStore } from "@/renderer/stores";
 import { useAuthStore } from "../../stores";
 import { IconBrandDiscord } from "@tabler/icons-react";
-import { electronPlatformAPI as platformAPI } from "../../lib/electron-platform-api";
+import { electronPlatformAPI as platformAPI } from "../../platform-api/electron-platform-api";
 import { postHogService } from "../../services/posthog-service";
 
 const Settings: React.FC = () => {

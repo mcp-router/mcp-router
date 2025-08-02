@@ -9,4 +9,4 @@
 export { PlatformAPIProvider } from "./platform-api-context";
 
 // Export the store-based hook instead of the context-based one
-export { usePlatformAPI } from "@/renderer/lib/hooks/use-platform-api";
+export { usePlatformAPI } from "@/renderer/platform-api/hooks/use-platform-api";
