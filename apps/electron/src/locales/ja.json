@@ -565,6 +565,7 @@
     "title": "MCP サーバーを手動で追加",
     "description": "MCP サーバーを手動で設定して追加します",
     "importFromJson": "JSONからインポート",
+    "importFromDxt": "DXTインポート",
     "createLocalServer": "ローカルサーバーを作成",
     "connectRemoteServer": "リモートサーバーに接続",
     "localTitle": "ローカル MCP サーバーを追加",
@@ -603,6 +604,16 @@
       "commandRequired": "コマンドは必須です",
       "argsRequired": "引数は必須です",
       "urlRequired": "サーバーURLは必須です"
+    },
+    "dxt": {
+      "title": "DXTファイルからインポート",
+      "description": "DXTファイルをインポートしてMCPサーバーを追加",
+      "importServers": "サーバーをインポート",
+      "clickToUpload": "クリックしてアップロードまたはドラッグ＆ドロップ",
+      "dxtFilesOnly": "DXTファイルのみ",
+      "remove": "削除",
+      "error": "エラー",
+      "errorInvalidFile": "有効なDXTファイルを選択してください"
     }
   },
   "pagination": {

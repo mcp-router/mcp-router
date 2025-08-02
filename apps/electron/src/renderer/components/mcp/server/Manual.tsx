@@ -273,7 +273,7 @@ const Manual: React.FC = () => {
     if (!file) return;
 
     if (!file.name.endsWith(".dxt")) {
-      setDxtError(t("importFromDxt.errorInvalidFile"));
+      setDxtError(t("manual.dxt.errorInvalidFile"));
       return;
     }
 
@@ -289,11 +289,14 @@ const Manual: React.FC = () => {
     // For Electron, we need to save the file to a temporary location
     // and pass the file path to the main process
     const arrayBuffer = await dxtFile.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const uint8Array = new Uint8Array(arrayBuffer);
 
-    // TODO: Implement DXT file import
     // Process the DXT file on the main process
-    // const result = await platformAPI.servers.create(config);
+    const result = await platformAPI.servers.create({
+        type: "dxt",
+        dxtFile: uint8Array,
+    });
+    console.log("DXT Import Result:", result);
 
     setIsLoadingDxt(false);
   };
@@ -429,7 +432,7 @@ const Manual: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger value="dxt">
             <FileCode2 className="h-4 w-4 mr-2" />
-            DXT Import
+            {t("manual.importFromDxt")}
           </TabsTrigger>
           <TabsTrigger value="local">
             <HardDrive className="h-4 w-4 mr-2" />
@@ -539,10 +542,10 @@ const Manual: React.FC = () => {
                 <div>
                   <CardTitle className="text-lg font-medium">
                     <FileCode2 className="h-5 w-5 inline-block mr-2" />
-                    Import from DXT File
+                    {t("manual.dxt.title")}
                   </CardTitle>
                   <CardDescription className="mt-1">
-                    Upload a DXT configuration file to import MCP servers
+                    {t("manual.dxt.description")}
                   </CardDescription>
                 </div>
               </div>
@@ -580,15 +583,7 @@ const Manual: React.FC = () => {
                           }}
                         >
                           <X className="h-4 w-4 mr-2" />
-                          Remove
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          Change File
+                          {t("manual.dxt.remove")}
                         </Button>
                       </div>
                     </div>
@@ -599,10 +594,10 @@ const Manual: React.FC = () => {
                     >
                       <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-sm text-muted-foreground">
-                        Click to upload or drag and drop
+                        {t("manual.dxt.clickToUpload")}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        DXT files only
+                        {t("manual.dxt.dxtFilesOnly")}
                       </p>
                     </div>
                   )}
@@ -611,7 +606,7 @@ const Manual: React.FC = () => {
                 {dxtError && (
                   <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
+                    <AlertTitle>{t("manual.dxt.error")}</AlertTitle>
                     <AlertDescription>{dxtError}</AlertDescription>
                   </Alert>
                 )}
@@ -629,7 +624,7 @@ const Manual: React.FC = () => {
                   ) : (
                     <>
                       <Upload className="h-4 w-4" />
-                      Import Servers
+                      {t("manual.dxt.importServers")}
                     </>
                   )}
                 </Button>

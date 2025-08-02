@@ -566,6 +566,7 @@
     "description": "Create MCP server configurations manually",
     "createManually": "Create Manually",
     "importFromJson": "Import JSON",
+    "importFromDxt": "DXT Import",
     "create": "Create Server",
     "serverName": "Server Name",
     "command": "Command",
@@ -595,6 +596,16 @@
       "commandRequired": "Command is required",
       "argsRequired": "Arguments are required",
       "urlRequired": "Server URL is required"
+    },
+    "dxt": {
+      "title": "Import from DXT File",
+      "description": "Import DXT file to import MCP server",
+      "importServers": "Import Servers",
+      "clickToUpload": "Click to upload or drag and drop",
+      "dxtFilesOnly": "DXT files only",
+      "remove": "Remove",
+      "error": "Error",
+      "errorInvalidFile": "Please select a valid DXT file"
     }
   },
   "pagination": {
