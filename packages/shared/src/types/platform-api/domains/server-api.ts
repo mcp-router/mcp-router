@@ -2,7 +2,7 @@
  * Server management domain API
  */
 
-import { MCPServerConfig, MCPServer } from "@mcp_router/shared";
+import type { MCPServerConfig, MCPServer } from "../../mcp-types";
 
 export interface ServerStatus {
   type: "stopped" | "starting" | "running" | "stopping" | "error";

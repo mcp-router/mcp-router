@@ -2,7 +2,7 @@
  * Application management domain API (includes token management)
  */
 
-import { McpApp, McpAppsManagerResult, TokenScope } from "@mcp_router/shared";
+import type { McpApp, McpAppsManagerResult, TokenScope } from "../../mcp-app-types";
 
 interface Token {
   id: string;

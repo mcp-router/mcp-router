@@ -2,9 +2,9 @@
  * Agent management domain API (includes chat functionality)
  */
 
-import { Agent, AgentConfig, DeployedAgent } from "@mcp_router/shared";
-import { Unsubscribe } from "./auth-api";
-import type { LocalChatMessage as ChatMessage } from "@mcp_router/shared";
+import type { Agent, AgentConfig, DeployedAgent } from "../../mcp-types";
+import type { Unsubscribe } from "./auth-api";
+import type { LocalChatMessage as ChatMessage } from "../../chat-types";
 
 interface CreateAgentInput extends Omit<AgentConfig, "id"> {}
 

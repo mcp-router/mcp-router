@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { RequestLogEntry } from "@mcp_router/shared";
-import { usePlatformAPI } from "@/main/infrastructure/platform-api";
+import { usePlatformAPI } from "@/renderer/platform-api";
 
 interface RequestLogsParams {
   serverId?: string;

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { usePlatformAPI } from "@/main/infrastructure/platform-api";
+import { usePlatformAPI } from "@/renderer/platform-api";
 import {
   Card,
   CardContent,
@@ -290,8 +290,9 @@ const Manual: React.FC = () => {
     const arrayBuffer = await dxtFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    // TODO: Implement DXT file import
     // Process the DXT file on the main process
-    const result = await platformAPI.servers.create();
+    // const result = await platformAPI.servers.create(config);
 
     setIsLoadingDxt(false);
   };

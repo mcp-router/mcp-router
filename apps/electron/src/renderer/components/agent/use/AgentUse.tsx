@@ -29,7 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@mcp_router/ui";
-import { usePlatformAPI } from "@/main/infrastructure/platform-api";
+import { usePlatformAPI } from "@/renderer/platform-api";
 
 /**
  * AgentUse Component

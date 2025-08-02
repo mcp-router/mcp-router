@@ -2,7 +2,7 @@
  * Electron-specific Platform API implementation
  */
 
-import { PlatformAPI } from "@/main/infrastructure/platform-api";
+import type { PlatformAPI } from "@mcp_router/shared";
 import type {
   AuthAPI,
   ServerAPI,
@@ -13,7 +13,7 @@ import type {
   LogAPI,
   WorkspaceAPI,
   Workspace,
-} from "@/main/infrastructure/platform-api";
+} from "@mcp_router/shared";
 
 // Electron implementation of the Platform API
 class ElectronPlatformAPI implements PlatformAPI {

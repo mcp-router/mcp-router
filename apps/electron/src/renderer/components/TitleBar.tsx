@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useWorkspaceStore } from "@/renderer/stores/workspace-store";
 import { WorkspaceSwitcher } from "./workspace/WorkspaceSwitcher";
-import { usePlatformAPI } from "@/main/infrastructure/platform-api";
+import { usePlatformAPI } from "@/renderer/platform-api";
 
 export function TitleBar() {
   const { loadWorkspaces } = useWorkspaceStore();

@@ -1,8 +1,7 @@
 import { create } from "zustand";
-import { Workspace } from "@/main/infrastructure/platform-api";
 import { electronPlatformAPI } from "../lib/electron-platform-api";
 import { RemotePlatformAPI } from "../lib/remote-platform-api";
-import type { PlatformAPI } from "@/main/infrastructure/platform-api/types/platform-api";
+import type { PlatformAPI, Workspace } from "@mcp_router/shared";
 import { useAuthStore } from "@/renderer/stores";
 
 interface WorkspaceState {

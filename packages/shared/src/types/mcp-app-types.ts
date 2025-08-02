@@ -1,5 +1,8 @@
 import { TokenScope } from "./token-types";
 
+// Re-export TokenScope for convenience
+export { TokenScope };
+
 export interface McpApp {
   name: string;
   installed: boolean;

@@ -4,10 +4,10 @@ import {
   DeployedAgent,
   AgentState,
   AgentStoreChatSession,
+  PlatformAPI,
 } from "@mcp_router/shared";
 import type { AgentChatMessage } from "@mcp_router/shared";
 import { Message } from "@ai-sdk/react";
-import { PlatformAPI } from "@/main/infrastructure/platform-api";
 
 export interface AgentStoreInterface extends AgentState {
   // Actions for development agents

@@ -2,10 +2,14 @@
  * Log management domain API
  */
 
-import {
+import type {
   CursorPaginationOptions,
   CursorPaginationResult,
-} from "@mcp_router/shared";
+} from "../../pagination";
+import type { RequestLogEntry } from "../../log-types";
+
+// Alias for API compatibility
+export type LogEntry = RequestLogEntry;
 
 /**
  * Platform API用のログフィルター
@@ -23,21 +27,6 @@ interface LogFilters {
  * Platform API用のログクエリオプション
  */
 export interface LogQueryOptions extends LogFilters, CursorPaginationOptions {}
-
-export interface LogEntry {
-  id: string;
-  timestamp: Date | number;
-  clientId: string;
-  clientName: string;
-  serverId: string;
-  serverName: string;
-  requestType: string;
-  requestParams?: any;
-  responseStatus: "success" | "error";
-  responseData?: any;
-  duration?: number;
-  errorMessage?: string;
-}
 
 /**
  * Platform API用のログクエリ結果

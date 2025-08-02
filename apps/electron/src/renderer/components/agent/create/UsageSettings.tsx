@@ -7,7 +7,7 @@ import { Input } from "@mcp_router/ui";
 import { t } from "i18next";
 import { Loader2, Bot } from "lucide-react";
 import { toast } from "sonner";
-import { usePlatformAPI } from "@/main/infrastructure/platform-api";
+import { usePlatformAPI } from "@/renderer/platform-api";
 
 // Usage Settings Component
 interface UsageSettingsProps {

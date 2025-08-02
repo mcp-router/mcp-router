@@ -2,10 +2,10 @@
  * Authentication domain API
  */
 
-type AuthProvider = "github" | "google" | string;
+export type AuthProvider = "github" | "google" | string;
 export type Unsubscribe = () => void;
 
-interface AuthStatus {
+export interface AuthStatus {
   authenticated: boolean;
   userId?: string;
   user?: any;

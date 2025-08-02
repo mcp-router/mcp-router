@@ -11,7 +11,7 @@ export * from "./auth-store";
 export * from "./agent-store";
 
 // Import platform API type
-import type { PlatformAPI } from "@/main/infrastructure/platform-api/types/platform-api";
+import type { PlatformAPI } from "@mcp_router/shared";
 
 // Import store factories
 import { createServerStore, createServerSelectors } from "./server-store";

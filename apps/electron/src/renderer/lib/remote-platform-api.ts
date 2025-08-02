@@ -1,4 +1,4 @@
-import type { PlatformAPI } from "@/main/infrastructure/platform-api/types/platform-api";
+import type { PlatformAPI } from "@mcp_router/shared";
 import {
   createRemoteAPIClient,
   type RemoteAPIClient,
@@ -7,12 +7,10 @@ import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import type {
   ServerStatus,
   CreateServerInput,
-} from "@/main/infrastructure/platform-api/types/domains/server-api";
-import type {
   LogQueryOptions,
-  LogEntry,
   LogQueryResult,
-} from "@/main/infrastructure/platform-api/types/domains/log-api";
+} from "@mcp_router/shared";
+import type { RequestLogEntry as LogEntry } from "@mcp_router/shared";
 
 interface RemoteWorkspaceConfig {
   apiUrl: string;
@@ -162,10 +160,10 @@ export class RemotePlatformAPI implements PlatformAPI {
         hasMore?: boolean;
       }>(response);
 
-      // Convert RequestLogEntry to LogEntry format
+      // Convert to LogEntry format (LogEntry is an alias for RequestLogEntry)
       const logs: LogEntry[] = result.logs.map((log) => ({
         id: log.id,
-        timestamp: new Date(log.timestamp),
+        timestamp: log.timestamp, // Keep as number, not Date
         clientId: log.clientId,
         clientName: log.clientName,
         serverId: log.serverId,

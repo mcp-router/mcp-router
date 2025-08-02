@@ -2,8 +2,8 @@
  * Package management domain API (includes system utilities)
  */
 
-import { ServerPackageUpdates } from "@mcp_router/shared";
-import { Unsubscribe } from "./auth-api";
+import type { ServerPackageUpdates } from "../../mcp-app-types";
+import type { Unsubscribe } from "./auth-api";
 
 type PackageManager = "pnpm" | "uvx";
 type Platform = "darwin" | "win32" | "linux";

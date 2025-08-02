@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@mcp_router/ui";
 import { v4 as uuidv4 } from "uuid";
-import { usePlatformAPI } from "@/main/infrastructure/platform-api";
+import { usePlatformAPI } from "@/renderer/platform-api";
 
 // Setup Settings Component
 interface McpSettingsProps {

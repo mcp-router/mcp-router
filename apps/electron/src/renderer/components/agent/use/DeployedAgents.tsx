@@ -24,7 +24,7 @@ import { Download, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAgentStore, useWorkspaceStore } from "../../../stores";
-import { usePlatformAPI } from "@/main/infrastructure/platform-api";
+import { usePlatformAPI } from "@/renderer/platform-api";
 
 const DeployedAgents: React.FC = () => {
   const { t } = useTranslation();

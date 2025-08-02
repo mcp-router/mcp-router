@@ -41,7 +41,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@mcp_router/ui";
-import { usePlatformAPI } from "@/main/infrastructure/platform-api";
+import { usePlatformAPI } from "@/renderer/platform-api";
 
 // エージェントの状態を取得するユーティリティ関数
 const createAgentSnapshot = (agent: AgentConfig): AgentConfig => {
