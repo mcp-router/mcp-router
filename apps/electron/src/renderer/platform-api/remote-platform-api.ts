@@ -139,6 +139,15 @@ export class RemotePlatformAPI implements PlatformAPI {
         "fetchVersionDetails is not supported in remote workspaces",
       );
     },
+
+    selectFile: (options?: {
+      title?: string;
+      mode?: "file" | "directory";
+      filters?: { name: string; extensions: string[] }[];
+    }) => {
+      // File selection is a local operation
+      return this.localPlatformAPI.servers.selectFile(options);
+    },
   };
 
   // Log API implementation via tRPC

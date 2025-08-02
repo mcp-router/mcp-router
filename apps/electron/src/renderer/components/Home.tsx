@@ -78,14 +78,19 @@ const Home: React.FC = () => {
 
   // State for refresh
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   // State for Advanced Settings
-  const [advancedSettingsServer, setAdvancedSettingsServer] = useState<MCPServer | null>(null);
-  const { initializeFromServer, setIsAdvancedEditing, isLoading: isSavingAdvanced } = useServerEditingStore();
+  const [advancedSettingsServer, setAdvancedSettingsServer] =
+    useState<MCPServer | null>(null);
+  const {
+    initializeFromServer,
+    setIsAdvancedEditing,
+    isLoading: isSavingAdvanced,
+  } = useServerEditingStore();
 
   // Toggle expanded server details - open settings
   const toggleServerExpand = (serverId: string) => {
-    const server = servers.find(s => s.id === serverId);
+    const server = servers.find((s) => s.id === serverId);
     if (server) {
       initializeFromServer(server);
       setAdvancedSettingsServer(server);
@@ -391,7 +396,6 @@ const Home: React.FC = () => {
                         </div>
                       </div>
                     </div>
-
                   </div>
                 );
               })}
@@ -465,22 +469,28 @@ const Home: React.FC = () => {
           errorMessage={errorServer.errorMessage}
         />
       )}
-      
+
       {/* Advanced Settings Sheet */}
       {advancedSettingsServer && (
         <ServerDetailsAdvancedSheet
           server={advancedSettingsServer}
           handleSave={async () => {
             try {
-              const { editedCommand, editedArgs, editedBearerToken, editedAutoStart, envPairs } = useServerEditingStore.getState();
-              
+              const {
+                editedCommand,
+                editedArgs,
+                editedBearerToken,
+                editedAutoStart,
+                envPairs,
+              } = useServerEditingStore.getState();
+
               const envObj: Record<string, string> = {};
               envPairs.forEach((pair) => {
                 if (pair.key.trim()) {
                   envObj[pair.key.trim()] = pair.value;
                 }
               });
-              
+
               const updatedConfig: any = {
                 name: advancedSettingsServer.name,
                 command: editedCommand,
@@ -489,12 +499,15 @@ const Home: React.FC = () => {
                 autoStart: editedAutoStart,
                 inputParams: advancedSettingsServer.inputParams,
               };
-              
+
               if (advancedSettingsServer.serverType !== "local") {
                 updatedConfig.bearerToken = editedBearerToken;
               }
-              
-              await updateServerConfig(advancedSettingsServer.id, updatedConfig);
+
+              await updateServerConfig(
+                advancedSettingsServer.id,
+                updatedConfig,
+              );
               setIsAdvancedEditing(false);
               setAdvancedSettingsServer(null);
               toast.success(t("serverDetails.updateSuccess"));

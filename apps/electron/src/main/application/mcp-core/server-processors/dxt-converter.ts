@@ -187,4 +187,3 @@ function expandPathVariables(value: string, dxtPath: string): string {
 
   return expanded;
 }
-

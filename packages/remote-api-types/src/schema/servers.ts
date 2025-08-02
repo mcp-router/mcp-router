@@ -18,7 +18,9 @@ export const mcpServerConfigSchema = z.object({
   inputParams: z
     .record(
       z.object({
-        type: z.enum(["string", "number", "boolean", "directory", "file"]).optional(),
+        type: z
+          .enum(["string", "number", "boolean", "directory", "file"])
+          .optional(),
         title: z.string().optional(),
         description: z.string().optional(),
         sensitive: z.boolean().optional(),

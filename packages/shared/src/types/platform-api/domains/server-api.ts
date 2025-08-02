@@ -39,4 +39,14 @@ export interface ServerAPI {
     isVerified?: boolean,
   ): Promise<any>;
   fetchVersionDetails(displayId: string, version: string): Promise<any>;
+  selectFile(options?: {
+    title?: string;
+    mode?: "file" | "directory";
+    filters?: { name: string; extensions: string[] }[];
+  }): Promise<{
+    success: boolean;
+    path?: string;
+    canceled?: boolean;
+    error?: string;
+  }>;
 }

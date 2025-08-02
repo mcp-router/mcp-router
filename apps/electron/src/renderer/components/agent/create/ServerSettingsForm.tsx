@@ -71,9 +71,13 @@ const ServerSettingsForm: React.FC<ServerSettingsFormProps> = ({
             const inputParam = server.inputParams?.[varName];
             argVars.push({
               name: varName,
-              value: inputParam?.default !== undefined ? String(inputParam.default) : "",
+              value:
+                inputParam?.default !== undefined
+                  ? String(inputParam.default)
+                  : "",
               description: inputParam?.description,
-              required: server.required?.includes(varName) || inputParam?.required,
+              required:
+                server.required?.includes(varName) || inputParam?.required,
             });
           }
         }

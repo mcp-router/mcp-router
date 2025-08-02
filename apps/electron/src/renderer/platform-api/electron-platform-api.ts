@@ -77,6 +77,7 @@ class ElectronPlatformAPI implements PlatformAPI {
         ),
       fetchVersionDetails: (displayId, version) =>
         window.electronAPI.fetchMcpServerVersionDetails(displayId, version),
+      selectFile: (options) => window.electronAPI.serverSelectFile(options),
     };
 
     // Initialize agents domain (with chat functionality)

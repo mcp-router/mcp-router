@@ -38,6 +38,7 @@ declare global {
       startMcpServer: (id: string) => Promise<boolean>;
       stopMcpServer: (id: string) => Promise<boolean>;
       addMcpServer: (input: CreateServerInput) => Promise<any>;
+      serverSelectFile: (options: any) => Promise<any>;
       removeMcpServer: (id: string) => Promise<any>;
       updateMcpServerConfig: (id: string, config: any) => Promise<any>;
       fetchMcpServersFromIndex: (

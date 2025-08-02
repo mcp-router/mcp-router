@@ -29,6 +29,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   stopMcpServer: (id: string) => ipcRenderer.invoke("mcp:stop", id),
   addMcpServer: (input: CreateServerInput) =>
     ipcRenderer.invoke("mcp:add", input),
+  serverSelectFile: (options: any) =>
+    ipcRenderer.invoke("server:selectFile", options),
   removeMcpServer: (id: string) => ipcRenderer.invoke("mcp:remove", id),
   updateMcpServerConfig: (id: string, config: any) =>
     ipcRenderer.invoke("mcp:update-config", id, config),

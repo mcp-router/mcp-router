@@ -293,8 +293,8 @@ const Manual: React.FC = () => {
 
     // Process the DXT file on the main process
     const result = await platformAPI.servers.create({
-        type: "dxt",
-        dxtFile: uint8Array,
+      type: "dxt",
+      dxtFile: uint8Array,
     });
     console.log("DXT Import Result:", result);
 

@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { MCPServer } from "@mcp_router/shared";
 import { useTranslation } from "react-i18next";
-import { Settings2, Check, RefreshCw, Info, FileText, Plus, Trash, Terminal } from "lucide-react";
+import {
+  Settings2,
+  Check,
+  RefreshCw,
+  Info,
+  FileText,
+  Plus,
+  Trash,
+  Terminal,
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -55,26 +64,30 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     removeEnvPair,
     addEnvPair,
   } = useServerEditingStore();
-  
-  
+
   // State for input parameters
-  const [inputParamValues, setInputParamValues] = useState<Record<string, string>>({});
-  const [initialInputParamValues, setInitialInputParamValues] = useState<Record<string, string>>({});
+  const [inputParamValues, setInputParamValues] = useState<
+    Record<string, string>
+  >({});
+  const [initialInputParamValues, setInitialInputParamValues] = useState<
+    Record<string, string>
+  >({});
   const [isParamsDirty, setIsParamsDirty] = useState(false);
-  
+
   // Initialize inputParamValues from server inputParams defaults
   useEffect(() => {
     if (server.inputParams) {
       const initialValues: Record<string, string> = {};
       Object.entries(server.inputParams).forEach(([key, param]) => {
-        initialValues[key] = param.default !== undefined ? String(param.default) : "";
+        initialValues[key] =
+          param.default !== undefined ? String(param.default) : "";
       });
       setInputParamValues(initialValues);
       setInitialInputParamValues(initialValues);
       setIsParamsDirty(false);
     }
   }, [server.id, isOpen]);
-  
+
   const updateInputParam = (key: string, value: string) => {
     setInputParamValues((prev) => {
       const updated = { ...prev, [key]: value };
@@ -85,12 +98,12 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
       return updated;
     });
   };
-  
+
   const handleSaveParams = async () => {
     setIsLoading(true);
     try {
       const updatedInputParams = { ...(server.inputParams || {}) };
-      
+
       if (server.inputParams) {
         Object.entries(inputParamValues).forEach(([key, value]) => {
           if (updatedInputParams[key]) {
@@ -101,7 +114,7 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
           }
         });
       }
-      
+
       const updatedConfig: any = {
         inputParams: updatedInputParams,
         env: server.env,
@@ -109,7 +122,7 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
         command: server.command,
         args: server.args,
       };
-      
+
       await updateServerConfig(server.id, updatedConfig);
       setInitialInputParamValues(inputParamValues);
       setIsParamsDirty(false);
@@ -135,26 +148,45 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs defaultValue={server.inputParams && Object.keys(server.inputParams).length > 0 ? "params" : "general"} className="mt-4">
-          <TabsList className="grid w-full" style={{ gridTemplateColumns: server.inputParams && Object.keys(server.inputParams).length > 0 ? 'repeat(2, 1fr)' : '1fr' }}>
-            {server.inputParams && Object.keys(server.inputParams).length > 0 && (
-              <TabsTrigger value="params">{t("serverDetails.inputParameters")}</TabsTrigger>
-            )}
-            <TabsTrigger value="general">{t("serverDetails.generalSettings")}</TabsTrigger>
+        <Tabs
+          defaultValue={
+            server.inputParams && Object.keys(server.inputParams).length > 0
+              ? "params"
+              : "general"
+          }
+          className="mt-4"
+        >
+          <TabsList
+            className="grid w-full"
+            style={{
+              gridTemplateColumns:
+                server.inputParams && Object.keys(server.inputParams).length > 0
+                  ? "repeat(2, 1fr)"
+                  : "1fr",
+            }}
+          >
+            {server.inputParams &&
+              Object.keys(server.inputParams).length > 0 && (
+                <TabsTrigger value="params">
+                  {t("serverDetails.inputParameters")}
+                </TabsTrigger>
+              )}
+            <TabsTrigger value="general">
+              {t("serverDetails.generalSettings")}
+            </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="general" className="space-y-6 mt-4">
             {/* Final Command Display */}
             {server.serverType === "local" ? (
               <FinalCommandDisplay
                 server={server}
                 inputParamValues={inputParamValues}
+                editedCommand={editedCommand}
+                editedArgs={editedArgs}
               />
             ) : (
-              <ServerDetailsRemote
-                server={server}
-                isEditing={false}
-              />
+              <ServerDetailsRemote server={server} isEditing={false} />
             )}
 
             {/* Edit Forms */}
@@ -262,7 +294,7 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
               addEnvPair={addEnvPair}
             />
           </TabsContent>
-          
+
           {server.inputParams && Object.keys(server.inputParams).length > 0 && (
             <TabsContent value="params" className="space-y-6 mt-4">
               <ServerDetailsInputParams

@@ -7,11 +7,15 @@ import { ScrollArea } from "@mcp_router/ui";
 interface FinalCommandDisplayProps {
   server: MCPServer;
   inputParamValues?: Record<string, string>;
+  editedCommand?: string;
+  editedArgs?: string[];
 }
 
 const FinalCommandDisplay: React.FC<FinalCommandDisplayProps> = ({
   server,
   inputParamValues = {},
+  editedCommand,
+  editedArgs,
 }) => {
   const { t } = useTranslation();
 
@@ -36,12 +40,15 @@ const FinalCommandDisplay: React.FC<FinalCommandDisplayProps> = ({
 
   // Get the final command string with args
   const getFinalCommandString = () => {
-    if (!server.command) return "";
+    // Use edited values if available, otherwise use server values
+    const command =
+      editedCommand !== undefined ? editedCommand : server.command;
+    const args = editedArgs !== undefined ? editedArgs : server.args;
 
-    const command = server.command;
-    if (!server.args || server.args.length === 0) return command;
+    if (!command) return "";
+    if (!args || args.length === 0) return command;
 
-    const substitutedArgs = getSubstitutedArgs(server.args, inputParamValues);
+    const substitutedArgs = getSubstitutedArgs(args, inputParamValues);
     return `${command} ${substitutedArgs.join(" ")}`;
   };
 
@@ -54,10 +61,10 @@ const FinalCommandDisplay: React.FC<FinalCommandDisplayProps> = ({
         </h3>
       </div>
       <div className="pl-6">
-        {server.command ? (
-          <div className="bg-muted p-3 rounded-md border shadow-sm">
-            <ScrollArea className="max-h-[150px]">
-              <div className="whitespace-pre-wrap text-sm font-mono text-primary/90 break-all">
+        {editedCommand || server.command ? (
+          <div className="bg-muted p-4 rounded-md border shadow-sm">
+            <ScrollArea className="max-h-[200px]">
+              <div className="whitespace-pre-wrap text-sm font-mono text-primary break-all">
                 {getFinalCommandString()}
               </div>
             </ScrollArea>

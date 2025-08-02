@@ -380,6 +380,13 @@
       "servers": "servers",
       "notSet": "Not set"
     },
+    "validation": {
+      "required": "This field is required",
+      "mustBeNumber": "Please enter a number",
+      "minValue": "Minimum value is {{min}}",
+      "maxValue": "Maximum value is {{max}}",
+      "hasErrors": "There are input errors. Please check and correct them"
+    },
     "errors": {
       "fetchFailed": "Failed to fetch agents",
       "serversFetchFailed": "Failed to fetch MCP servers",

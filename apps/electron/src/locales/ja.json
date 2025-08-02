@@ -384,6 +384,13 @@
       "updateApplied": "アップデートが適用されました",
       "applyUpdate": "アップデートを適用"
     },
+    "validation": {
+      "required": "この項目は必須です",
+      "mustBeNumber": "数値を入力してください",
+      "minValue": "最小値は {{min}} です",
+      "maxValue": "最大値は {{max}} です",
+      "hasErrors": "入力エラーがあります。確認してください"
+    },
     "errors": {
       "fetchFailed": "エージェント一覧の取得に失敗しました",
       "serversFetchFailed": "MCPサーバ一覧の取得に失敗しました",
