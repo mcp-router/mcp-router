@@ -24,9 +24,11 @@ interface RemoteWorkspaceConfig {
 export class RemotePlatformAPI implements PlatformAPI {
   private client!: RemoteAPIClient; // Using definite assignment assertion since it's initialized in constructor
   private config: RemoteWorkspaceConfig;
+  private localPlatformAPI: PlatformAPI;
 
-  constructor(config: RemoteWorkspaceConfig) {
+  constructor(config: RemoteWorkspaceConfig, localPlatformAPI: PlatformAPI) {
     this.config = config;
+    this.localPlatformAPI = localPlatformAPI;
     // Client will be initialized with user token when needed
     this.initializeClient();
   }
@@ -188,29 +190,26 @@ export class RemotePlatformAPI implements PlatformAPI {
 
   // All other APIs delegate to local implementation
   get agents() {
-    return electronPlatformAPI.agents;
+    return this.localPlatformAPI.agents;
   }
 
   get apps() {
-    return electronPlatformAPI.apps;
+    return this.localPlatformAPI.apps;
   }
 
   get auth() {
-    return electronPlatformAPI.auth;
+    return this.localPlatformAPI.auth;
   }
 
   get packages() {
-    return electronPlatformAPI.packages;
+    return this.localPlatformAPI.packages;
   }
 
   get settings() {
-    return electronPlatformAPI.settings;
+    return this.localPlatformAPI.settings;
   }
 
   get workspaces() {
-    return electronPlatformAPI.workspaces;
+    return this.localPlatformAPI.workspaces;
   }
 }
-
-// Import at the end to avoid circular dependency
-import { electronPlatformAPI } from "./electron-platform-api";

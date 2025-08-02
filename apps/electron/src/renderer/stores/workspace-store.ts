@@ -225,10 +225,13 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const cacheKey = `${currentWorkspace.id}-${currentWorkspace.remoteConfig.apiUrl}-${authToken}`;
 
       if (!cache.has(cacheKey)) {
-        const remoteAPI = new RemotePlatformAPI({
-          apiUrl: currentWorkspace.remoteConfig.apiUrl,
-          userToken: authToken,
-        });
+        const remoteAPI = new RemotePlatformAPI(
+          {
+            apiUrl: currentWorkspace.remoteConfig.apiUrl,
+            userToken: authToken,
+          },
+          electronPlatformAPI
+        );
         cache.set(cacheKey, remoteAPI);
 
         // Clear old cache entries for this workspace
