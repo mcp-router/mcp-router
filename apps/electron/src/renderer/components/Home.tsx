@@ -7,7 +7,6 @@ import { Switch } from "@mcp_router/ui";
 import {
   IconSearch,
   IconServer,
-  IconChevronDown,
   IconPlus,
   IconRefresh,
 } from "@tabler/icons-react";
@@ -24,7 +23,6 @@ import {
 import { showServerError } from "@/renderer/components/common";
 
 // Import components
-import ServerDetails from "@/renderer/components/mcp/server/ServerDetails";
 import { ServerErrorModal } from "@/renderer/components/common/ServerErrorModal";
 import { ServerCardCompact } from "@/renderer/components/mcp/server/ServerCardCompact";
 import { Link } from "react-router-dom";
@@ -36,6 +34,8 @@ import {
   BreadcrumbLink,
 } from "@mcp_router/ui";
 import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
+import ServerDetailsAdvancedSheet from "@/renderer/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
+import { useServerEditingStore } from "@/renderer/stores";
 
 const Home: React.FC = () => {
   const { t } = useTranslation();
@@ -52,6 +52,7 @@ const Home: React.FC = () => {
     stopServer,
     deleteServer,
     refreshServers,
+    updateServerConfig,
   } = useServerStore();
 
   // Get workspace and auth state
@@ -77,15 +78,18 @@ const Home: React.FC = () => {
 
   // State for refresh
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // State for Advanced Settings
+  const [advancedSettingsServer, setAdvancedSettingsServer] = useState<MCPServer | null>(null);
+  const { initializeFromServer, setIsAdvancedEditing, isLoading: isSavingAdvanced } = useServerEditingStore();
 
-  // Toggle expanded server details
+  // Toggle expanded server details - open settings
   const toggleServerExpand = (serverId: string) => {
-    if (expandedServerId === serverId) {
-      setExpandedServerId(null);
-      setSelectedServerId(null);
-    } else {
-      setExpandedServerId(serverId);
-      setSelectedServerId(serverId);
+    const server = servers.find(s => s.id === serverId);
+    if (server) {
+      initializeFromServer(server);
+      setAdvancedSettingsServer(server);
+      setIsAdvancedEditing(true);
     }
   };
 
@@ -263,11 +267,8 @@ const Home: React.FC = () => {
                     >
                       <div className="flex justify-between">
                         <div className="flex flex-col">
-                          <div className="font-medium text-base mb-1 hover:text-primary flex items-center">
+                          <div className="font-medium text-base mb-1 hover:text-primary">
                             {server.name}
-                            <IconChevronDown
-                              className={`w-4 h-4 ml-2 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                            />
                           </div>
 
                           {/* Description - if available */}
@@ -278,38 +279,12 @@ const Home: React.FC = () => {
                               </p>
                             )}
                           <div className="flex flex-wrap gap-2 mb-1">
-                            {/* Verification Badge - if available */}
-                            {"verificationStatus" in server && (
-                              <Badge
-                                variant={
-                                  server.verificationStatus === "verified"
-                                    ? "default"
-                                    : "outline"
-                                }
-                                className="w-fit"
-                              >
-                                {server.verificationStatus === "verified"
-                                  ? "Verified"
-                                  : "Unverified"}
-                              </Badge>
-                            )}
-
                             {/* Server Type Badge */}
                             <Badge variant="secondary" className="w-fit">
                               {server.serverType === "local"
                                 ? "Local"
                                 : "Remote"}
                             </Badge>
-
-                            {/* Version Badge - if available */}
-                            {server.version && (
-                              <Badge
-                                variant="outline"
-                                className="bg-blue-500/10 text-blue-600 border-blue-200 text-xs"
-                              >
-                                v{server.version}
-                              </Badge>
-                            )}
 
                             {/* Status Badge */}
                             <Badge
@@ -417,8 +392,6 @@ const Home: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Expanded Server Details Section */}
-                    {isExpanded && <ServerDetails server={server} />}
                   </div>
                 );
               })}
@@ -464,11 +437,6 @@ const Home: React.FC = () => {
                         setErrorModalOpen(true);
                       }}
                     />
-                    {isExpanded && (
-                      <div className="md:col-span-2 lg:col-span-3 -mt-4 mb-4">
-                        <ServerDetails server={server} />
-                      </div>
-                    )}
                   </React.Fragment>
                 );
               })}
@@ -495,6 +463,46 @@ const Home: React.FC = () => {
           onClose={() => setErrorModalOpen(false)}
           serverName={errorServer.name}
           errorMessage={errorServer.errorMessage}
+        />
+      )}
+      
+      {/* Advanced Settings Sheet */}
+      {advancedSettingsServer && (
+        <ServerDetailsAdvancedSheet
+          server={advancedSettingsServer}
+          handleSave={async () => {
+            try {
+              const { editedCommand, editedArgs, editedBearerToken, editedAutoStart, envPairs } = useServerEditingStore.getState();
+              
+              const envObj: Record<string, string> = {};
+              envPairs.forEach((pair) => {
+                if (pair.key.trim()) {
+                  envObj[pair.key.trim()] = pair.value;
+                }
+              });
+              
+              const updatedConfig: any = {
+                name: advancedSettingsServer.name,
+                command: editedCommand,
+                args: editedArgs,
+                env: envObj,
+                autoStart: editedAutoStart,
+                inputParams: advancedSettingsServer.inputParams,
+              };
+              
+              if (advancedSettingsServer.serverType !== "local") {
+                updatedConfig.bearerToken = editedBearerToken;
+              }
+              
+              await updateServerConfig(advancedSettingsServer.id, updatedConfig);
+              setIsAdvancedEditing(false);
+              setAdvancedSettingsServer(null);
+              toast.success(t("serverDetails.updateSuccess"));
+            } catch (error) {
+              console.error("Failed to update server:", error);
+              toast.error(t("serverDetails.updateFailed"));
+            }
+          }}
         />
       )}
     </div>

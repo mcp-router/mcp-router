@@ -4,7 +4,7 @@ import { Card, CardContent } from "@mcp_router/ui";
 import { Badge } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
 import { Button } from "@mcp_router/ui";
-import { Trash, AlertCircle, ChevronRight } from "lucide-react";
+import { Trash, AlertCircle } from "lucide-react";
 import { cn } from "@/renderer/utils/tailwind-utils";
 import { useTranslation } from "react-i18next";
 
@@ -67,12 +67,6 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-medium text-sm truncate">{server.name}</h3>
-              <ChevronRight
-                className={cn(
-                  "h-4 w-4 text-muted-foreground transition-transform",
-                  isExpanded && "rotate-90",
-                )}
-              />
             </div>
             <div className="flex items-center gap-2">
               <Badge
