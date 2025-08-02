@@ -1,7 +1,7 @@
-import React from "react";
-import { MCPServer, MCPInputParam } from "@mcp_router/shared";
+import React, { useMemo } from "react";
+import { MCPServer } from "@mcp_router/shared";
 import { useTranslation } from "react-i18next";
-import { Terminal, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { ScrollArea } from "@mcp_router/ui";
 
 interface FinalCommandDisplayProps {
@@ -11,61 +11,53 @@ interface FinalCommandDisplayProps {
   editedArgs?: string[];
 }
 
-const FinalCommandDisplay: React.FC<FinalCommandDisplayProps> = ({
-  server,
-  inputParamValues = {},
-  editedCommand,
-  editedArgs,
-}) => {
-  const { t } = useTranslation();
+const FinalCommandDisplay: React.FC<FinalCommandDisplayProps> = React.memo(
+  ({ server, inputParamValues = {}, editedCommand, editedArgs }) => {
+    const { t } = useTranslation();
 
-  // Function to substitute parameters in arguments
-  const getSubstitutedArgs = (
-    args: string[],
-    params: Record<string, string> = {},
-  ) => {
-    return args.map((arg) => {
-      // Check if the arg is a parameter reference like "{test}"
-      const paramMatch = arg.match(/^\{([^}]+)\}$/);
-      if (paramMatch && paramMatch[1]) {
-        const paramName = paramMatch[1];
-        // Use the input param value, fall back to default value
-        const paramValue =
-          params[paramName] || server.inputParams?.[paramName]?.default || arg;
-        return paramValue;
-      }
-      return arg;
-    });
-  };
+    // Memoize the final command string calculation
+    const finalCommandString = useMemo(() => {
+      // Use edited values if available, otherwise use server values
+      const command =
+        editedCommand !== undefined ? editedCommand : server.command;
+      const args = editedArgs !== undefined ? editedArgs : server.args;
 
-  // Get the final command string with args
-  const getFinalCommandString = () => {
-    // Use edited values if available, otherwise use server values
-    const command =
-      editedCommand !== undefined ? editedCommand : server.command;
-    const args = editedArgs !== undefined ? editedArgs : server.args;
+      if (!command) return "";
+      if (!args || args.length === 0) return command;
 
-    if (!command) return "";
-    if (!args || args.length === 0) return command;
+      // Substitute parameters in arguments
+      const substitutedArgs = args.map((arg) => {
+        // Check if the arg is a parameter reference like "{test}"
+        const paramMatch = arg.match(/^\{([^}]+)\}$/);
+        if (paramMatch && paramMatch[1]) {
+          const paramName = paramMatch[1];
+          // Use the input param value, fall back to default value
+          const paramValue =
+            inputParamValues[paramName] ||
+            server.inputParams?.[paramName]?.default ||
+            arg;
+          return paramValue;
+        }
+        return arg;
+      });
 
-    const substitutedArgs = getSubstitutedArgs(args, inputParamValues);
-    return `${command} ${substitutedArgs.join(" ")}`;
-  };
+      return `${command} ${substitutedArgs.join(" ")}`;
+    }, [
+      editedCommand,
+      editedArgs,
+      server.command,
+      server.args,
+      server.inputParams,
+      inputParamValues,
+    ]);
 
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Terminal className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-medium text-primary">
-          {t("serverDetails.finalCommand")}
-        </h3>
-      </div>
-      <div className="pl-6">
+    return (
+      <div>
         {editedCommand || server.command ? (
           <div className="bg-muted p-4 rounded-md border shadow-sm">
             <ScrollArea className="max-h-[200px]">
               <div className="whitespace-pre-wrap text-sm font-mono text-primary break-all">
-                {getFinalCommandString()}
+                {finalCommandString}
               </div>
             </ScrollArea>
           </div>
@@ -76,8 +68,43 @@ const FinalCommandDisplay: React.FC<FinalCommandDisplayProps> = ({
           </div>
         )}
       </div>
-    </div>
-  );
-};
+    );
+  },
+  // Custom comparison function to prevent unnecessary re-renders
+  (prevProps, nextProps) => {
+    // Check if server reference changed
+    if (prevProps.server !== nextProps.server) {
+      // Deep check for relevant server properties
+      if (
+        prevProps.server.command !== nextProps.server.command ||
+        prevProps.server.args !== nextProps.server.args ||
+        prevProps.server.inputParams !== nextProps.server.inputParams
+      ) {
+        return false;
+      }
+    }
+
+    // Check edited values
+    if (prevProps.editedCommand !== nextProps.editedCommand) return false;
+    if (prevProps.editedArgs !== nextProps.editedArgs) return false;
+
+    // Deep compare inputParamValues
+    const prevKeys = Object.keys(prevProps.inputParamValues || {});
+    const nextKeys = Object.keys(nextProps.inputParamValues || {});
+    if (prevKeys.length !== nextKeys.length) return false;
+
+    for (const key of prevKeys) {
+      if (
+        prevProps.inputParamValues?.[key] !== nextProps.inputParamValues?.[key]
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+);
+
+FinalCommandDisplay.displayName = "FinalCommandDisplay";
 
 export default FinalCommandDisplay;

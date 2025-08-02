@@ -34,7 +34,7 @@ import { toast } from "sonner";
 
 interface ServerDetailsAdvancedSheetProps {
   server: MCPServer;
-  handleSave: () => void;
+  handleSave: (updatedInputParams?: any) => void;
 }
 
 const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
@@ -99,40 +99,22 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     });
   };
 
-  const handleSaveParams = async () => {
-    setIsLoading(true);
-    try {
-      const updatedInputParams = { ...(server.inputParams || {}) };
+  // This function is now only used internally to update inputParams in handleSave
+  const prepareInputParamsForSave = () => {
+    const updatedInputParams = { ...(server.inputParams || {}) };
 
-      if (server.inputParams) {
-        Object.entries(inputParamValues).forEach(([key, value]) => {
-          if (updatedInputParams[key]) {
-            updatedInputParams[key] = {
-              ...updatedInputParams[key],
-              default: value,
-            };
-          }
-        });
-      }
-
-      const updatedConfig: any = {
-        inputParams: updatedInputParams,
-        env: server.env,
-        name: server.name,
-        command: server.command,
-        args: server.args,
-      };
-
-      await updateServerConfig(server.id, updatedConfig);
-      setInitialInputParamValues(inputParamValues);
-      setIsParamsDirty(false);
-      toast.success(t("serverDetails.updateSuccess"));
-    } catch (error) {
-      console.error("Failed to update server:", error);
-      toast.error(t("serverDetails.updateFailed"));
-    } finally {
-      setIsLoading(false);
+    if (server.inputParams) {
+      Object.entries(inputParamValues).forEach(([key, value]) => {
+        if (updatedInputParams[key]) {
+          updatedInputParams[key] = {
+            ...updatedInputParams[key],
+            default: value,
+          };
+        }
+      });
     }
+
+    return updatedInputParams;
   };
 
   return (
@@ -148,46 +130,173 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs
-          defaultValue={
-            server.inputParams && Object.keys(server.inputParams).length > 0
-              ? "params"
-              : "general"
-          }
-          className="mt-4"
-        >
-          <TabsList
-            className="grid w-full"
-            style={{
-              gridTemplateColumns:
-                server.inputParams && Object.keys(server.inputParams).length > 0
-                  ? "repeat(2, 1fr)"
-                  : "1fr",
-            }}
-          >
-            {server.inputParams &&
-              Object.keys(server.inputParams).length > 0 && (
-                <TabsTrigger value="params">
-                  {t("serverDetails.inputParameters")}
-                </TabsTrigger>
-              )}
-            <TabsTrigger value="general">
-              {t("serverDetails.generalSettings")}
-            </TabsTrigger>
-          </TabsList>
+        {server.inputParams && Object.keys(server.inputParams).length > 0 ? (
+          <Tabs defaultValue="params" className="mt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="params">
+                {t("serverDetails.inputParameters")}
+              </TabsTrigger>
+              <TabsTrigger value="general">
+                {t("serverDetails.generalSettings")}
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="general" className="space-y-6 mt-4">
-            {/* Final Command Display */}
-            {server.serverType === "local" ? (
-              <FinalCommandDisplay
+            <TabsContent value="general" className="space-y-6 mt-4">
+              {/* Final Command Display */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Terminal className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-sm font-medium text-primary">
+                    {t("serverDetails.finalCommand")}
+                  </h3>
+                </div>
+                {server.serverType === "local" ? (
+                  <FinalCommandDisplay
+                    server={server}
+                    inputParamValues={inputParamValues}
+                    editedCommand={editedCommand}
+                    editedArgs={editedArgs}
+                  />
+                ) : (
+                  <ServerDetailsRemote server={server} isEditing={false} />
+                )}
+              </div>
+
+              {/* Edit Forms */}
+              {server.serverType === "local" ? (
+                <>
+                  {/* Command */}
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="server-command"
+                      className="text-base font-medium flex items-center gap-1.5"
+                    >
+                      <Terminal className="h-4 w-4 text-muted-foreground" />
+                      {t("serverDetails.command")}
+                    </Label>
+                    <Input
+                      id="server-command"
+                      value={editedCommand}
+                      onChange={(e) => setEditedCommand(e.target.value)}
+                      placeholder={t("serverDetails.commandPlaceholder")}
+                      className="font-mono"
+                    />
+                    <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
+                      {t("serverDetails.commandHelp")}
+                    </p>
+                  </div>
+
+                  {/* Arguments */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="text-base font-medium flex items-center gap-1.5">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        {t("serverDetails.arguments")}
+                      </Label>
+                      <Badge variant="outline" className="font-mono">
+                        {editedArgs.length} {t("serverDetails.itemsCount")}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2 bg-muted/30 p-3 rounded-md">
+                      {editedArgs.length === 0 && (
+                        <div className="text-sm text-muted-foreground italic flex items-center justify-center py-4">
+                          <Info className="h-4 w-4 mr-2 text-muted-foreground" />
+                          {t("serverDetails.noArguments")}
+                        </div>
+                      )}
+
+                      {editedArgs.map((arg, index) => (
+                        <div key={index} className="flex gap-2 group">
+                          <Input
+                            value={arg}
+                            onChange={(e) => updateArg(index, e.target.value)}
+                            placeholder={t("serverDetails.argumentPlaceholder")}
+                            className="font-mono group-hover:border-primary/50 transition-colors"
+                          />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeArg(index)}
+                            type="button"
+                            title={t("serverDetails.remove")}
+                            className="text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={addArg}
+                      type="button"
+                      className="mt-2 border-dashed hover:border-primary/70"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t("serverDetails.addArgument")}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <ServerDetailsRemote
+                  server={server}
+                  isEditing={true}
+                  editedBearerToken={editedBearerToken}
+                  setEditedBearerToken={setEditedBearerToken}
+                />
+              )}
+
+              {/* Auto Start Configuration (common for both server types) */}
+              <ServerDetailsAutoStart
+                server={server}
+                isEditing={true}
+                editedAutoStart={editedAutoStart}
+                setEditedAutoStart={setEditedAutoStart}
+              />
+
+              {/* Environment Variables (common for both server types) */}
+              <ServerDetailsEnvironment
+                server={server}
+                isEditing={true}
+                envPairs={envPairs}
+                updateEnvPair={updateEnvPair}
+                removeEnvPair={removeEnvPair}
+                addEnvPair={addEnvPair}
+              />
+            </TabsContent>
+
+            <TabsContent value="params" className="space-y-6 mt-4">
+              <ServerDetailsInputParams
                 server={server}
                 inputParamValues={inputParamValues}
-                editedCommand={editedCommand}
-                editedArgs={editedArgs}
+                updateInputParam={updateInputParam}
               />
-            ) : (
-              <ServerDetailsRemote server={server} isEditing={false} />
-            )}
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <div className="space-y-6 mt-4">
+            {/* Final Command Display */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Terminal className="h-4 w-4 text-muted-foreground" />
+                <h3 className="text-sm font-medium text-primary">
+                  {t("serverDetails.finalCommand")}
+                </h3>
+              </div>
+              {server.serverType === "local" ? (
+                <FinalCommandDisplay
+                  server={server}
+                  inputParamValues={inputParamValues}
+                  editedCommand={editedCommand}
+                  editedArgs={editedArgs}
+                />
+              ) : (
+                <ServerDetailsRemote server={server} isEditing={false} />
+              )}
+            </div>
 
             {/* Edit Forms */}
             {server.serverType === "local" ? (
@@ -293,40 +402,8 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
               removeEnvPair={removeEnvPair}
               addEnvPair={addEnvPair}
             />
-          </TabsContent>
-
-          {server.inputParams && Object.keys(server.inputParams).length > 0 && (
-            <TabsContent value="params" className="space-y-6 mt-4">
-              <ServerDetailsInputParams
-                server={server}
-                inputParamValues={inputParamValues}
-                updateInputParam={updateInputParam}
-              />
-              {isParamsDirty && (
-                <div className="flex justify-end">
-                  <Button
-                    onClick={handleSaveParams}
-                    disabled={isLoading}
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        {t("common.saving")}
-                      </>
-                    ) : (
-                      <>
-                        <Check className="h-4 w-4" />
-                        {t("common.save")}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
-          )}
-        </Tabs>
+          </div>
+        )}
 
         <SheetFooter className="flex justify-between sm:justify-between border-t pt-4">
           <Button
@@ -337,7 +414,32 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
           >
             {t("common.cancel")}
           </Button>
-          <Button onClick={handleSave} disabled={isLoading} className="gap-2">
+          <Button
+            onClick={async () => {
+              setIsLoading(true);
+              try {
+                // Prepare input params if they were modified
+                const updatedInputParams = isParamsDirty
+                  ? prepareInputParamsForSave()
+                  : server.inputParams;
+
+                // Call the parent's handleSave with inputParams
+                await handleSave(updatedInputParams);
+
+                // Reset dirty state after successful save
+                if (isParamsDirty) {
+                  setInitialInputParamValues(inputParamValues);
+                  setIsParamsDirty(false);
+                }
+              } catch (error) {
+                console.error("Failed to save:", error);
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            disabled={isLoading}
+            className="gap-2"
+          >
             {isLoading ? (
               <>
                 <RefreshCw className="h-4 w-4 animate-spin" />

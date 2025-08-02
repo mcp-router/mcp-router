@@ -98,33 +98,45 @@ export function setupMcpServerHandlers(): void {
   );
 
   // ファイル/ディレクトリ選択ダイアログ
-  ipcMain.handle("server:selectFile", async (_event, options?: {
-    title?: string;
-    mode?: "file" | "directory";
-    filters?: { name: string; extensions: string[] }[];
-  }) => {
-    const browserWindow = BrowserWindow.getFocusedWindow();
-    if (!browserWindow) {
-      return { success: false, error: "No focused window" };
-    }
-
-    try {
-      const isDirectory = options?.mode === "directory";
-      const result = await dialog.showOpenDialog(browserWindow, {
-        title: options?.title || (isDirectory ? "Select Directory" : "Select File"),
-        properties: isDirectory ? ["openDirectory"] : ["openFile"],
-        filters: !isDirectory && options?.filters ? options.filters : [
-          { name: "All Files", extensions: ["*"] }
-        ]
-      });
-
-      if (result.canceled) {
-        return { success: false, canceled: true };
+  ipcMain.handle(
+    "server:selectFile",
+    async (
+      _event,
+      options?: {
+        title?: string;
+        mode?: "file" | "directory";
+        filters?: { name: string; extensions: string[] }[];
+      },
+    ) => {
+      const browserWindow = BrowserWindow.getFocusedWindow();
+      if (!browserWindow) {
+        return { success: false, error: "No focused window" };
       }
 
-      return { success: true, path: result.filePaths[0] };
-    } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-    }
-  });
+      try {
+        const isDirectory = options?.mode === "directory";
+        const result = await dialog.showOpenDialog(browserWindow, {
+          title:
+            options?.title ||
+            (isDirectory ? "Select Directory" : "Select File"),
+          properties: isDirectory ? ["openDirectory"] : ["openFile"],
+          filters:
+            !isDirectory && options?.filters
+              ? options.filters
+              : [{ name: "All Files", extensions: ["*"] }],
+        });
+
+        if (result.canceled) {
+          return { success: false, canceled: true };
+        }
+
+        return { success: true, path: result.filePaths[0] };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        };
+      }
+    },
+  );
 }

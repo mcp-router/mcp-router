@@ -28,10 +28,10 @@ import { ServerCardCompact } from "@/renderer/components/mcp/server/ServerCardCo
 import { Link } from "react-router-dom";
 import { Button } from "@mcp_router/ui";
 import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@mcp_router/ui";
 import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
 import ServerDetailsAdvancedSheet from "@/renderer/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
@@ -142,25 +142,6 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center mb-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/servers">{t("serverList.title")}</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
-        <Button asChild variant="outline" size="sm" className="gap-1">
-          <Link to="/servers/add">
-            <IconPlus className="h-4 w-4" />
-            {t("serverList.addServer")}
-          </Link>
-        </Button>
-      </div>
-
       <div className="mb-4 flex gap-2">
         <div className="relative flex-1">
           <input
@@ -201,6 +182,11 @@ const Home: React.FC = () => {
           title={"Refresh Servers"}
         >
           <IconRefresh />
+        </Button>
+        <Button asChild variant="outline" size="sm" className="gap-1">
+          <Link to="/servers/add">
+            <IconPlus className="h-4 w-4" />
+          </Link>
         </Button>
       </div>
 

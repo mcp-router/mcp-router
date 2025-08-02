@@ -14,14 +14,6 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp_router/ui";
 import { CustomPagination } from "./CustomPagination";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@mcp_router/ui";
 import { useServerStore, useWorkspaceStore } from "@/renderer/stores";
 
 const DiscoverWrapper: React.FC = () => {
@@ -310,19 +302,6 @@ const DiscoverWrapper: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb className="mb-2">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link to="/servers">{t("serverList.title")}</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{t("serverList.addServer")}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
 
       {isRemoteWorkspace ? (
         // リモートワークスペースの場合、Manualコンポーネントのみを表示
