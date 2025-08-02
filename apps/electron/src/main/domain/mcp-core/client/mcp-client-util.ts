@@ -4,7 +4,11 @@ import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { getUserShellEnv } from "@/main/utils/env-utils";
 import { logError, logInfo } from "@/main/utils/logger";
-import { MCPConnectionResult, MCPServerConfig } from "@mcp_router/shared";
+import {
+  MCPConnectionResult,
+  MCPServerConfig,
+  MCPInputParam,
+} from "@mcp_router/shared";
 
 /**
  * Creates an MCP client and connects to the specified server
@@ -163,23 +167,15 @@ export async function connectToMCPServer(
 export function substituteArgsParameters(
   args: string[],
   env: Record<string, string> = {},
-  inputParams: Record<string, {
-    type?: "string" | "number" | "boolean" | "directory" | "file";
-    title?: string;
-    description?: string;
-    sensitive?: boolean;
-    required?: boolean;
-    default?: string | number | boolean;
-    min?: number;
-    max?: number;
-  }> = {},
+  inputParams: Record<string, MCPInputParam> = {},
 ): string[] {
   return args.map((arg) => {
     let result = arg;
 
     // Replace parameter placeholders - support both {PARAM} and ${PARAM} formats
     Object.entries(inputParams).forEach(([paramName, paramDef]) => {
-      const defaultValue = paramDef.default !== undefined ? String(paramDef.default) : "";
+      const defaultValue =
+        paramDef.default !== undefined ? String(paramDef.default) : "";
       const paramValue = env[paramName] || defaultValue;
       // Replace ${PARAM} format
       result = result.replace(
@@ -189,6 +185,16 @@ export function substituteArgsParameters(
       // Replace {PARAM} format
       result = result.replace(
         new RegExp(`\\{${paramName}\\}`, "g"),
+        paramValue,
+      );
+      // Replace ${user_config.PARAM} format
+      result = result.replace(
+        new RegExp(`\\$\\{user_config\\.${paramName}\\}`, "g"),
+        paramValue,
+      );
+      // Replace {user_config.PARAM} format
+      result = result.replace(
+        new RegExp(`\\{user_config\\.${paramName}\\}`, "g"),
         paramValue,
       );
     });

@@ -1,6 +1,6 @@
 import { app } from "electron";
 import * as path from "path";
-import { MCPServerConfig } from "@mcp_router/shared";
+import { MCPServerConfig, MCPInputParam } from "@mcp_router/shared";
 import { DxtManifest } from "@anthropic-ai/dxt";
 
 /**
@@ -114,10 +114,10 @@ function resolvePlatformSpecificConfig(manifest: DxtManifest): {
  */
 function convertUserConfig(
   userConfig?: Record<string, any>,
-): MCPServerConfig["inputParams"] {
+): Record<string, MCPInputParam> | undefined {
   if (!userConfig) return undefined;
 
-  const inputParams: MCPServerConfig["inputParams"] = {};
+  const inputParams: Record<string, MCPInputParam> = {};
 
   for (const [key, config] of Object.entries(userConfig)) {
     inputParams[key] = {
