@@ -7,6 +7,7 @@ import { Button } from "@mcp_router/ui";
 import { Trash, AlertCircle } from "lucide-react";
 import { cn } from "@/renderer/utils/tailwind-utils";
 import { useTranslation } from "react-i18next";
+import { hasUnsetRequiredParams } from "@/renderer/utils/server-validation-utils";
 
 interface ServerCardCompactProps {
   server: MCPServer;
@@ -68,7 +69,7 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-medium text-sm truncate">{server.name}</h3>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1">
               <Badge
                 variant="outline"
                 className={cn("h-5 text-xs", status.pulseEffect)}
@@ -81,6 +82,16 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
               {server.serverType === "remote" && (
                 <Badge variant="secondary" className="h-5 text-xs">
                   Remote
+                </Badge>
+              )}
+              {hasUnsetRequiredParams(server) && (
+                <Badge
+                  variant="destructive"
+                  className="h-5 text-xs flex items-center"
+                  title={t("serverList.requiredParamsNotSet")}
+                >
+                  <AlertCircle className="h-3 w-3 mr-1 flex-shrink-0" />
+                  <span className="truncate">{t("serverList.configRequired")}</span>
                 </Badge>
               )}
             </div>
@@ -107,7 +118,14 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
             <Switch
               checked={server.status === "running"}
               disabled={
-                server.status === "starting" || server.status === "stopping"
+                server.status === "starting" || 
+                server.status === "stopping" ||
+                hasUnsetRequiredParams(server)
+              }
+              title={
+                hasUnsetRequiredParams(server)
+                  ? t("serverList.requiredParamsNotSet")
+                  : undefined
               }
               onCheckedChange={onToggle}
               className="data-[state=checked]:bg-primary"

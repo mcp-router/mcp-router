@@ -98,7 +98,6 @@
         "other": "その他"
       },
       "detail": {
-        "title": "ログ詳細",
         "timestamp": "タイムスタンプ",
         "processingTime": "処理時間",
         "client": "クライアント",
@@ -196,7 +195,9 @@
     "activeNow": "現在アクティブ",
     "start": "開始",
     "stop": "停止",
-    "errorDetails": "エラーの詳細"
+    "errorDetails": "エラーの詳細",
+    "configRequired": "設定が必要",
+    "requiredParamsNotSet": "必須パラメータが設定されていません"
   },
   "settings": {
     "title": "設定",

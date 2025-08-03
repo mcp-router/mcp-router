@@ -24,11 +24,11 @@ import {
 } from "@mcp_router/shared";
 
 // SVGアイコンのインポート
-import claudeIcon from "../../../../../public/images/apps/claude.svg";
-import clineIcon from "../../../../../public/images/apps/cline.svg";
-import windsurfIcon from "../../../../../public/images/apps/windsurf.svg";
-import cursorIcon from "../../../../../public/images/apps/cursor.svg";
-import vscodeIcon from "../../../../../public/images/apps/vscode.svg";
+import claudeIcon from "../../../public/images/apps/claude.svg";
+import clineIcon from "../../../public/images/apps/cline.svg";
+import windsurfIcon from "../../../public/images/apps/windsurf.svg";
+import cursorIcon from "../../../public/images/apps/cursor.svg";
+import vscodeIcon from "../../../public/images/apps/vscode.svg";
 
 // アイコンのマッピング
 const ICON_MAP: Record<string, string> = {

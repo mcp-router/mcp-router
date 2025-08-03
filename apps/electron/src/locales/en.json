@@ -93,7 +93,6 @@
         "other": "Other"
       },
       "detail": {
-        "title": "Log Details",
         "timestamp": "Timestamp",
         "processingTime": "Processing Time",
         "client": "Client",
@@ -191,7 +190,9 @@
     "activeNow": "Active Now",
     "start": "Start",
     "stop": "Stop",
-    "errorDetails": "Error Details"
+    "errorDetails": "Error Details",
+    "configRequired": "Config Required",
+    "requiredParamsNotSet": "Required parameters are not configured"
   },
   "settings": {
     "title": "Settings",

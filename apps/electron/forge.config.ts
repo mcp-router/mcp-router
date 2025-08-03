@@ -15,7 +15,7 @@ require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    icon: "../../public/images/icon/icon",
+    icon: "./public/images/icon/icon",
     osxSign: {
       identity: process.env.PUBLIC_IDENTIFIER,
     },
@@ -32,13 +32,13 @@ const config: ForgeConfig = {
       authors: "fjm2u",
       description:
         "Effortlessly manage your MCP servers with the MCP Router. MCP Router provides a user-friendly interface for managing MCP servers, making it easier than ever to work with the MCP.",
-      setupIcon: "../../public/images/icon/icon.ico",
+      setupIcon: "./public/images/icon/icon.ico",
     }),
     new MakerDMG(
       {
         name: "MCP Router",
         format: "ULFO",
-        icon: "../../public/images/icon/icon.icns",
+        icon: "./public/images/icon/icon.icns",
       },
       ["darwin"],
     ),

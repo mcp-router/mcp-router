@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useAuthStore, useWorkspaceStore } from "@/renderer/stores";
 import { usePlatformAPI } from "@/renderer/platform-api";
 // @ts-ignore
-import iconImage from "../../../../../public/images/icon/icon.png";
+import iconImage from "../../../public/images/icon/icon.png";
 import {
   Sidebar,
   SidebarContent,

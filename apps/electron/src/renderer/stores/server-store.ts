@@ -121,6 +121,10 @@ export const createServerStore = (
           error instanceof Error ? error.message : "Failed to start server",
         );
         setServerStatus(id, "error");
+        // Refresh to get the errorMessage from the server
+        await refreshServers();
+        // Re-throw the error so the caller can handle it
+        throw error;
       } finally {
         setUpdating(id, false);
       }
@@ -147,6 +151,10 @@ export const createServerStore = (
           error instanceof Error ? error.message : "Failed to stop server",
         );
         setServerStatus(id, "error");
+        // Refresh to get the errorMessage from the server
+        await refreshServers();
+        // Re-throw the error so the caller can handle it
+        throw error;
       } finally {
         setUpdating(id, false);
       }

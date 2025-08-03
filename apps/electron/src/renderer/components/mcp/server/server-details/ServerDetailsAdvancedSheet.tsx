@@ -159,26 +159,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
                 />
               </div>
 
-              {/* Final Command Display */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Terminal className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-medium text-primary">
-                    {t("serverDetails.finalCommand")}
-                  </h3>
-                </div>
-                {server.serverType === "local" ? (
-                  <FinalCommandDisplay
-                    server={server}
-                    inputParamValues={inputParamValues}
-                    editedCommand={editedCommand}
-                    editedArgs={editedArgs}
-                  />
-                ) : (
-                  <ServerDetailsRemote server={server} isEditing={false} />
-                )}
-              </div>
-
               {/* Edit Forms */}
               {server.serverType === "local" ? (
                 <>
@@ -280,6 +260,26 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
                 removeEnvPair={removeEnvPair}
                 addEnvPair={addEnvPair}
               />
+
+              {/* Final Command Display */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Terminal className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-sm font-medium text-primary">
+                    {t("serverDetails.finalCommand")}
+                  </h3>
+                </div>
+                {server.serverType === "local" ? (
+                  <FinalCommandDisplay
+                    server={server}
+                    inputParamValues={inputParamValues}
+                    editedCommand={editedCommand}
+                    editedArgs={editedArgs}
+                  />
+                ) : (
+                  <ServerDetailsRemote server={server} isEditing={false} />
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="params" className="space-y-6 mt-4">
@@ -307,26 +307,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
                 onChange={(e) => setEditedName(e.target.value)}
                 placeholder={t("discoverServers.serverNameRequired")}
               />
-            </div>
-
-            {/* Final Command Display */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Terminal className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-medium text-primary">
-                  {t("serverDetails.finalCommand")}
-                </h3>
-              </div>
-              {server.serverType === "local" ? (
-                <FinalCommandDisplay
-                  server={server}
-                  inputParamValues={inputParamValues}
-                  editedCommand={editedCommand}
-                  editedArgs={editedArgs}
-                />
-              ) : (
-                <ServerDetailsRemote server={server} isEditing={false} />
-              )}
             </div>
 
             {/* Edit Forms */}
@@ -430,6 +410,26 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
               removeEnvPair={removeEnvPair}
               addEnvPair={addEnvPair}
             />
+
+            {/* Final Command Display */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Terminal className="h-4 w-4 text-muted-foreground" />
+                <h3 className="text-sm font-medium text-primary">
+                  {t("serverDetails.finalCommand")}
+                </h3>
+              </div>
+              {server.serverType === "local" ? (
+                <FinalCommandDisplay
+                  server={server}
+                  inputParamValues={inputParamValues}
+                  editedCommand={editedCommand}
+                  editedArgs={editedArgs}
+                />
+              ) : (
+                <ServerDetailsRemote server={server} isEditing={false} />
+              )}
+            </div>
           </div>
         )}
 
