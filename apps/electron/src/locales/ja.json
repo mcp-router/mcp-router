@@ -498,7 +498,6 @@
     "namePlaceholder": "サーバ名を入力",
     "command": "コマンド",
     "commandPlaceholder": "例: node, python, npx",
-    "commandHelp": "サーバを起動するためのコマンドを入力してください。",
     "arguments": "引数",
     "noArguments": "引数が設定されていません",
     "argumentPlaceholder": "引数を入力",

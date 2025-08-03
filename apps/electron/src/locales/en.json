@@ -494,7 +494,6 @@
     "namePlaceholder": "Enter server name",
     "command": "Command",
     "commandPlaceholder": "e.g. node, python, npx",
-    "commandHelp": "Enter the command to start your server.",
     "arguments": "Arguments",
     "noArguments": "No arguments configured.",
     "argumentPlaceholder": "Enter argument",
