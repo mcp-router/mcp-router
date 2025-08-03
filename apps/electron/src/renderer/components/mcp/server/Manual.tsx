@@ -44,7 +44,7 @@ interface EnvVariable {
 const Manual: React.FC = () => {
   const { t } = useTranslation();
   const platformAPI = usePlatformAPI();
-  const { createServer } = useServerStore();
+  const { createServer, refreshServers } = useServerStore();
 
   // JSON Import State
   const [jsonInput, setJsonInput] = useState("");
@@ -232,6 +232,9 @@ const Manual: React.FC = () => {
             }),
           );
         }
+
+        // Refresh servers list after successful import
+        await refreshServers();
       } else {
         toast.error(t("importFromJson.errorFailedImport"));
       }
@@ -286,19 +289,40 @@ const Manual: React.FC = () => {
 
     setIsLoadingDxt(true);
     setDxtError(null);
-    // For Electron, we need to save the file to a temporary location
-    // and pass the file path to the main process
-    const arrayBuffer = await dxtFile.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
 
-    // Process the DXT file on the main process
-    const result = await platformAPI.servers.create({
-      type: "dxt",
-      dxtFile: uint8Array,
-    });
-    console.log("DXT Import Result:", result);
+    try {
+      // For Electron, we need to save the file to a temporary location
+      // and pass the file path to the main process
+      const arrayBuffer = await dxtFile.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
 
-    setIsLoadingDxt(false);
+      // Process the DXT file on the main process
+      const result = await platformAPI.servers.create({
+        type: "dxt",
+        dxtFile: uint8Array,
+      });
+      console.log("DXT Import Result:", result);
+
+      // Show success toast
+      toast.success(t("manual.dxt.successImport", { name: dxtFile.name }));
+
+      // Refresh servers list
+      await refreshServers();
+
+      // Reset form
+      setDxtFile(null);
+      setDxtError(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : t("manual.dxt.errorFailedImport");
+      toast.error(errorMessage);
+      setDxtError(errorMessage);
+    } finally {
+      setIsLoadingDxt(false);
+    }
   };
 
   const validateForm = (): boolean => {
