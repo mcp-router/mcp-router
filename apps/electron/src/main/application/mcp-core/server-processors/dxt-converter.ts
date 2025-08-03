@@ -26,7 +26,7 @@ export function convertDxtManifestToMCPServerConfig(
   const expandedEnv = expandVariables(mcpConfig.env || {}, dxtPath);
 
   // Convert user_config to inputParams
-  const inputParams = convertUserConfig(manifest.user_config);
+  const inputParams = convertUserConfig(dxtPath, manifest.user_config);
 
   // Create the MCPServerConfig
   const config: MCPServerConfig = {
@@ -113,6 +113,7 @@ function resolvePlatformSpecificConfig(manifest: DxtManifest): {
  * Convert DXT user_config to MCPServerConfig inputParams
  */
 function convertUserConfig(
+  dxtPath: string,
   userConfig?: Record<string, any>,
 ): Record<string, MCPInputParam> | undefined {
   if (!userConfig) return undefined;
@@ -126,7 +127,9 @@ function convertUserConfig(
       description: config.description,
       sensitive: config.sensitive,
       required: config.required,
-      default: config.default,
+      default: config.default
+        ? expandVariables(config.default, dxtPath)
+        : undefined,
       min: config.min,
       max: config.max,
     };
@@ -157,10 +160,8 @@ function expandVariables(value: any, dxtPath: string): any {
  * Expand path variables in a string
  */
 function expandPathVariables(value: string, dxtPath: string): string {
-  const dxtDir = path.dirname(dxtPath);
-
   const replacements: Record<string, string> = {
-    "${__dirname}": dxtDir,
+    "${__dirname}": dxtPath,
     "${HOME}": app.getPath("home"),
     "${DESKTOP}": app.getPath("desktop"),
     "${DOCUMENTS}": app.getPath("documents"),
