@@ -18,9 +18,13 @@ export function hasUnsetRequiredParams(server: MCPServer): boolean {
       // Check if it's set in env
       const envValue = server.env?.[paramKey];
       
-      // If not set or empty string, it's unset
+      // If not set in env, check if there's a default value in inputParams
       if (!envValue || envValue.trim() === "") {
-        return true;
+        // Check if there's a default value
+        const defaultValue = paramConfig.default;
+        if (defaultValue === undefined || defaultValue === null || String(defaultValue).trim() === "") {
+          return true;
+        }
       }
     }
   }
@@ -44,7 +48,11 @@ export function getUnsetRequiredParams(server: MCPServer): string[] {
     if (paramConfig.required) {
       const envValue = server.env?.[paramKey];
       if (!envValue || envValue.trim() === "") {
-        unsetParams.push(paramKey);
+        // Check if there's a default value
+        const defaultValue = paramConfig.default;
+        if (defaultValue === undefined || defaultValue === null || String(defaultValue).trim() === "") {
+          unsetParams.push(paramKey);
+        }
       }
     }
   }
