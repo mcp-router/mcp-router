@@ -297,12 +297,10 @@ const Manual: React.FC = () => {
       const uint8Array = new Uint8Array(arrayBuffer);
 
       // Process the DXT file on the main process
-      const result = await platformAPI.servers.create({
+      await platformAPI.servers.create({
         type: "dxt",
         dxtFile: uint8Array,
       });
-      console.log("DXT Import Result:", result);
-
       // Show success toast
       toast.success(t("manual.dxt.successImport", { name: dxtFile.name }));
 
@@ -317,7 +315,9 @@ const Manual: React.FC = () => {
       }
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : t("manual.dxt.errorFailedImport");
+        error instanceof Error
+          ? error.message
+          : t("manual.dxt.errorFailedImport");
       toast.error(errorMessage);
       setDxtError(errorMessage);
     } finally {

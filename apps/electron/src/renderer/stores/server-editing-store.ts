@@ -6,6 +6,7 @@ interface ServerEditingState {
   isLoading: boolean;
 
   // Edited values
+  editedName: string;
   editedCommand: string;
   editedArgs: string[];
   editedBearerToken: string;
@@ -15,6 +16,7 @@ interface ServerEditingState {
   // Actions
   setIsAdvancedEditing: (isEditing: boolean) => void;
   setIsLoading: (isLoading: boolean) => void;
+  setEditedName: (name: string) => void;
   setEditedCommand: (command: string) => void;
   setEditedArgs: (args: string[]) => void;
   setEditedBearerToken: (token: string) => void;
@@ -32,6 +34,7 @@ interface ServerEditingState {
 
   // Initialize editing state from server
   initializeFromServer: (server: {
+    name?: string;
     command?: string;
     args?: string[];
     bearerToken?: string;
@@ -47,6 +50,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
   // Initial state
   isAdvancedEditing: false,
   isLoading: false,
+  editedName: "",
   editedCommand: "",
   editedArgs: [],
   editedBearerToken: "",
@@ -56,6 +60,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
   // Basic setters
   setIsAdvancedEditing: (isAdvancedEditing) => set({ isAdvancedEditing }),
   setIsLoading: (isLoading) => set({ isLoading }),
+  setEditedName: (editedName) => set({ editedName }),
   setEditedCommand: (editedCommand) => set({ editedCommand }),
   setEditedArgs: (editedArgs) => set({ editedArgs }),
   setEditedBearerToken: (editedBearerToken) => set({ editedBearerToken }),
@@ -100,6 +105,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
   // Initialize from server
   initializeFromServer: (server) => {
     set({
+      editedName: server.name || "",
       editedCommand: server.command || "",
       editedArgs: server.args || [],
       editedBearerToken: server.bearerToken || "",
@@ -116,6 +122,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
     set({
       isAdvancedEditing: false,
       isLoading: false,
+      editedName: "",
       editedCommand: "",
       editedArgs: [],
       editedBearerToken: "",

@@ -64,7 +64,7 @@ export async function processDxtFile(
     }
 
     // Convert manifest to MCPServerConfig
-    return convertDxtManifestToMCPServerConfig(manifest, sourcePath, hash);
+    return convertDxtManifestToMCPServerConfig(manifest, sourcePath);
   } catch (error) {
     // Clean up on error
     if (fs.existsSync(dxtFolder)) {

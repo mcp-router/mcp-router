@@ -2,6 +2,7 @@ import { app } from "electron";
 import * as path from "path";
 import { MCPServerConfig, MCPInputParam } from "@mcp_router/shared";
 import { DxtManifest } from "@anthropic-ai/dxt";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Convert DXT manifest to MCPServerConfig
@@ -9,13 +10,12 @@ import { DxtManifest } from "@anthropic-ai/dxt";
 export function convertDxtManifestToMCPServerConfig(
   manifest: DxtManifest,
   dxtPath: string,
-  hash: string,
 ): MCPServerConfig {
   // Check platform compatibility first
   checkPlatformCompatibility(manifest);
 
   // Generate unique server ID
-  const serverId = generateServerId(manifest, hash);
+  const serverId = generateServerId(manifest);
 
   // Get platform-specific config
   const mcpConfig = resolvePlatformSpecificConfig(manifest);
@@ -63,12 +63,12 @@ export function convertDxtManifestToMCPServerConfig(
 }
 
 /**
- * Generate a unique server ID based on manifest and hash
+ * Generate a unique server ID based on manifest
  */
-function generateServerId(manifest: DxtManifest, hash: string): string {
-  // Use name and hash to create a unique ID
+function generateServerId(manifest: DxtManifest): string {
+  // Use name and UUID to create a unique ID
   const safeName = manifest.name.replace(/[^a-zA-Z0-9-_]/g, "-");
-  return `dxt-${safeName}-${hash}`;
+  return `dxt-${safeName}-${uuidv4()}`;
 }
 
 /**

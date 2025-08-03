@@ -302,7 +302,6 @@ const DiscoverWrapper: React.FC = () => {
 
   return (
     <div className="space-y-6">
-
       {isRemoteWorkspace ? (
         // リモートワークスペースの場合、Manualコンポーネントのみを表示
         <div className="space-y-6">

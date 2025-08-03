@@ -454,7 +454,7 @@ const Home: React.FC = () => {
       {advancedSettingsServer && (
         <ServerDetailsAdvancedSheet
           server={advancedSettingsServer}
-          handleSave={async () => {
+          handleSave={async (updatedInputParams?: any, editedName?: string) => {
             try {
               const {
                 editedCommand,
@@ -472,12 +472,13 @@ const Home: React.FC = () => {
               });
 
               const updatedConfig: any = {
-                name: advancedSettingsServer.name,
+                name: editedName || advancedSettingsServer.name,
                 command: editedCommand,
                 args: editedArgs,
                 env: envObj,
                 autoStart: editedAutoStart,
-                inputParams: advancedSettingsServer.inputParams,
+                inputParams:
+                  updatedInputParams || advancedSettingsServer.inputParams,
               };
 
               if (advancedSettingsServer.serverType !== "local") {
