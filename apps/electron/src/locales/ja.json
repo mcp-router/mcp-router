@@ -624,7 +624,9 @@
       "dxtFilesOnly": "DXTファイルのみ",
       "remove": "削除",
       "error": "エラー",
-      "errorInvalidFile": "有効なDXTファイルを選択してください"
+      "errorInvalidFile": "有効なDXTファイルを選択してください",
+      "successImport": "{{name}} を正常にインポートしました",
+      "errorFailedImport": "DXTファイルのインポートに失敗しました"
     }
   },
   "pagination": {

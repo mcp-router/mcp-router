@@ -616,7 +616,9 @@
       "dxtFilesOnly": "DXT files only",
       "remove": "Remove",
       "error": "Error",
-      "errorInvalidFile": "Please select a valid DXT file"
+      "errorInvalidFile": "Please select a valid DXT file",
+      "successImport": "Successfully imported {{name}}",
+      "errorFailedImport": "Failed to import DXT file"
     }
   },
   "pagination": {
