@@ -170,7 +170,26 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
         // 2. Now refresh servers and agents (auth is ready)
         try {
+          // Initial refresh
           await useServerStore.getState().refreshServers();
+
+          // Check for AutoStart servers that might still be starting
+          const checkAutoStartServers = async (retryCount = 0) => {
+            const servers = useServerStore.getState().servers;
+            const hasStartingAutoStart = servers.some(
+              (s) => s.status === "starting" && s.autoStart && !s.disabled,
+            );
+
+            if (hasStartingAutoStart && retryCount < 5) {
+              // Wait and retry
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+              await useServerStore.getState().refreshServers();
+              await checkAutoStartServers(retryCount + 1);
+            }
+          };
+
+          // Start checking after initial refresh
+          await checkAutoStartServers();
         } catch (error) {
           console.error("Failed to refresh servers:", error);
         }
