@@ -1,6 +1,6 @@
 {
   "name": "mcp-router",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "private": true,
   "repository": {
     "type": "git",
@@ -14,6 +14,7 @@
   "scripts": {
     "dev": "turbo run dev --filter=@mcp_router/shared --filter=@mcp_router/ui --filter=@mcp_router/electron",
     "build": "turbo run build",
+    "publish": "turbo run publish --filter=@mcp_router/electron",
     "make": "turbo run make",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx,.mjs,.cjs --fix",
     "typecheck": "turbo run typecheck",

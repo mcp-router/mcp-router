@@ -1,6 +1,6 @@
 {
   "name": "@mcp_router/tailwind-config",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "private": true,
   "main": "index.js",
   "files": [
