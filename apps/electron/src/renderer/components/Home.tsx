@@ -27,12 +27,6 @@ import { ServerErrorModal } from "@/renderer/components/common/ServerErrorModal"
 import { ServerCardCompact } from "@/renderer/components/mcp/server/ServerCardCompact";
 import { Link } from "react-router-dom";
 import { Button } from "@mcp_router/ui";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@mcp_router/ui";
 import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
 import ServerDetailsAdvancedSheet from "@/renderer/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
 import { useServerEditingStore } from "@/renderer/stores";

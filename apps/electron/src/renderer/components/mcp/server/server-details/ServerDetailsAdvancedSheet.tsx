@@ -181,9 +181,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
                       placeholder={t("serverDetails.commandPlaceholder")}
                       className="font-mono"
                     />
-                    <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
-                      {t("serverDetails.commandHelp")}
-                    </p>
                   </div>
 
                   {/* Arguments */}
@@ -317,9 +314,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
                     placeholder={t("serverDetails.commandPlaceholder")}
                     className="font-mono"
                   />
-                  <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
-                    {t("serverDetails.commandHelp")}
-                  </p>
                 </div>
 
                 {/* Arguments */}
