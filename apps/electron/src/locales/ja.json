@@ -175,7 +175,8 @@
       "title": "サーバを認証する",
       "description": "信頼性を向上させるためにサーバを認証する",
       "link": "サーバを認証"
-    }
+    },
+    "serverNameRequired": "サーバー名を入力してください"
   },
   "serverList": {
     "title": "サーバ管理",
@@ -471,6 +472,7 @@
   },
   "serverDetails": {
     "configuration": "設定",
+    "serverName": "サーバー名",
     "finalCommand": "実行コマンド",
     "noInputParams": "入力パラメータがありません",
     "parameters": "パラメータ",

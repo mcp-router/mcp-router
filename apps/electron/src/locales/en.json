@@ -170,7 +170,8 @@
       "title": "Verify Your Server",
       "description": "Verify your server to enhance trust",
       "link": "Verify Server"
-    }
+    },
+    "serverNameRequired": "Please enter a server name"
   },
   "serverList": {
     "title": "MCP Servers",
@@ -467,6 +468,7 @@
   },
   "serverDetails": {
     "configuration": "Configuration",
+    "serverName": "Server Name",
     "finalCommand": "Execution Command",
     "noInputParams": "No input parameters",
     "parameters": "Parameters",
