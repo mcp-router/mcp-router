@@ -2,6 +2,7 @@ import { BaseRepository } from "../../core/base-repository";
 import { SqliteManager } from "../../core/sqlite-manager";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
+import { SERVERS_SCHEMA } from "../../schema/tables/servers";
 
 /**
  * サーバ情報用リポジトリクラス
@@ -25,36 +26,15 @@ export class ServerRepository extends BaseRepository<MCPServer> {
    */
   protected initializeTable(): void {
     try {
-      // serversテーブルを作成（存在しない場合）
-      this.db.execute(`
-        CREATE TABLE IF NOT EXISTS servers (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          command TEXT,
-          args TEXT,
-          env TEXT,
-          auto_start INTEGER NOT NULL,
-          disabled INTEGER NOT NULL,
-          auto_approve TEXT,
-          context_path TEXT,
-          server_type TEXT NOT NULL DEFAULT 'local',
-          remote_url TEXT,
-          bearer_token TEXT,
-          input_params TEXT,
-          description TEXT,
-          version TEXT,
-          latest_version TEXT,
-          verification_status TEXT,
-          required_params TEXT,
-          created_at INTEGER NOT NULL,
-          updated_at INTEGER NOT NULL
-        )
-      `);
+      // スキーマ定義を使用してテーブルを作成
+      this.db.execute(SERVERS_SCHEMA.createSQL);
 
-      // インデックスを作成
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_servers_name ON servers(name)",
-      );
+      // スキーマ定義からインデックスを作成
+      if (SERVERS_SCHEMA.indexes) {
+        SERVERS_SCHEMA.indexes.forEach((indexSQL) => {
+          this.db.execute(indexSQL);
+        });
+      }
 
       console.log("[ServerRepository] テーブルの初期化が完了しました");
     } catch (error) {

@@ -2,6 +2,7 @@ import { BaseRepository } from "../../core/base-repository";
 import { SqliteManager } from "../../core/sqlite-manager";
 import { MCPHook } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
+import { HOOKS_SCHEMA } from "../../schema/tables/hooks";
 
 /**
  * Hook情報用リポジトリクラス
@@ -25,31 +26,15 @@ export class HookRepository extends BaseRepository<MCPHook> {
    */
   protected initializeTable(): void {
     try {
-      // hooksテーブルを作成（存在しない場合）
-      this.db.execute(`
-        CREATE TABLE IF NOT EXISTS hooks (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          description TEXT,
-          enabled INTEGER NOT NULL DEFAULT 1,
-          execution_order INTEGER NOT NULL DEFAULT 0,
-          hook_type TEXT NOT NULL CHECK(hook_type IN ('pre', 'post', 'both')),
-          script TEXT NOT NULL,
-          created_at INTEGER NOT NULL,
-          updated_at INTEGER NOT NULL
-        )
-      `);
+      // スキーマ定義を使用してテーブルを作成
+      this.db.execute(HOOKS_SCHEMA.createSQL);
 
-      // インデックスを作成
-      this.db.execute(`
-        CREATE INDEX IF NOT EXISTS idx_hooks_enabled ON hooks(enabled)
-      `);
-      this.db.execute(`
-        CREATE INDEX IF NOT EXISTS idx_hooks_execution_order ON hooks(execution_order)
-      `);
-      this.db.execute(`
-        CREATE INDEX IF NOT EXISTS idx_hooks_hook_type ON hooks(hook_type)
-      `);
+      // スキーマ定義からインデックスを作成
+      if (HOOKS_SCHEMA.indexes) {
+        HOOKS_SCHEMA.indexes.forEach((indexSQL) => {
+          this.db.execute(indexSQL);
+        });
+      }
 
       console.log("[HookRepository] Table and indexes initialized");
     } catch (error) {

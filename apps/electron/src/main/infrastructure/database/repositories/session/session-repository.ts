@@ -2,6 +2,7 @@ import { BaseRepository } from "../../core/base-repository";
 import { SqliteManager } from "../../core/sqlite-manager";
 import { v4 as uuidv4 } from "uuid";
 import { LocalChatSession, LocalSessionStatus } from "@mcp_router/shared";
+import { CHAT_SESSIONS_SCHEMA } from "../../schema/tables/chat-sessions";
 
 /**
  * Chat session repository for local database storage
@@ -20,30 +21,15 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
    */
   protected initializeTable(): void {
     try {
-      // chat_sessionsテーブルを作成（存在しない場合）
-      this.db.execute(`
-        CREATE TABLE IF NOT EXISTS chat_sessions (
-          id TEXT PRIMARY KEY,
-          agent_id TEXT NOT NULL,
-          title TEXT,
-          messages TEXT NOT NULL DEFAULT '[]',
-          created_at TEXT NOT NULL DEFAULT (datetime('now')),
-          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-          status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'processing', 'completed', 'failed')),
-          source TEXT NOT NULL DEFAULT 'ui'
-        )
-      `);
+      // スキーマ定義を使用してテーブルを作成
+      this.db.execute(CHAT_SESSIONS_SCHEMA.createSQL);
 
-      // インデックスを作成
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_chat_sessions_agent_id ON chat_sessions(agent_id)",
-      );
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_chat_sessions_created ON chat_sessions(created_at)",
-      );
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status)",
-      );
+      // スキーマ定義からインデックスを作成
+      if (CHAT_SESSIONS_SCHEMA.indexes) {
+        CHAT_SESSIONS_SCHEMA.indexes.forEach((indexSQL) => {
+          this.db.execute(indexSQL);
+        });
+      }
 
       console.log("[SessionRepository] テーブルの初期化が完了しました");
     } catch (error) {

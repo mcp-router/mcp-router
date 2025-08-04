@@ -7,6 +7,7 @@ import {
   RequestLogQueryResult,
 } from "@mcp_router/shared";
 import { encodeCursor, decodeCursor } from "@/renderer/utils/cursor";
+import { REQUEST_LOGS_SCHEMA } from "../../schema/tables/request-logs";
 
 /**
  * リクエストログ用リポジトリクラス
@@ -30,40 +31,15 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
    */
   protected initializeTable(): void {
     try {
-      // requestLogsテーブルを作成（存在しない場合）
-      this.db.execute(`
-        CREATE TABLE IF NOT EXISTS requestLogs (
-          id TEXT PRIMARY KEY,
-          timestamp INTEGER NOT NULL,
-          client_id TEXT NOT NULL,
-          client_name TEXT NOT NULL,
-          server_id TEXT NOT NULL,
-          server_name TEXT NOT NULL,
-          request_type TEXT NOT NULL,
-          request_params TEXT,
-          response_data TEXT,
-          response_status TEXT NOT NULL,
-          duration INTEGER NOT NULL,
-          error_message TEXT
-        )
-      `);
+      // スキーマ定義を使用してテーブルを作成
+      this.db.execute(REQUEST_LOGS_SCHEMA.createSQL);
 
-      // インデックスを作成
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_request_logs_timestamp ON requestLogs(timestamp)",
-      );
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_request_logs_client_id ON requestLogs(client_id)",
-      );
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_request_logs_server_id ON requestLogs(server_id)",
-      );
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_request_logs_request_type ON requestLogs(request_type)",
-      );
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_request_logs_response_status ON requestLogs(response_status)",
-      );
+      // スキーマ定義からインデックスを作成
+      if (REQUEST_LOGS_SCHEMA.indexes) {
+        REQUEST_LOGS_SCHEMA.indexes.forEach((indexSQL) => {
+          this.db.execute(indexSQL);
+        });
+      }
 
       console.log("[LogRepository] テーブルの初期化が完了しました");
     } catch (error) {

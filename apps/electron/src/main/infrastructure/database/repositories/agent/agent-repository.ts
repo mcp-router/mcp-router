@@ -2,6 +2,7 @@ import { BaseRepository } from "../../core/base-repository";
 import { SqliteManager } from "../../core/sqlite-manager";
 import { AgentConfig } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
+import { AGENTS_SCHEMA } from "../../schema/tables/agents";
 
 /**
  * エージェント情報用リポジトリクラス
@@ -25,32 +26,15 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
    */
   protected initializeTable(): void {
     try {
-      // agentsテーブルを作成（存在しない場合）
-      this.db.execute(`
-        CREATE TABLE IF NOT EXISTS agents (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          mcp_servers TEXT NOT NULL,
-          tool_permissions TEXT NOT NULL DEFAULT '{}',
-          purpose TEXT NOT NULL,
-          instructions TEXT NOT NULL,
-          description TEXT,
-          auto_execute_tool INTEGER NOT NULL DEFAULT 0,
-          created_at TEXT NOT NULL DEFAULT (datetime('now')),
-          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-          version TEXT NOT NULL DEFAULT '1.0.0',
-          status TEXT NOT NULL DEFAULT 'development',
-          tags TEXT NOT NULL DEFAULT '[]'
-        )
-      `);
+      // スキーマ定義を使用してテーブルを作成
+      this.db.execute(AGENTS_SCHEMA.createSQL);
 
-      // インデックスを作成
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_agents_status ON agents(status)",
-      );
-      this.db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_agents_created ON agents(created_at)",
-      );
+      // スキーマ定義からインデックスを作成
+      if (AGENTS_SCHEMA.indexes) {
+        AGENTS_SCHEMA.indexes.forEach((indexSQL) => {
+          this.db.execute(indexSQL);
+        });
+      }
 
       console.log("[AgentRepository] テーブルの初期化が完了しました");
     } catch (error) {

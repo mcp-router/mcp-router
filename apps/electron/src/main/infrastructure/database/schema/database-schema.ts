@@ -13,6 +13,8 @@ import {
   SETTINGS_SCHEMA,
   MIGRATIONS_SCHEMA,
   WORKSPACES_SCHEMA,
+  HOOKS_SCHEMA,
+  TOKENS_SCHEMA,
 } from "./tables";
 
 /**
@@ -32,6 +34,8 @@ export const DATABASE_SCHEMA = {
   chat_sessions: CHAT_SESSIONS_SCHEMA,
   migrations: MIGRATIONS_SCHEMA,
   workspaces: WORKSPACES_SCHEMA,
+  hooks: HOOKS_SCHEMA,
+  tokens: TOKENS_SCHEMA,
 } as const;
 
 /**

@@ -886,36 +886,11 @@ export class DatabaseMigration {
    */
   private migrateAddHooksTable(db: SqliteManager): void {
     try {
-      // hooksテーブルを作成
-      db.execute(`
-          CREATE TABLE IF NOT EXISTS hooks (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            description TEXT,
-            enabled INTEGER NOT NULL DEFAULT 1,
-            execution_order INTEGER NOT NULL DEFAULT 0,
-            hook_type TEXT NOT NULL CHECK(hook_type IN ('pre', 'post', 'both')),
-            script TEXT NOT NULL,
-            created_at INTEGER NOT NULL,
-            updated_at INTEGER NOT NULL
-          )
-        `);
-
-      // インデックスを作成
-      db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_hooks_enabled ON hooks(enabled)`,
-      );
-      db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_hooks_execution_order ON hooks(execution_order)`,
-      );
-      db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_hooks_hook_type ON hooks(hook_type)`,
-      );
-      db.execute(
-        `CREATE INDEX IF NOT EXISTS idx_hooks_created_at ON hooks(created_at)`,
-      );
+      // HookRepositoryが初めて呼ばれた時に
+      // テーブルが作成されるため、ここでは何もしない
+      console.log("hooksテーブルの作成はHookRepositoryに委譲されます");
     } catch (error) {
-      console.error("hooksテーブルの作成中にエラーが発生しました:", error);
+      console.error("hooksテーブルのマイグレーション中にエラーが発生しました:", error);
       throw error;
     }
   }

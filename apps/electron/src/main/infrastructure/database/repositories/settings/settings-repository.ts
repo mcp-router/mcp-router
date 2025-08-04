@@ -1,5 +1,6 @@
 import { SqliteManager } from "../../core/sqlite-manager";
 import { AppSettings, DEFAULT_APP_SETTINGS } from "@mcp_router/shared";
+import { SETTINGS_SCHEMA } from "../../schema/tables/settings";
 
 /**
  * アプリケーション設定を管理するリポジトリ
@@ -17,7 +18,30 @@ export class SettingsRepository {
       "[SettingsRepository] Constructor called with database:",
       this.db?.getDbPath?.() || "database instance",
     );
+    this.initializeTable();
     this.loadSettingsToCache();
+  }
+
+  /**
+   * テーブルを初期化
+   */
+  private initializeTable(): void {
+    try {
+      // スキーマ定義を使用してテーブルを作成
+      this.db.execute(SETTINGS_SCHEMA.createSQL);
+
+      // スキーマ定義からインデックスを作成
+      if (SETTINGS_SCHEMA.indexes) {
+        SETTINGS_SCHEMA.indexes.forEach((indexSQL) => {
+          this.db.execute(indexSQL);
+        });
+      }
+
+      console.log("[SettingsRepository] テーブルの初期化が完了しました");
+    } catch (error) {
+      console.error("[SettingsRepository] テーブルの初期化中にエラー:", error);
+      throw error;
+    }
   }
 
   /**
