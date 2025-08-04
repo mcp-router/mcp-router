@@ -91,7 +91,9 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
                   title={t("serverList.requiredParamsNotSet")}
                 >
                   <AlertCircle className="h-3 w-3 mr-1 flex-shrink-0" />
-                  <span className="truncate">{t("serverList.configRequired")}</span>
+                  <span className="truncate">
+                    {t("serverList.configRequired")}
+                  </span>
                 </Badge>
               )}
             </div>
@@ -118,7 +120,7 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
             <Switch
               checked={server.status === "running"}
               disabled={
-                server.status === "starting" || 
+                server.status === "starting" ||
                 server.status === "stopping" ||
                 hasUnsetRequiredParams(server)
               }

@@ -1,6 +1,6 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { MCPServer } from "@mcp_router/shared";
+import { MCPServer, HookContext } from "@mcp_router/shared";
 import {
   applyDisplayRules,
   applyRulesToInputSchema,
@@ -11,9 +11,11 @@ import {
   createUriVariants,
 } from "@/main/utils/uri-utils";
 import { RequestLogEntry } from "./types";
-import { LoggingService } from "./logging";
+import { LoggingService, McpLogger } from "./logging";
 import { ServerManager } from "./server-manager";
 import { TokenValidator } from "./token-validator";
+import { HookManager } from "./hook-manager";
+import { DatabaseService } from "@/main/infrastructure/database";
 
 /**
  * Handles all request processing for the aggregator server
@@ -22,6 +24,7 @@ export class RequestHandlers {
   private serverManager: ServerManager;
   private loggingService: LoggingService;
   private tokenValidator: TokenValidator;
+  private hookManager: HookManager;
   private originalProtocols: Map<string, string> = new Map();
   private toolNameToServerMap: Map<string, string> = new Map();
   private serverStatusMap: Map<string, boolean>;
@@ -29,7 +32,11 @@ export class RequestHandlers {
   private clients: Map<string, Client>;
   private serverNameToIdMap: Map<string, string>;
 
-  constructor(serverManager: ServerManager, loggingService: LoggingService) {
+  constructor(
+    serverManager: ServerManager,
+    loggingService: LoggingService,
+    databaseService: DatabaseService,
+  ) {
     this.serverManager = serverManager;
     this.loggingService = loggingService;
 
@@ -41,6 +48,7 @@ export class RequestHandlers {
     this.serverStatusMap = maps.serverStatusMap;
 
     this.tokenValidator = new TokenValidator(this.serverNameToIdMap);
+    this.hookManager = new HookManager(databaseService, new McpLogger());
   }
 
   /**
@@ -116,13 +124,42 @@ export class RequestHandlers {
       );
     }
 
+    // Create hook context
+    const hookContext: HookContext = {
+      requestType: "CallTool",
+      serverName,
+      serverId,
+      clientId,
+      token,
+      toolName: originalToolName,
+      request: {
+        method: "tools/call",
+        params: request.params,
+      },
+      metadata: {},
+      startTime: Date.now(),
+    };
+
+    // Execute pre-hooks
+    const preHookResult = await this.hookManager.executePreHooks(hookContext);
+    if (!preHookResult.continue) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        preHookResult.error?.message || "Request blocked by hook",
+      );
+    }
+
+    // Update context from pre-hook result
+    const updatedContext = preHookResult.context || hookContext;
+    const updatedRequest = updatedContext.request.params;
+
     // Add client ID and name to log entry
     const logEntry: RequestLogEntry = {
       timestamp: new Date().toISOString(),
       requestType: "CallTool",
       params: {
         toolName,
-        arguments: request.params.arguments,
+        arguments: updatedRequest.arguments,
       },
       result: "success",
       duration: 0,
@@ -130,19 +167,49 @@ export class RequestHandlers {
     };
 
     try {
-      // Call the tool on the server
+      // Call the tool on the server with potentially modified params
       const result = await client.callTool({
         name: originalToolName,
-        arguments: request.params.arguments || {},
+        arguments: updatedRequest.arguments || {},
       });
 
+      // Create post-hook context with response
+      const postContext: HookContext = {
+        ...updatedContext,
+        response: result,
+        duration: Date.now() - updatedContext.startTime,
+      };
+
+      // Execute post-hooks
+      const postHookResult =
+        await this.hookManager.executePostHooks(postContext);
+      if (!postHookResult.continue) {
+        throw new McpError(
+          ErrorCode.InternalError,
+          postHookResult.error?.message || "Response blocked by hook",
+        );
+      }
+
+      // Use the potentially modified response
+      const finalResult = postHookResult.context?.response || result;
+
       // Log success
-      logEntry.response = result;
+      logEntry.response = finalResult;
       logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
       this.loggingService.recordRequestLog(logEntry, serverName);
 
-      return result;
+      return finalResult;
     } catch (error: any) {
+      // Create error context for post-hooks
+      const errorContext: HookContext = {
+        ...updatedContext,
+        error: error,
+        duration: Date.now() - updatedContext.startTime,
+      };
+
+      // Execute post-hooks even on error
+      await this.hookManager.executePostHooks(errorContext);
+
       // Log error
       logEntry.result = "error";
       logEntry.errorMessage = error.message || String(error);

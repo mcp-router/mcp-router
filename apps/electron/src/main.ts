@@ -11,6 +11,7 @@ import { getPlatformAPIManager } from "@/main/application/workspace/platform-api
 import { getWorkspaceService } from "./main/domain/workspace/workspace-service";
 import { setupIpcHandlers } from "./main/infrastructure/ipc";
 import { getIsAutoUpdateInProgress } from "./main/infrastructure/ipc/handlers/update-handler";
+import { getDatabaseService } from "./main/infrastructure/database";
 import {
   initializeEnvironment,
   isDevelopment,
@@ -235,8 +236,11 @@ async function initMCPServices(): Promise<void> {
   // Platform APIマネージャーの初期化（ワークスペースDBを設定）
   await getPlatformAPIManager().initialize();
 
+  // データベースサービスを取得
+  const databaseService = getDatabaseService();
+
   // MCPサーバーマネージャーの初期化
-  mcpServerManager = new MCPServerManager();
+  mcpServerManager = new MCPServerManager(databaseService);
 
   // データベースからサーバーリストを読み込む
   await mcpServerManager.initializeAsync();
@@ -315,11 +319,12 @@ async function initApplication(): Promise<void> {
   // データベース初期化
   await initDatabase();
 
-  // IPC通信ハンドラの初期化
-  setupIpcHandlers();
-
   // MCPサービス初期化
   await initMCPServices();
+
+  // IPC通信ハンドラの初期化（DatabaseServiceを渡す）
+  const databaseService = getDatabaseService();
+  setupIpcHandlers(databaseService);
 
   // UI初期化
   initUI();

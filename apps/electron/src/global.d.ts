@@ -226,6 +226,16 @@ declare global {
       ) => Promise<{ token: string | null }>;
       onWorkspaceSwitched: (callback: (workspace: any) => void) => () => void;
       onWorkspaceConfigChanged: (callback: (config: any) => void) => () => void;
+
+      // Hook Management
+      listHooks: () => Promise<any[]>;
+      getHook: (id: string) => Promise<any>;
+      createHook: (hookData: any) => Promise<any>;
+      updateHook: (id: string, updates: any) => Promise<any>;
+      deleteHook: (id: string) => Promise<boolean>;
+      setHookEnabled: (id: string, enabled: boolean) => Promise<any>;
+      reorderHooks: (hookIds: string[]) => Promise<any[]>;
+      testHook: (id: string, context: any) => Promise<any>;
     };
   }
 }

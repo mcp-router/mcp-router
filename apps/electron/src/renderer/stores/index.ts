@@ -24,6 +24,9 @@ function getPlatformAPI(): PlatformAPI {
   return useWorkspaceStore.getState().getPlatformAPI();
 }
 
+// Export for use in other stores
+export { getPlatformAPI };
+
 // Create store instances with dynamic platform API getter
 export const useServerStore = createServerStore(getPlatformAPI);
 export const useAuthStore = createAuthStore(getPlatformAPI);

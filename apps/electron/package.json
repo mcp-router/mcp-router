@@ -29,6 +29,9 @@
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",
     "@anthropic-ai/dxt": "^0.2.6",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@mcp_router/remote-api-types": "workspace:*",
     "@mcp_router/shared": "workspace:*",
     "@mcp_router/tailwind-config": "workspace:*",
@@ -48,6 +51,7 @@
     "highlight.js": "^11.11.1",
     "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.1.0",
+    "immer": "^10.1.1",
     "lucide-react": "^0.487.0",
     "node-fetch": "^3.3.2",
     "node-machine-id": "^1.1.12",

@@ -8,6 +8,7 @@ import {
   IconRobot,
   IconDownload,
   IconFileText,
+  IconWebhook,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore, useWorkspaceStore } from "@/renderer/stores";
@@ -237,6 +238,24 @@ const SidebarComponent: React.FC = () => {
                         >
                           <IconFileText className="h-6 w-6" />
                           <span className="text-base">{t("rules.title")}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
+
+                  {!isRemoteWorkspace && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip="Hooks"
+                        isActive={location.pathname === "/hooks"}
+                      >
+                        <Link
+                          to="/hooks"
+                          className="flex items-center gap-3 py-5 px-3 w-full"
+                        >
+                          <IconWebhook className="h-6 w-6" />
+                          <span className="text-base">Hooks</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

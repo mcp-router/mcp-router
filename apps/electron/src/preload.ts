@@ -255,4 +255,18 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.removeListener("workspace:switched", listener);
     };
   },
+
+  // Hook Management
+  listHooks: () => ipcRenderer.invoke("hook:list"),
+  getHook: (id: string) => ipcRenderer.invoke("hook:get", id),
+  createHook: (hookData: any) => ipcRenderer.invoke("hook:create", hookData),
+  updateHook: (id: string, updates: any) =>
+    ipcRenderer.invoke("hook:update", id, updates),
+  deleteHook: (id: string) => ipcRenderer.invoke("hook:delete", id),
+  setHookEnabled: (id: string, enabled: boolean) =>
+    ipcRenderer.invoke("hook:setEnabled", id, enabled),
+  reorderHooks: (hookIds: string[]) =>
+    ipcRenderer.invoke("hook:reorder", hookIds),
+  testHook: (id: string, context: any) =>
+    ipcRenderer.invoke("hook:test", id, context),
 });

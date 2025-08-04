@@ -7,6 +7,7 @@ export * from "./domains/package-api";
 export * from "./domains/server-api";
 export * from "./domains/settings-api";
 export * from "./domains/workspace-api";
+export * from "./hook-api";
 
 // Export main platform API interface
 export * from "./platform-api";

@@ -40,6 +40,9 @@ import { postHogService } from "../services/posthog-service";
 const WorkspaceManagement = React.lazy(
   () => import("./workspace/WorkspaceManagement"),
 );
+const HookManager = React.lazy(
+  () => import("./hook/HookManager"),
+);
 
 // Main App component
 const App: React.FC = () => {
@@ -238,6 +241,7 @@ const App: React.FC = () => {
               <Route path="/clients" element={<McpAppsManager />} />
               <Route path="/logs" element={<LogViewer />} />
               <Route path="/rules" element={<Rules />} />
+              <Route path="/hooks" element={<HookManager />} />
               <Route path="/settings" element={<Settings />} />
               <Route
                 path="/settings/workspaces"

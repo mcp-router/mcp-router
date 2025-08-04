@@ -4,10 +4,10 @@ import { Outlet } from "react-router-dom";
 /**
  * PageLayout component provides consistent padding and styling across all pages
  */
-const PageLayout: React.FC = () => {
+const PageLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
     <div className={`flex flex-col min-h-full w-full p-6`}>
-      <Outlet />
+      {children || <Outlet />}
     </div>
   );
 };

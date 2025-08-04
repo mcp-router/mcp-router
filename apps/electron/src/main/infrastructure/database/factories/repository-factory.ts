@@ -7,6 +7,7 @@ import { SessionRepository } from "../repositories/session/session-repository";
 import { SettingsRepository } from "../repositories/settings/settings-repository";
 import { TokenRepository } from "../repositories/token/token-repository";
 import { WorkspaceRepository } from "../repositories/workspace/workspace-repository";
+import { HookRepository } from "../repositories/hook/hook-repository";
 
 /**
  * リポジトリインスタンスのマップ型
@@ -20,6 +21,7 @@ type RepositoryInstances = {
   settings: SettingsRepository | null;
   token: TokenRepository | null;
   workspace: WorkspaceRepository | null;
+  hook: HookRepository | null;
 };
 
 /**
@@ -36,6 +38,7 @@ export class RepositoryFactory {
     settings: null,
     token: null,
     workspace: null,
+    hook: null,
   };
 
   private static currentDb: SqliteManager | null = null;
@@ -61,6 +64,7 @@ export class RepositoryFactory {
       settings: null,
       token: null,
       workspace: null,
+      hook: null,
     };
   }
 
@@ -211,6 +215,23 @@ export class RepositoryFactory {
     }
 
     return this.instances.workspace;
+  }
+
+  /**
+   * フックリポジトリを取得
+   */
+  public static getHookRepository(db: SqliteManager): HookRepository {
+    if (this.isDatabaseChanged(db)) {
+      this.resetAllInstances();
+      this.currentDb = db;
+    }
+
+    if (!this.instances.hook) {
+      console.log("[RepositoryFactory] Creating new HookRepository instance");
+      this.instances.hook = new HookRepository(db);
+    }
+
+    return this.instances.hook;
   }
 
   /**
