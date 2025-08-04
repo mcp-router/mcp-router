@@ -40,9 +40,7 @@ import { postHogService } from "../services/posthog-service";
 const WorkspaceManagement = React.lazy(
   () => import("./workspace/WorkspaceManagement"),
 );
-const HookManager = React.lazy(
-  () => import("./hook/HookManager"),
-);
+const HookManager = React.lazy(() => import("./hook/HookManager"));
 
 // Main App component
 const App: React.FC = () => {

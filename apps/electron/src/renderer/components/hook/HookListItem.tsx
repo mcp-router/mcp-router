@@ -11,7 +11,6 @@ import { cn } from "@mcp_router/ui";
 interface HookListItemProps {
   hook: MCPHook;
   onEdit: (hook: MCPHook) => void;
-  onTest: (hook: MCPHook) => void;
   onToggleEnabled: (hook: MCPHook) => void;
   onDelete: (hook: MCPHook) => void;
 }
@@ -19,7 +18,6 @@ interface HookListItemProps {
 export function HookListItem({
   hook,
   onEdit,
-  onTest,
   onToggleEnabled,
   onDelete,
 }: HookListItemProps) {
@@ -48,14 +46,13 @@ export function HookListItem({
     }
   };
 
-
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
         "flex items-center gap-4 p-4 bg-background border rounded-lg",
-        isDragging && "opacity-50"
+        isDragging && "opacity-50",
       )}
     >
       <div
@@ -86,14 +83,6 @@ export function HookListItem({
           checked={hook.enabled}
           onCheckedChange={() => onToggleEnabled(hook)}
         />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onTest(hook)}
-          title="Test hook"
-        >
-          <Play className="w-4 h-4" />
-        </Button>
         <Button
           variant="ghost"
           size="icon"

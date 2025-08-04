@@ -235,7 +235,6 @@ declare global {
       deleteHook: (id: string) => Promise<boolean>;
       setHookEnabled: (id: string, enabled: boolean) => Promise<any>;
       reorderHooks: (hookIds: string[]) => Promise<any[]>;
-      testHook: (id: string, context: any) => Promise<any>;
     };
   }
 }

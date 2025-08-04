@@ -1,7 +1,6 @@
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { DatabaseService } from "@/main/infrastructure/database";
 import { ServerManager } from "./server-manager";
 import { AggregatorServer } from "./aggregator-server";
 import { LoggingService } from "./logging";
@@ -16,7 +15,7 @@ export class MCPServerManager {
   private loggingService: LoggingService;
   private requestHandlers: RequestHandlers;
 
-  constructor(private databaseService: DatabaseService) {
+  constructor() {
     this.serverManager = new ServerManager();
 
     // Get server name to ID map from server manager
@@ -26,13 +25,11 @@ export class MCPServerManager {
     this.aggregatorServer = new AggregatorServer(
       this.serverManager,
       this.loggingService,
-      this.databaseService,
     );
 
     this.requestHandlers = new RequestHandlers(
       this.serverManager,
       this.loggingService,
-      this.databaseService,
     );
   }
 

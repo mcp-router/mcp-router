@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@mcp_router/ui";
-import { useHookStore } from "@/renderer/stores/hook-store";
+import { useHookStore } from "@/renderer/stores";
 import { CodeEditor } from "@/renderer/components/common/CodeEditor";
 import { Alert, AlertDescription } from "@mcp_router/ui";
 import { InfoIcon } from "lucide-react";
@@ -28,7 +28,6 @@ interface HookEditDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
 
 const DEFAULT_SCRIPT = `// Hook script example
 // Available globals: context, console, sleep, validateToken, getServerInfo
@@ -68,11 +67,11 @@ return { continue: true, context };
 
 export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
   const { createHook, updateHook } = useHookStore();
-  
+
   const [name, setName] = useState(hook?.name || "");
   const [description, setDescription] = useState(hook?.description || "");
   const [hookType, setHookType] = useState<"pre" | "post" | "both">(
-    hook?.hookType || "pre"
+    hook?.hookType || "pre",
   );
   const [script, setScript] = useState(hook?.script || DEFAULT_SCRIPT);
   const [saving, setSaving] = useState(false);
@@ -116,14 +115,11 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
     }
   };
 
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {hook ? "Edit Hook" : "Create New Hook"}
-          </DialogTitle>
+          <DialogTitle>{hook ? "Edit Hook" : "Create New Hook"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -157,13 +153,18 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
 
             <div className="grid gap-2">
               <Label htmlFor="hookType">Hook Type</Label>
-              <Select value={hookType} onValueChange={(v: any) => setHookType(v)}>
+              <Select
+                value={hookType}
+                onValueChange={(v: any) => setHookType(v)}
+              >
                 <SelectTrigger id="hookType">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pre">Pre-hook (before request)</SelectItem>
-                  <SelectItem value="post">Post-hook (after response)</SelectItem>
+                  <SelectItem value="post">
+                    Post-hook (after response)
+                  </SelectItem>
                   <SelectItem value="both">Both (pre and post)</SelectItem>
                 </SelectContent>
               </Select>
@@ -174,12 +175,14 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
             <Alert>
               <InfoIcon className="h-4 w-4" />
               <AlertDescription>
-                Write JavaScript code that will be executed in a sandboxed environment.
-                The script should return an object with `continue` (boolean) and optionally `context` or `error`.
-                All filtering (by request type, server, tool name) should be done within the script.
+                Write JavaScript code that will be executed in a sandboxed
+                environment. The script should return an object with `continue`
+                (boolean) and optionally `context` or `error`. All filtering (by
+                request type, server, tool name) should be done within the
+                script.
               </AlertDescription>
             </Alert>
-            
+
             <div className="h-96">
               <CodeEditor
                 value={script}

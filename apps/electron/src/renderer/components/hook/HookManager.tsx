@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Play, Edit, Trash2, GripVertical } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@mcp_router/ui";
 import PageLayout from "@/renderer/components/layout/PageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@mcp_router/ui";
-import { Badge } from "@mcp_router/ui";
-import { useHookStore } from "@/renderer/stores/hook-store";
+import { useHookStore } from "@/renderer/stores";
 import { HookEditDialog } from "./HookEditDialog";
-import { HookTestDialog } from "./HookTestDialog";
 import { MCPHook } from "@mcp_router/shared";
 import {
   DndContext,
@@ -35,18 +33,16 @@ export default function HookManager() {
     reorderHooks,
     setHookEnabled,
     deleteHook,
-    clearError,
   } = useHookStore();
 
   const [editingHook, setEditingHook] = useState<MCPHook | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [testingHook, setTestingHook] = useState<MCPHook | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   useEffect(() => {
@@ -62,7 +58,7 @@ export default function HookManager() {
 
       const newHooks = arrayMove(hooks, oldIndex, newIndex);
       const hookIds = newHooks.map((h: MCPHook) => h.id);
-      
+
       await reorderHooks(hookIds);
     }
   };
@@ -77,9 +73,6 @@ export default function HookManager() {
     setIsCreating(false);
   };
 
-  const handleTest = (hook: MCPHook) => {
-    setTestingHook(hook);
-  };
 
   const handleToggleEnabled = async (hook: MCPHook) => {
     await setHookEnabled(hook.id, !hook.enabled);
@@ -96,9 +89,6 @@ export default function HookManager() {
     setIsCreating(false);
   };
 
-  const handleCloseTestDialog = () => {
-    setTestingHook(null);
-  };
 
   if (loading) {
     return (
@@ -158,7 +148,6 @@ export default function HookManager() {
                         key={hook.id}
                         hook={hook}
                         onEdit={handleEdit}
-                        onTest={handleTest}
                         onToggleEnabled={handleToggleEnabled}
                         onDelete={handleDelete}
                       />
@@ -179,13 +168,6 @@ export default function HookManager() {
         />
       )}
 
-      {testingHook && (
-        <HookTestDialog
-          hook={testingHook}
-          isOpen={true}
-          onClose={handleCloseTestDialog}
-        />
-      )}
     </PageLayout>
   );
 }

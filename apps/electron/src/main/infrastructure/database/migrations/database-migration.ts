@@ -886,7 +886,6 @@ export class DatabaseMigration {
    */
   private migrateAddHooksTable(db: SqliteManager): void {
     try {
-
       // hooksテーブルを作成
       db.execute(`
           CREATE TABLE IF NOT EXISTS hooks (
@@ -904,16 +903,16 @@ export class DatabaseMigration {
 
       // インデックスを作成
       db.execute(
-          `CREATE INDEX IF NOT EXISTS idx_hooks_enabled ON hooks(enabled)`,
+        `CREATE INDEX IF NOT EXISTS idx_hooks_enabled ON hooks(enabled)`,
       );
       db.execute(
-          `CREATE INDEX IF NOT EXISTS idx_hooks_execution_order ON hooks(execution_order)`,
+        `CREATE INDEX IF NOT EXISTS idx_hooks_execution_order ON hooks(execution_order)`,
       );
       db.execute(
-          `CREATE INDEX IF NOT EXISTS idx_hooks_hook_type ON hooks(hook_type)`,
+        `CREATE INDEX IF NOT EXISTS idx_hooks_hook_type ON hooks(hook_type)`,
       );
       db.execute(
-          `CREATE INDEX IF NOT EXISTS idx_hooks_created_at ON hooks(created_at)`,
+        `CREATE INDEX IF NOT EXISTS idx_hooks_created_at ON hooks(created_at)`,
       );
     } catch (error) {
       console.error("hooksテーブルの作成中にエラーが発生しました:", error);

@@ -1,48 +1,75 @@
+import { SingletonService } from "@/main/application/core/singleton-service";
 import {
   MCPHook,
   HookContext,
   HookResult,
   HookExecutionError,
 } from "@mcp_router/shared";
-import { DatabaseService } from "@/main/infrastructure/database";
-import { HookRepository } from "@/main/infrastructure/database/repositories/hook/hook-repository";
-import { RepositoryFactory } from "@/main/infrastructure/database/factories/repository-factory";
-import { McpLogger } from "./logging";
+import { getHookRepository } from "@/main/infrastructure/database";
+import { logInfo, logError } from "@/main/utils/logger";
 import vm from "vm";
 
 /**
- * Hook Manager for MCP Router
+ * Hook Service for MCP Router
  * Manages pre/post hooks for MCP requests
  */
-export class HookManager {
+export class HookService extends SingletonService<MCPHook, string, HookService> {
   private hooks: Map<string, MCPHook> = new Map();
-  private hookRepository: HookRepository;
-  private logger: McpLogger;
 
-  constructor(
-    private databaseService: DatabaseService,
-    logger: McpLogger,
-  ) {
-    this.logger = logger;
-    this.hookRepository = RepositoryFactory.getHookRepository(databaseService);
+  /**
+   * Constructor
+   */
+  protected constructor() {
+    super();
     this.loadHooks();
+  }
+
+  /**
+   * Get entity name
+   */
+  protected getEntityName(): string {
+    return "Hook";
+  }
+
+  /**
+   * Get singleton instance
+   */
+  public static getInstance(): HookService {
+    return (this as any).getInstanceBase();
+  }
+
+  /**
+   * Reset instance (used when switching workspaces)
+   */
+  public static resetInstance(): void {
+    // Clear hooks before resetting instance
+    try {
+      const instance = HookService.getInstance();
+      if (instance && instance instanceof HookService) {
+        instance.hooks.clear();
+      }
+    } catch {
+      // Instance might not exist yet
+    }
+    (this as any).resetInstanceBase(HookService);
   }
 
   /**
    * Load all hooks from database
    */
-  private async loadHooks(): Promise<void> {
+  private loadHooks(): void {
     try {
-      const hooks = await this.hookRepository.listHooks();
+      const repository = getHookRepository();
+      const hooks = repository.listHooks();
       this.hooks.clear();
 
       for (const hook of hooks) {
         this.hooks.set(hook.id, hook);
       }
 
-      this.logger.info(`Loaded ${hooks.length} hooks`);
+      logInfo(`Loaded ${hooks.length} hooks`);
     } catch (error) {
-      this.logger.error("Failed to load hooks", error);
+      logError("Failed to load hooks", error);
     }
   }
 
@@ -97,12 +124,12 @@ export class HookManager {
 
     for (const hook of hooks) {
       try {
-        this.logger.debug(`Executing hook: ${hook.name}`);
+        logInfo(`Executing hook: ${hook.name}`);
 
         const result = await this.executeScript(hook.script, currentContext);
 
         if (!result.continue) {
-          this.logger.info(`Hook ${hook.name} halted execution`, {
+          logInfo(`Hook ${hook.name} halted execution`, {
             error: result.error,
           });
           return result;
@@ -120,10 +147,7 @@ export class HookManager {
           timestamp: Date.now(),
         };
 
-        this.logger.error(
-          `Hook execution failed: ${hook.name}`,
-          executionError,
-        );
+        logError(`Hook execution failed: ${hook.name}`, executionError);
 
         // Continue execution even if a hook fails
         // TODO: Make this configurable
@@ -144,10 +168,10 @@ export class HookManager {
     const sandbox = {
       context: { ...context },
       console: {
-        log: (...args: any[]) => this.logger.info(`[Hook Script]`, ...args),
-        info: (...args: any[]) => this.logger.info(`[Hook Script]`, ...args),
-        warn: (...args: any[]) => this.logger.warn(`[Hook Script]`, ...args),
-        error: (...args: any[]) => this.logger.error(`[Hook Script]`, ...args),
+        log: (...args: any[]) => logInfo(`[Hook Script]`, ...args),
+        info: (...args: any[]) => logInfo(`[Hook Script]`, ...args),
+        warn: (...args: any[]) => logInfo(`[Hook Script] [WARN]`, ...args),
+        error: (...args: any[]) => logError(`[Hook Script]`, ...args),
       },
       // Utility functions
       sleep: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
@@ -208,7 +232,7 @@ export class HookManager {
 
       return sandbox.__result;
     } catch (error) {
-      this.logger.error("Script execution error", error);
+      logError("Script execution error", error);
       return {
         continue: false,
         error: {
@@ -229,48 +253,82 @@ export class HookManager {
   /**
    * Reload hooks from database
    */
-  async reloadHooks(): Promise<void> {
-    await this.loadHooks();
+  reloadHooks(): void {
+    this.loadHooks();
   }
 
   /**
    * Add or update a hook
    */
-  async upsertHook(hook: MCPHook): Promise<void> {
-    await this.hookRepository.upsertHook(hook);
-    this.hooks.set(hook.id, hook);
+  upsertHook(hook: MCPHook): void {
+    try {
+      const repository = getHookRepository();
+      repository.upsertHook(hook);
+      this.hooks.set(hook.id, hook);
+    } catch (error) {
+      this.handleError("upsert", error);
+    }
   }
 
   /**
    * Delete a hook
    */
-  async deleteHook(id: string): Promise<void> {
-    await this.hookRepository.deleteHook(id);
-    this.hooks.delete(id);
+  deleteHook(id: string): void {
+    try {
+      const repository = getHookRepository();
+      repository.deleteHook(id);
+      this.hooks.delete(id);
+    } catch (error) {
+      this.handleError("delete", error);
+    }
   }
 
   /**
    * Enable/disable a hook
    */
-  async setHookEnabled(id: string, enabled: boolean): Promise<void> {
-    const hook = this.hooks.get(id);
-    if (!hook) {
-      throw new Error(`Hook not found: ${id}`);
-    }
+  setHookEnabled(id: string, enabled: boolean): void {
+    try {
+      const hook = this.hooks.get(id);
+      if (!hook) {
+        throw new Error(`Hook not found: ${id}`);
+      }
 
-    hook.enabled = enabled;
-    await this.hookRepository.updateHook(id, { enabled });
+      hook.enabled = enabled;
+      const repository = getHookRepository();
+      repository.updateHook(id, { enabled });
+    } catch (error) {
+      this.handleError("update", error);
+    }
   }
 
   /**
-   * Test a hook with a sample context
+   * List all hooks
    */
-  async testHook(id: string, context: HookContext): Promise<HookResult> {
-    const hook = this.hooks.get(id);
-    if (!hook) {
-      throw new Error(`Hook not found: ${id}`);
+  listHooks(): MCPHook[] {
+    try {
+      const repository = getHookRepository();
+      return repository.listHooks();
+    } catch (error) {
+      return this.handleError("list", error, []);
     }
-
-    return this.executeScript(hook.script, context);
   }
+
+  /**
+   * Get hook by ID
+   */
+  getHookById(id: string): MCPHook | null {
+    try {
+      const repository = getHookRepository();
+      return repository.getHook(id);
+    } catch (error) {
+      return this.handleError("get", error, null);
+    }
+  }
+}
+
+/**
+ * Get singleton instance of HookService
+ */
+export function getHookService(): HookService {
+  return HookService.getInstance();
 }

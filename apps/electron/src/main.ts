@@ -236,11 +236,8 @@ async function initMCPServices(): Promise<void> {
   // Platform APIマネージャーの初期化（ワークスペースDBを設定）
   await getPlatformAPIManager().initialize();
 
-  // データベースサービスを取得
-  const databaseService = getDatabaseService();
-
   // MCPサーバーマネージャーの初期化
-  mcpServerManager = new MCPServerManager(databaseService);
+  mcpServerManager = new MCPServerManager();
 
   // データベースからサーバーリストを読み込む
   await mcpServerManager.initializeAsync();
@@ -322,9 +319,8 @@ async function initApplication(): Promise<void> {
   // MCPサービス初期化
   await initMCPServices();
 
-  // IPC通信ハンドラの初期化（DatabaseServiceを渡す）
-  const databaseService = getDatabaseService();
-  setupIpcHandlers(databaseService);
+  // IPC通信ハンドラの初期化
+  setupIpcHandlers();
 
   // UI初期化
   initUI();

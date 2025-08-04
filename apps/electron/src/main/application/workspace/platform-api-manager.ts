@@ -27,6 +27,7 @@ import {
   DeployedAgentService,
   AgentSharingService,
 } from "../../domain/agent";
+import { HookService } from "../../domain/mcp-core/hook/hook-service";
 
 /**
  * Platform API管理クラス
@@ -141,6 +142,7 @@ export class PlatformAPIManager {
     DevelopmentAgentService.resetInstance();
     DeployedAgentService.resetInstance();
     AgentSharingService.resetInstance();
+    HookService.resetInstance();
 
     // MCPServerManagerの再初期化をトリガー
     // グローバル変数からMCPServerManagerを取得して再初期化

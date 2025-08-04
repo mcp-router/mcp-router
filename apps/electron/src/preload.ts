@@ -267,6 +267,4 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("hook:setEnabled", id, enabled),
   reorderHooks: (hookIds: string[]) =>
     ipcRenderer.invoke("hook:reorder", hookIds),
-  testHook: (id: string, context: any) =>
-    ipcRenderer.invoke("hook:test", id, context),
 });

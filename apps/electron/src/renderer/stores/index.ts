@@ -9,6 +9,7 @@ export * from "./view-preferences-store";
 export * from "./server-store";
 export * from "./auth-store";
 export * from "./agent-store";
+export * from "./hook-store";
 
 // Import platform API type
 import type { PlatformAPI } from "@mcp_router/shared";
@@ -17,6 +18,7 @@ import type { PlatformAPI } from "@mcp_router/shared";
 import { createServerStore, createServerSelectors } from "./server-store";
 import { createAuthStore, createAuthSelectors } from "./auth-store";
 import { createAgentStore, createAgentSelectors } from "./agent-store";
+import { createHookStore } from "./hook-store";
 import { useWorkspaceStore } from "./workspace-store";
 
 // Get the appropriate platform API based on current workspace
@@ -31,6 +33,7 @@ export { getPlatformAPI };
 export const useServerStore = createServerStore(getPlatformAPI);
 export const useAuthStore = createAuthStore(getPlatformAPI);
 export const useAgentStore = createAgentStore(getPlatformAPI);
+export const useHookStore = createHookStore(getPlatformAPI);
 
 // Store initialization utility
 export const initializeStores = async () => {

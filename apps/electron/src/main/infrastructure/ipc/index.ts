@@ -12,13 +12,12 @@ import { setupPackageManagerHandlers } from "./handlers/package-manager-handlers
 import { setupAgentHandlers } from "./handlers/agent-handlers";
 import { setupWorkspaceHandlers } from "./handlers/workspace-handlers";
 import { setupHookHandlers } from "./handlers/hook-handler";
-import { DatabaseService } from "../database";
 
 /**
  * IPC通信ハンドラのセットアップを行う関数
  * アプリケーション初期化時に呼び出される
  */
-export function setupIpcHandlers(databaseService: DatabaseService): void {
+export function setupIpcHandlers(): void {
   // 認証関連
   setupAuthHandlers();
 
@@ -59,5 +58,5 @@ export function setupIpcHandlers(databaseService: DatabaseService): void {
   setupWorkspaceHandlers();
 
   // Hook関連
-  setupHookHandlers(databaseService);
+  setupHookHandlers();
 }

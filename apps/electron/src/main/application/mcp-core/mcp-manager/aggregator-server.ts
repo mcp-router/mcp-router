@@ -12,7 +12,6 @@ import {
 import { RequestHandlers } from "./request-handlers";
 import { LoggingService } from "./logging";
 import { ServerManager } from "./server-manager";
-import { DatabaseService } from "@/main/infrastructure/database";
 
 /**
  * MCP Aggregator Server that combines multiple MCP servers into one
@@ -23,17 +22,9 @@ export class AggregatorServer {
   private requestHandlers: RequestHandlers;
   private loggingService: LoggingService;
 
-  constructor(
-    serverManager: ServerManager,
-    loggingService: LoggingService,
-    databaseService: DatabaseService,
-  ) {
+  constructor(serverManager: ServerManager, loggingService: LoggingService) {
     this.loggingService = loggingService;
-    this.requestHandlers = new RequestHandlers(
-      serverManager,
-      loggingService,
-      databaseService,
-    );
+    this.requestHandlers = new RequestHandlers(serverManager, loggingService);
     this.initAggregatorServer();
   }
 

@@ -17,12 +17,17 @@ export interface HookAPI {
   /**
    * Create a new hook
    */
-  createHook(hookData: Omit<MCPHook, 'id' | 'createdAt' | 'updatedAt'>): Promise<MCPHook>;
+  createHook(
+    hookData: Omit<MCPHook, "id" | "createdAt" | "updatedAt">,
+  ): Promise<MCPHook>;
 
   /**
    * Update an existing hook
    */
-  updateHook(id: string, updates: Partial<Omit<MCPHook, 'id' | 'createdAt' | 'updatedAt'>>): Promise<MCPHook>;
+  updateHook(
+    id: string,
+    updates: Partial<Omit<MCPHook, "id" | "createdAt" | "updatedAt">>,
+  ): Promise<MCPHook>;
 
   /**
    * Delete a hook
@@ -38,9 +43,4 @@ export interface HookAPI {
    * Reorder hooks
    */
   reorderHooks(hookIds: string[]): Promise<MCPHook[]>;
-
-  /**
-   * Test a hook with sample context
-   */
-  testHook(id: string, context: HookContext): Promise<HookResult>;
 }

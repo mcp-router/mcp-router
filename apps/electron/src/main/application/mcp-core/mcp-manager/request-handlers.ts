@@ -14,8 +14,7 @@ import { RequestLogEntry } from "./types";
 import { LoggingService, McpLogger } from "./logging";
 import { ServerManager } from "./server-manager";
 import { TokenValidator } from "./token-validator";
-import { HookManager } from "./hook-manager";
-import { DatabaseService } from "@/main/infrastructure/database";
+import { getHookService } from "@/main/domain/mcp-core/hook/hook-service";
 
 /**
  * Handles all request processing for the aggregator server
@@ -24,7 +23,6 @@ export class RequestHandlers {
   private serverManager: ServerManager;
   private loggingService: LoggingService;
   private tokenValidator: TokenValidator;
-  private hookManager: HookManager;
   private originalProtocols: Map<string, string> = new Map();
   private toolNameToServerMap: Map<string, string> = new Map();
   private serverStatusMap: Map<string, boolean>;
@@ -32,11 +30,7 @@ export class RequestHandlers {
   private clients: Map<string, Client>;
   private serverNameToIdMap: Map<string, string>;
 
-  constructor(
-    serverManager: ServerManager,
-    loggingService: LoggingService,
-    databaseService: DatabaseService,
-  ) {
+  constructor(serverManager: ServerManager, loggingService: LoggingService) {
     this.serverManager = serverManager;
     this.loggingService = loggingService;
 
@@ -48,7 +42,6 @@ export class RequestHandlers {
     this.serverStatusMap = maps.serverStatusMap;
 
     this.tokenValidator = new TokenValidator(this.serverNameToIdMap);
-    this.hookManager = new HookManager(databaseService, new McpLogger());
   }
 
   /**
@@ -141,7 +134,8 @@ export class RequestHandlers {
     };
 
     // Execute pre-hooks
-    const preHookResult = await this.hookManager.executePreHooks(hookContext);
+    const hookService = getHookService();
+    const preHookResult = await hookService.executePreHooks(hookContext);
     if (!preHookResult.continue) {
       throw new McpError(
         ErrorCode.InvalidRequest,
@@ -182,7 +176,7 @@ export class RequestHandlers {
 
       // Execute post-hooks
       const postHookResult =
-        await this.hookManager.executePostHooks(postContext);
+        await hookService.executePostHooks(postContext);
       if (!postHookResult.continue) {
         throw new McpError(
           ErrorCode.InternalError,
@@ -208,7 +202,7 @@ export class RequestHandlers {
       };
 
       // Execute post-hooks even on error
-      await this.hookManager.executePostHooks(errorContext);
+      await hookService.executePostHooks(errorContext);
 
       // Log error
       logEntry.result = "error";

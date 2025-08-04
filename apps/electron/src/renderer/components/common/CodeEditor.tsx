@@ -28,7 +28,7 @@ export function CodeEditor({
         "font-mono text-sm resize-none h-full",
         "bg-zinc-950 text-zinc-50",
         "dark:bg-zinc-950 dark:text-zinc-50",
-        className
+        className,
       )}
       spellCheck={false}
       placeholder={`// Enter ${language || "code"} here...`}

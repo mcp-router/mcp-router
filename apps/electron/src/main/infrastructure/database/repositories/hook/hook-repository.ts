@@ -63,7 +63,7 @@ export class HookRepository extends BaseRepository<MCPHook> {
    */
   public listHooks(): MCPHook[] {
     return this.getAll({
-      orderBy: 'execution_order ASC, created_at ASC',
+      orderBy: "execution_order ASC, created_at ASC",
     });
   }
 
@@ -123,9 +123,9 @@ export class HookRepository extends BaseRepository<MCPHook> {
       WHERE hook_type = ? OR hook_type = 'both'
       ORDER BY execution_order ASC, created_at ASC
     `;
-    
+
     const rows = this.db.all<any>(sql, [hookType]);
-    return rows.map(row => this.mapRowToEntity(row));
+    return rows.map((row) => this.mapRowToEntity(row));
   }
 
   /**
@@ -134,7 +134,7 @@ export class HookRepository extends BaseRepository<MCPHook> {
   public getEnabledHooks(): MCPHook[] {
     return this.getAll({
       where: { enabled: 1 },
-      orderBy: 'execution_order ASC, created_at ASC',
+      orderBy: "execution_order ASC, created_at ASC",
     });
   }
 
@@ -154,7 +154,9 @@ export class HookRepository extends BaseRepository<MCPHook> {
   /**
    * Create a new hook
    */
-  public createHook(hookData: Omit<MCPHook, 'id' | 'createdAt' | 'updatedAt'>): MCPHook {
+  public createHook(
+    hookData: Omit<MCPHook, "id" | "createdAt" | "updatedAt">,
+  ): MCPHook {
     const now = Date.now();
     const hook: MCPHook = {
       id: uuidv4(),
@@ -162,7 +164,7 @@ export class HookRepository extends BaseRepository<MCPHook> {
       createdAt: now,
       updatedAt: now,
     };
-    
+
     return this.add(hook);
   }
 

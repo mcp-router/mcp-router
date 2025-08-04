@@ -281,9 +281,9 @@ class ElectronPlatformAPI implements PlatformAPI {
       createHook: (hookData) => window.electronAPI.createHook(hookData),
       updateHook: (id, updates) => window.electronAPI.updateHook(id, updates),
       deleteHook: (id) => window.electronAPI.deleteHook(id),
-      setHookEnabled: (id, enabled) => window.electronAPI.setHookEnabled(id, enabled),
+      setHookEnabled: (id, enabled) =>
+        window.electronAPI.setHookEnabled(id, enabled),
       reorderHooks: (hookIds) => window.electronAPI.reorderHooks(hookIds),
-      testHook: (id, context) => window.electronAPI.testHook(id, context),
     };
   }
 }
