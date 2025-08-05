@@ -13,10 +13,17 @@ export const TOKENS_SCHEMA: DatabaseTableSchema = {
       scopes TEXT DEFAULT '[]'
     )
   `,
-  indexes: ["CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)"],
+  indexes: [
+    "CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)",
+  ],
 };
 
 /**
  * 必須カラム定義
  */
-export const TOKENS_REQUIRED_COLUMNS = ["id", "client_id", "issued_at", "server_ids"];
+export const TOKENS_REQUIRED_COLUMNS = [
+  "id",
+  "client_id",
+  "issued_at",
+  "server_ids",
+];

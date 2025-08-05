@@ -11,7 +11,6 @@ import { getPlatformAPIManager } from "@/main/application/workspace/platform-api
 import { getWorkspaceService } from "./main/domain/workspace/workspace-service";
 import { setupIpcHandlers } from "./main/infrastructure/ipc";
 import { getIsAutoUpdateInProgress } from "./main/infrastructure/ipc/handlers/update-handler";
-import { getDatabaseService } from "./main/infrastructure/database";
 import {
   initializeEnvironment,
   isDevelopment,

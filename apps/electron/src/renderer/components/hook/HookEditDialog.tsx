@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { MCPHook } from "@mcp_router/shared";
 import {
   Dialog,
@@ -29,41 +29,142 @@ interface HookEditDialogProps {
   onClose: () => void;
 }
 
-const DEFAULT_SCRIPT = `// Hook script example
-// Available globals: context, console, sleep, validateToken, getServerInfo
+const DEFAULT_SCRIPT = `// Gemini API を使用してリクエストを検証する Hook の例
+// Available globals: context, console, sleep, validateToken, getServerInfo, fetch
 
-// Apply filtering based on your conditions
-if (context.requestType === 'CallTool') {
-  // Filter by tool name
-  if (context.toolName === 'specific-tool') {
-    console.log('Specific tool called:', context.toolName);
+const API_KEY = "YOUR_API_KEY_HERE"; // 実際のAPIキーに置き換えてください
+const API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
+
+// リクエスト情報を整形
+const requestInfo = {
+  type: context.requestType,
+  server: context.serverName,
+  tool: context.toolName,
+  params: context.request.params
+};
+
+console.log('Validating request with Gemini:', requestInfo);
+
+try {
+  // Gemini APIにリクエストを送信
+  const requestBody = {
+    system_instruction: {
+      parts: {
+        text: "あなたはMCPリクエストの検証を行うセキュリティアシスタントです。" +
+              "与えられたリクエスト情報を分析し、それが安全で適切かどうかを判断してください。" +
+              "判断基準：データの破壊、プライバシー侵害、不正アクセスの可能性がないか。" +
+              '必ず {"safe": boolean, "reason": string} の形式で応答してください。'
+      }
+    },
+    contents: [
+      {
+        parts: [
+          {
+            text: "以下のMCPリクエストを検証してください:\\n" + 
+                  JSON.stringify(requestInfo, null, 2)
+          }
+        ]
+      }
+    ],
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: "OBJECT",
+        properties: {
+          safe: { type: "BOOLEAN" },
+          reason: { type: "STRING" }
+        },
+        required: ["safe", "reason"]
+      }
+    }
+  };
+
+  // fetch APIを使用してGemini APIを呼び出す
+  console.log('Calling Gemini API...');
+  const response = await fetch(API_ENDPOINT + "?key=" + API_KEY, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    console.error('Gemini API error:', response.status, response.statusText);
+    // APIエラー時はフォールバックロジックを使用
+    return fallbackValidation();
   }
+
+  const result = await response.json();
+  const validationResult = result.candidates?.[0]?.content?.parts?.[0]?.text;
+  
+  if (validationResult) {
+    try {
+      const validation = JSON.parse(validationResult);
+      console.log('Gemini validation result:', validation);
+      
+      if (!validation.safe) {
+        return {
+          continue: false,
+          error: {
+            code: 'GEMINI_BLOCKED',
+            message: validation.reason
+          }
+        };
+      }
+    } catch (e) {
+      console.error('Failed to parse Gemini response:', e);
+      return fallbackValidation();
+    }
+  }
+  
+  // すべてのチェックをパス
+  console.log('Request validated successfully');
+  return { continue: true, context };
+  
+} catch (error) {
+  console.error('Validation error:', error);
+  // エラーが発生した場合はフォールバックロジックを使用
+  return fallbackValidation();
 }
 
-// Filter by server
-if (context.serverName === 'specific-server') {
-  console.log('Request to specific server');
+// フォールバックの検証ロジック
+function fallbackValidation() {
+  // 危険なツール名のパターンをチェック
+  const dangerousPatterns = [
+    /delete/i,
+    /remove/i,
+    /drop/i,
+    /truncate/i,
+    /exec/i,
+    /system/i
+  ];
+  
+  const isDangerous = dangerousPatterns.some(pattern => 
+    pattern.test(context.toolName || '') || 
+    pattern.test(JSON.stringify(context.request.params))
+  );
+  
+  if (isDangerous) {
+    console.warn('Potentially dangerous request detected (fallback)');
+    return {
+      continue: false,
+      error: {
+        code: 'DANGEROUS_REQUEST',
+        message: 'このリクエストは潜在的に危険な操作を含んでいます'
+      }
+    };
+  }
+  
+  // デフォルトで許可
+  return { continue: true, context };
 }
 
-// Modify request parameters
-// context.request.params.someParam = 'modified value';
-
-// For post-hooks, you can access the response
-if (context.response) {
-  console.log('Response received in', context.duration, 'ms');
-}
-
-// Continue with the request
-return { continue: true, context };
-
-// To block the request:
-// return { 
-//   continue: false, 
-//   error: { 
-//     code: 'BLOCKED', 
-//     message: 'Request blocked by hook' 
-//   } 
-// };`;
+// 注意事項：
+// 1. APIキーは環境変数やセキュアな設定から取得すべき
+// 2. fetchは3秒のタイムアウトが設定されています
+// 3. HTTPSのURLのみが許可されています
+// 4. cookie と authorization ヘッダーは自動的に削除されます`;
 
 export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
   const { createHook, updateHook } = useHookStore();
@@ -117,12 +218,12 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{hook ? "Edit Hook" : "Create New Hook"}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto space-y-6">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
@@ -183,7 +284,7 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
               </AlertDescription>
             </Alert>
 
-            <div className="h-96">
+            <div className="h-[400px] min-h-0">
               <CodeEditor
                 value={script}
                 onChange={setScript}
@@ -193,7 +294,7 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="border-t pt-4">
           <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancel
           </Button>

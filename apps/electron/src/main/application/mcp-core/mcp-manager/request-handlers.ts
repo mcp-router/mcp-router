@@ -175,8 +175,7 @@ export class RequestHandlers {
       };
 
       // Execute post-hooks
-      const postHookResult =
-        await hookService.executePostHooks(postContext);
+      const postHookResult = await hookService.executePostHooks(postContext);
       if (!postHookResult.continue) {
         throw new McpError(
           ErrorCode.InternalError,

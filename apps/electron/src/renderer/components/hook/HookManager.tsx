@@ -73,7 +73,6 @@ export default function HookManager() {
     setIsCreating(false);
   };
 
-
   const handleToggleEnabled = async (hook: MCPHook) => {
     await setHookEnabled(hook.id, !hook.enabled);
   };
@@ -88,7 +87,6 @@ export default function HookManager() {
     setEditingHook(null);
     setIsCreating(false);
   };
-
 
   if (loading) {
     return (
@@ -167,7 +165,6 @@ export default function HookManager() {
           onClose={handleCloseEditDialog}
         />
       )}
-
     </PageLayout>
   );
 }

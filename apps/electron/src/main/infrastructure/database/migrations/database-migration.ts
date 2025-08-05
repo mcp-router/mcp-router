@@ -890,7 +890,10 @@ export class DatabaseMigration {
       // テーブルが作成されるため、ここでは何もしない
       console.log("hooksテーブルの作成はHookRepositoryに委譲されます");
     } catch (error) {
-      console.error("hooksテーブルのマイグレーション中にエラーが発生しました:", error);
+      console.error(
+        "hooksテーブルのマイグレーション中にエラーが発生しました:",
+        error,
+      );
       throw error;
     }
   }

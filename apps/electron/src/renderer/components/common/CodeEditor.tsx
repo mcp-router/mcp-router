@@ -1,6 +1,8 @@
 import React from "react";
-import { Textarea } from "@mcp_router/ui";
-import { cn } from "@mcp_router/ui";
+import CodeMirror from "@uiw/react-codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+import { oneDark } from "@codemirror/theme-one-dark";
+import { EditorView } from "@codemirror/view";
 
 interface CodeEditorProps {
   value: string;
@@ -17,21 +19,48 @@ export function CodeEditor({
   readOnly = false,
   className,
 }: CodeEditorProps) {
-  // Simple code editor using textarea with monospace font
-  // In a production app, you would use Monaco Editor or CodeMirror
+  // Configure extensions based on language
+  const extensions = [
+    javascript({ jsx: false, typescript: false }),
+    EditorView.theme({
+      "&": {
+        fontSize: "14px",
+      },
+      ".cm-content": {
+        fontFamily:
+          "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace",
+      },
+      ".cm-scroller": {
+        fontFamily:
+          "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace",
+      },
+    }),
+    EditorView.lineWrapping,
+  ];
+
   return (
-    <Textarea
+    <CodeMirror
       value={value}
-      onChange={(e) => onChange(e.target.value)}
-      readOnly={readOnly}
-      className={cn(
-        "font-mono text-sm resize-none h-full",
-        "bg-zinc-950 text-zinc-50",
-        "dark:bg-zinc-950 dark:text-zinc-50",
-        className,
-      )}
-      spellCheck={false}
+      onChange={onChange}
+      theme={oneDark}
+      extensions={extensions}
+      editable={!readOnly}
       placeholder={`// Enter ${language || "code"} here...`}
+      className={className}
+      height="100%"
+      basicSetup={{
+        lineNumbers: true,
+        foldGutter: true,
+        dropCursor: true,
+        allowMultipleSelections: true,
+        indentOnInput: true,
+        bracketMatching: true,
+        closeBrackets: true,
+        autocompletion: true,
+        rectangularSelection: true,
+        highlightSelectionMatches: true,
+        searchKeymap: true,
+      }}
     />
   );
 }

@@ -1,11 +1,10 @@
 import { ipcMain } from "electron";
-import { MCPHook, HookContext } from "@mcp_router/shared";
+import { MCPHook } from "@mcp_router/shared";
 import { getHookRepository } from "@/main/infrastructure/database";
 import { getHookService } from "@/main/domain/mcp-core/hook/hook-service";
 import { v4 as uuidv4 } from "uuid";
 
 export function setupHookHandlers(): void {
-
   /**
    * List all hooks
    */

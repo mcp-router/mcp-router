@@ -13,7 +13,11 @@ import vm from "vm";
  * Hook Service for MCP Router
  * Manages pre/post hooks for MCP requests
  */
-export class HookService extends SingletonService<MCPHook, string, HookService> {
+export class HookService extends SingletonService<
+  MCPHook,
+  string,
+  HookService
+> {
   private hooks: Map<string, MCPHook> = new Map();
 
   /**
@@ -182,6 +186,47 @@ export class HookService extends SingletonService<MCPHook, string, HookService> 
       getServerInfo: (serverId: string) => {
         // TODO: Implement server info retrieval
         return { id: serverId, name: context.serverName };
+      },
+      // HTTP fetch function with restrictions
+      fetch: async (url: string, options?: any) => {
+        try {
+          // Validate URL - only allow HTTPS
+          const parsedUrl = new URL(url);
+          if (parsedUrl.protocol !== 'https:') {
+            throw new Error('Only HTTPS URLs are allowed');
+          }
+          
+          // Import fetch dynamically (Node.js 18+)
+          const { default: fetch } = await import('node-fetch');
+          
+          // Limit request options for security
+          const safeOptions = {
+            method: options?.method || 'GET',
+            headers: options?.headers || {},
+            ...(options?.body && { body: options.body }),
+            // Force timeout to prevent hanging requests
+            signal: AbortSignal.timeout(3000), // 3 second timeout
+          };
+          
+          // Remove potentially dangerous headers
+          delete safeOptions.headers['cookie'];
+          delete safeOptions.headers['authorization'];
+          
+          const response = await fetch(url, safeOptions);
+          
+          // Return a simplified response object
+          return {
+            ok: response.ok,
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries()),
+            text: async () => response.text(),
+            json: async () => response.json(),
+          };
+        } catch (error) {
+          logError(`[Hook Script] Fetch error:`, error);
+          throw error;
+        }
       },
       // Result object to be populated by the script
       __result: null as HookResult | null,
