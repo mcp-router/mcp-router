@@ -20,20 +20,53 @@ Electron アプリケーションのディレクトリ構造が複雑化し、�
 apps/electron/src/
 ├── main/                    # メインプロセス
 │   ├── domain/             # ドメイン層（ビジネスロジック）
+│   │   ├── agent/          # エージェント管理
+│   │   ├── auth/           # 認証
+│   │   ├── mcp-core/       # MCPコア機能
+│   │   │   ├── client/     # MCPクライアント
+│   │   │   ├── hook/       # MCPフック
+│   │   │   ├── package/    # パッケージ管理
+│   │   │   ├── rule/       # ルール管理
+│   │   │   ├── server/     # サーバー管理
+│   │   │   └── token/      # トークン管理
+│   │   └── workspace/      # ワークスペース管理
 │   ├── infrastructure/     # インフラストラクチャ層
 │   │   ├── database/       # データベースアクセス
-│   │   ├── ipc/            # IPC通信
-│   │   │   └── handlers/   # IPCハンドラー
-│   │   └── platform-api/   # Platform API実装
-│   └── application/        # アプリケーション層
-├── renderer/               # レンダラープロセス（旧frontend）
+│   │   │   ├── core/       # 基盤クラス
+│   │   │   ├── factories/  # ファクトリ
+│   │   │   ├── migrations/ # マイグレーション
+│   │   │   ├── repositories/ # リポジトリ実装
+│   │   │   └── schema/     # スキーマ定義
+│   │   │       └── tables/ # テーブル定義
+│   │   └── ipc/            # IPC通信
+│   │       └── handlers/   # IPCハンドラー
+│   ├── application/        # アプリケーション層
+│   │   ├── core/           # 基盤サービス
+│   │   ├── mcp-core/       # MCPアプリケーション機能
+│   │   │   ├── apps/       # MCPアプリ管理
+│   │   │   ├── log/        # ログ管理
+│   │   │   ├── mcp-manager/ # MCPマネージャー
+│   │   │   ├── registry/   # レジストリ
+│   │   │   └── server-processors/ # サーバー処理
+│   │   ├── settings/       # 設定管理
+│   │   ├── ui/             # UI関連（メニュー、トレイ）
+│   │   └── workspace/      # ワークスペース管理
+│   └── utils/              # メインプロセス用ユーティリティ
+├── renderer/               # レンダラープロセス
 │   ├── components/         # UIコンポーネント
+│   │   ├── agent/          # エージェント関連UI
+│   │   ├── auth/           # 認証UI
+│   │   ├── common/         # 共通コンポーネント
+│   │   ├── hook/           # フック管理UI
+│   │   ├── layout/         # レイアウト
+│   │   ├── mcp/            # MCP関連UI
+│   │   ├── setting/        # 設定UI
+│   │   └── workspace/      # ワークスペースUI
+│   ├── platform-api/       # Platform API
+│   ├── services/           # レンダラーサービス
 │   ├── stores/             # 状態管理（Zustand）
-│   ├── hooks/              # カスタムフック
-│   └── lib/                # レンダラー用ユーティリティ
-└── lib/                    # 共通ユーティリティ
-    └── utils/
-        └── backend/        # バックエンド用ユーティリティ
+│   └── utils/              # レンダラー用ユーティリティ
+└── types/                  # 型定義
 ```
 
 ### レイヤーの責務
@@ -51,8 +84,11 @@ apps/electron/src/
 - **依存**: ドメイン層
 - **内容**:
   - データベースアクセス（Repository実装）
+    - 統一されたスキーマ定義（`schema/tables/`）
+    - BaseRepositoryパターン
+    - RepositoryFactoryによる管理
   - IPC通信ハンドラー
-  - Platform API実装
+    - 各機能別ハンドラー（agent, hook, server等）
   - 外部APIクライアント
 
 #### 3. アプリケーション層 (`main/application/`)
@@ -60,15 +96,26 @@ apps/electron/src/
 - **依存**: ドメイン層、インフラストラクチャ層
 - **内容**:
   - アプリケーションサービス
+  - MCPコア機能
+    - Aggregator Server（リクエスト集約）
+    - Hook Manager（フック管理）
+    - MCP Apps Service（アプリ管理）
+    - DXT Processor（データ変換）
   - ユースケースの実装
-  - DIコンテナ（将来実装予定）
+  - Platform API Manager
 
 #### 4. プレゼンテーション層 (`renderer/`)
 - **責務**: ユーザーインターフェース
 - **依存**: IPC経由でメインプロセスと通信
 - **内容**:
   - Reactコンポーネント
+    - Agent管理UI（作成・使用）
+    - Hook管理UI
+    - MCP Apps UI
+    - Server管理UI
   - 状態管理（Zustand）
+    - hook-store（新規追加）
+  - Platform API抽象化
   - UIロジック
 
 ### インポートルール
@@ -128,7 +175,16 @@ src/
 ### 2. フラットな構造の維持
 - **却下理由**: 現在の問題が解決されない
 
+## 更新履歴
+- **2025年8月**: 実際のディレクトリ構造に合わせて更新
+  - MCP Hook System関連のディレクトリを追加
+  - MCPアプリケーション機能の詳細を追加
+  - スキーマ管理の統一化を反映
+  - 新規追加されたサービスとコンポーネントを記載
+
 ## 参考文献
 - [Clean Architecture by Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Domain-Driven Design by Eric Evans](https://www.domainlanguage.com/ddd/)
 - [Electron Best Practices](https://www.electronjs.org/docs/latest/tutorial/security)
+- [DATABASE_ARCHITECTURE.md](./DATABASE_ARCHITECTURE.md) - データベースアーキテクチャ
+- [DATABASE_SCHEMA_MANAGEMENT.md](./DATABASE_SCHEMA_MANAGEMENT.md) - スキーマ管理戦略

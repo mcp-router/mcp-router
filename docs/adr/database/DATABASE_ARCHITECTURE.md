@@ -43,10 +43,12 @@ apps/electron/src/main/infrastructure/database/
 │       ├── agents.ts
 │       ├── chat-sessions.ts
 │       ├── deployed-agents.ts
+│       ├── hooks.ts
 │       ├── migrations.ts
 │       ├── request-logs.ts
 │       ├── servers.ts
 │       ├── settings.ts
+│       ├── tokens.ts
 │       └── workspaces.ts
 └── index.ts                  # パブリックAPI
 ```
@@ -228,7 +230,16 @@ const stmt = this.db.prepare("INSERT INTO servers VALUES (?, ?, ?)");
 3. **読み取り専用レプリカ**: パフォーマンス向上
 4. **自動バックアップ**: 定期バックアップ機能
 
+## 更新履歴
+- **2025年8月**: スキーマ管理の統一化
+  - 全リポジトリがスキーマ定義ファイルを使用するよう更新
+  - DATABASE_SCHEMAオブジェクトによる一元管理を実装
+  - マイグレーションの責任範囲を既存テーブルの変更のみに限定
+  - hooksとtokensテーブルのスキーマ定義を追加
+
 ## 参考文献
 - [better-sqlite3 Documentation](https://github.com/WiseLibs/better-sqlite3)
 - [Repository Pattern](https://martinfowler.com/eaaCatalog/repository.html)
 - [SQLite Best Practices](https://www.sqlite.org/bestpractice.html)
+- [DATABASE_SCHEMA_MANAGEMENT.md](DATABASE_SCHEMA_MANAGEMENT.md) - スキーマ管理戦略
+- [DATABASE_DESIGN_PATTERNS.md](DATABASE_DESIGN_PATTERNS.md) - データベース設計パターン
