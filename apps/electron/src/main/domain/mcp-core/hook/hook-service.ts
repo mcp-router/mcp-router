@@ -192,28 +192,30 @@ export class HookService extends SingletonService<
         try {
           // Validate URL - only allow HTTPS
           const parsedUrl = new URL(url);
-          if (parsedUrl.protocol !== 'https:') {
-            throw new Error('Only HTTPS URLs are allowed');
+          if (parsedUrl.protocol !== "https:") {
+            throw new Error("Only HTTPS URLs are allowed");
           }
-          
+
           // Import fetch dynamically (Node.js 18+)
-          const { default: fetch } = await import('node-fetch');
-          
+          const { default: fetch } = await import("node-fetch");
+
           // Limit request options for security
           const safeOptions = {
-            method: options?.method || 'GET',
+            method: options?.method || "GET",
             headers: options?.headers || {},
             ...(options?.body && { body: options.body }),
             // Force timeout to prevent hanging requests
-            signal: AbortSignal.timeout(3000), // 3 second timeout
+            signal: AbortSignal.timeout(10000), // 10 second timeout
           };
-          
+
+          console.log(`[Hook Script] Fetching URL: ${url}, `, options.body);
+
           // Remove potentially dangerous headers
-          delete safeOptions.headers['cookie'];
-          delete safeOptions.headers['authorization'];
-          
+          delete safeOptions.headers["cookie"];
+          delete safeOptions.headers["authorization"];
+
           const response = await fetch(url, safeOptions);
-          
+
           // Return a simplified response object
           return {
             ok: response.ok,

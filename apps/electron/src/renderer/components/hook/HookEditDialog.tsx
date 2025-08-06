@@ -33,15 +33,12 @@ const DEFAULT_SCRIPT = `// Gemini API を使用してリクエストを検証す
 // Available globals: context, console, sleep, validateToken, getServerInfo, fetch
 
 const API_KEY = "YOUR_API_KEY_HERE"; // 実際のAPIキーに置き換えてください
-const API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
+const API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
-// リクエスト情報を整形
-const requestInfo = {
-  type: context.requestType,
-  server: context.serverName,
-  tool: context.toolName,
-  params: context.request.params
-};
+// リクエスト情報をテキストとして整形
+const requestInfo = \`サーバー名: \${context.serverName}
+ツール名: \${context.toolName}
+引数: \${JSON.stringify(context.request.params.arguments, null, 2)}\`;
 
 console.log('Validating request with Gemini:', requestInfo);
 
@@ -60,8 +57,7 @@ try {
       {
         parts: [
           {
-            text: "以下のMCPリクエストを検証してください:\\n" + 
-                  JSON.stringify(requestInfo, null, 2)
+            text: "以下のMCPリクエストを検証してください:\\n" + requestInfo
           }
         ]
       }
@@ -91,8 +87,14 @@ try {
 
   if (!response.ok) {
     console.error('Gemini API error:', response.status, response.statusText);
-    // APIエラー時はフォールバックロジックを使用
-    return fallbackValidation();
+    // APIエラー時はエラーを返す
+    return {
+      continue: false,
+      error: {
+        code: 'GEMINI_API_ERROR',
+        message: 'Gemini API error: ' + response.status + ' ' + response.statusText
+      }
+    };
   }
 
   const result = await response.json();
@@ -114,7 +116,13 @@ try {
       }
     } catch (e) {
       console.error('Failed to parse Gemini response:', e);
-      return fallbackValidation();
+      return {
+        continue: false,
+        error: {
+          code: 'GEMINI_PARSE_ERROR',
+          message: 'Failed to parse Gemini response'
+        }
+      };
     }
   }
   
@@ -124,40 +132,14 @@ try {
   
 } catch (error) {
   console.error('Validation error:', error);
-  // エラーが発生した場合はフォールバックロジックを使用
-  return fallbackValidation();
-}
-
-// フォールバックの検証ロジック
-function fallbackValidation() {
-  // 危険なツール名のパターンをチェック
-  const dangerousPatterns = [
-    /delete/i,
-    /remove/i,
-    /drop/i,
-    /truncate/i,
-    /exec/i,
-    /system/i
-  ];
-  
-  const isDangerous = dangerousPatterns.some(pattern => 
-    pattern.test(context.toolName || '') || 
-    pattern.test(JSON.stringify(context.request.params))
-  );
-  
-  if (isDangerous) {
-    console.warn('Potentially dangerous request detected (fallback)');
-    return {
-      continue: false,
-      error: {
-        code: 'DANGEROUS_REQUEST',
-        message: 'このリクエストは潜在的に危険な操作を含んでいます'
-      }
-    };
-  }
-  
-  // デフォルトで許可
-  return { continue: true, context };
+  // エラーが発生した場合はエラーを返す
+  return {
+    continue: false,
+    error: {
+      code: 'VALIDATION_ERROR',
+      message: error instanceof Error ? error.message : 'Validation failed'
+    }
+  };
 }
 
 // 注意事項：

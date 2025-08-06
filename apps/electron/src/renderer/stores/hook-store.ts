@@ -1,11 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import {
-  MCPHook,
-  HookContext,
-  HookResult,
-  PlatformAPI,
-} from "@mcp_router/shared";
+import { MCPHook, PlatformAPI } from "@mcp_router/shared";
 
 export interface HookStoreState {
   hooks: MCPHook[];

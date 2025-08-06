@@ -11,7 +11,7 @@ import {
   createUriVariants,
 } from "@/main/utils/uri-utils";
 import { RequestLogEntry } from "./types";
-import { LoggingService, McpLogger } from "./logging";
+import { LoggingService } from "./logging";
 import { ServerManager } from "./server-manager";
 import { TokenValidator } from "./token-validator";
 import { getHookService } from "@/main/domain/mcp-core/hook/hook-service";
