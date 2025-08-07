@@ -283,7 +283,15 @@ export async function status(forceRefresh = false): Promise<{
     }
 
     try {
-      const userResponse = await fetchWithToken("/auth/desktop-signin/status");
+      const token = await getDecryptedAuthToken();
+      if (!token) {
+        return { authenticated: false };
+      }
+      
+      const userResponse = await fetchWithToken("/auth/desktop-signin/status", {
+        token: token,
+        apiBaseUrl: API_BASE_URL
+      });
 
       if (userResponse.ok) {
         const userData = await userResponse.json();
@@ -302,8 +310,6 @@ export async function status(forceRefresh = false): Promise<{
           user: userData,
           lastFetched: Date.now(),
         };
-
-        const token = await getDecryptedAuthToken();
 
         return {
           authenticated: true,

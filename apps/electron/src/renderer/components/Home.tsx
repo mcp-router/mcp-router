@@ -490,14 +490,32 @@ const Home: React.FC = () => {
                 }
               });
 
+              // inputParamsのdefault値をenvに反映
+              const finalInputParams =
+                updatedInputParams || advancedSettingsServer.inputParams;
+              if (finalInputParams) {
+                Object.entries(finalInputParams).forEach(
+                  ([key, param]: [string, any]) => {
+                    // envに値が設定されていない場合、default値を設定
+                    if (
+                      !envObj[key] &&
+                      param.default !== undefined &&
+                      param.default !== null &&
+                      String(param.default).trim() !== ""
+                    ) {
+                      envObj[key] = String(param.default);
+                    }
+                  },
+                );
+              }
+
               const updatedConfig: any = {
                 name: editedName || advancedSettingsServer.name,
                 command: editedCommand,
                 args: editedArgs,
                 env: envObj,
                 autoStart: editedAutoStart,
-                inputParams:
-                  updatedInputParams || advancedSettingsServer.inputParams,
+                inputParams: finalInputParams,
               };
 
               if (advancedSettingsServer.serverType !== "local") {
