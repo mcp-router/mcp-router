@@ -88,7 +88,11 @@ export class RemotePlatformAPI implements PlatformAPI {
     },
 
     create: async (input: CreateServerInput): Promise<MCPServer> => {
-      const response = await this.client.servers.create.mutate(input);
+      const convertedInput = {
+        ...input,
+        dxtFile: input.dxtFile ? new Uint8Array(input.dxtFile) : undefined,
+      };
+      const response = await this.client.servers.create.mutate(convertedInput);
       return this.unwrapResponse<MCPServer>(response);
     },
 
