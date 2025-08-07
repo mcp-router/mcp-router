@@ -18,12 +18,3 @@ export const TOKENS_SCHEMA: DatabaseTableSchema = {
   ],
 };
 
-/**
- * 必須カラム定義
- */
-export const TOKENS_REQUIRED_COLUMNS = [
-  "id",
-  "client_id",
-  "issued_at",
-  "server_ids",
-];

@@ -161,7 +161,6 @@ export class HookRepository extends BaseRepository<MCPHook> {
     return {
       id: row.id,
       name: row.name,
-      description: row.description || undefined,
       enabled: row.enabled === 1,
       executionOrder: row.execution_order,
       hookType: row.hook_type as "pre" | "post" | "both",
@@ -179,7 +178,6 @@ export class HookRepository extends BaseRepository<MCPHook> {
     return {
       id: entity.id,
       name: entity.name,
-      description: entity.description || null,
       enabled: entity.enabled ? 1 : 0,
       execution_order: entity.executionOrder,
       hook_type: entity.hookType,

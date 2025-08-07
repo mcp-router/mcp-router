@@ -75,25 +75,3 @@ export class LoggingService {
   }
 }
 
-/**
- * Simple logger implementation for MCP components
- */
-export class McpLogger {
-  info(...args: any[]): void {
-    console.log("[MCP]", ...args);
-  }
-
-  warn(...args: any[]): void {
-    console.warn("[MCP]", ...args);
-  }
-
-  error(...args: any[]): void {
-    console.error("[MCP]", ...args);
-  }
-
-  debug(...args: any[]): void {
-    if (process.env.NODE_ENV === "development") {
-      console.debug("[MCP]", ...args);
-    }
-  }
-}

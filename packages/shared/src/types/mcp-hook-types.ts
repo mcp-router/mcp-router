@@ -8,7 +8,6 @@
 export interface MCPHook {
   id: string;
   name: string;
-  description?: string;
   enabled: boolean;
   executionOrder: number; // 実行順序（小さい値から実行）
   hookType: "pre" | "post" | "both";

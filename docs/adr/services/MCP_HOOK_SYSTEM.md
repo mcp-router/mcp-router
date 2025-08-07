@@ -66,7 +66,6 @@ if (context.requestType === 'CallTool' && context.toolName === 'specific-tool') 
 interface MCPHook {
   id: string;
   name: string;
-  description?: string;
   enabled: boolean;
   executionOrder: number;  // 'order' から変更（SQL予約語回避）
   hookType: 'pre' | 'post' | 'both';

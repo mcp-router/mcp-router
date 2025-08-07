@@ -287,10 +287,10 @@ export async function status(forceRefresh = false): Promise<{
       if (!token) {
         return { authenticated: false };
       }
-      
+
       const userResponse = await fetchWithToken("/auth/desktop-signin/status", {
         token: token,
-        apiBaseUrl: API_BASE_URL
+        apiBaseUrl: API_BASE_URL,
       });
 
       if (userResponse.ok) {

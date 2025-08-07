@@ -73,9 +73,6 @@ export function HookListItem({
             </Badge>
           )}
         </div>
-        {hook.description && (
-          <p className="text-sm text-muted-foreground">{hook.description}</p>
-        )}
       </div>
 
       <div className="flex items-center gap-2">

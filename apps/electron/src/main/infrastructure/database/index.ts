@@ -1,6 +1,4 @@
 // Core exports
-export { SqliteManager as DatabaseService } from "./core/sqlite-manager";
-export { DatabaseTableSchema } from "@mcp_router/shared";
 
 // Schema exports
 
@@ -15,10 +13,6 @@ export { getDatabaseMigration } from "./migrations/database-migration";
 import { getSqliteManager, SqliteManager } from "./core/sqlite-manager";
 import { RepositoryFactory } from "./factories/repository-factory";
 
-// Get database service function
-export function getDatabaseService(): SqliteManager {
-  return getSqliteManager("mcprouter");
-}
 
 // Backwards compatibility functions using RepositoryFactory
 export function getAgentRepository() {
@@ -94,6 +88,3 @@ export function getHookRepository() {
   return RepositoryFactory.getHookRepository(db);
 }
 
-export function resetHookRepository() {
-  // No-op: Reset is handled by RepositoryFactory
-}

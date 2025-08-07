@@ -152,7 +152,6 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
   const { createHook, updateHook } = useHookStore();
 
   const [name, setName] = useState(hook?.name || "");
-  const [description, setDescription] = useState(hook?.description || "");
   const [hookType, setHookType] = useState<"pre" | "post" | "both">(
     hook?.hookType || "pre",
   );
@@ -177,7 +176,6 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
     try {
       const hookData = {
         name: name.trim(),
-        description: description.trim() || undefined,
         enabled: hook?.enabled ?? true,
         executionOrder: hook?.executionOrder ?? 0,
         hookType,
@@ -220,17 +218,6 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="My Hook"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description (optional)</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="What does this hook do?"
-                rows={2}
               />
             </div>
 

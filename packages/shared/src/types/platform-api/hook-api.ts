@@ -1,4 +1,4 @@
-import { MCPHook, HookContext, HookResult } from "../mcp-hook-types";
+import { MCPHook } from "../mcp-hook-types";
 
 /**
  * Hook management API

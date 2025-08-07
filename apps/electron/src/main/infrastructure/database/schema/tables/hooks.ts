@@ -5,7 +5,6 @@ export const HOOKS_SCHEMA: DatabaseTableSchema = {
     CREATE TABLE IF NOT EXISTS hooks (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
-      description TEXT,
       enabled INTEGER NOT NULL DEFAULT 1,
       execution_order INTEGER NOT NULL DEFAULT 0,
       hook_type TEXT NOT NULL CHECK(hook_type IN ('pre', 'post', 'both')),
@@ -22,14 +21,3 @@ export const HOOKS_SCHEMA: DatabaseTableSchema = {
   ],
 };
 
-export const HOOKS_REQUIRED_COLUMNS = [
-  "id",
-  "name",
-  "description",
-  "enabled",
-  "execution_order",
-  "hook_type",
-  "script",
-  "created_at",
-  "updated_at",
-];
