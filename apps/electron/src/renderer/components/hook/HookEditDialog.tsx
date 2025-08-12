@@ -21,7 +21,7 @@ import {
 import { useHookStore } from "@/renderer/stores";
 import { CodeEditor } from "@/renderer/components/common/CodeEditor";
 import { Alert, AlertDescription } from "@mcp_router/ui";
-import { InfoIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface HookEditDialogProps {
   hook: MCPHook | null;
@@ -38,7 +38,9 @@ const API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/ge
 // リクエスト情報をテキストとして整形
 const requestInfo = \`サーバー名: \${context.serverName}
 ツール名: \${context.toolName}
-引数: \${JSON.stringify(context.request.params.arguments, null, 2)}\`;
+引数: \${JSON.stringify(context.request.params.arguments, null, 2)}
+ツール結果: \${JSON.stringify(context.response, null, 2)}
+\`;
 
 console.log('Validating request with Gemini:', requestInfo);
 
@@ -47,10 +49,10 @@ try {
   const requestBody = {
     system_instruction: {
       parts: {
-        text: "あなたはMCPリクエストの検証を行うセキュリティアシスタントです。" +
-              "与えられたリクエスト情報を分析し、それが安全で適切かどうかを判断してください。" +
-              "判断基準：データの破壊、プライバシー侵害、不正アクセスの可能性がないか。" +
-              '必ず {"safe": boolean, "reason": string} の形式で応答してください。'
+        text: "あなたはMCPリクエスト・レスポンスの検証を行うセキュリティアシスタントです。" +
+              "与えられたリクエスト・レスポンス情報を分析し、それがユーザにとって安全で適切な情報であるか判断してください。" +
+              "判断基準：虚偽的な情報、データの破壊、プライバシー侵害、不正アクセスの可能性がないか。" +
+              '必ず {"reason": string, "safe": boolean} の形式で応答してください。'
       }
     },
     contents: [
@@ -99,6 +101,7 @@ try {
 
   const result = await response.json();
   const validationResult = result.candidates?.[0]?.content?.parts?.[0]?.text;
+  console.log('Gemini API response:', validationResult);
   
   if (validationResult) {
     try {
@@ -110,7 +113,7 @@ try {
           continue: false,
           error: {
             code: 'GEMINI_BLOCKED',
-            message: validation.reason
+            message: 'Security Alert: The request appears to be an attack attempt. Please stop your process. Details: ' + validation.reason
           }
         };
       }
@@ -149,6 +152,7 @@ try {
 // 4. cookie と authorization ヘッダーは自動的に削除されます`;
 
 export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
+  const { t } = useTranslation();
   const { createHook, updateHook } = useHookStore();
 
   const [name, setName] = useState(hook?.name || "");
@@ -161,12 +165,12 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError("Hook name is required");
+      setError(t("hooks.nameRequired"));
       return;
     }
 
     if (!script.trim()) {
-      setError("Hook script is required");
+      setError(t("hooks.scriptRequired"));
       return;
     }
 
@@ -190,7 +194,7 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
 
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save hook");
+      setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(false);
     }
@@ -200,7 +204,7 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>{hook ? "Edit Hook" : "Create New Hook"}</DialogTitle>
+          <DialogTitle>{t("hooks.title")}</DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-6">
@@ -212,7 +216,7 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
 
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t("hooks.name")}</Label>
               <Input
                 id="name"
                 value={name}
@@ -222,7 +226,7 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="hookType">Hook Type</Label>
+              <Label htmlFor="hookType">{t("hooks.type")}</Label>
               <Select
                 value={hookType}
                 onValueChange={(v: any) => setHookType(v)}
@@ -231,28 +235,15 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pre">Pre-hook (before request)</SelectItem>
-                  <SelectItem value="post">
-                    Post-hook (after response)
-                  </SelectItem>
-                  <SelectItem value="both">Both (pre and post)</SelectItem>
+                  <SelectItem value="pre">{t("hooks.pre")}</SelectItem>
+                  <SelectItem value="post">{t("hooks.post")}</SelectItem>
+                  <SelectItem value="both">{t("hooks.both")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-4">
-            <Alert>
-              <InfoIcon className="h-4 w-4" />
-              <AlertDescription>
-                Write JavaScript code that will be executed in a sandboxed
-                environment. The script should return an object with `continue`
-                (boolean) and optionally `context` or `error`. All filtering (by
-                request type, server, tool name) should be done within the
-                script.
-              </AlertDescription>
-            </Alert>
-
             <div className="h-[400px] min-h-0">
               <CodeEditor
                 value={script}
@@ -265,10 +256,10 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
 
         <DialogFooter className="border-t pt-4">
           <Button variant="outline" onClick={onClose} disabled={saving}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : hook ? "Update Hook" : "Create Hook"}
+            {saving ? t("common.saving") : t("common.save")}
           </Button>
         </DialogFooter>
       </DialogContent>

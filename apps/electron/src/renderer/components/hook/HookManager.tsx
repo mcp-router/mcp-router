@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@mcp_router/ui";
 import PageLayout from "@/renderer/components/layout/PageLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@mcp_router/ui";
 import { useHookStore } from "@/renderer/stores";
 import { HookEditDialog } from "./HookEditDialog";
 import { MCPHook } from "@mcp_router/shared";
@@ -23,8 +22,10 @@ import {
 import { HookListItem } from "./HookListItem";
 import { Alert, AlertDescription } from "@mcp_router/ui";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function HookManager() {
+  const { t } = useTranslation();
   const {
     hooks,
     loading,
@@ -78,7 +79,7 @@ export default function HookManager() {
   };
 
   const handleDelete = async (hook: MCPHook) => {
-    if (confirm(`Are you sure you want to delete the hook "${hook.name}"?`)) {
+    if (confirm(t("hooks.confirmDelete"))) {
       await deleteHook(hook.id);
     }
   };
@@ -103,14 +104,14 @@ export default function HookManager() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Hooks</h1>
+            <h1 className="text-3xl font-bold">{t("hooks.title")}</h1>
             <p className="text-muted-foreground mt-1">
-              Configure pre and post hooks for MCP requests
+              {t("hooks.description")}
             </p>
           </div>
           <Button onClick={handleCreate}>
             <Plus className="w-4 h-4 mr-2" />
-            New Hook
+            {t("hooks.new")}
           </Button>
         </div>
 
@@ -120,42 +121,34 @@ export default function HookManager() {
           </Alert>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Hook Configuration</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {hooks.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>No hooks configured yet.</p>
-                <p className="mt-2">Create your first hook to get started.</p>
+        {hooks.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <p>{t("hooks.noHooks")}</p>
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={hooks.map((h: MCPHook) => h.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {hooks.map((hook) => (
+                  <HookListItem
+                    key={hook.id}
+                    hook={hook}
+                    onEdit={handleEdit}
+                    onToggleEnabled={handleToggleEnabled}
+                    onDelete={handleDelete}
+                  />
+                ))}
               </div>
-            ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={hooks.map((h: MCPHook) => h.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-2">
-                    {hooks.map((hook) => (
-                      <HookListItem
-                        key={hook.id}
-                        hook={hook}
-                        onEdit={handleEdit}
-                        onToggleEnabled={handleToggleEnabled}
-                        onDelete={handleDelete}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            )}
-          </CardContent>
-        </Card>
+            </SortableContext>
+          </DndContext>
+        )}
       </div>
 
       {(editingHook || isCreating) && (

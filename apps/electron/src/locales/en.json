@@ -646,6 +646,21 @@
     "application": "Application Access",
     "applicationDesc": "Allows retrieving connected clients"
   },
+  "hooks": {
+    "title": "Hooks",
+    "description": "Scripts executed before/after MCP requests",
+    "new": "New",
+    "pre": "Pre-hook",
+    "post": "Post-hook",
+    "both": "Pre & Post",
+    "name": "Name",
+    "type": "Type",
+    "nameRequired": "Name is required",
+    "scriptRequired": "Script is required",
+    "confirmDelete": "Delete this hook?",
+    "noHooks": "No hooks configured",
+    "disabled": "Disabled"
+  },
   "workspace": {
     "title": "Workspace",
     "selectWorkspace": "Select Workspace",

@@ -681,6 +681,21 @@
       "fetchFailed": "ワークスペースの取得に失敗しました"
     }
   },
+  "hooks": {
+    "title": "フック",
+    "description": "MCPリクエストの前後で実行されるスクリプト",
+    "new": "新規",
+    "pre": "事前フック",
+    "post": "事後フック",
+    "both": "事前・事後フック",
+    "name": "名前",
+    "type": "タイプ",
+    "nameRequired": "名前が必要です",
+    "scriptRequired": "スクリプトが必要です",
+    "confirmDelete": "削除しますか？",
+    "noHooks": "フックが設定されていません",
+    "disabled": "無効"
+  },
   "rules": {
     "title": "ツールパラメータルール",
     "sections": {
