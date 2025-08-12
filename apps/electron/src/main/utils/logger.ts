@@ -5,19 +5,20 @@
 import { isDevelopment } from "./environment";
 
 /**
- * ログ出力のヘルパー関数
- * @param message ログメッセージ
- * @param data 追加データ（オブジェクト）
- * @param level ログレベル
+ * INFO レベルのログを出力
+ * @param args ログに出力する任意の引数
  */
-export function logInfo(message: string, data?: any): void {
+export function logInfo(...args: any[]): void {
   if (isDevelopment()) {
-    console.log(`[INFO] ${message}`, data || "");
+    console.log("[INFO]", ...args);
   }
 }
 
-export function logError(message: string, error?: any): void {
-  if (isDevelopment()) {
-    console.error(`[ERROR] ${message}`, error || "");
-  }
+/**
+ * ERROR レベルのログを出力
+ * @param args ログに出力する任意の引数
+ */
+export function logError(...args: any[]): void {
+  // エラーログは本番環境でも出力する
+  console.error("[ERROR]", ...args);
 }

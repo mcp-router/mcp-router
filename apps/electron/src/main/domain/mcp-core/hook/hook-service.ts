@@ -179,14 +179,6 @@ export class HookService extends SingletonService<
       },
       // Utility functions
       sleep: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
-      validateToken: (token: string) => {
-        // TODO: Implement actual token validation
-        return token && token.length > 0;
-      },
-      getServerInfo: (serverId: string) => {
-        // TODO: Implement server info retrieval
-        return { id: serverId, name: context.serverName };
-      },
       // HTTP fetch function with restrictions
       fetch: async (url: string, options?: any) => {
         try {
@@ -207,9 +199,6 @@ export class HookService extends SingletonService<
             // Force timeout to prevent hanging requests
             signal: AbortSignal.timeout(10000), // 10 second timeout
           };
-
-          console.log(`[Hook Script] Fetching URL: ${url}, `, options.body);
-
           // Remove potentially dangerous headers
           delete safeOptions.headers["cookie"];
           delete safeOptions.headers["authorization"];
