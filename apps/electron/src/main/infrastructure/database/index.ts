@@ -13,7 +13,6 @@ export { getDatabaseMigration } from "./migrations/database-migration";
 import { getSqliteManager, SqliteManager } from "./core/sqlite-manager";
 import { RepositoryFactory } from "./factories/repository-factory";
 
-
 // Backwards compatibility functions using RepositoryFactory
 export function getAgentRepository() {
   const db = getSqliteManager("mcprouter");
@@ -87,4 +86,3 @@ export function getHookRepository() {
   const db = getSqliteManager("mcprouter");
   return RepositoryFactory.getHookRepository(db);
 }
-

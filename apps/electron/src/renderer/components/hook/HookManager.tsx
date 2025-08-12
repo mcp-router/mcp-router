@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@mcp_router/ui";
 import PageLayout from "@/renderer/components/layout/PageLayout";
 import { useHookStore } from "@/renderer/stores";
-import { HookEditDialog } from "./HookEditDialog";
 import { MCPHook } from "@mcp_router/shared";
+import { useNavigate } from "react-router-dom";
 import {
   DndContext,
   closestCenter,
@@ -26,6 +26,7 @@ import { useTranslation } from "react-i18next";
 
 export default function HookManager() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const {
     hooks,
     loading,
@@ -35,9 +36,6 @@ export default function HookManager() {
     setHookEnabled,
     deleteHook,
   } = useHookStore();
-
-  const [editingHook, setEditingHook] = useState<MCPHook | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -65,13 +63,11 @@ export default function HookManager() {
   };
 
   const handleCreate = () => {
-    setIsCreating(true);
-    setEditingHook(null);
+    navigate("/hooks/new");
   };
 
   const handleEdit = (hook: MCPHook) => {
-    setEditingHook(hook);
-    setIsCreating(false);
+    navigate(`/hooks/edit/${hook.id}`);
   };
 
   const handleToggleEnabled = async (hook: MCPHook) => {
@@ -82,11 +78,6 @@ export default function HookManager() {
     if (confirm(t("hooks.confirmDelete"))) {
       await deleteHook(hook.id);
     }
-  };
-
-  const handleCloseEditDialog = () => {
-    setEditingHook(null);
-    setIsCreating(false);
   };
 
   if (loading) {
@@ -150,14 +141,6 @@ export default function HookManager() {
           </DndContext>
         )}
       </div>
-
-      {(editingHook || isCreating) && (
-        <HookEditDialog
-          hook={editingHook}
-          isOpen={true}
-          onClose={handleCloseEditDialog}
-        />
-      )}
     </PageLayout>
   );
 }

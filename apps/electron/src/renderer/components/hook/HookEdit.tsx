@@ -1,16 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { MCPHook } from "@mcp_router/shared";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@mcp_router/ui";
 import { Button } from "@mcp_router/ui";
 import { Input } from "@mcp_router/ui";
 import { Label } from "@mcp_router/ui";
-import { Textarea } from "@mcp_router/ui";
 import {
   Select,
   SelectContent,
@@ -22,12 +15,8 @@ import { useHookStore } from "@/renderer/stores";
 import { CodeEditor } from "@/renderer/components/common/CodeEditor";
 import { Alert, AlertDescription } from "@mcp_router/ui";
 import { useTranslation } from "react-i18next";
-
-interface HookEditDialogProps {
-  hook: MCPHook | null;
-  isOpen: boolean;
-  onClose: () => void;
-}
+import PageLayout from "@/renderer/components/layout/PageLayout";
+import { ArrowLeft } from "lucide-react";
 
 const DEFAULT_SCRIPT = `// Gemini API を使用してリクエストを検証する Hook の例
 // Available globals: context, console, sleep, validateToken, getServerInfo, fetch
@@ -151,17 +140,42 @@ try {
 // 3. HTTPSのURLのみが許可されています
 // 4. cookie と authorization ヘッダーは自動的に削除されます`;
 
-export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
+export default function HookEdit() {
   const { t } = useTranslation();
-  const { createHook, updateHook } = useHookStore();
+  const { id } = useParams<{ id?: string }>();
+  const navigate = useNavigate();
+  const { hooks, createHook, updateHook, fetchHooks } = useHookStore();
 
-  const [name, setName] = useState(hook?.name || "");
-  const [hookType, setHookType] = useState<"pre" | "post" | "both">(
-    hook?.hookType || "pre",
-  );
-  const [script, setScript] = useState(hook?.script || DEFAULT_SCRIPT);
+  const [hook, setHook] = useState<MCPHook | null>(null);
+  const [name, setName] = useState("");
+  const [hookType, setHookType] = useState<"pre" | "post" | "both">("pre");
+  const [script, setScript] = useState(DEFAULT_SCRIPT);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (id) {
+      // Editing existing hook
+      const existingHook = hooks.find((h) => h.id === id);
+      if (existingHook) {
+        setHook(existingHook);
+        setName(existingHook.name);
+        setHookType(existingHook.hookType);
+        setScript(existingHook.script);
+      } else {
+        // Fetch hooks if not loaded
+        fetchHooks().then(() => {
+          const fetchedHook = hooks.find((h) => h.id === id);
+          if (fetchedHook) {
+            setHook(fetchedHook);
+            setName(fetchedHook.name);
+            setHookType(fetchedHook.hookType);
+            setScript(fetchedHook.script);
+          }
+        });
+      }
+    }
+  }, [id, hooks, fetchHooks]);
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -192,7 +206,7 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
         await createHook(hookData);
       }
 
-      onClose();
+      navigate("/hooks");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
@@ -201,20 +215,29 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>{t("hooks.title")}</DialogTitle>
-        </DialogHeader>
+    <PageLayout>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/hooks")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? t("common.saving") : t("common.save")}
+          </Button>
+        </div>
 
-        <div className="flex-1 overflow-y-auto space-y-6">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          <div className="grid gap-4">
+        <div className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="name">{t("hooks.name")}</Label>
               <Input
@@ -243,8 +266,9 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="h-[400px] min-h-0">
+          <div className="space-y-2">
+            <Label>{t("hooks.script")}</Label>
+            <div className="border rounded-md overflow-auto">
               <CodeEditor
                 value={script}
                 onChange={setScript}
@@ -253,16 +277,7 @@ export function HookEditDialog({ hook, isOpen, onClose }: HookEditDialogProps) {
             </div>
           </div>
         </div>
-
-        <DialogFooter className="border-t pt-4">
-          <Button variant="outline" onClick={onClose} disabled={saving}>
-            {t("common.cancel")}
-          </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? t("common.saving") : t("common.save")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </PageLayout>
   );
 }

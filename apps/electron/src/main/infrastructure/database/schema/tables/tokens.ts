@@ -17,4 +17,3 @@ export const TOKENS_SCHEMA: DatabaseTableSchema = {
     "CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)",
   ],
 };
-

@@ -655,6 +655,7 @@
     "both": "Pre & Post",
     "name": "Name",
     "type": "Type",
+    "script": "Script",
     "nameRequired": "Name is required",
     "scriptRequired": "Script is required",
     "confirmDelete": "Delete this hook?",

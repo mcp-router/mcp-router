@@ -35,4 +35,3 @@ export function hasUnsetRequiredParams(server: MCPServer): boolean {
 
   return false;
 }
-

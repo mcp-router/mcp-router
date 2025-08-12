@@ -77,18 +77,10 @@ export function HookListItem({
           checked={hook.enabled}
           onCheckedChange={() => onToggleEnabled(hook)}
         />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onEdit(hook)}
-        >
+        <Button variant="ghost" size="icon" onClick={() => onEdit(hook)}>
           <Edit className="w-4 h-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onDelete(hook)}
-        >
+        <Button variant="ghost" size="icon" onClick={() => onDelete(hook)}>
           <Trash2 className="w-4 h-4" />
         </Button>
       </div>

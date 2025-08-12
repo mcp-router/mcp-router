@@ -35,12 +35,9 @@ import {
 import { usePlatformAPI } from "@/renderer/platform-api";
 import { IconProgress } from "@tabler/icons-react";
 import { postHogService } from "../services/posthog-service";
-
-// Lazy load components
-const WorkspaceManagement = React.lazy(
-  () => import("./workspace/WorkspaceManagement"),
-);
-const HookManager = React.lazy(() => import("./hook/HookManager"));
+import WorkspaceManagement from "./workspace/WorkspaceManagement";
+import HookManager from "./hook/HookManager";
+import HookEdit from "./hook/HookEdit";
 
 // Main App component
 const App: React.FC = () => {
@@ -240,14 +237,12 @@ const App: React.FC = () => {
               <Route path="/logs" element={<LogViewer />} />
               <Route path="/rules" element={<Rules />} />
               <Route path="/hooks" element={<HookManager />} />
+              <Route path="/hooks/new" element={<HookEdit />} />
+              <Route path="/hooks/edit/:id" element={<HookEdit />} />
               <Route path="/settings" element={<Settings />} />
               <Route
                 path="/settings/workspaces"
-                element={
-                  <React.Suspense fallback={<LoadingIndicator />}>
-                    <WorkspaceManagement />
-                  </React.Suspense>
-                }
+                element={<WorkspaceManagement />}
               />
             </Route>
 

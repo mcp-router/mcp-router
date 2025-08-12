@@ -690,6 +690,7 @@
     "both": "事前・事後フック",
     "name": "名前",
     "type": "タイプ",
+    "script": "スクリプト",
     "nameRequired": "名前が必要です",
     "scriptRequired": "スクリプトが必要です",
     "confirmDelete": "削除しますか？",

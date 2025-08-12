@@ -20,4 +20,3 @@ export const HOOKS_SCHEMA: DatabaseTableSchema = {
     `CREATE INDEX IF NOT EXISTS idx_hooks_created_at ON hooks(created_at)`,
   ],
 };
-
