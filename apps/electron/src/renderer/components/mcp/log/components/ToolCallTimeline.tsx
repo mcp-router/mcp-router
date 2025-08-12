@@ -229,7 +229,9 @@ const ToolCallTimeline: React.FC<ToolCallTimelineProps> = ({
                         onClick={() => {
                           if (onSelectLogs && group.logs.length > 1) {
                             // 最新のログから表示するため、配列を逆順にする
-                            const sortedLogs = [...group.logs].sort((a, b) => b.timestamp - a.timestamp);
+                            const sortedLogs = [...group.logs].sort(
+                              (a, b) => b.timestamp - a.timestamp,
+                            );
                             onSelectLogs(sortedLogs, 0);
                           } else {
                             onSelectLog(group.logs[0]);

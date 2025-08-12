@@ -21,11 +21,16 @@ interface LogDetailModalProps {
   onClose: () => void;
 }
 
-const LogDetailModal: React.FC<LogDetailModalProps> = ({ logs, currentIndex, onIndexChange, onClose }) => {
+const LogDetailModal: React.FC<LogDetailModalProps> = ({
+  logs,
+  currentIndex,
+  onIndexChange,
+  onClose,
+}) => {
   const { t } = useTranslation();
   const [open, setOpen] = React.useState(true);
   const [copiedField, setCopiedField] = React.useState<string | null>(null);
-  
+
   const log = logs[currentIndex];
   const hasPrevious = currentIndex > 0;
   const hasNext = currentIndex < logs.length - 1;
@@ -53,18 +58,18 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ logs, currentIndex, onI
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!open) return;
-      
-      if (e.key === 'ArrowLeft') {
+
+      if (e.key === "ArrowLeft") {
         handlePrevious();
-      } else if (e.key === 'ArrowRight') {
+      } else if (e.key === "ArrowRight") {
         handleNext();
-      } else if (e.key === 'Escape') {
+      } else if (e.key === "Escape") {
         handleClose();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, currentIndex, hasPrevious, hasNext]);
 
   const copyToClipboard = async (text: string, fieldName: string) => {
