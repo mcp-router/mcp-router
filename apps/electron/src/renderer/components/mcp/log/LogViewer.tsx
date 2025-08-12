@@ -51,8 +51,9 @@ const LogViewer: React.FC<LogViewerProps> = ({
       refreshTrigger: filters.refreshTrigger, // Add refreshTrigger to dependencies
     });
 
-  // State for selected log, available request types, background refresh, and data tracking
-  const [selectedLog, setSelectedLog] = useState<RequestLogEntry | null>(null);
+  // State for selected logs and current index for modal navigation
+  const [selectedLogs, setSelectedLogs] = useState<RequestLogEntry[]>([]);
+  const [selectedLogIndex, setSelectedLogIndex] = useState<number>(0);
   const [lastDataUpdate, setLastDataUpdate] = useState<Date>(new Date());
 
   // State for cursor history to enable previous/next navigation
@@ -149,7 +150,14 @@ const LogViewer: React.FC<LogViewerProps> = ({
           <ToolCallTimeline
             logs={logs}
             loading={loading}
-            onSelectLog={setSelectedLog}
+            onSelectLog={(log) => {
+              setSelectedLogs([log]);
+              setSelectedLogIndex(0);
+            }}
+            onSelectLogs={(logs, index = 0) => {
+              setSelectedLogs(logs);
+              setSelectedLogIndex(index);
+            }}
           />
 
           {/* Request log table */}
@@ -161,7 +169,10 @@ const LogViewer: React.FC<LogViewerProps> = ({
             hasMore={hasMore}
             hasPrevious={cursorHistory.length > 0}
             limit={filters.limit}
-            onSelectLog={setSelectedLog}
+            onSelectLog={(log) => {
+              setSelectedLogs([log]);
+              setSelectedLogIndex(0);
+            }}
             onPageChange={handlePageChange}
             onLimitChange={(newLimit) => {
               setPagination(undefined, newLimit, 1);
@@ -172,10 +183,15 @@ const LogViewer: React.FC<LogViewerProps> = ({
       )}
 
       {/* Log detail modal */}
-      {selectedLog && (
+      {selectedLogs.length > 0 && (
         <LogDetailModal
-          log={selectedLog}
-          onClose={() => setSelectedLog(null)}
+          logs={selectedLogs}
+          currentIndex={selectedLogIndex}
+          onIndexChange={setSelectedLogIndex}
+          onClose={() => {
+            setSelectedLogs([]);
+            setSelectedLogIndex(0);
+          }}
         />
       )}
     </div>

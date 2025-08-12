@@ -8,6 +8,7 @@ interface ToolCallTimelineProps {
   logs: RequestLogEntry[];
   loading: boolean;
   onSelectLog: (log: RequestLogEntry) => void;
+  onSelectLogs?: (logs: RequestLogEntry[], initialIndex?: number) => void;
 }
 
 interface ToolCallGroup {
@@ -33,6 +34,7 @@ const ToolCallTimeline: React.FC<ToolCallTimelineProps> = ({
   logs,
   loading,
   onSelectLog,
+  onSelectLogs,
 }) => {
   const { t } = useTranslation();
 
@@ -224,7 +226,15 @@ const ToolCallTimeline: React.FC<ToolCallTimelineProps> = ({
                       <div
                         key={`${group.serverId}_${group.toolName}_${group.timestamp}`}
                         className="border rounded-md p-3 hover:bg-muted/30 cursor-pointer transition-colors"
-                        onClick={() => onSelectLog(group.logs[0])}
+                        onClick={() => {
+                          if (onSelectLogs && group.logs.length > 1) {
+                            // 最新のログから表示するため、配列を逆順にする
+                            const sortedLogs = [...group.logs].sort((a, b) => b.timestamp - a.timestamp);
+                            onSelectLogs(sortedLogs, 0);
+                          } else {
+                            onSelectLog(group.logs[0]);
+                          }
+                        }}
                       >
                         <div className="flex justify-between items-start">
                           <div>

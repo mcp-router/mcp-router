@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { RequestLogEntry } from "@mcp_router/shared";
 import {
   Dialog,
@@ -12,22 +12,60 @@ import { Button } from "@mcp_router/ui";
 import { Card } from "@mcp_router/ui";
 import { useTranslation } from "react-i18next";
 import { formatDateI18n } from "@/renderer/utils/date-utils";
-import { Copy, CheckCircle2 } from "lucide-react";
+import { Copy, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface LogDetailModalProps {
-  log: RequestLogEntry;
+  logs: RequestLogEntry[];
+  currentIndex: number;
+  onIndexChange: (index: number) => void;
   onClose: () => void;
 }
 
-const LogDetailModal: React.FC<LogDetailModalProps> = ({ log, onClose }) => {
+const LogDetailModal: React.FC<LogDetailModalProps> = ({ logs, currentIndex, onIndexChange, onClose }) => {
   const { t } = useTranslation();
   const [open, setOpen] = React.useState(true);
   const [copiedField, setCopiedField] = React.useState<string | null>(null);
+  
+  const log = logs[currentIndex];
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex < logs.length - 1;
 
   const handleClose = () => {
     setOpen(false);
     onClose();
   };
+
+  const handlePrevious = () => {
+    if (hasPrevious) {
+      onIndexChange(currentIndex - 1);
+      setCopiedField(null);
+    }
+  };
+
+  const handleNext = () => {
+    if (hasNext) {
+      onIndexChange(currentIndex + 1);
+      setCopiedField(null);
+    }
+  };
+
+  // キーボードナビゲーション
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!open) return;
+      
+      if (e.key === 'ArrowLeft') {
+        handlePrevious();
+      } else if (e.key === 'ArrowRight') {
+        handleNext();
+      } else if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, currentIndex, hasPrevious, hasNext]);
 
   const copyToClipboard = async (text: string, fieldName: string) => {
     try {
@@ -51,7 +89,36 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ log, onClose }) => {
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-h-[85vh] flex flex-col overflow-hidden">
         <DialogHeader className="shrink-0 border-b pb-4">
-          <DialogTitle className="text-xl">🛠️ {log.serverName}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl">🛠️ {log.serverName}</DialogTitle>
+            {logs.length > 1 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePrevious}
+                  disabled={!hasPrevious}
+                  className="h-8 w-8 p-0"
+                  aria-label="Previous log"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground px-2">
+                  {currentIndex + 1} / {logs.length}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleNext}
+                  disabled={!hasNext}
+                  className="h-8 w-8 p-0"
+                  aria-label="Next log"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
           <DialogDescription className="flex items-center gap-2 mt-2">
             {formatDateI18n(log.timestamp, t, "shortDateTimeWithSeconds")}
           </DialogDescription>
