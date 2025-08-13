@@ -1,6 +1,6 @@
 {
   "name": "@mcp_router/shared",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
