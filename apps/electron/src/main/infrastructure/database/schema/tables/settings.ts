@@ -13,8 +13,3 @@ export const SETTINGS_SCHEMA: DatabaseTableSchema = {
   `,
   indexes: [],
 };
-
-/**
- * 必須カラム定義
- */
-const SETTINGS_REQUIRED_COLUMNS: string[] = [];

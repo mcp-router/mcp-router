@@ -1,7 +1,4 @@
-import {
-  MCPServerConfig,
-  BaseAgentInfo,
-} from "@mcp_router/shared";
+import { MCPServerConfig, BaseAgentInfo } from "@mcp_router/shared";
 
 /**
  * エージェントの共通ベースクラス

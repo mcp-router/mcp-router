@@ -41,8 +41,6 @@ const Home: React.FC = () => {
     searchQuery,
     setSearchQuery,
     expandedServerId,
-    setExpandedServerId,
-    setSelectedServerId,
     startServer,
     stopServer,
     deleteServer,
@@ -77,11 +75,8 @@ const Home: React.FC = () => {
   // State for Advanced Settings
   const [advancedSettingsServer, setAdvancedSettingsServer] =
     useState<MCPServer | null>(null);
-  const {
-    initializeFromServer,
-    setIsAdvancedEditing,
-    isLoading: isSavingAdvanced,
-  } = useServerEditingStore();
+  const { initializeFromServer, setIsAdvancedEditing } =
+    useServerEditingStore();
 
   // Toggle expanded server details - open settings
   const toggleServerExpand = (serverId: string) => {
@@ -216,7 +211,6 @@ const Home: React.FC = () => {
               {filteredServers.map((server) => {
                 // console.log("Server:", server);
 
-                const isExpanded = expandedServerId === server.id;
                 const statusConfig = {
                   running: {
                     color: "bg-emerald-500",

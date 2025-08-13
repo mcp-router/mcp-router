@@ -12,8 +12,3 @@ export const MIGRATIONS_SCHEMA: DatabaseTableSchema = {
   `,
   indexes: [],
 };
-
-/**
- * 必須カラム定義
- */
-const MIGRATIONS_REQUIRED_COLUMNS: string[] = [];

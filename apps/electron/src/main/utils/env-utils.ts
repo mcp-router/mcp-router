@@ -26,7 +26,7 @@ export async function commandExists(cmd: string): Promise<boolean> {
       reject: true,
     });
     return true;
-  } catch (error) {
+  } catch (_) {
     return false;
   }
 }

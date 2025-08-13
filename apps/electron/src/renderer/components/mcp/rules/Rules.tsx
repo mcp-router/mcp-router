@@ -114,7 +114,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
   variables,
   placeholder,
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   // Get available variables with translations
   const AVAILABLE_VARIABLES = getAvailableVariables(t);

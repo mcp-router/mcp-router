@@ -26,12 +26,7 @@ const LogViewer: React.FC<LogViewerProps> = ({
   // Filter state management
   const {
     filters,
-    setShowFilters,
-    setDateRange,
-    setRequestType,
-    setResponseStatus,
     setPagination,
-    clearFilters,
     refresh,
   } = useFilterState({
     limit: initialLimit,

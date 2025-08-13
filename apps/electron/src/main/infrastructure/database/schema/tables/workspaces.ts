@@ -23,8 +23,3 @@ export const WORKSPACES_SCHEMA: DatabaseTableSchema = {
     "CREATE INDEX IF NOT EXISTS idx_workspaces_last_used ON workspaces(lastUsedAt)",
   ],
 };
-
-/**
- * 必須カラム定義
- */
-const WORKSPACES_REQUIRED_COLUMNS: string[] = [];

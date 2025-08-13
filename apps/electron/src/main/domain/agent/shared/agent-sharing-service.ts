@@ -55,7 +55,7 @@ class AgentSharingService extends SingletonService<
         description: agent.description,
         instructions: agent.instructions,
         mcpServers: agent.mcpServers.map((s) => {
-          const { bearerToken, ...rest } = s;
+          const { bearerToken: _, ...rest } = s;
           return {
             ...rest,
             env: s.env
@@ -150,7 +150,6 @@ class AgentSharingService extends SingletonService<
       // バリデーション
       this.validateAgentConfig(sharedData);
 
-      const now = Date.now();
       const deployedAgent: Omit<
         DeployedAgentType,
         "id" | "createdAt" | "updatedAt"
@@ -222,7 +221,7 @@ class AgentSharingService extends SingletonService<
         description: agent.description,
         instructions: agent.instructions,
         mcpServers: agent.mcpServers.map((server) => {
-          const { bearerToken, ...sanitizedServer } = server;
+          const { bearerToken: _, ...sanitizedServer } = server;
           return {
             ...sanitizedServer,
             env: server.env
