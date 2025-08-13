@@ -1,7 +1,7 @@
 import React from "react";
 import { MCPServer } from "@mcp_router/shared";
 import { useTranslation } from "react-i18next";
-import { AlertCircle, Server, Trash, RefreshCw } from "lucide-react";
+import { AlertCircle, Trash, RefreshCw } from "lucide-react";
 import {
   Dialog,
   DialogContent,

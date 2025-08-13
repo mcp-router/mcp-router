@@ -78,14 +78,3 @@ export function recreateOutdatedTables(db: SqliteManager): void {
     }
   });
 }
-
-/**
- * テーブルの存在をチェックする
- */
-function tableExists(db: SqliteManager, tableName: string): boolean {
-  const result = db.get(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
-    [tableName],
-  );
-  return !!result;
-}

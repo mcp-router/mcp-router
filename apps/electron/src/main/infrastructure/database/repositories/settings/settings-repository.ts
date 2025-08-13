@@ -59,7 +59,7 @@ export class SettingsRepository {
           try {
             // JSON文字列をパースして元のデータ型を復元
             settings[key] = JSON.parse(row.value);
-          } catch (e) {
+          } catch (_) {
             // パースに失敗した場合は文字列のままセット
             settings[key] = row.value as any;
           }

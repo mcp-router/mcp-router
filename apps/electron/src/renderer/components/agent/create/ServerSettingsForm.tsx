@@ -3,11 +3,9 @@ import { AgentConfig, MCPServerConfig } from "@mcp_router/shared";
 import { Button } from "@mcp_router/ui";
 import { Input } from "@mcp_router/ui";
 import { Label } from "@mcp_router/ui";
-import { Textarea } from "@mcp_router/ui";
-import { Badge } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
 import { toast } from "sonner";
-import { Server, X, Save } from "lucide-react";
+import { Server, Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@mcp_router/ui";
 
@@ -33,7 +31,6 @@ const ServerSettingsForm: React.FC<ServerSettingsFormProps> = ({
   selectedServers,
   setSelectedServers,
   onSave,
-  onBack,
 }) => {
   const { t } = useTranslation();
   const [serverVariables, setServerVariables] = useState<
@@ -232,36 +229,34 @@ const ServerSettingsForm: React.FC<ServerSettingsFormProps> = ({
                           </div>
                         )}
                         <div className="space-y-5">
-                          {serverVariables[server.id]?.map(
-                            (variable, index) => (
-                              <div
-                                key={`${server.id}-${variable.name}`}
-                                className="flex flex-col gap-2"
+                          {serverVariables[server.id]?.map((variable) => (
+                            <div
+                              key={`${server.id}-${variable.name}`}
+                              className="flex flex-col gap-2"
+                            >
+                              <Label
+                                htmlFor={`var-${server.id}-${variable.name}`}
                               >
-                                <Label
-                                  htmlFor={`var-${server.id}-${variable.name}`}
-                                >
-                                  {variable.name}
-                                  {variable.required && (
-                                    <span className="text-destructive ml-1">
-                                      *
-                                    </span>
-                                  )}
-                                </Label>
-                                <Input
-                                  id={`var-${server.id}-${variable.name}`}
-                                  value={variable.value}
-                                  onChange={(e) =>
-                                    handleVariableChange(
-                                      server.id,
-                                      variable.name,
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </div>
-                            ),
-                          )}
+                                {variable.name}
+                                {variable.required && (
+                                  <span className="text-destructive ml-1">
+                                    *
+                                  </span>
+                                )}
+                              </Label>
+                              <Input
+                                id={`var-${server.id}-${variable.name}`}
+                                value={variable.value}
+                                onChange={(e) =>
+                                  handleVariableChange(
+                                    server.id,
+                                    variable.name,
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
