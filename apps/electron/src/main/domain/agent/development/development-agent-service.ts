@@ -1,9 +1,4 @@
-import {
-  AgentConfig,
-  MCPServerConfig,
-  MCPTool,
-  MCPAgentToolPermission,
-} from "@mcp_router/shared";
+import { AgentConfig, MCPServerConfig, MCPTool } from "@mcp_router/shared";
 import { getAgentRepository } from "../../../infrastructure/database";
 import { getServerService } from "../../mcp-core/server/server-service";
 import { DevelopmentAgent } from "./development-agent";

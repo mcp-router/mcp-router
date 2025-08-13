@@ -81,7 +81,7 @@ export class HookService extends SingletonService<
    * Execute pre-hooks for a request
    */
   async executePreHooks(context: HookContext): Promise<HookResult> {
-    const hooks = this.getApplicableHooks("pre", context);
+    const hooks = this.getApplicableHooks("pre");
     return this.executeHooks(hooks, context);
   }
 
@@ -89,17 +89,14 @@ export class HookService extends SingletonService<
    * Execute post-hooks for a response
    */
   async executePostHooks(context: HookContext): Promise<HookResult> {
-    const hooks = this.getApplicableHooks("post", context);
+    const hooks = this.getApplicableHooks("post");
     return this.executeHooks(hooks, context);
   }
 
   /**
    * Get applicable hooks based on type and context
    */
-  private getApplicableHooks(
-    type: "pre" | "post",
-    context: HookContext,
-  ): MCPHook[] {
+  private getApplicableHooks(type: "pre" | "post"): MCPHook[] {
     const applicableHooks: MCPHook[] = [];
 
     for (const hook of this.hooks.values()) {

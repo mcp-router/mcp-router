@@ -263,7 +263,7 @@ async function checkPackageUpdate(
           result.updateAvailable =
             currentVersion !== latestVersion && latestVersion.trim() !== "";
         }
-      } catch (error) {
+      } catch (_) {
         // Fallback to string comparison
         result.updateAvailable =
           currentVersion !== latestVersion && latestVersion.trim() !== "";

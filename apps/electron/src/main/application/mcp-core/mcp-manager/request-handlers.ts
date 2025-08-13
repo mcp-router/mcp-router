@@ -20,7 +20,6 @@ import { getHookService } from "@/main/domain/mcp-core/hook/hook-service";
  * Handles all request processing for the aggregator server
  */
 export class RequestHandlers {
-  private serverManager: ServerManager;
   private loggingService: LoggingService;
   private tokenValidator: TokenValidator;
   private originalProtocols: Map<string, string> = new Map();
@@ -31,7 +30,6 @@ export class RequestHandlers {
   private serverNameToIdMap: Map<string, string>;
 
   constructor(serverManager: ServerManager, loggingService: LoggingService) {
-    this.serverManager = serverManager;
     this.loggingService = loggingService;
 
     // Get maps from server manager
@@ -81,11 +79,7 @@ export class RequestHandlers {
 
     // Check if this is an agent tool first
     if (serverName === "Agent Tools") {
-      return this.handleAgentToolCall(
-        toolName,
-        request.params.arguments || {},
-        token,
-      );
+      return this.handleAgentToolCall(toolName, request.params.arguments || {});
     }
 
     // Validate token and get client ID for regular servers
@@ -308,59 +302,55 @@ export class RequestHandlers {
     const allResources: any[] = [];
 
     for (const [serverId, client] of this.clients.entries()) {
-      try {
-        const server = this.servers.get(serverId);
-        if (!server || !this.serverStatusMap.get(server.name)) {
+      const server = this.servers.get(serverId);
+      if (!server || !this.serverStatusMap.get(server.name)) {
+        continue;
+      }
+
+      // Skip servers the token doesn't have access to
+      if (token) {
+        if (!this.tokenValidator.hasServerAccess(token, serverId)) {
           continue;
         }
+      }
 
-        // Skip servers the token doesn't have access to
-        if (token) {
-          if (!this.tokenValidator.hasServerAccess(token, serverId)) {
-            continue;
+      const response = await client.listResources();
+
+      if (response && Array.isArray(response.resources)) {
+        response.resources.forEach((resource) => {
+          // Extract and store the original protocol
+          const uri = resource.uri;
+          const protocolMatch = uri.match(/^([a-zA-Z]+:\/\/)(.+)$/);
+
+          let standardizedUri: string;
+
+          if (protocolMatch) {
+            const originalProtocol = protocolMatch[1];
+            const path = protocolMatch[2];
+            standardizedUri = createResourceUri(server.name, path);
+
+            // Store the mapping
+            this.originalProtocols.set(standardizedUri, originalProtocol);
+          } else {
+            standardizedUri = createResourceUri(server.name, uri);
           }
-        }
 
-        const response = await client.listResources();
+          // Apply display rules
+          const { name: customName, description: customDescription } =
+            applyDisplayRules(
+              resource.name,
+              resource.description || "",
+              server.name,
+              "resource",
+            );
 
-        if (response && Array.isArray(response.resources)) {
-          response.resources.forEach((resource) => {
-            // Extract and store the original protocol
-            const uri = resource.uri;
-            const protocolMatch = uri.match(/^([a-zA-Z]+:\/\/)(.+)$/);
-
-            let standardizedUri: string;
-
-            if (protocolMatch) {
-              const originalProtocol = protocolMatch[1];
-              const path = protocolMatch[2];
-              standardizedUri = createResourceUri(server.name, path);
-
-              // Store the mapping
-              this.originalProtocols.set(standardizedUri, originalProtocol);
-            } else {
-              standardizedUri = createResourceUri(server.name, uri);
-            }
-
-            // Apply display rules
-            const { name: customName, description: customDescription } =
-              applyDisplayRules(
-                resource.name,
-                resource.description || "",
-                server.name,
-                "resource",
-              );
-
-            allResources.push({
-              ...resource,
-              uri: standardizedUri,
-              name: customName,
-              description: customDescription,
-            });
+          allResources.push({
+            ...resource,
+            uri: standardizedUri,
+            name: customName,
+            description: customDescription,
           });
-        }
-      } catch (error) {
-        // Continue processing other servers
+        });
       }
     }
 
@@ -631,19 +621,13 @@ export class RequestHandlers {
     for (const [servId, client] of this.clients.entries()) {
       const server = this.servers.get(servId);
       if (server && this.serverStatusMap.get(server.name)) {
-        try {
-          const response = await client.listPrompts();
-          if (response && Array.isArray(response.prompts)) {
-            const hasPrompt = response.prompts.some(
-              (p) => p.name === promptName,
-            );
-            if (hasPrompt) {
-              serverName = server.name;
-              break;
-            }
+        const response = await client.listPrompts();
+        if (response && Array.isArray(response.prompts)) {
+          const hasPrompt = response.prompts.some((p) => p.name === promptName);
+          if (hasPrompt) {
+            serverName = server.name;
+            break;
           }
-        } catch (error) {
-          // Continue to next server
         }
       }
     }
@@ -737,8 +721,7 @@ export class RequestHandlers {
    */
   private async handleAgentToolCall(
     toolName: string,
-    args: any,
-    token?: string,
+    _args: any,
   ): Promise<any> {
     // return await AgentToolHandler.handleTool(toolName, args);
     throw new McpError(

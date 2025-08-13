@@ -540,18 +540,7 @@ async function checkApp(
     let isCustom = false;
     let hasOtherServers = false;
 
-    // カスタムアプリ情報の取得
-    // const customApps = await getAdditionalApps();
-    // const customApp = customApps.find(
-    //   (app) => app.name.toLowerCase() === name.toLowerCase(),
-    // );
-    // if (customApp) {
-    //   token = token || customApp.token || "";
-    //   serverIds = customApp.serverIds || serverIds;
-    //   isCustom = true;
-    // }
-
-    // トークンがまだ不明な場合は、アプリトークンから取得
+    // アプリトークンから取得
     let scopes: TokenScope[] = [];
     if (!token && appTokens.length > 0) {
       token = appTokens[0].id;
@@ -619,7 +608,7 @@ async function checkApp(
       scopes,
       icon: getStandardAppIcon(name),
     };
-  } catch (error) {
+  } catch (_) {
     return {
       name,
       installed: false,

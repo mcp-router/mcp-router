@@ -1,4 +1,3 @@
-import { DatabaseTableSchema } from "@mcp_router/shared";
 import {
   AGENTS_SCHEMA,
   AGENTS_REQUIRED_COLUMNS,

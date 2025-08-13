@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer } from "electron";
-import { MCPServerConfig, CreateServerInput } from "@mcp_router/shared";
+import { CreateServerInput } from "@mcp_router/shared";
 import { TokenScope } from "@mcp_router/shared";
 
 // Consolidate everything into one contextBridge call

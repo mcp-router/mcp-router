@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { AgentConfig, MCPServerConfig } from "@mcp_router/shared";
+import { AgentConfig } from "@mcp_router/shared";
 import { Button } from "@mcp_router/ui";
 import { Input } from "@mcp_router/ui";
 import { Label } from "@mcp_router/ui";

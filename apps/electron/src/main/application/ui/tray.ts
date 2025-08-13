@@ -47,13 +47,13 @@ export function createTray(mcpServerManager: MCPServerManager): Tray | null {
     });
 
     // Single-click shows context menu on macOS
-    tray.on("click", (event) => {
+    tray.on("click", () => {
       tray?.popUpContextMenu();
     });
   } else {
     // On Windows/Linux, right-click will show the context menu (default)
     // Left-click will also show the context menu instead of opening window
-    tray.on("click", (event) => {
+    tray.on("click", () => {
       tray?.popUpContextMenu();
     });
   }

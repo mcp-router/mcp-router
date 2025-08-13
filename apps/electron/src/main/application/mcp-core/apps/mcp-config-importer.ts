@@ -10,8 +10,6 @@ import {
   exists,
 } from "@/main/domain/mcp-core/client/mcp-app-paths";
 import { v4 as uuidv4 } from "uuid";
-import path from "path";
-import { app } from "electron";
 import { getSettingsService } from "@/main/application/settings/settings-service";
 
 /**
@@ -41,8 +39,6 @@ export async function syncServersFromClientConfig(
       existingServers.map((s: any) => s.name),
     );
 
-    let importedCount = 0;
-
     // 各サーバ設定を処理
     for (const serverConfig of serverConfigs) {
       // 同名のサーバが既に存在する場合はスキップ
@@ -55,7 +51,6 @@ export async function syncServersFromClientConfig(
         serverService.addServer(serverConfig);
         // 既存名のセットに追加
         existingServerNames.add(serverConfig.name);
-        importedCount++;
       } catch (error) {
         console.error(`Failed to import server '${serverConfig.name}':`, error);
       }
@@ -91,7 +86,6 @@ export async function importExistingServerConfigurations(): Promise<void> {
 
     // Load all client configurations
     const clientConfigs = await loadAllClientConfigs();
-    let importedCount = 0;
 
     // Process each configuration
     for (const config of clientConfigs) {
@@ -116,7 +110,6 @@ export async function importExistingServerConfigurations(): Promise<void> {
           serverService.addServer(serverConfig);
           // Add to existing names set
           existingServerNames.add(serverConfig.name);
-          importedCount++;
         } catch (error) {
           console.error(
             `Failed to import server '${serverConfig.name}' from ${config.type}:`,
@@ -248,9 +241,6 @@ function extractServersFromConfig(
 ): MCPServerConfig[] {
   const configs: MCPServerConfig[] = [];
 
-  // サーバの基本ディレクトリを設定
-  const SERVERS_DIR = path.join(app.getPath("userData") || "", "mcp-servers");
-
   for (const [serverName, serverConfig] of Object.entries(servers)) {
     if (serverConfig && typeof serverConfig === "object") {
       // mcp-router 自体は除外
@@ -325,7 +315,7 @@ function extractServerConfigs(
 function extractVSCodeServerConfigs(
   servers: Record<string, any>,
   configs: MCPServerConfig[],
-  clientType: ClientType,
+  _clientType: ClientType,
 ): void {
   for (const [serverName, serverConfig] of Object.entries(servers)) {
     if (serverConfig && typeof serverConfig === "object") {
@@ -358,8 +348,8 @@ function extractVSCodeServerConfigs(
 function extractStandardServerConfigs(
   servers: Record<string, any>,
   configs: MCPServerConfig[],
-  clientType: ClientType,
-  configPath: string,
+  _clientType: ClientType,
+  _configPath: string,
 ): void {
   for (const [serverName, serverConfig] of Object.entries(servers)) {
     if (serverConfig && typeof serverConfig === "object") {

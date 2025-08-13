@@ -62,7 +62,7 @@ export abstract class BaseRepository<T extends { id: string }> {
       // WHERE句を追加（オプション）
       if (options.where) {
         const whereClauses = Object.entries(options.where)
-          .map(([key, value]) => `${key} = :${key}`)
+          .map(([key]) => `${key} = :${key}`)
           .join(" AND ");
 
         if (whereClauses) {
@@ -275,7 +275,7 @@ export abstract class BaseRepository<T extends { id: string }> {
       // WHERE句を追加（オプション）
       if (whereClause) {
         const conditions = Object.entries(whereClause)
-          .map(([key, value]) => `${key} = :${key}`)
+          .map(([key, _value]) => `${key} = :${key}`)
           .join(" AND ");
 
         if (conditions) {

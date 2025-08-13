@@ -5,7 +5,7 @@
  * Adapted for Electron-specific use
  */
 
-import React, { createContext, useContext } from "react";
+import React, { createContext } from "react";
 import type { PlatformAPI } from "@mcp_router/shared";
 
 // Create the context

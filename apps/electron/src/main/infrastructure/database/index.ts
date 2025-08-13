@@ -10,7 +10,7 @@
 export { getDatabaseMigration } from "./migrations/database-migration";
 
 // Internal imports for backwards compatibility functions
-import { getSqliteManager, SqliteManager } from "./core/sqlite-manager";
+import { getSqliteManager } from "./core/sqlite-manager";
 import { RepositoryFactory } from "./factories/repository-factory";
 
 // Backwards compatibility functions using RepositoryFactory

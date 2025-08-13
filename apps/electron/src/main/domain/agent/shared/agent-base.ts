@@ -1,10 +1,7 @@
 import {
   MCPServerConfig,
-  MCPTool,
-  MCPAgentToolPermission,
   BaseAgentInfo,
 } from "@mcp_router/shared";
-import { logError, logInfo } from "@/main/utils/logger";
 
 /**
  * エージェントの共通ベースクラス
