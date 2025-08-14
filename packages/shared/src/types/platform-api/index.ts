@@ -2,12 +2,12 @@
 export * from "./domains/agent-api";
 export * from "./domains/app-api";
 export * from "./domains/auth-api";
+export * from "./domains/hook-api";
 export * from "./domains/log-api";
 export * from "./domains/package-api";
 export * from "./domains/server-api";
 export * from "./domains/settings-api";
 export * from "./domains/workspace-api";
-export * from "./hook-api";
 
 // Export main platform API interface
 export * from "./platform-api";

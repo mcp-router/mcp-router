@@ -8,19 +8,6 @@ export interface ServerVariable {
   required?: boolean;
 }
 
-export interface CursorPaginationData {
-  nextCursor?: string;
-  prevCursor?: string;
-  hasMore: boolean;
-  total?: number;
-}
-
-export interface ParsedError {
-  message: string;
-  code?: string;
-  details?: any;
-}
-
 export interface ParsedPaymentError {
   isPaymentError: boolean;
   displayMessage: string;

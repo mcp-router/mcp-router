@@ -20,7 +20,7 @@ MCP Routerは、MCPサーバーとエージェントを管理するクロスプ�
 
 ### ドメイン駆動設計によるモジュール化
 
-関連する機能を論理的なドメインに再編成し、8つのドメインAPIに整理しました：
+関連する機能を論理的なドメインに再編成し、9つのドメインAPIに整理しました：
 
 ```typescript
 // packages/shared/src/types/platform-api/index.ts
@@ -28,6 +28,7 @@ interface PlatformAPI {
   agent: AgentAPI;      // エージェント管理（チャット機能含む）
   app: AppAPI;          // アプリケーション管理（トークン管理含む）
   auth: AuthAPI;        // 認証・認可
+  hooks: HookAPI;       // MCPフック管理
   log: LogAPI;          // ログ管理
   package: PackageAPI;  // パッケージ管理（システムユーティリティ含む）
   server: ServerAPI;    // MCPサーバー管理
@@ -42,6 +43,7 @@ interface PlatformAPI {
 
 1. **型定義の配置**
    - `packages/shared/src/types/platform-api/index.ts`: メインのインターフェース定義
+   - `packages/shared/src/types/platform-api/domains/`: 各ドメインAPIの型定義
    - `apps/electron/src/lib/platform-api/types/platform-api.ts`: Electron固有の型定義
 
 2. **実装**
@@ -96,6 +98,12 @@ interface PlatformAPI {
 - ワークスペースのCRUD操作
 - アクティブワークスペースの管理
 - ワークスペース変更の監視
+
+#### HookAPI
+- MCPフックのCRUD操作
+- フックの有効化・無効化
+- フックの実行順序管理
+- プリ・ポストフック処理
 
 ## アーキテクチャの特徴
 

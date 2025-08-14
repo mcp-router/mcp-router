@@ -10,7 +10,7 @@ import { PackageAPI } from "./domains/package-api";
 import { SettingsAPI } from "./domains/settings-api";
 import { LogAPI } from "./domains/log-api";
 import { WorkspaceAPI } from "./domains/workspace-api";
-import { HookAPI } from "./hook-api";
+import { HookAPI } from "./domains/hook-api";
 
 /**
  * Main Platform API interface with domain-driven structure

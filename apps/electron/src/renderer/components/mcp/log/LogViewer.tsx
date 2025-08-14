@@ -24,11 +24,7 @@ const LogViewer: React.FC<LogViewerProps> = ({
   const { currentWorkspace } = useWorkspaceStore();
 
   // Filter state management
-  const {
-    filters,
-    setPagination,
-    refresh,
-  } = useFilterState({
+  const { filters, setPagination, refresh } = useFilterState({
     limit: initialLimit,
   });
 

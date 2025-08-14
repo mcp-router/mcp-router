@@ -141,14 +141,16 @@ export class HookService extends SingletonService<
           currentContext = result.context;
         }
       } catch (error) {
-        const executionError: HookExecutionError = {
-          hookId: hook.id,
-          hookName: hook.name,
-          error: error as Error,
-          timestamp: Date.now(),
-        };
+        const executionError = new HookExecutionError(
+          `Hook execution failed: ${hook.name}`,
+          "HOOK_EXECUTION_ERROR",
+          hook.id,
+        );
 
-        logError(`Hook execution failed: ${hook.name}`, executionError);
+        logError(`Hook execution failed: ${hook.name}`, {
+          error: executionError,
+          originalError: error,
+        });
 
         // Continue execution even if a hook fails
         // TODO: Make this configurable

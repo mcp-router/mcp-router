@@ -1,56 +1,3 @@
-// Common UI prop types and patterns
-import type { ReactNode } from "react";
-
-export interface DialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  className?: string;
-}
-
-export interface FormProps<T = any> {
-  initialValues?: T;
-  onSubmit: (values: T) => void | Promise<void>;
-  onCancel?: () => void;
-  isSubmitting?: boolean;
-}
-
-export interface ListProps<T = any> {
-  items: T[];
-  renderItem: (item: T, index: number) => ReactNode;
-  onItemClick?: (item: T, index: number) => void;
-  emptyMessage?: string;
-  className?: string;
-}
-
-export interface TableColumn<T = any> {
-  id: string;
-  header: string;
-  accessor: keyof T | ((item: T) => any);
-  width?: string | number;
-  sortable?: boolean;
-}
-
-export interface TableProps<T = any> {
-  data: T[];
-  columns: TableColumn<T>[];
-  onRowClick?: (item: T) => void;
-  className?: string;
-}
-
-export interface LoadingState {
-  isLoading: boolean;
-  error?: Error | null;
-  data?: any;
-}
-
-export interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  className?: string;
-}
-
 // Toast and notification types
 export interface ToastMessage {
   id: string;
@@ -128,20 +75,6 @@ export interface AuthStoreState {
   credits: number | null;
 }
 
-export interface WorkspaceState {
-  activeWorkspaceId: string | null;
-  workspaces: any[]; // Workspace[]
-  isLoading: boolean;
-  error: string | null;
-}
-
-export interface ServerEditingState {
-  editingServerId: string | null;
-  isDirty: boolean;
-  originalConfig: any | null; // MCPServerConfig
-  editedConfig: any | null; // MCPServerConfig
-}
-
 export interface AgentStoreChatSession {
   id: string;
   agentId: string;
@@ -185,9 +118,4 @@ export interface AgentState {
 
   // Auth state for chat operations
   authToken: string | null;
-}
-
-export interface ThemeStore {
-  theme: Theme;
-  systemTheme: Theme;
 }

@@ -76,67 +76,13 @@ export interface HookResult {
 /**
  * Hook execution error
  */
-export interface HookExecutionError {
-  hookId: string;
-  hookName: string;
-  error: Error;
-  timestamp: number;
-}
-
-/**
- * Hook script execution environment
- */
-export interface HookScriptEnvironment {
-  // Available global variables
-  context: HookContext;
-  console: Console;
-
-  // Utility functions
-  sleep: (ms: number) => Promise<void>;
-  validateToken: (token: string) => boolean;
-  getServerInfo: (serverId: string) => any;
-}
-
-/**
- * Hook management operations
- */
-export interface HookOperations {
-  // CRUD operations
-  createHook: (
-    hook: Omit<MCPHook, "id" | "createdAt" | "updatedAt">,
-  ) => Promise<MCPHook>;
-  updateHook: (
-    id: string,
-    updates: Partial<Omit<MCPHook, "id" | "createdAt" | "updatedAt">>,
-  ) => Promise<MCPHook>;
-  deleteHook: (id: string) => Promise<void>;
-  getHook: (id: string) => Promise<MCPHook | null>;
-  listHooks: () => Promise<MCPHook[]>;
-
-  // Execution operations
-  executePreHooks: (context: HookContext) => Promise<HookResult>;
-  executePostHooks: (context: HookContext) => Promise<HookResult>;
-
-  // Management operations
-  enableHook: (id: string) => Promise<void>;
-  disableHook: (id: string) => Promise<void>;
-  reorderHooks: (hookIds: string[]) => Promise<void>;
-}
-
-/**
- * Hook execution log entry
- */
-export interface HookExecutionLog {
-  id: string;
-  hookId: string;
-  hookName: string;
-  executionTime: number;
-  duration: number;
-  success: boolean;
-  error?: string;
-  context: {
-    requestType: string;
-    serverName: string;
-    clientId: string;
-  };
+export class HookExecutionError extends Error {
+  constructor(
+    message: string,
+    public code: string = "HOOK_EXECUTION_ERROR",
+    public hookId?: string,
+  ) {
+    super(message);
+    this.name = "HookExecutionError";
+  }
 }

@@ -7,13 +7,6 @@ export interface UserInfo {
   paidCreditBalance: number;
 }
 
-export interface AuthState {
-  isAuthenticated: boolean;
-  user?: UserInfo;
-  token?: string;
-  expiresAt?: number;
-}
-
 // PKCE flow authentication state
 export interface PKCEAuthState {
   codeVerifier: string;
