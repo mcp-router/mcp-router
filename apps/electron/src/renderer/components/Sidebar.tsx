@@ -243,23 +243,23 @@ const SidebarComponent: React.FC = () => {
                     </SidebarMenuItem>
                   )}
 
-                  {!isRemoteWorkspace && (
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={t("hooks.title")}
-                        isActive={location.pathname === "/hooks"}
-                      >
-                        <Link
-                          to="/hooks"
-                          className="flex items-center gap-3 py-5 px-3 w-full"
-                        >
-                          <IconWebhook className="h-6 w-6" />
-                          <span className="text-base">{t("hooks.title")}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )}
+                  {/*{!isRemoteWorkspace && (*/}
+                  {/*  <SidebarMenuItem>*/}
+                  {/*    <SidebarMenuButton*/}
+                  {/*      asChild*/}
+                  {/*      tooltip={t("hooks.title")}*/}
+                  {/*      isActive={location.pathname === "/hooks"}*/}
+                  {/*    >*/}
+                  {/*      <Link*/}
+                  {/*        to="/hooks"*/}
+                  {/*        className="flex items-center gap-3 py-5 px-3 w-full"*/}
+                  {/*      >*/}
+                  {/*        <IconWebhook className="h-6 w-6" />*/}
+                  {/*        <span className="text-base">{t("hooks.title")}</span>*/}
+                  {/*      </Link>*/}
+                  {/*    </SidebarMenuButton>*/}
+                  {/*  </SidebarMenuItem>*/}
+                  {/*)}*/}
 
                   {!isRemoteWorkspace && (
                     <SidebarMenuItem>
