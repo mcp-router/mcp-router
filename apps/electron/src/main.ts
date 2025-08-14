@@ -284,7 +284,7 @@ async function initApplication(): Promise<void> {
   const DEV_CSP = `
     default-src 'self' 'unsafe-inline' http://localhost:* ws://localhost:*;
     script-src 'self' 'unsafe-eval' 'unsafe-inline';
-    connect-src 'self' http://localhost:* ws://localhost:* https://mcp-router.net https://us.i.posthog.com https://us-assets.i.posthog.com;
+    connect-src 'self' http://localhost:* ws://localhost:* https://mcp-router.net https://staging.mcp-router.net https://us.i.posthog.com https://us-assets.i.posthog.com;
     img-src 'self' data:;
   `
     .replace(/\s+/g, " ")
