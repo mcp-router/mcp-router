@@ -10,7 +10,7 @@ import {
   createResourceUri,
   createUriVariants,
 } from "@/main/utils/uri-utils";
-import { RequestLogEntry } from "./types";
+import { McpManagerRequestLogEntry as RequestLogEntry } from "@mcp_router/shared";
 import { LoggingService } from "./logging";
 import { ServerManager } from "./server-manager";
 import { TokenValidator } from "./token-validator";

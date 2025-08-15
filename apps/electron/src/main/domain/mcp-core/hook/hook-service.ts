@@ -8,6 +8,7 @@ import {
 import { getHookRepository } from "@/main/infrastructure/database";
 import { logInfo, logError } from "@/main/utils/logger";
 import vm from "vm";
+import fetch from "node-fetch";
 
 /**
  * Hook Service for MCP Router
@@ -186,9 +187,6 @@ export class HookService extends SingletonService<
           if (parsedUrl.protocol !== "https:") {
             throw new Error("Only HTTPS URLs are allowed");
           }
-
-          // Import fetch dynamically (Node.js 18+)
-          const { default: fetch } = await import("node-fetch");
 
           // Limit request options for security
           const safeOptions = {

@@ -1,20 +1,6 @@
 import { APIMCPServer, PaginatedResponse } from "@mcp_router/shared";
 import { API_BASE_URL } from "../../../../main";
-
-// Use dynamic import for ESM-only modules
-let fetchFunc: any = null;
-
-// Initialize dynamic imports
-async function initDynamicImports() {
-  try {
-    const nodeFetch = await import("node-fetch");
-    fetchFunc = nodeFetch.default;
-  } catch (error) {
-    console.error("Failed to import node-fetch:", error);
-    // Use a fallback
-    fetchFunc = global.fetch;
-  }
-}
+import fetch from "node-fetch";
 
 export async function fetchMcpServersFromIndex(
   page: number = 1,
@@ -23,11 +9,6 @@ export async function fetchMcpServersFromIndex(
   isVerified?: boolean,
 ): Promise<PaginatedResponse<APIMCPServer>> {
   try {
-    // Make sure fetchFunc is initialized
-    if (!fetchFunc) {
-      await initDynamicImports();
-    }
-
     // Build URL with query parameters
     const url = new URL(`${API_BASE_URL}/mcpservers`);
     url.searchParams.append("page", page.toString());
@@ -41,13 +22,13 @@ export async function fetchMcpServersFromIndex(
       url.searchParams.append("isVerified", isVerified.toString());
     }
 
-    const response = await fetchFunc(url.toString());
+    const response = await fetch(url.toString());
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const result: PaginatedResponse<APIMCPServer> = await response.json();
+    const result = (await response.json()) as PaginatedResponse<APIMCPServer>;
     // console.log('Fetched MCP servers from index server:', result);
     return result;
   } catch (error) {
@@ -70,15 +51,10 @@ export async function fetchMcpServerVersionDetails(
   version: string,
 ): Promise<any> {
   try {
-    // Make sure fetchFunc is initialized
-    if (!fetchFunc) {
-      await initDynamicImports();
-    }
-
     // Build URL for server version details
     const url = `${API_BASE_URL}/mcpservers/${displayId}/versions/${version}`;
 
-    const response = await fetchFunc(url);
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

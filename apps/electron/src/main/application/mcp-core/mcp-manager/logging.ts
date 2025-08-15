@@ -1,9 +1,9 @@
 import { getLogService } from "@/main/application/mcp-core/log/log-service";
 import {
-  RequestLogEntry,
+  McpManagerRequestLogEntry as RequestLogEntry,
   AGGREGATOR_SERVER_ID,
   AGGREGATOR_SERVER_NAME,
-} from "./types";
+} from "@mcp_router/shared";
 
 export class LoggingService {
   private serverNameToIdMap: Map<string, string>;

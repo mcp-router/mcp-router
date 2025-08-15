@@ -53,3 +53,23 @@ export interface RequestLogQueryResult
   extends CursorPaginationResult<RequestLogEntry> {
   logs: RequestLogEntry[]; // 互換性のため残す
 }
+
+/**
+ * MCP Manager用のシンプルなリクエストログエントリ
+ */
+export interface McpManagerRequestLogEntry {
+  timestamp: string;
+  requestType: string;
+  params: any;
+  result: "success" | "error";
+  errorMessage?: string;
+  response?: any;
+  duration: number;
+  clientId: string;
+}
+
+/**
+ * MCP Aggregatorサーバーの定数
+ */
+export const AGGREGATOR_SERVER_ID = "mcp-router-aggregator";
+export const AGGREGATOR_SERVER_NAME = "MCP Router Aggregator";
