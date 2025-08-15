@@ -23,6 +23,7 @@ export default [
         project: [
           "./tsconfig.json",
           "./apps/*/tsconfig.json",
+          "./apps/electron/e2e/tsconfig.json",
           "./packages/*/tsconfig.json",
         ],
       },

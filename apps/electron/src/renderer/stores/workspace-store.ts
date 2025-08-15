@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { electronPlatformAPI } from "../platform-api/electron-platform-api";
 import { RemotePlatformAPI } from "../platform-api/remote-platform-api";
 import type { PlatformAPI, Workspace } from "@mcp_router/shared";
-import { useAuthStore } from "@/renderer/stores";
+import { useAuthStore, useServerStore, useAgentStore } from "@/renderer/stores";
 
 interface WorkspaceState {
   workspaces: Workspace[];
@@ -131,11 +131,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const workspace = get().workspaces.find((w) => w.id === id);
       if (workspace) {
         set({ currentWorkspace: workspace, isLoading: false });
-
-        // ストアの再作成をトリガー（新しいPlatform APIを使用）
-        const { useServerStore, useAgentStore, useAuthStore } = await import(
-          "../stores"
-        );
 
         // Clear all stores before switching
         useServerStore.getState().clearStore();
