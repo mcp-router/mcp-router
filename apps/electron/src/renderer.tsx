@@ -1,3 +1,5 @@
+import "@mcp_router/tailwind-config/base.css";
+import "./renderer/utils/i18n"; // Import i18n initialization first
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "@/renderer/components/App";

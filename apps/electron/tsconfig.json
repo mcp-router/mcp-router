@@ -18,7 +18,7 @@
       "@mcp_router/ui/*": ["../../packages/ui/src/*"]
     }
   },
-  "include": ["src/**/*", "src/**/*.json"],
+  "include": ["src/**/*", "src/**/*.json", "../../packages/shared/src/types/svg.d.ts"],
   "references": [
     { "path": "../../packages/shared" },
     { "path": "../../packages/ui" }
