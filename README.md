@@ -11,18 +11,15 @@
 
 </div>
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/intro.gif" alt="MCP Router Demo" width="80%">
-</div>
-
 ## 🎯 Overview
 
-**MCP Router** is a free desktop application for Windows and macOS that simplifies the management of Model Context Protocol (MCP) servers.
+**MCP Router** is a desktop application for simplifies the management of Model Context Protocol (MCP) servers.
 
 ### ✨ Key Features
 
-- 🔐 **Secure** - Manage access control and monitor all MCP server interactions
-- 🌐 **Universal** - Connect to any MCP server from any registry
+- 🌐 **Universal** - Connect to any MCP server
+  - Remote or local servers
+  - Supports DXT, JSON, Manual
 - 🖥️ **Cross-platform** - Available for Windows and macOS
 - 🤖 **AI Agent Feature** - Create, share, and use AI Agents with MCP tools, and use your agents as MCP servers in other apps
 
@@ -30,13 +27,13 @@
 
 ### Your Data Stays Local
 - ✅ **All data is stored locally** - Request logs, configurations, and server data remain on your device
-- ✅ **Credentials are secure** - MCP API keys and authentication credentials are stored locally and never transmitted externally
+- ✅ **Credentials are secure** - API keys and authentication credentials are stored locally and never transmitted externally
 - ✅ **Complete control** - You have full control over your MCP server connections and data
 
-### Open Source Transparency
+### Transparency
 - 🔍 **Auditable application** - The desktop application source code is publicly available on GitHub
 - 🛡️ **Verifiable privacy** - You can verify that your data stays local by examining the application code
-- 🤝 **Community-driven** - Security improvements and audits are welcomed from the community
+- 🤝 **Community-driven** - Security improvements and audits are welcomed from the [community](https://discord.com/invite/dwG9jPrhxB)
 
 
 ## 📥 Installation
@@ -65,28 +62,6 @@ Seamlessly connect with popular AI tools like Claude, Cline, Windsurf, Cursor, o
 Monitor and display detailed request logs
 
 <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/stats.png" alt="Logs and Statistics" width="600">
-
-## 🎯 Development Roadmap
-
-### 🔧 Enhanced MCP Management Features
-**Goal**: Make MCP server management more flexible and powerful
-
-- [ ] Enable fine-grained permissions settings for each tool
-- [ ] Add functionality to rename tools arbitrarily
-- [ ] Make autoStart option configurable
-
-### 🧠 Long-Term Memory System
-**Goal**: Provide a mechanism to permanently remember all MCP calls
-
-- [ ] Implement meta information indexing
-- [ ] Implement save/search functionality to vector DB
-- [ ] Support multiple vector DB providers (Pinecone, Weaviate, Qdrant, etc.)
-
-### 🤖 Agent Orchestration
-**Goal**: Advanced functionality to coordinate multiple AI agents
-
-- [ ] Support OpenAI compatible API
-- [ ] Provide more user-friendly agent UI
 
 
 ## 🤝 Community
