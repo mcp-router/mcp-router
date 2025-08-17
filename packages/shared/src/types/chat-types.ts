@@ -4,7 +4,7 @@
  */
 
 // Base chat message interface
-interface BaseChatMessage {
+export interface BaseChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
 }
