@@ -5,8 +5,8 @@ import {
   AgentState,
   AgentStoreChatSession,
   PlatformAPI,
+  BaseChatMessage,
 } from "@mcp_router/shared";
-import type { AgentChatMessage } from "@mcp_router/shared";
 import { Message } from "@ai-sdk/react";
 
 export interface AgentStoreInterface extends AgentState {
@@ -33,7 +33,7 @@ export interface AgentStoreInterface extends AgentState {
   ) => void;
   removeChatSession: (id: string) => void;
   setCurrentSessionId: (sessionId: string | null) => void;
-  addMessageToSession: (sessionId: string, message: AgentChatMessage) => void;
+  addMessageToSession: (sessionId: string, message: BaseChatMessage) => void;
   resetSessions: () => void;
 
   // Actions for chat messages
@@ -553,7 +553,7 @@ export const createAgentStore = (
         setChatError(null);
 
         // Add user message immediately
-        const userMessage: AgentChatMessage = {
+        const userMessage: BaseChatMessage = {
           role: "user",
           content: message,
         };

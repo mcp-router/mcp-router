@@ -1,6 +1,5 @@
 // Re-export all domain types
 export * from "./mcp-types";
-export * from "./agent-api";
 export * from "./log-types";
 export * from "./mcp-app-types";
 export * from "./pagination";
