@@ -24,36 +24,34 @@ export interface MCPHook {
  * Hook execution context
  */
 export interface HookContext {
-  // リクエスト情報
-  requestType:
-    | "CallTool"
-    | "ListTools"
-    | "ReadResource"
-    | "ListResources"
-    | "GetPrompt"
-    | "ListPrompts";
-  serverName: string;
-  serverId: string;
-  clientId: string;
-  token?: string;
-  toolName?: string; // CallToolリクエストの場合のツール名
-
-  // リクエスト本体
+  // 純粋なMCPリクエスト
   request: {
-    method: string;
-    params: any;
+    method: string; // "tools/call", "tools/list" など
+    params: any; // MCPプロトコルのパラメータ
   };
 
-  // レスポンス情報（Post-hookでのみ利用可能）
+  // 純粋なMCPレスポンス（Post-hookのみ）
   response?: any;
-  error?: Error;
 
-  // Hook間でデータを共有するためのメタデータ
-  metadata: Record<string, any>;
+  // アプリケーション固有のメタデータ
+  metadata: {
+    // サーバー情報
+    serverId: string;
+    serverName: string;
 
-  // 実行時間計測
-  startTime: number;
-  duration?: number; // Post-hookでのみ利用可能
+    // クライアント情報
+    clientId: string;
+
+    // タイミング情報
+    startTime: number;
+    duration?: number; // Post-hookのみ
+
+    // エラー情報
+    error?: Error; // Post-hookのみ
+
+    // Hook間共有データ
+    shared?: Record<string, any>;
+  };
 }
 
 /**

@@ -25,31 +25,34 @@ MCP RouterのHookシステムは、MCPリクエストの処理前後にカスタ
 
 ```typescript
 interface HookContext {
-  // リクエスト情報
-  requestType: "CallTool" | "ListTools" | "ReadResource" | 
-               "ListResources" | "GetPrompt" | "ListPrompts";
-  serverName: string;      // サーバー名
-  serverId: string;        // サーバーID
-  clientId: string;        // クライアントID
-  token?: string;          // 認証トークン（オプション）
-  toolName?: string;       // ツール名（CallToolの場合のみ）
-
-  // リクエスト本体
+  // 純粋なMCPリクエスト
   request: {
-    method: string;        // MCPメソッド名
-    params: any;           // リクエストパラメータ
+    method: string;        // MCPメソッド名（"tools/call", "tools/list"など）
+    params: any;           // MCPプロトコルのパラメータ
   };
 
-  // レスポンス情報（Post-hookでのみ利用可能）
+  // 純粋なMCPレスポンス（Post-hookでのみ利用可能）
   response?: any;          // サーバーからのレスポンス
-  error?: Error;           // エラー情報
 
-  // Hook間でデータを共有するためのメタデータ
-  metadata: Record<string, any>;
-
-  // 実行時間計測
-  startTime: number;       // リクエスト開始時刻（ミリ秒）
-  duration?: number;       // 実行時間（Post-hookでのみ）
+  // アプリケーション固有のメタデータ
+  metadata: {
+    // サーバー情報
+    serverId: string;      // サーバーID
+    serverName: string;    // サーバー名
+    
+    // クライアント情報
+    clientId: string;      // クライアントID
+    
+    // タイミング情報
+    startTime: number;     // リクエスト開始時刻（ミリ秒）
+    duration?: number;     // 実行時間（Post-hookでのみ）
+    
+    // エラー情報
+    error?: Error;         // エラー情報（Post-hookでのみ）
+    
+    // Hook間共有データ
+    shared?: Record<string, any>;  // Hook間でデータを共有するための領域
+  };
 }
 ```
 
@@ -69,26 +72,11 @@ interface HookContext {
 await sleep(1000); // 1秒待機
 ```
 
-#### `validateToken(token: string): boolean`
-トークンの妥当性を検証します（現在は簡易実装）。
-
-```javascript
-if (!validateToken(context.token)) {
-  return {
-    continue: false,
-    error: {
-      code: "INVALID_TOKEN",
-      message: "認証トークンが無効です"
-    }
-  };
-}
-```
-
 #### `getServerInfo(serverId: string): object`
 サーバー情報を取得します（現在は簡易実装）。
 
 ```javascript
-const serverInfo = getServerInfo(context.serverId);
+const serverInfo = getServerInfo(context.metadata.serverId);
 console.log("Server name:", serverInfo.name);
 ```
 
@@ -146,40 +134,11 @@ interface HookResult {
 
 ## サンプルコード
 
-### 1. 基本的なPre-hook（認証チェック）
-
-```javascript
-// トークンの存在をチェック
-if (!context.token) {
-  return {
-    continue: false,
-    error: {
-      code: "UNAUTHORIZED",
-      message: "認証トークンが必要です"
-    }
-  };
-}
-
-// トークンの検証
-if (!validateToken(context.token)) {
-  return {
-    continue: false,
-    error: {
-      code: "INVALID_TOKEN",
-      message: "無効な認証トークンです"
-    }
-  };
-}
-
-// 処理を続行
-return { continue: true };
-```
-
-### 2. リクエスト変更（Pre-hook）
+### 1. リクエスト変更（Pre-hook）
 
 ```javascript
 // 特定のツール呼び出しにカスタムパラメータを追加
-if (context.requestType === "CallTool" && context.toolName === "search") {
+if (context.request.method === "tools/call" && context.request.params.name === "search") {
   // リクエストパラメータを変更
   const modifiedContext = {
     ...context,
@@ -202,12 +161,12 @@ if (context.requestType === "CallTool" && context.toolName === "search") {
 return { continue: true };
 ```
 
-### 3. レート制限（Pre-hook）
+### 2. レート制限（Pre-hook）
 
 ```javascript
 // メタデータを使用してレート制限を実装
-const rateLimit = context.metadata.rateLimit || {};
-const clientKey = `${context.clientId}_${context.requestType}`;
+const rateLimit = context.metadata.shared?.rateLimit || {};
+const clientKey = `${context.metadata.clientId}_${context.request.method}`;
 const now = Date.now();
 
 // 前回のリクエスト時刻を確認
@@ -231,40 +190,43 @@ return {
     ...context,
     metadata: {
       ...context.metadata,
-      rateLimit
+      shared: {
+        ...context.metadata.shared,
+        rateLimit
+      }
     }
   }
 };
 ```
 
-### 4. レスポンスログ（Post-hook）
+### 3. レスポンスログ（Post-hook）
 
 ```javascript
 // 実行時間とレスポンスサイズをログ
 const responseSize = JSON.stringify(context.response || {}).length;
 console.log(`Request completed:`, {
-  type: context.requestType,
-  server: context.serverName,
-  tool: context.toolName,
-  duration: context.duration,
+  method: context.request.method,
+  server: context.metadata.serverName,
+  tool: context.request.params?.name,  // tools/callの場合
+  duration: context.metadata.duration,
   responseSize: responseSize,
-  hasError: !!context.error
+  hasError: !!context.metadata.error
 });
 
 // エラーの場合は詳細をログ
-if (context.error) {
-  console.error("Request failed:", context.error);
+if (context.metadata.error) {
+  console.error("Request failed:", context.metadata.error);
 }
 
 // 処理を続行
 return { continue: true };
 ```
 
-### 5. レスポンス変換（Post-hook）
+### 4. レスポンス変換（Post-hook）
 
 ```javascript
 // ツールのレスポンスをフィルタリング
-if (context.requestType === "ListTools" && context.response) {
+if (context.request.method === "tools/list" && context.response) {
   // 特定のツールを除外
   const filteredTools = context.response.tools.filter(tool => {
     return !tool.name.startsWith("internal_");
@@ -287,12 +249,12 @@ if (context.requestType === "ListTools" && context.response) {
 return { continue: true };
 ```
 
-### 6. 条件付き実行
+### 5. 条件付き実行
 
 ```javascript
 // 特定のサーバーのみで実行
 const targetServers = ["production-server", "staging-server"];
-if (!targetServers.includes(context.serverName)) {
+if (!targetServers.includes(context.metadata.serverName)) {
   // このサーバーでは何もしない
   return { continue: true };
 }
@@ -313,7 +275,7 @@ if (hour < 9 || hour >= 18) {
 return { continue: true };
 ```
 
-### 7. 外部APIによる検証（Gemini API例）
+### 6. 外部APIによる検証（Gemini API例）
 
 ```javascript
 // Gemini APIを使用したリクエスト検証

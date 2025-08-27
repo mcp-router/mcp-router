@@ -113,18 +113,17 @@ export class RequestHandlers {
 
     // Create hook context
     const hookContext: HookContext = {
-      requestType: "CallTool",
-      serverName,
-      serverId,
-      clientId,
-      token,
-      toolName: originalToolName,
       request: {
         method: "tools/call",
         params: request.params,
       },
-      metadata: {},
-      startTime: Date.now(),
+      metadata: {
+        serverId,
+        serverName,
+        clientId,
+        startTime: Date.now(),
+        shared: {},
+      },
     };
 
     // Execute pre-hooks
@@ -165,7 +164,10 @@ export class RequestHandlers {
       const postContext: HookContext = {
         ...updatedContext,
         response: result,
-        duration: Date.now() - updatedContext.startTime,
+        metadata: {
+          ...updatedContext.metadata,
+          duration: Date.now() - updatedContext.metadata.startTime,
+        },
       };
 
       // Execute post-hooks
@@ -190,8 +192,11 @@ export class RequestHandlers {
       // Create error context for post-hooks
       const errorContext: HookContext = {
         ...updatedContext,
-        error: error,
-        duration: Date.now() - updatedContext.startTime,
+        metadata: {
+          ...updatedContext.metadata,
+          error: error,
+          duration: Date.now() - updatedContext.metadata.startTime,
+        },
       };
 
       // Execute post-hooks even on error
