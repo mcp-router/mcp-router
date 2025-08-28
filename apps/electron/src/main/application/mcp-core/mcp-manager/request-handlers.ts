@@ -1,10 +1,7 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { MCPServer, HookContext } from "@mcp_router/shared";
-import {
-  applyDisplayRules,
-  applyRulesToInputSchema,
-} from "@/main/domain/mcp-core/rule/rule-utils";
+import { MCPServer } from "@mcp_router/shared";
+import { applyRulesToInputSchema } from "@/main/domain/mcp-core/rule/rule-utils";
 import {
   parseResourceUri,
   createResourceUri,
@@ -53,7 +50,7 @@ export class RequestHandlers extends RequestHandlerBase {
     const clientId = this.getClientId(token);
 
     return this.executeWithHooks("tools/list", {}, clientId, async () => {
-      const allTools = await this.getAllToolsInternal(token);
+      const allTools = await this.getAllToolsInternal();
       return { tools: allTools };
     });
   }
@@ -131,48 +128,8 @@ export class RequestHandlers extends RequestHandlerBase {
   /**
    * Get all tools from all servers (internal implementation)
    */
-  private async getAllToolsInternal(token?: string): Promise<any[]> {
+  private async getAllToolsInternal(): Promise<any[]> {
     const allTools: any[] = [];
-
-    // Add Agent Tools
-    allTools.push({
-      name: "agent_start_session",
-      description: "Start a new agent session",
-      inputSchema: {
-        type: "object",
-        properties: {
-          agent_id: {
-            type: "string",
-            description: "The ID of the agent to use",
-          },
-        },
-        required: ["agent_id"],
-      },
-    });
-
-    allTools.push({
-      name: "agent_send_message",
-      description: "Send a message to the current agent session",
-      inputSchema: {
-        type: "object",
-        properties: {
-          message: {
-            type: "string",
-            description: "The message to send to the agent",
-          },
-        },
-        required: ["message"],
-      },
-    });
-
-    allTools.push({
-      name: "agent_end_session",
-      description: "End the current agent session",
-      inputSchema: {
-        type: "object",
-        properties: {},
-      },
-    });
 
     // Add tools from running servers
     for (const [serverId, client] of this.clients.entries()) {

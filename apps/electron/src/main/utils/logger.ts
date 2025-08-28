@@ -10,7 +10,7 @@ import { isDevelopment } from "./environment";
  */
 export function logInfo(...args: any[]): void {
   if (isDevelopment()) {
-    console.log("[INFO]", ...args);
+    console.log("[INFO]", JSON.stringify(args));
   }
 }
 
