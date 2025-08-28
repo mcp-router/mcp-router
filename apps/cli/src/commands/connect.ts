@@ -150,6 +150,10 @@ class HttpMcpBridgeServer {
           },
         };
       } catch (error: any) {
+        // If already McpError, re-throw as-is to avoid wrapping
+        if (error instanceof McpError) {
+          throw error;
+        }
         throw new McpError(
           ErrorCode.InternalError,
           `Error during initialization: ${error.message}`,
@@ -163,6 +167,10 @@ class HttpMcpBridgeServer {
         const response = await this.client.listTools();
         return { tools: response.tools || [] };
       } catch (error: any) {
+        // If already McpError, re-throw as-is to avoid wrapping
+        if (error instanceof McpError) {
+          throw error;
+        }
         throw new McpError(
           ErrorCode.InternalError,
           `Error listing tools: ${error.message}`,
@@ -179,6 +187,10 @@ class HttpMcpBridgeServer {
         });
         return result as CallToolResult;
       } catch (error: any) {
+        // If already McpError, re-throw as-is to avoid wrapping
+        if (error instanceof McpError) {
+          throw error;
+        }
         throw new McpError(
           ErrorCode.InternalError,
           `Error calling tool ${request.params.name}: ${error.message}`,
@@ -192,6 +204,10 @@ class HttpMcpBridgeServer {
         const response = await this.client.listResources();
         return { resources: response.resources || [] };
       } catch (error: any) {
+        // If already McpError, re-throw as-is to avoid wrapping
+        if (error instanceof McpError) {
+          throw error;
+        }
         throw new McpError(
           ErrorCode.InternalError,
           `Error listing resources: ${error.message}`,
@@ -219,6 +235,10 @@ class HttpMcpBridgeServer {
           });
           return resource as ReadResourceResult;
         } catch (error: any) {
+          // If already McpError, re-throw as-is to avoid wrapping
+          if (error instanceof McpError) {
+            throw error;
+          }
           throw new McpError(
             ErrorCode.InternalError,
             `Error reading resource ${request.params.uri}: ${error.message}`,
@@ -233,6 +253,10 @@ class HttpMcpBridgeServer {
         const response = await this.client.listPrompts();
         return { prompts: response.prompts || [] };
       } catch (error: any) {
+        // If already McpError, re-throw as-is to avoid wrapping
+        if (error instanceof McpError) {
+          throw error;
+        }
         throw new McpError(
           ErrorCode.InternalError,
           `Error listing prompts: ${error.message}`,
@@ -249,6 +273,10 @@ class HttpMcpBridgeServer {
         });
         return result as GetPromptResult;
       } catch (error: any) {
+        // If already McpError, re-throw as-is to avoid wrapping
+        if (error instanceof McpError) {
+          throw error;
+        }
         throw new McpError(
           ErrorCode.InternalError,
           `Error getting prompt ${request.params.name}: ${error.message}`,
