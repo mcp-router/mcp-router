@@ -10,18 +10,15 @@ import {
   createResourceUri,
   createUriVariants,
 } from "@/main/utils/uri-utils";
-import { McpManagerRequestLogEntry as RequestLogEntry } from "@mcp_router/shared";
 import { LoggingService } from "./logging";
 import { ServerManager } from "./server-manager";
 import { TokenValidator } from "./token-validator";
-import { getHookService } from "@/main/domain/mcp-core/hook/hook-service";
+import { RequestHandlerBase } from "./request-handler-base";
 
 /**
  * Handles all request processing for the aggregator server
  */
-export class RequestHandlers {
-  private loggingService: LoggingService;
-  private tokenValidator: TokenValidator;
+export class RequestHandlers extends RequestHandlerBase {
   private originalProtocols: Map<string, string> = new Map();
   private toolNameToServerMap: Map<string, string> = new Map();
   private serverStatusMap: Map<string, boolean>;
@@ -30,16 +27,15 @@ export class RequestHandlers {
   private serverNameToIdMap: Map<string, string>;
 
   constructor(serverManager: ServerManager, loggingService: LoggingService) {
-    this.loggingService = loggingService;
+    const maps = serverManager.getMaps();
+    const tokenValidator = new TokenValidator(maps.serverNameToIdMap);
+    super(tokenValidator, loggingService);
 
     // Get maps from server manager
-    const maps = serverManager.getMaps();
     this.servers = maps.servers;
     this.clients = maps.clients;
     this.serverNameToIdMap = maps.serverNameToIdMap;
     this.serverStatusMap = maps.serverStatusMap;
-
-    this.tokenValidator = new TokenValidator(this.serverNameToIdMap);
   }
 
   /**
@@ -54,12 +50,16 @@ export class RequestHandlers {
    * Handle a request to list all tools from all servers
    */
   public async handleListTools(token?: string): Promise<any> {
-    const allTools = await this.getAllToolsInternal(token);
-    return { tools: allTools };
+    const clientId = this.getClientId(token);
+
+    return this.executeWithHooks("tools/list", {}, clientId, async () => {
+      const allTools = await this.getAllToolsInternal(token);
+      return { tools: allTools };
+    });
   }
 
   /**
-   * Handle a CallTool request
+   * Handle a call to a specific tool
    */
   public async handleCallTool(request: any): Promise<any> {
     const toolName = request.params.name;
@@ -111,168 +111,113 @@ export class RequestHandlers {
       );
     }
 
-    // Create hook context
-    const hookContext: HookContext = {
-      request: {
-        method: "tools/call",
-        params: request.params,
-      },
-      metadata: {
-        serverId,
-        serverName,
-        clientId,
-        startTime: Date.now(),
-        shared: {},
-      },
-    };
-
-    // Execute pre-hooks
-    const hookService = getHookService();
-    const preHookResult = await hookService.executePreHooks(hookContext);
-    if (!preHookResult.continue) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        preHookResult.error?.message || "Request blocked by hook",
-      );
-    }
-
-    // Update context from pre-hook result
-    const updatedContext = preHookResult.context || hookContext;
-    const updatedRequest = updatedContext.request.params;
-
-    // Add client ID and name to log entry
-    const logEntry: RequestLogEntry = {
-      timestamp: new Date().toISOString(),
-      requestType: "CallTool",
-      params: {
-        toolName,
-        arguments: updatedRequest.arguments,
-      },
-      result: "success",
-      duration: 0,
+    return this.executeWithHooksAndLogging(
+      "tools/call",
+      request.params,
       clientId,
-    };
-
-    try {
-      // Call the tool on the server with potentially modified params
-      const result = await client.callTool({
-        name: originalToolName,
-        arguments: updatedRequest.arguments || {},
-      });
-
-      // Create post-hook context with response
-      const postContext: HookContext = {
-        ...updatedContext,
-        response: result,
-        metadata: {
-          ...updatedContext.metadata,
-          duration: Date.now() - updatedContext.metadata.startTime,
-        },
-      };
-
-      // Execute post-hooks
-      const postHookResult = await hookService.executePostHooks(postContext);
-      if (!postHookResult.continue) {
-        throw new McpError(
-          ErrorCode.InternalError,
-          postHookResult.error?.message || "Response blocked by hook",
-        );
-      }
-
-      // Use the potentially modified response
-      const finalResult = postHookResult.context?.response || result;
-
-      // Log success
-      logEntry.response = finalResult;
-      logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
-      this.loggingService.recordRequestLog(logEntry, serverName);
-
-      return finalResult;
-    } catch (error: any) {
-      // Create error context for post-hooks
-      const errorContext: HookContext = {
-        ...updatedContext,
-        metadata: {
-          ...updatedContext.metadata,
-          error: error,
-          duration: Date.now() - updatedContext.metadata.startTime,
-        },
-      };
-
-      // Execute post-hooks even on error
-      await hookService.executePostHooks(errorContext);
-
-      // Log error
-      logEntry.result = "error";
-      logEntry.errorMessage = error.message || String(error);
-      logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
-      this.loggingService.recordRequestLog(logEntry, serverName);
-
-      // Just re-throw the original error without wrapping
-      throw error;
-    }
+      serverName,
+      "CallTool",
+      async () => {
+        // Call the tool on the server
+        return await client.callTool({
+          name: originalToolName,
+          arguments: request.params.arguments || {},
+        });
+      },
+      { serverId },
+    );
   }
 
   /**
-   * Get all tools from all running servers
+   * Get all tools from all servers (internal implementation)
    */
   private async getAllToolsInternal(token?: string): Promise<any[]> {
     const allTools: any[] = [];
 
-    // Clear the existing tool-to-server mapping
-    this.toolNameToServerMap.clear();
+    // Add Agent Tools
+    allTools.push({
+      name: "agent_start_session",
+      description: "Start a new agent session",
+      inputSchema: {
+        type: "object",
+        properties: {
+          agent_id: {
+            type: "string",
+            description: "The ID of the agent to use",
+          },
+        },
+        required: ["agent_id"],
+      },
+    });
 
-    // Add agent tools
-    // this.addAgentsAsTools(allTools); // Agent tools removed
+    allTools.push({
+      name: "agent_send_message",
+      description: "Send a message to the current agent session",
+      inputSchema: {
+        type: "object",
+        properties: {
+          message: {
+            type: "string",
+            description: "The message to send to the agent",
+          },
+        },
+        required: ["message"],
+      },
+    });
 
-    // Collect all tools
+    allTools.push({
+      name: "agent_end_session",
+      description: "End the current agent session",
+      inputSchema: {
+        type: "object",
+        properties: {},
+      },
+    });
+
+    // Add tools from running servers
     for (const [serverId, client] of this.clients.entries()) {
-      const server = this.servers.get(serverId);
-      if (!server || !this.serverStatusMap.get(server.name)) {
+      const serverName = this.servers.get(serverId)?.name || serverId;
+      const isRunning = this.serverStatusMap.get(serverName);
+
+      if (!isRunning || !client) {
         continue;
       }
 
-      if (token) {
-        // Check token access using server's ID
-        if (!this.tokenValidator.hasServerAccess(token, serverId)) {
+      try {
+        // First, try to get the list of tools
+        const tools = await client.listTools();
+
+        if (!tools.tools || tools.tools.length === 0) {
           continue;
         }
-      }
 
-      const response = await client.listTools();
+        for (const tool of tools.tools) {
+          const toolWithSource = {
+            ...tool,
+            name: tool.name,
+            sourceServer: serverName,
+          };
 
-      if (response && Array.isArray(response.tools)) {
-        response.tools.forEach((tool) => {
-          // Store mapping from tool name to server name
-          this.toolNameToServerMap.set(tool.name, server.name);
+          // Store the mapping
+          this.toolNameToServerMap.set(tool.name, serverName);
 
-          // Apply display rules to name and description
-          const { name: customName, description: customDescription } =
-            applyDisplayRules(
+          // Apply rules to the input schema if they exist
+          const server = this.servers.get(serverId);
+          if (server && toolWithSource.inputSchema) {
+            toolWithSource.inputSchema = applyRulesToInputSchema(
+              toolWithSource.inputSchema,
               tool.name,
-              tool.description || "",
-              server.name,
-              "tool",
-            );
-
-          // Apply rules to tool input schema parameters
-          let customInputSchema = tool.inputSchema;
-          if (tool.inputSchema) {
-            customInputSchema = applyRulesToInputSchema(
-              tool.inputSchema,
-              tool.name,
-              server.name,
+              serverName,
             );
           }
 
-          // Add tool with templated name, description, and inputSchema
-          allTools.push({
-            ...tool,
-            name: customName,
-            description: customDescription,
-            inputSchema: customInputSchema,
-          });
-        });
+          allTools.push(toolWithSource);
+        }
+      } catch (error: any) {
+        console.error(
+          `[MCPServerManager] Failed to get tools from server ${serverName}:`,
+          error,
+        );
       }
     }
 
@@ -280,82 +225,73 @@ export class RequestHandlers {
   }
 
   /**
-   * Add agent tools to the tools list
-   */
-  // private addAgentsAsTools(allTools: any[]): void {
-  //   const agentServerName = "Agent Tools";
-  //   const enabledAgentTools = AgentToolHandler.getEnabledAgentTools();
-
-  //   enabledAgentTools.forEach((tool) => {
-  //     this.toolNameToServerMap.set(tool.name, agentServerName);
-  //     allTools.push(tool);
-  //   });
-  // }
-
-  /**
    * Handle a request to list all resources from all servers
    */
   public async handleListResources(token?: string): Promise<any> {
-    const allResources = await this.getAllResourcesInternal(token);
-    return { resources: allResources };
+    const clientId = this.getClientId(token);
+
+    return this.executeWithHooks("resources/list", {}, clientId, async () => {
+      const allResources = await this.getAllResourcesInternal(token);
+      return { resources: allResources };
+    });
   }
 
   /**
-   * Get all resources from all running servers
+   * Get all resources from all servers (internal implementation)
    */
   private async getAllResourcesInternal(token?: string): Promise<any[]> {
     const allResources: any[] = [];
 
     for (const [serverId, client] of this.clients.entries()) {
-      const server = this.servers.get(serverId);
-      if (!server || !this.serverStatusMap.get(server.name)) {
+      const serverName = this.servers.get(serverId)?.name || serverId;
+      const isRunning = this.serverStatusMap.get(serverName);
+
+      if (!isRunning || !client) {
         continue;
       }
 
-      // Skip servers the token doesn't have access to
+      // Check token access if provided
       if (token) {
-        if (!this.tokenValidator.hasServerAccess(token, serverId)) {
+        try {
+          this.tokenValidator.validateTokenAndAccess(token, serverName);
+        } catch {
+          // Skip this server if token doesn't have access
           continue;
         }
       }
 
-      const response = await client.listResources();
+      try {
+        const resources = await client.listResources();
 
-      if (response && Array.isArray(response.resources)) {
-        response.resources.forEach((resource) => {
-          // Extract and store the original protocol
-          const uri = resource.uri;
-          const protocolMatch = uri.match(/^([a-zA-Z]+:\/\/)(.+)$/);
+        if (!resources.resources || resources.resources.length === 0) {
+          continue;
+        }
 
-          let standardizedUri: string;
-
-          if (protocolMatch) {
-            const originalProtocol = protocolMatch[1];
-            const path = protocolMatch[2];
-            standardizedUri = createResourceUri(server.name, path);
-
-            // Store the mapping
-            this.originalProtocols.set(standardizedUri, originalProtocol);
-          } else {
-            standardizedUri = createResourceUri(server.name, uri);
+        // Add resources with source server information
+        for (const resource of resources.resources) {
+          // Store the original protocol if not already stored
+          if (
+            resource.uri &&
+            !this.originalProtocols.has(resource.uri) &&
+            resource.uri.includes("://")
+          ) {
+            const protocol = resource.uri.split("://")[0];
+            this.originalProtocols.set(resource.uri, protocol);
           }
 
-          // Apply display rules
-          const { name: customName, description: customDescription } =
-            applyDisplayRules(
-              resource.name,
-              resource.description || "",
-              server.name,
-              "resource",
-            );
-
-          allResources.push({
+          const resourceWithSource = {
             ...resource,
-            uri: standardizedUri,
-            name: customName,
-            description: customDescription,
-          });
-        });
+            sourceServer: serverName,
+            uri: createResourceUri(resource.uri, serverName),
+          };
+
+          allResources.push(resourceWithSource);
+        }
+      } catch (error: any) {
+        console.error(
+          `[MCPServerManager] Failed to get resources from server ${serverName}:`,
+          error,
+        );
       }
     }
 
@@ -363,242 +299,205 @@ export class RequestHandlers {
   }
 
   /**
-   * Handle a request to list all resource templates from all servers
+   * Handle a request to list all resource templates
    */
   public async handleListResourceTemplates(token?: string): Promise<any> {
-    const allTemplates: any[] = [];
+    const clientId = this.getClientId(token);
 
-    for (const [serverName, client] of this.clients.entries()) {
-      try {
-        const server = this.servers.get(serverName);
-        if (!server || !this.serverStatusMap.get(server.name)) {
-          continue;
-        }
+    return this.executeWithHooks(
+      "resources/templates/list",
+      {},
+      clientId,
+      async () => {
+        const allTemplates: any[] = [];
 
-        if (token) {
-          if (!this.tokenValidator.hasServerAccess(token, serverName)) {
+        for (const [serverId, client] of this.clients.entries()) {
+          const serverName = this.servers.get(serverId)?.name || serverId;
+          const isRunning = this.serverStatusMap.get(serverName);
+
+          if (!isRunning || !client) {
             continue;
+          }
+
+          // Check token access if provided
+          if (token) {
+            try {
+              this.tokenValidator.validateTokenAndAccess(token, serverName);
+            } catch {
+              // Skip this server if token doesn't have access
+              continue;
+            }
+          }
+
+          try {
+            const templates = await client.listResourceTemplates();
+
+            if (
+              !templates.resourceTemplates ||
+              templates.resourceTemplates.length === 0
+            ) {
+              continue;
+            }
+
+            // Add templates with source server information
+            for (const template of templates.resourceTemplates) {
+              const templateWithSource = {
+                ...template,
+                sourceServer: serverName,
+                uriTemplate: createResourceUri(
+                  template.uriTemplate,
+                  serverName,
+                ),
+              };
+
+              allTemplates.push(templateWithSource);
+            }
+          } catch (error: any) {
+            // Server might not support resource templates
+            console.error(
+              `[MCPServerManager] Failed to get resource templates from server ${serverName}:`,
+              error,
+            );
           }
         }
 
-        const response = await client.listResourceTemplates();
-
-        if (response && Array.isArray(response.resourceTemplates)) {
-          const templatesWithPrefix = response.resourceTemplates.map(
-            (template) => {
-              const uriTemplate = template.uriTemplate;
-              const protocolMatch = uriTemplate.match(/^([a-zA-Z]+:\/\/)(.+)$/);
-
-              let standardizedTemplate: string;
-
-              if (protocolMatch) {
-                const originalProtocol = protocolMatch[1];
-                const path = protocolMatch[2];
-                standardizedTemplate = createResourceUri(server.name, path);
-
-                this.originalProtocols.set(
-                  `template:${standardizedTemplate}`,
-                  originalProtocol,
-                );
-              } else {
-                standardizedTemplate = createResourceUri(
-                  server.name,
-                  uriTemplate,
-                );
-              }
-
-              const { name: customName, description: customDescription } =
-                applyDisplayRules(
-                  template.name,
-                  template.description || "",
-                  server.name,
-                  "resourceTemplate",
-                );
-
-              return {
-                ...template,
-                uriTemplate: standardizedTemplate,
-                name: customName,
-                description: customDescription,
-              };
-            },
-          );
-
-          allTemplates.push(...templatesWithPrefix);
-        }
-      } catch (error) {
-        console.error(
-          `Failed to list resource templates from server ${serverName}:`,
-          error,
-        );
-      }
-    }
-
-    return { resourceTemplates: allTemplates };
+        return { resourceTemplates: allTemplates };
+      },
+    );
   }
 
   /**
-   * Read a resource by URI
+   * Read a specific resource by its URI
    */
-  public async readResourceByUri(
-    uri: string,
-    clientName?: string,
-    token?: string,
-  ): Promise<any> {
-    const startTime = Date.now();
-    const parsedUri = parseResourceUri(uri);
+  public async readResourceByUri(uri: string, token?: string): Promise<any> {
+    const clientId = this.getClientId(token);
 
-    if (!parsedUri) {
+    // Parse the URI to get the server name and original URI
+    const parsed = parseResourceUri(uri);
+    if (!parsed) {
       throw new McpError(
         ErrorCode.InvalidRequest,
-        `Invalid resource URI format. Expected "resource://serverName/path", got "${uri}"`,
+        `Invalid resource URI format: ${uri}`,
+      );
+    }
+    const { serverName, path: originalUri } = parsed;
+
+    // Validate token access to the server if provided
+    if (token) {
+      this.tokenValidator.validateTokenAndAccess(token, serverName);
+    }
+
+    const serverId = this.getServerIdByName(serverName);
+    if (!serverId) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Unknown server: ${serverName}`,
       );
     }
 
-    const { serverName, path: originalPath } = parsedUri;
-
-    // Validate token and get client ID
-    const clientId = token
-      ? this.tokenValidator.validateTokenAndAccess(token, serverName)
-      : "unknownClient";
-
-    // If clientName not provided, try to get it from token
-    let derivedClientName = clientName;
-    if (!derivedClientName && token) {
-      const validationInfo = this.tokenValidator.validateToken(token);
-      derivedClientName = validationInfo.clientId || clientId;
+    const client = this.clients.get(serverId);
+    if (!client) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Server ${serverName} is not connected`,
+      );
     }
 
-    const logEntry: RequestLogEntry = {
-      timestamp: new Date().toISOString(),
-      requestType: "ReadResource",
-      params: { uri },
-      result: "success",
-      duration: 0,
+    if (!this.serverStatusMap.get(serverName)) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Server ${serverName} is not running`,
+      );
+    }
+
+    return this.executeWithHooksAndLogging(
+      "resources/read",
+      { uri },
       clientId,
-    };
-
-    try {
-      const serverId = this.getServerIdByName(serverName);
-      if (!serverId) {
-        throw new McpError(
-          ErrorCode.InvalidRequest,
-          `Unknown server: ${serverName}`,
+      serverName,
+      "ReadResource",
+      async () => {
+        // Try different URI variants until one works
+        const originalProtocol = this.originalProtocols.get(originalUri);
+        const uriVariants = createUriVariants(
+          serverName,
+          originalUri,
+          originalProtocol,
         );
-      }
 
-      const client = this.clients.get(serverId);
-      if (!client) {
-        throw new McpError(
-          ErrorCode.InvalidRequest,
-          `Server ${serverName} is not connected`,
-        );
-      }
+        let lastError: any;
+        for (const variantUri of uriVariants) {
+          try {
+            const result = await client.readResource({ uri: variantUri.uri });
 
-      if (!this.serverStatusMap.get(serverName)) {
-        throw new McpError(
-          ErrorCode.InvalidRequest,
-          `Server ${serverName} is not running`,
-        );
-      }
+            // No display rules to apply for resources
+            // Just return the result as is
 
-      // Get the standardized URI and look up the original protocol
-      const standardizedUri = createResourceUri(serverName, originalPath);
-      const originalProtocol = this.originalProtocols.get(standardizedUri);
-
-      let response = null;
-
-      // Try all possible URI formats
-      const uriFormats = createUriVariants(
-        serverName,
-        originalPath,
-        originalProtocol,
-      );
-
-      // Try each URI format until one succeeds
-      for (const format of uriFormats) {
-        response = await client.readResource({ uri: format.uri });
-
-        if (
-          response &&
-          Array.isArray(response.contents) &&
-          response.contents.length > 0
-        ) {
-          break;
+            return result;
+          } catch (error: any) {
+            lastError = error;
+            // Try the next variant
+          }
         }
-      }
 
-      // If all attempts failed, return an empty response
-      if (
-        !response ||
-        !Array.isArray(response.contents) ||
-        response.contents.length === 0
-      ) {
-        response = { contents: [] };
-      }
-
-      // Log success
-      logEntry.response = response;
-      logEntry.duration = Date.now() - startTime;
-      this.loggingService.recordRequestLog(logEntry, serverName);
-
-      return response;
-    } catch (error: any) {
-      // Log error
-      logEntry.result = "error";
-      logEntry.errorMessage = error.message || String(error);
-      logEntry.duration = Date.now() - startTime;
-
-      // Try to log with server name if possible
-      const parsedUri = parseResourceUri(uri);
-      this.loggingService.recordRequestLog(logEntry, parsedUri?.serverName);
-
-      throw error;
-    }
+        // If all variants failed, throw the last error
+        throw (
+          lastError ||
+          new McpError(
+            ErrorCode.InvalidRequest,
+            `Failed to read resource: ${originalUri}`,
+          )
+        );
+      },
+      { serverId },
+    );
   }
 
   /**
-   * Get all prompts from all running servers
+   * Get all prompts from all servers (internal implementation)
    */
   public async getAllPromptsInternal(token?: string): Promise<any[]> {
     const allPrompts: any[] = [];
 
-    for (const [serverName, client] of this.clients.entries()) {
+    for (const [serverId, client] of this.clients.entries()) {
+      const serverName = this.servers.get(serverId)?.name || serverId;
+      const isRunning = this.serverStatusMap.get(serverName);
+
+      if (!isRunning || !client) {
+        continue;
+      }
+
+      // Check token access if provided
+      if (token) {
+        try {
+          this.tokenValidator.validateTokenAndAccess(token, serverName);
+        } catch {
+          // Skip this server if token doesn't have access
+          continue;
+        }
+      }
+
       try {
-        const server = this.servers.get(serverName);
-        if (!server || !this.serverStatusMap.get(server.name)) {
+        const prompts = await client.listPrompts();
+
+        if (!prompts.prompts || prompts.prompts.length === 0) {
           continue;
         }
 
-        // Skip servers the token doesn't have access to
-        if (token) {
-          if (!this.tokenValidator.hasServerAccess(token, serverName)) {
-            continue;
-          }
+        // Add prompts with source server information
+        for (const prompt of prompts.prompts) {
+          const promptWithSource = {
+            ...prompt,
+            sourceServer: serverName,
+            // Prefix prompt name with server name to avoid collisions
+            name: `${serverName}/${prompt.name}`,
+          };
+
+          allPrompts.push(promptWithSource);
         }
-
-        const response = await client.listPrompts();
-
-        if (response && Array.isArray(response.prompts)) {
-          response.prompts.forEach((prompt) => {
-            const { name: customName, description: customDescription } =
-              applyDisplayRules(
-                prompt.name,
-                prompt.description || "",
-                server.name,
-                "prompt",
-              );
-
-            allPrompts.push({
-              ...prompt,
-              name: customName,
-              description: customDescription,
-            });
-          });
-        }
-      } catch (error) {
+      } catch (error: any) {
         console.error(
-          `Failed to list prompts from server ${serverName}:`,
+          `[MCPServerManager] Failed to get prompts from server ${serverName}:`,
           error,
         );
       }
@@ -608,130 +507,103 @@ export class RequestHandlers {
   }
 
   /**
-   * Get a prompt by name
+   * Get a specific prompt by name
    */
   public async getPromptByName(
-    promptName: string,
-    args?: any,
-    clientName?: string,
+    name: string,
+    promptArgs?: any,
     token?: string,
   ): Promise<any> {
-    const startTime = Date.now();
+    const clientId = this.getClientId(token);
 
-    // Get server name
-    let serverName = "";
-    const originalPromptName = promptName;
-
-    // Search for a server with this prompt
-    for (const [servId, client] of this.clients.entries()) {
-      const server = this.servers.get(servId);
-      if (server && this.serverStatusMap.get(server.name)) {
-        const response = await client.listPrompts();
-        if (response && Array.isArray(response.prompts)) {
-          const hasPrompt = response.prompts.some((p) => p.name === promptName);
-          if (hasPrompt) {
-            serverName = server.name;
-            break;
-          }
-        }
-      }
-    }
-
-    if (!serverName) {
+    // Extract server name from the prefixed prompt name
+    const parts = name.split("/");
+    if (parts.length < 2) {
       throw new McpError(
         ErrorCode.InvalidRequest,
-        `Could not find any server with prompt name: ${promptName}`,
+        `Invalid prompt name format. Expected: serverName/promptName, got: ${name}`,
       );
     }
 
-    // Validate token and get client ID
-    const clientId = token
-      ? this.tokenValidator.validateTokenAndAccess(token, serverName)
-      : "unknownClient";
+    const serverName = parts[0];
+    const actualPromptName = parts.slice(1).join("/");
 
-    const logEntry: RequestLogEntry = {
-      timestamp: new Date().toISOString(),
-      requestType: "GetPrompt",
-      params: {
-        promptName,
-        arguments: args,
-      },
-      result: "success",
-      duration: 0,
-      clientId,
-    };
-
-    try {
-      const serverId = this.getServerIdByName(serverName);
-      if (!serverId) {
-        throw new McpError(
-          ErrorCode.InvalidRequest,
-          `Unknown server: ${serverName}`,
-        );
-      }
-
-      const client = this.clients.get(serverId);
-      if (!client) {
-        throw new McpError(
-          ErrorCode.InvalidRequest,
-          `Server ${serverName} is not connected`,
-        );
-      }
-
-      if (!this.serverStatusMap.get(serverName)) {
-        throw new McpError(
-          ErrorCode.InvalidRequest,
-          `Server ${serverName} is not running`,
-        );
-      }
-
-      const result = await client.getPrompt({
-        name: originalPromptName,
-        arguments: args || {},
-      });
-
-      // Log success
-      logEntry.response = result;
-      logEntry.duration = Date.now() - startTime;
-      this.loggingService.recordRequestLog(logEntry, serverName);
-
-      return result;
-    } catch (error: any) {
-      // Log error
-      logEntry.result = "error";
-      logEntry.errorMessage = error.message || String(error);
-      logEntry.duration = Date.now() - startTime;
-      this.loggingService.recordRequestLog(logEntry, serverName);
-
-      throw error;
+    // Validate token access to the server if provided
+    if (token) {
+      this.tokenValidator.validateTokenAndAccess(token, serverName);
     }
+
+    const serverId = this.getServerIdByName(serverName);
+    if (!serverId) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Unknown server: ${serverName}`,
+      );
+    }
+
+    const client = this.clients.get(serverId);
+    if (!client) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Server ${serverName} is not connected`,
+      );
+    }
+
+    if (!this.serverStatusMap.get(serverName)) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Server ${serverName} is not running`,
+      );
+    }
+
+    return this.executeWithHooksAndLogging(
+      "prompts/get",
+      { name, arguments: promptArgs },
+      clientId,
+      serverName,
+      "GetPrompt",
+      async () => {
+        const prompt = await client.getPrompt({
+          name: actualPromptName,
+          arguments: promptArgs,
+        });
+
+        // No display rules to apply for prompts
+        // Just return the prompt as is
+
+        return prompt;
+      },
+      { serverId },
+    );
   }
 
   /**
-   * Get server name for a tool by its name
+   * Get server name for a given tool
    */
-  private getServerNameForTool(toolName: string): string | undefined {
-    return this.toolNameToServerMap.get(toolName);
+  public getServerNameForTool(toolName: string): string | undefined {
+    return this.toolNameToServerMap.get(toolName) || "Agent Tools";
   }
 
   /**
    * Get server ID by name
    */
-  private getServerIdByName(name: string): string | undefined {
+  public getServerIdByName(name: string): string | undefined {
     return this.serverNameToIdMap.get(name);
   }
 
   /**
    * Handle agent tool calls
    */
-  private async handleAgentToolCall(
-    toolName: string,
-    _args: any,
-  ): Promise<any> {
-    // return await AgentToolHandler.handleTool(toolName, args);
-    throw new McpError(
-      ErrorCode.MethodNotFound,
-      `Agent tool ${toolName} not available`,
-    );
+  public async handleAgentToolCall(toolName: string, args: any): Promise<any> {
+    // This would be implemented based on your agent tools logic
+    // For now, returning a placeholder
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Agent tool ${toolName} called with args: ${JSON.stringify(args)}`,
+        },
+      ],
+    };
   }
 }

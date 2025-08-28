@@ -35,16 +35,12 @@ export interface HookContext {
 
   // アプリケーション固有のメタデータ
   metadata: {
-    // サーバー情報
-    serverId: string;
-    serverName: string;
-
-    // クライアント情報
+    // クライアント情報（必須）
     clientId: string;
 
-    // タイミング情報
-    startTime: number;
-    duration?: number; // Post-hookのみ
+    // サーバー情報（オプション）
+    serverId?: string;
+    serverName?: string;
 
     // エラー情報
     error?: Error; // Post-hookのみ

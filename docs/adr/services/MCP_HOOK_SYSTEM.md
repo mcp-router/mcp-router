@@ -43,10 +43,21 @@ SQLite Database
 
 ```javascript
 // ユーザースクリプト例
-if (context.requestType === 'CallTool' && context.toolName === 'specific-tool') {
+if (context.request.method === 'tools/call' && context.request.params.name === 'specific-tool') {
   // カスタムロジック
 }
 ```
+
+### 2.1 Hook実行対象
+
+Hookは以下のすべてのMCPリクエストタイプで実行されます：
+
+- `tools/call` - ツール呼び出し
+- `tools/list` - ツール一覧取得
+- `resources/read` - リソース読み取り
+- `resources/list` - リソース一覧取得
+- `resources/templates/list` - リソーステンプレート一覧取得
+- `prompts/get` - プロンプト取得
 
 ### 3. スクリプト実行環境
 

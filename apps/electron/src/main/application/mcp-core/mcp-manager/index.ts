@@ -152,7 +152,7 @@ export class MCPServerManager {
     clientName?: string,
     token?: string,
   ): Promise<any> {
-    return this.requestHandlers.readResourceByUri(uri, clientName, token);
+    return this.requestHandlers.readResourceByUri(uri, token);
   }
 
   /**
@@ -164,12 +164,7 @@ export class MCPServerManager {
     clientName?: string,
     token?: string,
   ): Promise<any> {
-    return this.requestHandlers.getPromptByName(
-      promptName,
-      args,
-      clientName,
-      token,
-    );
+    return this.requestHandlers.getPromptByName(promptName, args, token);
   }
 
   /**

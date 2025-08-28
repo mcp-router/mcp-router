@@ -36,16 +36,12 @@ interface HookContext {
 
   // アプリケーション固有のメタデータ
   metadata: {
-    // サーバー情報
-    serverId: string;      // サーバーID
-    serverName: string;    // サーバー名
-    
-    // クライアント情報
+    // クライアント情報（必須）
     clientId: string;      // クライアントID
     
-    // タイミング情報
-    startTime: number;     // リクエスト開始時刻（ミリ秒）
-    duration?: number;     // 実行時間（Post-hookでのみ）
+    // サーバー情報（オプション）
+    serverId?: string;     // サーバーID
+    serverName?: string;   // サーバー名
     
     // エラー情報
     error?: Error;         // エラー情報（Post-hookでのみ）
@@ -202,13 +198,12 @@ return {
 ### 3. レスポンスログ（Post-hook）
 
 ```javascript
-// 実行時間とレスポンスサイズをログ
+// レスポンスサイズをログ
 const responseSize = JSON.stringify(context.response || {}).length;
 console.log(`Request completed:`, {
   method: context.request.method,
   server: context.metadata.serverName,
   tool: context.request.params?.name,  // tools/callの場合
-  duration: context.metadata.duration,
   responseSize: responseSize,
   hasError: !!context.metadata.error
 });

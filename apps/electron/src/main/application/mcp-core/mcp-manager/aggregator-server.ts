@@ -151,11 +151,7 @@ export class AggregatorServer {
       async (request) => {
         const uri = request.params.uri;
         const token = request.params?._meta?.token as string | undefined;
-        return await this.requestHandlers.readResourceByUri(
-          uri,
-          undefined,
-          token,
-        );
+        return await this.requestHandlers.readResourceByUri(uri, token);
       },
     );
 
@@ -179,7 +175,6 @@ export class AggregatorServer {
         return await this.requestHandlers.getPromptByName(
           promptName,
           request.params.arguments,
-          undefined,
           token,
         );
       },
