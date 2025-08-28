@@ -78,7 +78,6 @@ export default function HookEdit() {
       const hookData = {
         name: name.trim(),
         enabled: hook?.enabled ?? true,
-        executionOrder: hook?.executionOrder ?? 0,
         hookType,
         script,
       };

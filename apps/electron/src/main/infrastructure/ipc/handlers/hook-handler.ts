@@ -41,7 +41,6 @@ export function setupHookHandlers(): void {
         const hook: MCPHook = {
           ...hookData,
           id: uuidv4(),
-          executionOrder: hookData.executionOrder ?? 0,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };

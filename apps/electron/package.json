@@ -45,6 +45,7 @@
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.6",
     "@uiw/react-codemirror": "^4.24.2",
+    "@xyflow/react": "^12.8.4",
     "ai": "^4.3.16",
     "better-sqlite3": "^11.7.0",
     "clsx": "^2.1.1",

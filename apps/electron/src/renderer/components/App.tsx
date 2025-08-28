@@ -35,7 +35,7 @@ import { usePlatformAPI } from "@/renderer/platform-api";
 import { IconProgress } from "@tabler/icons-react";
 import { postHogService } from "../services/posthog-service";
 import WorkspaceManagement from "./workspace/WorkspaceManagement";
-import HookManager from "./hook/HookManager";
+import WorkflowManager from "./workflow/WorkflowManager";
 import HookEdit from "./hook/HookEdit";
 
 // Main App component
@@ -234,7 +234,7 @@ const App: React.FC = () => {
               <Route path="/servers/add" element={<DiscoverWrapper />} />
               <Route path="/clients" element={<McpAppsManager />} />
               <Route path="/logs" element={<LogViewer />} />
-              <Route path="/hooks" element={<HookManager />} />
+              <Route path="/hooks" element={<WorkflowManager />} />
               <Route path="/hooks/new" element={<HookEdit />} />
               <Route path="/hooks/edit/:id" element={<HookEdit />} />
               <Route path="/settings" element={<Settings />} />

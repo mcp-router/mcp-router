@@ -111,8 +111,8 @@ export class HookService extends SingletonService<
       applicableHooks.push(hook);
     }
 
-    // Sort by executionOrder (ascending)
-    return applicableHooks.sort((a, b) => a.executionOrder - b.executionOrder);
+    // Return hooks without sorting (will be handled by workflow engine)
+    return applicableHooks;
   }
 
   /**

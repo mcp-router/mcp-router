@@ -9,7 +9,6 @@ export interface MCPHook {
   id: string;
   name: string;
   enabled: boolean;
-  executionOrder: number; // 実行順序（小さい値から実行）
   hookType: "pre" | "post" | "both";
 
   // JavaScriptスクリプト
@@ -79,4 +78,45 @@ export class HookExecutionError extends Error {
     super(message);
     this.name = "HookExecutionError";
   }
+}
+
+/**
+ * Workflow Node (Hook)
+ */
+export interface WorkflowNode {
+  id: string;
+  type: "hook" | "start" | "end";
+  data: {
+    label: string;
+    hookId?: string; // type === 'hook' の場合
+    hook?: MCPHook; // Hookの詳細情報
+    blocking?: boolean; // 完了を待つか（デフォルト: true）
+    timeout?: number; // タイムアウト（ms）
+  };
+  position: { x: number; y: number };
+}
+
+/**
+ * Workflow Edge (Connection)
+ */
+export interface WorkflowEdge {
+  id: string;
+  source: string;
+  target: string;
+  type?: "default";
+  label?: string;
+}
+
+/**
+ * Workflow Definition
+ */
+export interface WorkflowDefinition {
+  id: string;
+  name: string;
+  description?: string;
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+  enabled: boolean;
+  createdAt: number;
+  updatedAt: number;
 }
