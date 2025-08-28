@@ -696,54 +696,5 @@
     "confirmDelete": "削除しますか？",
     "noHooks": "フックが設定されていません",
     "disabled": "無効"
-  },
-  "rules": {
-    "title": "ツールパラメータルール",
-    "sections": {
-      "toolDisplayRules": "ツール表示ルール",
-      "resourceDisplayRules": "リソース表示ルール",
-      "promptDisplayRules": "プロンプト表示ルール",
-      "templateDisplayRules": "テンプレート表示ルール",
-      "toolParameters": "ツールパラメータルール",
-      "parameters": "追加パラメータ"
-    },
-    "fields": {
-      "nameRule": "名前ルール",
-      "descriptionRule": "説明ルール",
-      "preview": "プレビュー：",
-      "name": "名前",
-      "type": "タイプ",
-      "description": "説明",
-      "required": "必須",
-      "actions": "アクション"
-    },
-    "tooltip": {
-      "availableVariables": "利用可能な変数：",
-      "entityName": "エンティティ名",
-      "entityDescription": "エンティティの説明",
-      "serverName": "サーバー名"
-    },
-    "types": {
-      "string": "文字列",
-      "number": "数値",
-      "boolean": "真偽値",
-      "object": "オブジェクト",
-      "array": "配列"
-    },
-    "parameterDescription": "すべてのツールの入力スキーマに追加されるパラメータを定義できます。これらのパラメータはツール使用時にモデルが入力できるようになります。",
-    "noParametersAdded": "まだ追加パラメータが定義されていません。",
-    "addNewParameter": "新しいパラメータを追加",
-    "export": "エクスポート",
-    "import": "インポート",
-    "importDescription": "インポートするルールのJSONを貼り付けてください",
-    "importPlaceholder": "ここにルールを貼り付け",
-    "errors": {
-      "requiredMustExist": "必須フィールドはプロパティに存在する必要があります",
-      "alreadyRequired": "フィールドは既に必須に設定されています",
-      "importFailed": "ルールのインポートに失敗しました"
-    },
-    "success": {
-      "imported": "ルールをインポートしました"
-    }
   }
 }

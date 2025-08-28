@@ -1,7 +1,6 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { MCPServer } from "@mcp_router/shared";
-import { applyRulesToInputSchema } from "@/main/domain/mcp-core/rule/rule-utils";
 import {
   parseResourceUri,
   createResourceUri,
@@ -157,16 +156,6 @@ export class RequestHandlers extends RequestHandlerBase {
 
           // Store the mapping
           this.toolNameToServerMap.set(tool.name, serverName);
-
-          // Apply rules to the input schema if they exist
-          const server = this.servers.get(serverId);
-          if (server && toolWithSource.inputSchema) {
-            toolWithSource.inputSchema = applyRulesToInputSchema(
-              toolWithSource.inputSchema,
-              tool.name,
-              serverName,
-            );
-          }
 
           allTools.push(toolWithSource);
         }

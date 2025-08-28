@@ -229,24 +229,6 @@ const SidebarComponent: React.FC = () => {
                     <SidebarMenuItem>
                       <SidebarMenuButton
                         asChild
-                        tooltip={t("rules.title")}
-                        isActive={location.pathname === "/rules"}
-                      >
-                        <Link
-                          to="/rules"
-                          className="flex items-center gap-3 py-5 px-3 w-full"
-                        >
-                          <IconFileText className="h-6 w-6" />
-                          <span className="text-base">{t("rules.title")}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )}
-
-                  {!isRemoteWorkspace && (
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        asChild
                         tooltip={t("hooks.title")}
                         isActive={location.pathname === "/hooks"}
                       >

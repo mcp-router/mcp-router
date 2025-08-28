@@ -3,7 +3,6 @@ export * from "./mcp-types";
 export * from "./log-types";
 export * from "./mcp-app-types";
 export * from "./pagination";
-export * from "./rule-types";
 export * from "./settings-types";
 export * from "./token-types";
 export * from "./user-types";

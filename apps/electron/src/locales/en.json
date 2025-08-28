@@ -688,54 +688,5 @@
       "switchFailed": "Failed to switch workspace",
       "fetchFailed": "Failed to fetch workspaces"
     }
-  },
-  "rules": {
-    "title": "Tool Parameter Rules",
-    "sections": {
-      "toolDisplayRules": "Tool Display Rules",
-      "resourceDisplayRules": "Resource Display Rules",
-      "promptDisplayRules": "Prompt Display Rules",
-      "templateDisplayRules": "Template Display Rules",
-      "toolParameters": "Tool Parameter Rules",
-      "parameters": "Additional Parameters"
-    },
-    "fields": {
-      "nameRule": "Name Rule",
-      "descriptionRule": "Description Rule",
-      "preview": "Preview:",
-      "name": "Name",
-      "type": "Type",
-      "description": "Description",
-      "required": "Required",
-      "actions": "Actions"
-    },
-    "tooltip": {
-      "availableVariables": "Available variables:",
-      "entityName": "Entity name",
-      "entityDescription": "Entity description",
-      "serverName": "Server name"
-    },
-    "types": {
-      "string": "String",
-      "number": "Number",
-      "boolean": "Boolean",
-      "object": "Object",
-      "array": "Array"
-    },
-    "parameterDescription": "You can define additional parameters that will be added to all tools' input schemas. These parameters will be available for the model to input when using the tools.",
-    "noParametersAdded": "No additional parameters have been defined yet.",
-    "addNewParameter": "Add New Parameter",
-    "export": "Export",
-    "import": "Import",
-    "importDescription": "Paste rules JSON to import",
-    "importPlaceholder": "Paste rules here",
-    "errors": {
-      "requiredMustExist": "Required field must exist in properties",
-      "alreadyRequired": "Field is already required",
-      "importFailed": "Failed to import rules"
-    },
-    "success": {
-      "imported": "Rules imported"
-    }
   }
 }

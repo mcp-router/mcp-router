@@ -16,7 +16,6 @@ import SidebarComponent from "./Sidebar";
 import { SidebarProvider } from "@mcp_router/ui";
 import McpAppsManager from "@/renderer/components/mcp/apps/McpAppsManager";
 import LogViewer from "@/renderer/components/mcp/log/LogViewer";
-import Rules from "@/renderer/components/mcp/rules/Rules";
 import AgentBuild from "@/renderer/components/agent/create/AgentBuild";
 import DeployedAgents from "./agent/use/DeployedAgents";
 import AgentCreate from "@/renderer/components/agent/create/AgentCreate";
@@ -235,7 +234,6 @@ const App: React.FC = () => {
               <Route path="/servers/add" element={<DiscoverWrapper />} />
               <Route path="/clients" element={<McpAppsManager />} />
               <Route path="/logs" element={<LogViewer />} />
-              <Route path="/rules" element={<Rules />} />
               <Route path="/hooks" element={<HookManager />} />
               <Route path="/hooks/new" element={<HookEdit />} />
               <Route path="/hooks/edit/:id" element={<HookEdit />} />
