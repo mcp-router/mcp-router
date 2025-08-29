@@ -24,10 +24,10 @@ import {
 import { Button } from "@mcp_router/ui";
 import { Plus, Save, Play, X, Check } from "lucide-react";
 import { Textarea, Input, Label } from "@mcp_router/ui";
-import HookNode from "./nodes/HookNode";
 import StartNode from "./nodes/StartNode";
 import EndNode from "./nodes/EndNode";
 import MCPCallNode from "./nodes/MCPCallNode";
+import HookNode from "./nodes/HookNode";
 
 interface WorkflowEditorProps {
   workflow?: WorkflowDefinition;
@@ -84,7 +84,20 @@ export default function WorkflowEditor({
     },
   ];
 
-  const initialEdges: Edge[] = workflow?.edges || [];
+  const initialEdges: Edge[] = (workflow?.edges || []).map((edge) => ({
+    id: edge.id || `${edge.source}-${edge.target}`,
+    source: edge.source,
+    target: edge.target,
+    type: edge.type || "default",
+    animated: edge.animated,
+    markerEnd: edge.markerEnd
+      ? {
+          type: MarkerType.ArrowClosed,
+          width: edge.markerEnd.width,
+          height: edge.markerEnd.height,
+        }
+      : undefined,
+  }));
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);

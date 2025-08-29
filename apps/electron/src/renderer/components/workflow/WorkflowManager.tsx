@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useHookStore } from "@/renderer/stores";
 import { WorkflowDefinition } from "@mcp_router/shared";
 import WorkflowEditor from "./WorkflowEditor";
 import { Button } from "@mcp_router/ui";
@@ -7,17 +6,15 @@ import { Card } from "@mcp_router/ui";
 import { Plus, Edit, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 
 export default function WorkflowManager() {
-  const { hooks, fetchHooks } = useHookStore();
   const [workflows, setWorkflows] = useState<WorkflowDefinition[]>([]);
   const [selectedWorkflow, setSelectedWorkflow] =
     useState<WorkflowDefinition | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    fetchHooks();
     // TODO: Fetch workflows from backend
     loadWorkflows();
-  }, [fetchHooks]);
+  }, []);
 
   const loadWorkflows = () => {
     // TODO: Load from backend

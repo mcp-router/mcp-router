@@ -81,8 +81,3 @@ export function resetTokenRepository() {
 export function resetWorkspaceRepository() {
   // No-op: Reset is handled by RepositoryFactory
 }
-
-export function getHookRepository() {
-  const db = getSqliteManager("mcprouter");
-  return RepositoryFactory.getHookRepository(db);
-}

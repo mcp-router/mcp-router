@@ -36,7 +36,6 @@ import { IconProgress } from "@tabler/icons-react";
 import { postHogService } from "../services/posthog-service";
 import WorkspaceManagement from "./workspace/WorkspaceManagement";
 import WorkflowManager from "./workflow/WorkflowManager";
-import HookEdit from "./hook/HookEdit";
 
 // Main App component
 const App: React.FC = () => {
@@ -235,8 +234,6 @@ const App: React.FC = () => {
               <Route path="/clients" element={<McpAppsManager />} />
               <Route path="/logs" element={<LogViewer />} />
               <Route path="/hooks" element={<WorkflowManager />} />
-              <Route path="/hooks/new" element={<HookEdit />} />
-              <Route path="/hooks/edit/:id" element={<HookEdit />} />
               <Route path="/settings" element={<Settings />} />
               <Route
                 path="/settings/workspaces"

@@ -8,7 +8,6 @@ export * from "./token-types";
 export * from "./user-types";
 export * from "./workspace";
 export * from "./auth";
-export * from "./mcp-hook-types";
 
 // Re-export organized domain types
 export * from "./ui";
@@ -38,8 +37,6 @@ export {
   LogQueryResult,
   // Workspace API
   WorkspaceAPI,
-  // Hook API
-  HookAPI,
   // Main Platform API
   PlatformAPI,
 } from "./platform-api";
@@ -48,3 +45,4 @@ export * from "./mcp-apps";
 export * from "./utils";
 export * from "./cli";
 export * from "./chat-types";
+export * from "./workflow-types";

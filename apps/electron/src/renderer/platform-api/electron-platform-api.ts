@@ -12,7 +12,6 @@ import type {
   SettingsAPI,
   LogAPI,
   WorkspaceAPI,
-  HookAPI,
   Workspace,
 } from "@mcp_router/shared";
 
@@ -26,7 +25,6 @@ class ElectronPlatformAPI implements PlatformAPI {
   settings: SettingsAPI;
   logs: LogAPI;
   workspaces: WorkspaceAPI;
-  hooks: HookAPI;
 
   constructor() {
     // Initialize auth domain
@@ -272,18 +270,6 @@ class ElectronPlatformAPI implements PlatformAPI {
         await window.electronAPI.switchWorkspace(id);
       },
       getActive: () => window.electronAPI.getCurrentWorkspace(),
-    };
-
-    // Initialize hooks domain
-    this.hooks = {
-      listHooks: () => window.electronAPI.listHooks(),
-      getHook: (id) => window.electronAPI.getHook(id),
-      createHook: (hookData) => window.electronAPI.createHook(hookData),
-      updateHook: (id, updates) => window.electronAPI.updateHook(id, updates),
-      deleteHook: (id) => window.electronAPI.deleteHook(id),
-      setHookEnabled: (id, enabled) =>
-        window.electronAPI.setHookEnabled(id, enabled),
-      reorderHooks: (hookIds) => window.electronAPI.reorderHooks(hookIds),
     };
   }
 }
