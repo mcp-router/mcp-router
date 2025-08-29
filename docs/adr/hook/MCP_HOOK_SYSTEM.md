@@ -86,6 +86,91 @@ interface MCPHook {
 }
 ```
 
+### 5. Workflow実行順序
+
+**Workflowシステムにおける実行順序の決定**
+
+Workflowは複数のHookをビジュアルに接続して実行順序を定義するシステムです。
+
+#### 5.1 ノードタイプと制約
+
+```typescript
+interface WorkflowNode {
+  id: string;
+  type: "hook" | "start" | "end";
+  data: {
+    label: string;
+    hookId?: string;        // type === 'hook' の場合
+    blocking?: boolean;     // 同期実行するか（デフォルト: true）
+  };
+  position: { x: number; y: number };
+}
+```
+
+**ノードの入出力制約：**
+- **Start Node**: 入力なし、出力複数可
+- **End Node**: 入力1つのみ、出力なし
+- **Sync Hook** (blocking=true): 入力1つのみ、出力複数可
+- **Fire-and-forget Hook** (blocking=false): 入力1つのみ、出力なし
+
+#### 5.2 実行順序決定アルゴリズム
+
+Endノードからの逆順トラバースにより、決定的な実行順序を保証します：
+
+1. **主経路（Main Path）の特定**
+   - Endノードから逆向きにトラバース
+   - 各ノードは入力エッジが1つのため、一意な経路が存在
+   - Start → ... → End の一筆書き経路
+
+2. **分岐経路（Branch Path）の処理**
+   - 主経路の各ノードから分岐するFire-and-forget Hook
+   - 非同期実行のため順序は重要ではない
+
+```typescript
+// 実行順序決定の擬似コード
+function determineExecutionOrder(workflow: WorkflowDefinition) {
+  // 1. Endから逆順トラバースで主経路を特定
+  const mainPath = [];
+  let currentNode = workflow.nodes.find(n => n.type === 'end');
+  
+  while (currentNode) {
+    mainPath.unshift(currentNode);
+    const incomingEdge = workflow.edges.find(e => e.target === currentNode.id);
+    currentNode = workflow.nodes.find(n => n.id === incomingEdge?.source);
+  }
+  
+  // 2. 各ノードで分岐を収集
+  return mainPath.map(node => ({
+    node,
+    branches: workflow.edges
+      .filter(e => e.source === node.id && !mainPath.find(n => n.id === e.target))
+      .map(e => workflow.nodes.find(n => n.id === e.target))
+  }));
+}
+```
+
+#### 5.3 無限ループ防止の保証
+
+現在の制約により、Workflowは必ず有向非循環グラフ（DAG）となります：
+
+1. **構造的保証**
+   - Endノードは出力を持たない（終端）
+   - 各ノードへの入力は1つのみ（戻るパスが作れない）
+   - StartからEndへの経路は必ず有限
+
+2. **実行例**
+```
+Start → Sync Hook1 → Sync Hook2 → End
+           ↓            ↓
+    F&F Hook1      F&F Hook2
+
+実行順序:
+1. Sync Hook1 (同期実行)
+2. F&F Hook1 (非同期実行)
+3. Sync Hook2 (同期実行)
+4. F&F Hook2 (非同期実行)
+```
+
 ## Consequences
 
 ### Positive
