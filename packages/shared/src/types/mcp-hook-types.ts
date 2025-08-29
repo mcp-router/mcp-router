@@ -13,6 +13,10 @@ export interface MCPHook {
 
   // JavaScriptスクリプト
   script: string;
+  
+  // 実行設定
+  blocking?: boolean; // 完了を待つか（デフォルト: true）
+  timeout?: number; // タイムアウト（ms）
 
   // メタデータ
   createdAt: number;
@@ -83,15 +87,21 @@ export class HookExecutionError extends Error {
 /**
  * Workflow Node (Hook)
  */
+// Workflow内で使用される簡素化されたHook
+export interface WorkflowHook {
+  id: string;
+  script: string;
+  blocking?: boolean;
+  timeout?: number;
+}
+
 export interface WorkflowNode {
   id: string;
-  type: "hook" | "start" | "end";
+  type: "hook" | "start" | "end" | "mcp-call";
   data: {
     label: string;
     hookId?: string; // type === 'hook' の場合
-    hook?: MCPHook; // Hookの詳細情報
-    blocking?: boolean; // 完了を待つか（デフォルト: true）
-    timeout?: number; // タイムアウト（ms）
+    hook?: WorkflowHook; // Workflow用の簡素化されたHook情報
   };
   position: { x: number; y: number };
 }

@@ -21,10 +21,6 @@ export default function WorkflowManager() {
 
   const loadWorkflows = () => {
     // TODO: Load from backend
-    const savedWorkflows = localStorage.getItem("workflows");
-    if (savedWorkflows) {
-      setWorkflows(JSON.parse(savedWorkflows));
-    }
   };
 
   const handleSaveWorkflow = (workflow: WorkflowDefinition) => {
@@ -67,7 +63,6 @@ export default function WorkflowManager() {
       <div className="h-full">
         <WorkflowEditor
           workflow={selectedWorkflow || undefined}
-          hooks={hooks}
           onSave={handleSaveWorkflow}
           onExecute={handleExecuteWorkflow}
         />
