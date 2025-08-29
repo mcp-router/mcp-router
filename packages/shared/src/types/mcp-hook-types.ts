@@ -114,6 +114,7 @@ export interface WorkflowDefinition {
   id: string;
   name: string;
   description?: string;
+  workflowType: "tools/list" | "tools/call";
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
   enabled: boolean;

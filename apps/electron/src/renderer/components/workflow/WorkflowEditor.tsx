@@ -54,6 +54,10 @@ export default function WorkflowEditor({
   onSave,
   onExecute,
 }: WorkflowEditorProps) {
+  const [workflowType, setWorkflowType] = useState<"tools/list" | "tools/call">(
+    workflow?.workflowType || "tools/list"
+  );
+  
   const initialNodes: Node[] = workflow?.nodes || [
     {
       id: "start",
@@ -144,13 +148,14 @@ export default function WorkflowEditor({
       id: workflow?.id || `workflow-${Date.now()}`,
       name: workflow?.name || "New Workflow",
       description: workflow?.description,
+      workflowType,
       nodes: nodes as WorkflowNode[],
       edges: edges as WorkflowEdge[],
       enabled,
       createdAt: workflow?.createdAt || Date.now(),
       updatedAt: Date.now(),
     }),
-    [nodes, edges, workflow],
+    [nodes, edges, workflow, workflowType],
   );
 
   const handleSave = useCallback(() => {
@@ -165,7 +170,17 @@ export default function WorkflowEditor({
   return (
     <div className="h-full w-full flex flex-col">
       <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-xl font-semibold">Workflow Editor</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-semibold">Workflow Editor</h2>
+          <select
+            className="px-3 py-1 border rounded-md dark:bg-gray-800 dark:border-gray-700"
+            value={workflowType}
+            onChange={(e) => setWorkflowType(e.target.value as "tools/list" | "tools/call")}
+          >
+            <option value="tools/list">Tools List</option>
+            <option value="tools/call">Tools Call</option>
+          </select>
+        </div>
         <div className="flex gap-2">
           <Button onClick={handleSave} variant="outline" size="sm">
             <Save className="w-4 h-4 mr-1" />
