@@ -20,10 +20,13 @@ import {
   WorkflowEdge,
   WorkflowDefinition,
   WorkflowHook,
+  HookModule,
 } from "@mcp_router/shared";
 import { Button } from "@mcp_router/ui";
 import { Plus, Save, X, Check } from "lucide-react";
-import { Textarea, Input, Label } from "@mcp_router/ui";
+import { Textarea, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@mcp_router/ui";
+import { getUserHookModules } from "../../lib/hook-modules";
+import HookModuleManager from "./HookModuleManager";
 import StartNode from "./nodes/StartNode";
 import EndNode from "./nodes/EndNode";
 import MCPCallNode from "./nodes/MCPCallNode";
@@ -36,10 +39,10 @@ interface WorkflowEditorProps {
 }
 
 const nodeTypes: NodeTypes = {
-  hook: HookNode as any,
-  start: StartNode as any,
-  end: EndNode as any,
-  "mcp-call": MCPCallNode as any,
+  hook: HookNode as unknown as NodeTypes["hook"],
+  start: StartNode as unknown as NodeTypes["start"],
+  end: EndNode as unknown as NodeTypes["end"],
+  "mcp-call": MCPCallNode as unknown as NodeTypes["mcp-call"],
 };
 
 const defaultEdgeOptions = {
@@ -54,7 +57,6 @@ const defaultEdgeOptions = {
 export default function WorkflowEditor({
   workflow,
   onSave,
-  onExecute,
 }: WorkflowEditorProps) {
   const [workflowType, setWorkflowType] = useState<"tools/list" | "tools/call">(
     workflow?.workflowType || "tools/list",
@@ -104,6 +106,9 @@ export default function WorkflowEditor({
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [nodeScript, setNodeScript] = useState<string>("");
   const [nodeLabel, setNodeLabel] = useState<string>("");
+  const [selectedModuleId, setSelectedModuleId] = useState<string>("custom");
+  const [userModules, setUserModules] = useState<HookModule[]>([]);
+  const [moduleManagerOpen, setModuleManagerOpen] = useState(false);
 
   const validateConnection = useCallback(
     (params: Connection): boolean => {
@@ -112,7 +117,7 @@ export default function WorkflowEditor({
 
       // Fire-and-forget hooks cannot have outgoing connections
       if (sourceNode?.type === "hook") {
-        const hook = sourceNode.data?.hook as any;
+        const hook = sourceNode.data?.hook as WorkflowHook | undefined;
         if (hook && typeof hook === "object" && hook.blocking === false) {
           return false;
         }
@@ -122,7 +127,7 @@ export default function WorkflowEditor({
       if (targetNode?.type === "end") {
         // End node can only have one incoming edge
       } else if (targetNode?.type === "hook") {
-        const hook = targetNode.data?.hook as any;
+        const hook = targetNode.data?.hook as WorkflowHook | undefined;
         if (!hook || typeof hook !== "object" || hook.blocking !== false) {
           // Sync hook can only have one incoming edge
         } else {
@@ -136,7 +141,7 @@ export default function WorkflowEditor({
       if (
         targetNode?.type === "end" ||
         (targetNode?.type === "hook" &&
-          (targetNode.data?.hook as any)?.blocking !== false)
+          (targetNode.data?.hook as WorkflowHook | undefined)?.blocking !== false)
       ) {
         // Count existing incoming edges to this target
         const incomingEdges = edges.filter(
@@ -178,10 +183,18 @@ export default function WorkflowEditor({
     setNodeLabel(typeof label === "string" ? label : "");
     // Hookノードの場合、hookオブジェクトからスクリプトを設定
     if (node.type === "hook") {
-      const hook = node.data?.hook as any;
+      const hook = node.data?.hook as WorkflowHook | undefined;
       if (hook && typeof hook === "object" && hook.script !== undefined) {
         const script = hook.script;
         setNodeScript(typeof script === "string" ? script : "");
+        
+        // Check if script matches any user module
+        getUserHookModules().then((modules) => {
+          const matchedModule = modules.find(
+            (module) => module.script === script,
+          );
+          setSelectedModuleId(matchedModule ? matchedModule.id : "custom");
+        });
       }
     }
   }, []);
@@ -224,6 +237,11 @@ export default function WorkflowEditor({
   const handleSave = useCallback(() => {
     onSave(createWorkflowDefinition(workflow?.enabled ?? true));
   }, [createWorkflowDefinition, workflow?.enabled, onSave]);
+
+  // Load user modules when component mounts or when module manager closes
+  React.useEffect(() => {
+    getUserHookModules().then(setUserModules);
+  }, [moduleManagerOpen]);
 
 
   return (
@@ -313,7 +331,7 @@ export default function WorkflowEditor({
                   if (selectedNode) {
                     const label = selectedNode.data?.label;
                     setNodeLabel(typeof label === "string" ? label : "");
-                    const hook = selectedNode.data?.hook as any;
+                    const hook = selectedNode.data?.hook as WorkflowHook | undefined;
                     if (
                       hook &&
                       typeof hook === "object" &&
@@ -325,6 +343,7 @@ export default function WorkflowEditor({
                   }
                   // 編集領域を閉じる
                   setSelectedNode(null);
+                  setSelectedModuleId("custom");
                 }}
               >
                 <X className="w-3 h-3 mr-1" />
@@ -359,6 +378,7 @@ export default function WorkflowEditor({
                   );
                   // 編集領域を閉じる
                   setSelectedNode(null);
+                  setSelectedModuleId("custom");
                 }}
               >
                 <Check className="w-3 h-3 mr-1" />
@@ -368,22 +388,91 @@ export default function WorkflowEditor({
           </div>
 
           <div className="space-y-4">
-            {/* スクリプト編集 */}
+            {/* モジュール選択 */}
             <div>
-              <Label htmlFor="hook-script" className="text-sm font-medium">
-                Hook Script
+              <Label htmlFor="hook-module" className="text-sm font-medium">
+                Hook Module
               </Label>
-              <Textarea
-                id="hook-script"
-                value={nodeScript}
-                onChange={(e) => setNodeScript(e.target.value)}
-                placeholder="// Enter JavaScript code here\n// context object is available with request and response data"
-                className="mt-1 w-full h-40 font-mono text-xs"
-              />
+              <div className="flex gap-2">
+                <Select
+                  value={selectedModuleId}
+                  onValueChange={(value) => {
+                    setSelectedModuleId(value);
+                    if (value !== "custom" && value !== "manage") {
+                      const module = userModules.find((m) => m.id === value);
+                      if (module) {
+                        setNodeScript(module.script);
+                        setNodeLabel(module.name);
+                      }
+                    } else if (value === "manage") {
+                      setModuleManagerOpen(true);
+                      // Reset to previous value
+                      setSelectedModuleId(selectedModuleId);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Select a hook module" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="custom">
+                      Custom Script (Inline)
+                    </SelectItem>
+                    {userModules.length > 0 && (
+                      <div className="px-2 py-1 text-xs text-gray-500 font-semibold">
+                        Your Modules
+                      </div>
+                    )}
+                    {userModules.map((module) => (
+                      <SelectItem key={module.id} value={module.id}>
+                        <div className="font-medium">{module.name}</div>
+                      </SelectItem>
+                    ))}
+                    <SelectItem
+                      value="manage"
+                      className="font-semibold text-blue-600"
+                    >
+                      <Plus className="w-3 h-3 inline mr-1" />
+                      Manage Modules...
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
+            {/* カスタムスクリプト編集（カスタムが選択された場合のみ表示） */}
+            {selectedModuleId === "custom" && (
+              <div>
+                <Label htmlFor="hook-script" className="text-sm font-medium">
+                  Custom Script
+                </Label>
+                <Textarea
+                  id="hook-script"
+                  value={nodeScript}
+                  onChange={(e) => setNodeScript(e.target.value)}
+                  placeholder="// Enter JavaScript code here\n// context object is available with request and response data"
+                  className="mt-1 w-full h-40 font-mono text-xs"
+                />
+              </div>
+            )}
+
           </div>
         </div>
       )}
+
+      {/* Hook Module Manager Dialog */}
+      <HookModuleManager
+        open={moduleManagerOpen}
+        onOpenChange={setModuleManagerOpen}
+        onModuleSelect={(moduleId) => {
+          setSelectedModuleId(moduleId);
+          const module = userModules.find((m) => m.id === moduleId);
+          if (module) {
+            setNodeScript(module.script);
+            setNodeLabel(module.name);
+          }
+        }}
+      />
     </div>
   );
 }

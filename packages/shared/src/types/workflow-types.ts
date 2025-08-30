@@ -46,6 +46,15 @@ export interface WorkflowHook {
 }
 
 /**
+ * Hook module definition
+ */
+export interface HookModule {
+  id: string;
+  name: string;
+  script: string;
+}
+
+/**
  * Workflow definition
  */
 export interface WorkflowDefinition {
