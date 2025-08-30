@@ -22,7 +22,7 @@ import {
   WorkflowHook,
 } from "@mcp_router/shared";
 import { Button } from "@mcp_router/ui";
-import { Plus, Save, Play, X, Check } from "lucide-react";
+import { Plus, Save, X, Check } from "lucide-react";
 import { Textarea, Input, Label } from "@mcp_router/ui";
 import StartNode from "./nodes/StartNode";
 import EndNode from "./nodes/EndNode";
@@ -225,10 +225,6 @@ export default function WorkflowEditor({
     onSave(createWorkflowDefinition(workflow?.enabled ?? true));
   }, [createWorkflowDefinition, workflow?.enabled, onSave]);
 
-  const handleExecute = useCallback(() => {
-    if (!onExecute) return;
-    onExecute(createWorkflowDefinition(true));
-  }, [createWorkflowDefinition, onExecute]);
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -249,16 +245,10 @@ export default function WorkflowEditor({
           </select>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleSave} variant="outline" size="sm">
+          <Button onClick={handleSave} variant="default" size="sm">
             <Save className="w-4 h-4 mr-1" />
             Save
           </Button>
-          {onExecute && (
-            <Button onClick={handleExecute} variant="default" size="sm">
-              <Play className="w-4 h-4 mr-1" />
-              Execute
-            </Button>
-          )}
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-# ADR-001: MCP Hook System Architecture
+# ADR-001: MCP Workflow System Architecture
 
 ## Status
 
@@ -13,238 +13,231 @@ MCP Router は、複数の MCP (Model Context Protocol) サーバーを統合し
 - 条件に基づいてリクエストをフィルタリング、変更、またはブロック
 - ユーザーが JavaScript でロジックを記述可能
 - 安全な実行環境の提供
-- 実行順序の制御
+- ビジュアルな実行フローの定義
 
 ## Decision
 
 ### 1. アーキテクチャパターン
 
-**SingletonService パターンの採用**
+**Workflow中心のモジュラーアーキテクチャ**
 
-他のサービス（ConfigService、ServerService など）と一貫性を保つため、HookService も SingletonService を継承する設計とします。
+Hookは独立したシステムではなく、Workflowシステムのモジュール（ノード）として実装されます。これにより、実行フローの可視化と柔軟な制御が可能になります。
 
 ```
 UI Layer (React)
-    ↓ IPC
-IPC Handler Layer
+    ├── WorkflowEditor (React Flow)
+    │   ├── StartNode
+    │   ├── EndNode
+    │   ├── MCPCallNode
+    │   └── HookNode (Module)
     ↓
-Service Layer (HookService - Singleton)
-    ↓
-Repository Layer (HookRepository)
-    ↓
-SQLite Database
+Workflow Engine
+    ├── Workflow Definition
+    ├── Node Execution
+    └── Hook Script Execution
 ```
 
-### 2. フィルタリング方式
+### 2. Workflowシステム
 
-**スクリプト内フィルタリング**
+**ビジュアルプログラミングパラダイム**
 
-当初検討したデータベースレベルのターゲットフィルタ（targets フィールド）を廃止し、すべてのフィルタリングロジックをユーザースクリプト内で実行する方式を採用します。
-
-```javascript
-// ユーザースクリプト例
-if (context.request.method === 'tools/call' && context.request.params.name === 'specific-tool') {
-  // カスタムロジック
-}
-```
-
-### 2.1 Hook実行対象
-
-Hookは以下のすべてのMCPリクエストタイプで実行されます：
-
-- `tools/call` - ツール呼び出し
-- `tools/list` - ツール一覧取得
-- `resources/read` - リソース読み取り
-- `resources/list` - リソース一覧取得
-- `resources/templates/list` - リソーステンプレート一覧取得
-- `prompts/get` - プロンプト取得
-
-### 3. スクリプト実行環境
-
-**Node.js VM モジュールによるサンドボックス**
-
-セキュリティを確保するため、Node.js の vm モジュールを使用してサンドボックス環境でスクリプトを実行します。
-
-提供される環境：
-- 制限されたグローバルスコープ
-- カスタムコンソール（ログはシステムログに転送）
-- ユーティリティ関数（sleep、validateToken など）
-- 5秒のタイムアウト制限
-
-### 4. データモデル
+React Flowを使用したビジュアルエディタで、ノードをドラッグ&ドロップして処理フローを定義します。
 
 ```typescript
-interface MCPHook {
+interface WorkflowDefinition {
   id: string;
   name: string;
+  description?: string;
+  workflowType: "tools/list" | "tools/call";
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
   enabled: boolean;
-  executionOrder: number;  // 'order' から変更（SQL予約語回避）
-  hookType: 'pre' | 'post' | 'both';
-  script: string;
   createdAt: number;
   updatedAt: number;
 }
 ```
 
-### 5. Workflow実行順序
+### 3. ノードタイプ
 
-**Workflowシステムにおける実行順序の決定**
-
-Workflowは複数のHookをビジュアルに接続して実行順序を定義するシステムです。
-
-#### 5.1 ノードタイプと制約
+#### 3.1 基本ノード
 
 ```typescript
 interface WorkflowNode {
   id: string;
-  type: "hook" | "start" | "end";
+  type: "start" | "end" | "mcp-call" | "hook";
+  position: { x: number; y: number };
   data: {
     label: string;
-    hookId?: string;        // type === 'hook' の場合
-    blocking?: boolean;     // 同期実行するか（デフォルト: true）
+    hook?: WorkflowHook;  // type === 'hook' の場合
+    [key: string]: any;
   };
-  position: { x: number; y: number };
+  deletable?: boolean;
+}
+```
+
+#### 3.2 Hookノード（モジュール）
+
+Hookはワークフローの一部として、以下の特性を持つモジュールです：
+
+```typescript
+interface WorkflowHook {
+  id: string;
+  script: string;      // JavaScript code
+  blocking: boolean;   // true: 同期実行, false: 非同期（Fire & Forget）
 }
 ```
 
 **ノードの入出力制約：**
 - **Start Node**: 入力なし、出力複数可
 - **End Node**: 入力1つのみ、出力なし
-- **Sync Hook** (blocking=true): 入力1つのみ、出力複数可
-- **Fire-and-forget Hook** (blocking=false): 入力1つのみ、出力なし
+- **MCP Call Node**: 入力1つ、出力複数可
+- **Sync Hook** (blocking=true): 入力1つ、出力複数可
+- **Fire-and-forget Hook** (blocking=false): 入力1つ、出力なし
 
-#### 5.2 実行順序決定アルゴリズム
+### 4. Hook実行環境
 
-Endノードからの逆順トラバースにより、決定的な実行順序を保証します：
+**Workflow Engine内でのサンドボックス実行**
 
-1. **主経路（Main Path）の特定**
-   - Endノードから逆向きにトラバース
-   - 各ノードは入力エッジが1つのため、一意な経路が存在
-   - Start → ... → End の一筆書き経路
+Hookスクリプトは、Workflow Engineによって管理され、以下の環境で実行されます：
 
-2. **分岐経路（Branch Path）の処理**
-   - 主経路の各ノードから分岐するFire-and-forget Hook
-   - 非同期実行のため順序は重要ではない
-
-```typescript
-// 実行順序決定の擬似コード
-function determineExecutionOrder(workflow: WorkflowDefinition) {
-  // 1. Endから逆順トラバースで主経路を特定
-  const mainPath = [];
-  let currentNode = workflow.nodes.find(n => n.type === 'end');
-  
-  while (currentNode) {
-    mainPath.unshift(currentNode);
-    const incomingEdge = workflow.edges.find(e => e.target === currentNode.id);
-    currentNode = workflow.nodes.find(n => n.id === incomingEdge?.source);
+```javascript
+// Hook Context
+{
+  request: {
+    method: string,    // MCPメソッド名
+    params: any        // リクエストパラメータ
+  },
+  response?: any,      // Post-hookの場合のレスポンス
+  metadata: {
+    clientId: string,
+    serverName?: string,
+    workflowId: string,
+    nodeId: string
   }
-  
-  // 2. 各ノードで分岐を収集
-  return mainPath.map(node => ({
-    node,
-    branches: workflow.edges
-      .filter(e => e.source === node.id && !mainPath.find(n => n.id === e.target))
-      .map(e => workflow.nodes.find(n => n.id === e.target))
-  }));
 }
 ```
 
-#### 5.3 無限ループ防止の保証
+### 5. 実行フロー
 
-現在の制約により、Workflowは必ず有向非循環グラフ（DAG）となります：
+#### 5.1 Workflow実行順序
 
-1. **構造的保証**
-   - Endノードは出力を持たない（終端）
-   - 各ノードへの入力は1つのみ（戻るパスが作れない）
-   - StartからEndへの経路は必ず有限
-
-2. **実行例**
 ```
-Start → Sync Hook1 → Sync Hook2 → End
-           ↓            ↓
-    F&F Hook1      F&F Hook2
-
-実行順序:
-1. Sync Hook1 (同期実行)
-2. F&F Hook1 (非同期実行)
-3. Sync Hook2 (同期実行)
-4. F&F Hook2 (非同期実行)
+Start → [Pre-hooks] → MCP Call → [Post-hooks] → End
+         ↓                          ↓
+    [Fire & Forget]            [Fire & Forget]
 ```
+
+#### 5.2 実行順序決定アルゴリズム
+
+1. **主経路（Main Path）の特定**
+   - Startノードから順次実行
+   - 同期ノードは完了を待つ
+   - 非同期ノードは即座に次へ進む
+
+2. **分岐処理**
+   - Fire-and-forgetノードは並列実行
+   - エラーがあってもメインフローは継続
+
+```typescript
+async function executeWorkflow(workflow: WorkflowDefinition, context: Context) {
+  const startNode = workflow.nodes.find(n => n.type === 'start');
+  let currentNode = startNode;
+  
+  while (currentNode && currentNode.type !== 'end') {
+    // ノード実行
+    if (currentNode.type === 'hook') {
+      if (currentNode.data.hook?.blocking) {
+        await executeHookSync(currentNode.data.hook, context);
+      } else {
+        executeHookAsync(currentNode.data.hook, context); // 待たない
+      }
+    } else if (currentNode.type === 'mcp-call') {
+      await executeMCPCall(context);
+    }
+    
+    // 次のノードへ
+    const outgoingEdge = workflow.edges.find(e => e.source === currentNode.id);
+    currentNode = workflow.nodes.find(n => n.id === outgoingEdge?.target);
+  }
+}
+```
+
+### 6. Visual Editor機能
+
+**React Flowベースのエディタ**
+
+- ドラッグ&ドロップでノード配置
+- ノード間の接続をビジュアルに定義
+- リアルタイムバリデーション
+- Hook script inline編集
 
 ## Consequences
 
 ### Positive
 
-1. **柔軟性の向上**
-   - ユーザーは複雑な条件ロジックを自由に記述可能
-   - 新しいフィルタリング要件に対してスキーマ変更が不要
+1. **可視性の向上**
+   - 実行フローが一目で理解できる
+   - デバッグが容易
+   - ノンプログラマーでも基本的なフローを理解可能
 
-2. **一貫性のあるアーキテクチャ**
-   - 既存のサービスパターンに準拠
-   - 開発者にとって理解しやすい構造
+2. **モジュラー設計**
+   - Hookは再利用可能なモジュール
+   - 新しいノードタイプの追加が容易
+   - 責務の明確な分離
 
-3. **セキュリティの確保**
-   - VM によるサンドボックス化でシステムへの影響を最小化
-   - タイムアウトによる無限ループ防止
+3. **柔軟性**
+   - 複雑なフローも視覚的に構築可能
+   - 同期/非同期の混在が可能
+   - 条件分岐の将来的な追加が容易
 
 4. **保守性**
-   - シンプルなデータモデル
-   - 責務の明確な分離（Service/Repository）
+   - WorkflowはJSONとして保存
+   - バージョン管理が容易
+   - エクスポート/インポートが可能
 
 ### Negative
 
-1. **パフォーマンスへの影響**
-   - すべてのフックでスクリプト評価が必要
-   - VM 作成のオーバーヘッド
+1. **複雑性の増加**
+   - UIの実装が複雑
+   - ユーザーの学習曲線
 
-2. **デバッグの困難さ**
-   - ユーザースクリプトのエラーが発生した場合のトラブルシューティング
-   - 実行時エラーの可能性
+2. **パフォーマンス**
+   - ビジュアルエディタのオーバーヘッド
+   - 大規模なワークフローの描画コスト
 
-3. **学習曲線**
-   - ユーザーは JavaScript の知識が必要
-   - HookContext の構造を理解する必要
+3. **制約**
+   - 現在は条件分岐なし（将来的に追加予定）
+   - ループ構造なし（意図的な制限）
 
-## Alternatives Considered
+## Migration Path
 
-### 1. データベースレベルのフィルタリング
+### Phase 1: 現在の実装
+- 基本的なWorkflowエディタ
+- Hook、Start、End、MCP Callノード
+- 線形フローのサポート
 
-**概要**: targets フィールドを使用して、データベースクエリでフィルタリング
-
-**却下理由**:
-- 複雑な条件（AND/OR の組み合わせ）の表現が困難
-- スキーマが複雑化
-- 動的な条件変更が困難
-
-### 2. 独自スクリプト言語の実装
-
-**概要**: JavaScript の代わりに、より制限された独自のスクリプト言語を設計
-
-**却下理由**:
-- 実装コストが高い
-- ユーザーの学習コストが増加
-- エコシステムの利点を活用できない
-
-### 3. WebAssembly による実行
-
-**概要**: より高度なサンドボックス化のため WebAssembly を使用
-
-**却下理由**:
-- 実装の複雑性
-- JavaScript からの移行が困難
-- 現時点でのセキュリティ要件には VM で十分
+### Phase 2: 将来の拡張
+- 条件分岐ノード
+- 変数/状態管理ノード
+- カスタムノードタイプのプラグイン化
+- Workflowテンプレート/マーケットプレイス
 
 ## Implementation Notes
 
-1. **エラーハンドリング**: フックの実行エラーは記録されるが、メインの処理フローは継続する
-2. **実行順序**: executionOrder フィールドで制御、UI でドラッグ&ドロップによる変更が可能
-3. **将来の拡張**: 
-   - トークン検証機能の実装
-   - サーバー情報取得 API の追加
-   - パフォーマンスメトリクスの収集
+1. **エラーハンドリング**: 
+   - 同期Hookのエラーはフローを停止
+   - 非同期Hookのエラーはログのみ
+
+2. **永続化**: 
+   - WorkflowはJSONとしてローカルストレージに保存
+   - 将来的にはデータベースへ移行
+
+3. **実行モニタリング**:
+   - 各ノードの実行状態を可視化
+   - 実行時間の計測とボトルネック特定
 
 ## References
 
+- [React Flow Documentation](https://reactflow.dev/)
 - [MCP Protocol Specification](https://modelcontextprotocol.io/docs)
-- [Node.js VM Documentation](https://nodejs.org/api/vm.html)
-- 既存のサービス実装パターン（ConfigService、ServerService）
+- [Visual Programming Languages](https://en.wikipedia.org/wiki/Visual_programming_language)
