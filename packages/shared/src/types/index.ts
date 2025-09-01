@@ -37,6 +37,8 @@ export {
   LogQueryResult,
   // Workspace API
   WorkspaceAPI,
+  // Workflow API
+  WorkflowAPI,
   // Main Platform API
   PlatformAPI,
 } from "./platform-api";

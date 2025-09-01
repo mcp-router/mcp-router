@@ -8,12 +8,7 @@ import {
 } from "@mcp_router/ui";
 import { Button, Input, Label, Textarea } from "@mcp_router/ui";
 import { Plus, Edit2, Trash2, Save, X } from "lucide-react";
-import {
-  getUserHookModules,
-  createHookModule,
-  updateHookModule,
-  deleteHookModule,
-} from "../../lib/hook-modules";
+import { usePlatformAPI } from "../../platform-api/hooks/use-platform-api";
 
 interface HookModuleManagerProps {
   open: boolean;
@@ -26,6 +21,7 @@ export default function HookModuleManager({
   onOpenChange,
   onModuleSelect,
 }: HookModuleManagerProps) {
+  const platformAPI = usePlatformAPI();
   const [modules, setModules] = useState<HookModule[]>([]);
   const [editingModule, setEditingModule] = useState<HookModule | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -41,18 +37,18 @@ export default function HookModuleManager({
   }, [open]);
 
   const loadModules = async () => {
-    const userModules = await getUserHookModules();
+    const userModules = await platformAPI.workflows.hooks.list();
     setModules(userModules);
   };
 
   const handleCreate = async () => {
     if (!formData.name || !formData.script) return;
-    
-    await createHookModule({
+
+    await platformAPI.workflows.hooks.create({
       name: formData.name,
       script: formData.script,
     });
-    
+
     setIsCreating(false);
     setFormData({
       name: "",
@@ -63,9 +59,9 @@ export default function HookModuleManager({
 
   const handleUpdate = async () => {
     if (!editingModule || !formData.name || !formData.script) return;
-    
-    await updateHookModule(editingModule.id, formData);
-    
+
+    await platformAPI.workflows.hooks.update(editingModule.id, formData);
+
     setEditingModule(null);
     setFormData({
       name: "",
@@ -76,8 +72,8 @@ export default function HookModuleManager({
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this module?")) return;
-    
-    await deleteHookModule(id);
+
+    await platformAPI.workflows.hooks.delete(id);
     loadModules();
   };
 

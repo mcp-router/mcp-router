@@ -246,6 +246,38 @@ contextBridge.exposeInMainWorld("electronAPI", {
   deleteWorkspace: (id: string) => ipcRenderer.invoke("workspace:delete", id),
   switchWorkspace: (id: string) => ipcRenderer.invoke("workspace:switch", id),
   getCurrentWorkspace: () => ipcRenderer.invoke("workspace:current"),
+
+  // Workflow Management
+  listWorkflows: () => ipcRenderer.invoke("workflow:list"),
+  getWorkflow: (id: string) => ipcRenderer.invoke("workflow:get", id),
+  createWorkflow: (workflow: any) =>
+    ipcRenderer.invoke("workflow:create", workflow),
+  updateWorkflow: (id: string, updates: any) =>
+    ipcRenderer.invoke("workflow:update", id, updates),
+  deleteWorkflow: (id: string) => ipcRenderer.invoke("workflow:delete", id),
+  toggleWorkflow: (id: string) => ipcRenderer.invoke("workflow:toggle", id),
+  executeWorkflow: (id: string, context?: any) =>
+    ipcRenderer.invoke("workflow:execute", id, context),
+  getEnabledWorkflows: () => ipcRenderer.invoke("workflow:listEnabled"),
+  getWorkflowsByType: (workflowType: string) =>
+    ipcRenderer.invoke("workflow:listByType", workflowType),
+
+  // Hook Module Management
+  listHookModules: () => ipcRenderer.invoke("hook-module:list"),
+  getHookModule: (id: string) => ipcRenderer.invoke("hook-module:get", id),
+  createHookModule: (module: any) =>
+    ipcRenderer.invoke("hook-module:create", module),
+  updateHookModule: (id: string, updates: any) =>
+    ipcRenderer.invoke("hook-module:update", id, updates),
+  deleteHookModule: (id: string) =>
+    ipcRenderer.invoke("hook-module:delete", id),
+  executeHookModule: (id: string, context: any) =>
+    ipcRenderer.invoke("hook-module:execute", id, context),
+  importHookModule: (module: any) =>
+    ipcRenderer.invoke("hook-module:import", module),
+  validateHookScript: (script: string) =>
+    ipcRenderer.invoke("hook-module:validate", script),
+
   getWorkspaceCredentials: (id: string) =>
     ipcRenderer.invoke("workspace:get-credentials", id),
   onWorkspaceSwitched: (callback: (workspace: any) => void) => {

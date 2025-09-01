@@ -24,8 +24,17 @@ import {
 } from "@mcp_router/shared";
 import { Button } from "@mcp_router/ui";
 import { Plus, Save, X, Check } from "lucide-react";
-import { Textarea, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@mcp_router/ui";
-import { getUserHookModules } from "../../lib/hook-modules";
+import {
+  Textarea,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@mcp_router/ui";
+import { usePlatformAPI } from "../../platform-api/hooks/use-platform-api";
 import HookModuleManager from "./HookModuleManager";
 import StartNode from "./nodes/StartNode";
 import EndNode from "./nodes/EndNode";
@@ -58,6 +67,7 @@ export default function WorkflowEditor({
   workflow,
   onSave,
 }: WorkflowEditorProps) {
+  const platformAPI = usePlatformAPI();
   const [workflowType, setWorkflowType] = useState<"tools/list" | "tools/call">(
     workflow?.workflowType || "tools/list",
   );
@@ -141,7 +151,8 @@ export default function WorkflowEditor({
       if (
         targetNode?.type === "end" ||
         (targetNode?.type === "hook" &&
-          (targetNode.data?.hook as WorkflowHook | undefined)?.blocking !== false)
+          (targetNode.data?.hook as WorkflowHook | undefined)?.blocking !==
+            false)
       ) {
         // Count existing incoming edges to this target
         const incomingEdges = edges.filter(
@@ -187,11 +198,11 @@ export default function WorkflowEditor({
       if (hook && typeof hook === "object" && hook.script !== undefined) {
         const script = hook.script;
         setNodeScript(typeof script === "string" ? script : "");
-        
+
         // Check if script matches any user module
-        getUserHookModules().then((modules) => {
+        platformAPI.workflows.hooks.list().then((modules: HookModule[]) => {
           const matchedModule = modules.find(
-            (module) => module.script === script,
+            (module: HookModule) => module.script === script,
           );
           setSelectedModuleId(matchedModule ? matchedModule.id : "custom");
         });
@@ -240,9 +251,8 @@ export default function WorkflowEditor({
 
   // Load user modules when component mounts or when module manager closes
   React.useEffect(() => {
-    getUserHookModules().then(setUserModules);
+    platformAPI.workflows.hooks.list().then(setUserModules);
   }, [moduleManagerOpen]);
-
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -331,7 +341,9 @@ export default function WorkflowEditor({
                   if (selectedNode) {
                     const label = selectedNode.data?.label;
                     setNodeLabel(typeof label === "string" ? label : "");
-                    const hook = selectedNode.data?.hook as WorkflowHook | undefined;
+                    const hook = selectedNode.data?.hook as
+                      | WorkflowHook
+                      | undefined;
                     if (
                       hook &&
                       typeof hook === "object" &&
@@ -455,7 +467,6 @@ export default function WorkflowEditor({
                 />
               </div>
             )}
-
           </div>
         </div>
       )}

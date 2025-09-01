@@ -9,6 +9,8 @@ import {
   AgentConfig,
   DeployedAgent,
   CreateServerInput,
+  WorkflowDefinition,
+  HookModule,
 } from "@mcp_router/shared";
 import { McpAppsManagerResult, McpApp } from "@/main/domain/mcp-apps-service";
 import { ServerPackageUpdates } from "./lib/utils/backend/package-version-resolver";
@@ -226,6 +228,39 @@ declare global {
       ) => Promise<{ token: string | null }>;
       onWorkspaceSwitched: (callback: (workspace: any) => void) => () => void;
       onWorkspaceConfigChanged: (callback: (config: any) => void) => () => void;
+
+      // Workflow Management
+      listWorkflows: () => Promise<WorkflowDefinition[]>;
+      getWorkflow: (id: string) => Promise<WorkflowDefinition | null>;
+      createWorkflow: (
+        workflow: Omit<WorkflowDefinition, "id" | "createdAt" | "updatedAt">,
+      ) => Promise<WorkflowDefinition>;
+      updateWorkflow: (
+        id: string,
+        updates: Partial<Omit<WorkflowDefinition, "id" | "createdAt">>,
+      ) => Promise<WorkflowDefinition | null>;
+      deleteWorkflow: (id: string) => Promise<boolean>;
+      toggleWorkflow: (id: string) => Promise<boolean>;
+      executeWorkflow: (id: string, context?: any) => Promise<any>;
+      getEnabledWorkflows: () => Promise<WorkflowDefinition[]>;
+      getWorkflowsByType: (
+        workflowType: string,
+      ) => Promise<WorkflowDefinition[]>;
+
+      // Hook Module Management
+      listHookModules: () => Promise<HookModule[]>;
+      getHookModule: (id: string) => Promise<HookModule | null>;
+      createHookModule: (module: Omit<HookModule, "id">) => Promise<HookModule>;
+      updateHookModule: (
+        id: string,
+        updates: Partial<Omit<HookModule, "id">>,
+      ) => Promise<HookModule | null>;
+      deleteHookModule: (id: string) => Promise<boolean>;
+      executeHookModule: (id: string, context: any) => Promise<any>;
+      importHookModule: (module: Omit<HookModule, "id">) => Promise<HookModule>;
+      validateHookScript: (
+        script: string,
+      ) => Promise<{ valid: boolean; error?: string }>;
     };
   }
 }

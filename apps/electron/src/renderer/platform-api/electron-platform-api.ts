@@ -12,6 +12,7 @@ import type {
   SettingsAPI,
   LogAPI,
   WorkspaceAPI,
+  WorkflowAPI,
   Workspace,
 } from "@mcp_router/shared";
 
@@ -25,6 +26,7 @@ class ElectronPlatformAPI implements PlatformAPI {
   settings: SettingsAPI;
   logs: LogAPI;
   workspaces: WorkspaceAPI;
+  workflows: WorkflowAPI;
 
   constructor() {
     // Initialize auth domain
@@ -270,6 +272,34 @@ class ElectronPlatformAPI implements PlatformAPI {
         await window.electronAPI.switchWorkspace(id);
       },
       getActive: () => window.electronAPI.getCurrentWorkspace(),
+    };
+
+    // Initialize workflows domain (with hook modules)
+    this.workflows = {
+      // Workflow operations
+      workflows: {
+        list: () => window.electronAPI.listWorkflows(),
+        get: (id) => window.electronAPI.getWorkflow(id),
+        create: (workflow) => window.electronAPI.createWorkflow(workflow),
+        update: (id, updates) => window.electronAPI.updateWorkflow(id, updates),
+        delete: (id) => window.electronAPI.deleteWorkflow(id),
+        toggle: (id) => window.electronAPI.toggleWorkflow(id),
+        execute: (id, context) => window.electronAPI.executeWorkflow(id, context),
+        listEnabled: () => window.electronAPI.getEnabledWorkflows(),
+        listByType: (workflowType) => window.electronAPI.getWorkflowsByType(workflowType),
+      },
+
+      // Hook Module operations
+      hooks: {
+        list: () => window.electronAPI.listHookModules(),
+        get: (id) => window.electronAPI.getHookModule(id),
+        create: (module) => window.electronAPI.createHookModule(module),
+        update: (id, updates) => window.electronAPI.updateHookModule(id, updates),
+        delete: (id) => window.electronAPI.deleteHookModule(id),
+        execute: (id, context) => window.electronAPI.executeHookModule(id, context),
+        import: (module) => window.electronAPI.importHookModule(module),
+        validate: (script) => window.electronAPI.validateHookScript(script),
+      },
     };
   }
 }

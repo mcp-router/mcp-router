@@ -15,14 +15,10 @@ import {
   Package,
   GitBranch,
 } from "lucide-react";
-import {
-  getUserHookModules,
-  createHookModule,
-  updateHookModule,
-  deleteHookModule,
-} from "../../lib/hook-modules";
+import { usePlatformAPI } from "../../platform-api/hooks/use-platform-api";
 
 export default function WorkflowManager() {
+  const platformAPI = usePlatformAPI();
   const [workflows, setWorkflows] = useState<WorkflowDefinition[]>([]);
   const [selectedWorkflow, setSelectedWorkflow] =
     useState<WorkflowDefinition | null>(null);
@@ -41,45 +37,66 @@ export default function WorkflowManager() {
   });
 
   useEffect(() => {
-    // TODO: Fetch workflows from backend
     loadWorkflows();
     if (activeTab === "modules") {
       loadModules();
     }
   }, [activeTab]);
 
-  const loadWorkflows = () => {
-    // TODO: Load from backend
+  const loadWorkflows = async () => {
+    try {
+      const data = await platformAPI.workflows.workflows.list();
+      setWorkflows(data);
+    } catch (error) {
+      console.error("Failed to load workflows:", error);
+    }
   };
 
   const loadModules = async () => {
-    const userModules = await getUserHookModules();
+    const userModules = await platformAPI.workflows.hooks.list();
     setModules(userModules);
   };
 
-  const handleSaveWorkflow = (workflow: WorkflowDefinition) => {
-    const updatedWorkflows = selectedWorkflow
-      ? workflows.map((w) => (w.id === workflow.id ? workflow : w))
-      : [...workflows, workflow];
-
-    setWorkflows(updatedWorkflows);
-    setIsEditing(false);
-    setSelectedWorkflow(null);
+  const handleSaveWorkflow = async (workflow: WorkflowDefinition) => {
+    try {
+      if (selectedWorkflow) {
+        await platformAPI.workflows.workflows.update(workflow.id, workflow);
+      } else {
+        await platformAPI.workflows.workflows.create(workflow);
+      }
+      await loadWorkflows();
+      setIsEditing(false);
+      setSelectedWorkflow(null);
+    } catch (error) {
+      console.error("Failed to save workflow:", error);
+    }
   };
 
-  const handleDeleteWorkflow = (workflowId: string) => {
-    const updatedWorkflows = workflows.filter((w) => w.id !== workflowId);
-    setWorkflows(updatedWorkflows);
+  const handleDeleteWorkflow = async (workflowId: string) => {
+    try {
+      await platformAPI.workflows.workflows.delete(workflowId);
+      await loadWorkflows();
+    } catch (error) {
+      console.error("Failed to delete workflow:", error);
+    }
   };
 
-  const handleToggleWorkflow = (workflow: WorkflowDefinition) => {
-    const updatedWorkflow = { ...workflow, enabled: !workflow.enabled };
-    handleSaveWorkflow(updatedWorkflow);
+  const handleToggleWorkflow = async (workflow: WorkflowDefinition) => {
+    try {
+      await platformAPI.workflows.workflows.toggle(workflow.id);
+      await loadWorkflows();
+    } catch (error) {
+      console.error("Failed to toggle workflow:", error);
+    }
   };
 
-  const handleExecuteWorkflow = (workflow: WorkflowDefinition) => {
-    // TODO: Implement workflow execution
-    console.log("Executing workflow:", workflow);
+  const handleExecuteWorkflow = async (workflow: WorkflowDefinition) => {
+    try {
+      const result = await platformAPI.workflows.workflows.execute(workflow.id);
+      console.log("Workflow executed:", result);
+    } catch (error) {
+      console.error("Failed to execute workflow:", error);
+    }
   };
 
   const handleCreateWorkflow = () => {
@@ -96,7 +113,7 @@ export default function WorkflowManager() {
   const handleCreateModule = async () => {
     if (!moduleFormData.name || !moduleFormData.script) return;
 
-    await createHookModule({
+    await platformAPI.workflows.hooks.create({
       name: moduleFormData.name,
       script: moduleFormData.script,
     });
@@ -110,7 +127,7 @@ export default function WorkflowManager() {
     if (!editingModule || !moduleFormData.name || !moduleFormData.script)
       return;
 
-    await updateHookModule(editingModule.id, moduleFormData);
+    await platformAPI.workflows.hooks.update(editingModule.id, moduleFormData);
 
     setEditingModule(null);
     setModuleFormData({ name: "", script: "" });
@@ -120,7 +137,7 @@ export default function WorkflowManager() {
   const handleDeleteModule = async (id: string) => {
     if (!confirm("Are you sure you want to delete this module?")) return;
 
-    await deleteHookModule(id);
+    await platformAPI.workflows.hooks.delete(id);
     loadModules();
   };
 
@@ -169,7 +186,8 @@ export default function WorkflowManager() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Hook Studio</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Design workflows and reusable modules to intercept and modify MCP operations
+          Design workflows and reusable modules to intercept and modify MCP
+          operations
         </p>
       </div>
 
@@ -222,9 +240,7 @@ export default function WorkflowManager() {
                 <Card key={workflow.id} className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold">
-                        {workflow.name}
-                      </h3>
+                      <h3 className="text-lg font-semibold">{workflow.name}</h3>
                       <p className="text-sm text-gray-500">
                         {workflow.nodes.length} nodes, {workflow.edges.length}{" "}
                         connections
