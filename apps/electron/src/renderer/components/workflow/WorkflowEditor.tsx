@@ -199,7 +199,9 @@ export default function WorkflowEditor({
             (module: HookModule) => module.script === script,
           );
           // If no module matches but script exists, select "custom" (Inline Script)
-          setSelectedModuleId(matchedModule ? matchedModule.id : script ? "custom" : "");
+          setSelectedModuleId(
+            matchedModule ? matchedModule.id : script ? "custom" : "",
+          );
         });
       }
     }

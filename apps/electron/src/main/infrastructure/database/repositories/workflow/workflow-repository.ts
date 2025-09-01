@@ -230,27 +230,70 @@ export class WorkflowRepository {
   }
 
   /**
-   * ワークフローの有効/無効を切り替え
+   * 指定したワークフローを有効化し、同じタイプの他のワークフローを無効化
    */
-  public toggleWorkflow(id: string): boolean {
+  public setActiveWorkflow(id: string): boolean {
     const workflow = this.getWorkflowById(id);
     if (!workflow) {
       return false;
     }
 
     const db = getSqliteManager();
-    const newEnabled = !workflow.enabled;
 
+    // 同じworkflowTypeの他の有効なワークフローを無効化
     db.execute(
       `
       UPDATE workflows
-      SET enabled = :enabled,
+      SET enabled = 0,
+          updated_at = :updatedAt
+      WHERE workflow_type = :workflowType
+        AND id != :id
+        AND enabled = 1
+    `,
+      {
+        workflowType: workflow.workflowType,
+        id,
+        updatedAt: Date.now(),
+      },
+    );
+
+    // 指定したワークフローを有効化
+    db.execute(
+      `
+      UPDATE workflows
+      SET enabled = 1,
           updated_at = :updatedAt
       WHERE id = :id
     `,
       {
         id,
-        enabled: newEnabled ? 1 : 0,
+        updatedAt: Date.now(),
+      },
+    );
+
+    return true;
+  }
+
+  /**
+   * 指定したワークフローを無効化
+   */
+  public disableWorkflow(id: string): boolean {
+    const workflow = this.getWorkflowById(id);
+    if (!workflow) {
+      return false;
+    }
+
+    const db = getSqliteManager();
+
+    db.execute(
+      `
+      UPDATE workflows
+      SET enabled = 0,
+          updated_at = :updatedAt
+      WHERE id = :id
+    `,
+      {
+        id,
         updatedAt: Date.now(),
       },
     );

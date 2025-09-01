@@ -69,12 +69,22 @@ export function setupWorkflowHandlers(): void {
     }
   });
 
-  // ワークフロー有効/無効切り替え
-  ipcMain.handle("workflow:toggle", async (_, id: string) => {
+  // ワークフローをアクティブに設定
+  ipcMain.handle("workflow:setActive", async (_, id: string) => {
     try {
-      return await getWorkflowService().toggleWorkflow(id);
+      return await getWorkflowService().setActiveWorkflow(id);
     } catch (error) {
-      console.error("Failed to toggle workflow:", error);
+      console.error("Failed to set active workflow:", error);
+      throw error;
+    }
+  });
+
+  // ワークフローを無効化
+  ipcMain.handle("workflow:disable", async (_, id: string) => {
+    try {
+      return await getWorkflowService().disableWorkflow(id);
+    } catch (error) {
+      console.error("Failed to disable workflow:", error);
       throw error;
     }
   });

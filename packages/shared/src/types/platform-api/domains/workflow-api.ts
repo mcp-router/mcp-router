@@ -20,7 +20,8 @@ export interface WorkflowAPI {
       updates: Partial<Omit<WorkflowDefinition, "id" | "createdAt">>,
     ) => Promise<WorkflowDefinition | null>;
     delete: (id: string) => Promise<boolean>;
-    toggle: (id: string) => Promise<boolean>;
+    setActive: (id: string) => Promise<boolean>;
+    disable: (id: string) => Promise<boolean>;
     execute: (id: string, context?: any) => Promise<any>;
     listEnabled: () => Promise<WorkflowDefinition[]>;
     listByType: (workflowType: string) => Promise<WorkflowDefinition[]>;

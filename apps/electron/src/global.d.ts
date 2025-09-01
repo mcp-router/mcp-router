@@ -240,7 +240,8 @@ declare global {
         updates: Partial<Omit<WorkflowDefinition, "id" | "createdAt">>,
       ) => Promise<WorkflowDefinition | null>;
       deleteWorkflow: (id: string) => Promise<boolean>;
-      toggleWorkflow: (id: string) => Promise<boolean>;
+      setActiveWorkflow: (id: string) => Promise<boolean>;
+      disableWorkflow: (id: string) => Promise<boolean>;
       executeWorkflow: (id: string, context?: any) => Promise<any>;
       getEnabledWorkflows: () => Promise<WorkflowDefinition[]>;
       getWorkflowsByType: (

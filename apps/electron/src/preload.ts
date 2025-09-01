@@ -255,7 +255,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   updateWorkflow: (id: string, updates: any) =>
     ipcRenderer.invoke("workflow:update", id, updates),
   deleteWorkflow: (id: string) => ipcRenderer.invoke("workflow:delete", id),
-  toggleWorkflow: (id: string) => ipcRenderer.invoke("workflow:toggle", id),
+  setActiveWorkflow: (id: string) =>
+    ipcRenderer.invoke("workflow:setActive", id),
+  disableWorkflow: (id: string) => ipcRenderer.invoke("workflow:disable", id),
   executeWorkflow: (id: string, context?: any) =>
     ipcRenderer.invoke("workflow:execute", id, context),
   getEnabledWorkflows: () => ipcRenderer.invoke("workflow:listEnabled"),

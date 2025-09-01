@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { WorkflowDefinition, HookModule } from "@mcp_router/shared";
 import WorkflowEditor from "./WorkflowEditor";
-import { Button, Input, Label, Switch } from "@mcp_router/ui";
+import {
+  Button,
+  Input,
+  Label,
+  RadioGroup,
+  RadioGroupItem,
+} from "@mcp_router/ui";
 import { Card } from "@mcp_router/ui";
 import { Plus, Trash2, Edit2, Save, X, Package, GitBranch } from "lucide-react";
 import { usePlatformAPI } from "../../platform-api/hooks/use-platform-api";
@@ -86,19 +92,33 @@ export default function WorkflowManager() {
     }
   };
 
-  const handleToggleWorkflow = async (workflowId: string) => {
+  const handleSetActiveWorkflow = async (
+    workflowId: string | null,
+    workflowType: string,
+  ) => {
     try {
-      await platformAPI.workflows.workflows.toggle(workflowId);
+      if (workflowId) {
+        await platformAPI.workflows.workflows.setActive(workflowId);
+      } else {
+        // 指定されたタイプの全てのワークフローを無効化
+        const activeWorkflow = workflows.find(
+          (w) => w.workflowType === workflowType && w.enabled,
+        );
+        if (activeWorkflow) {
+          await platformAPI.workflows.workflows.disable(activeWorkflow.id);
+        }
+      }
       // ローカルのstateを直接更新して再レンダリングを最小限にする
-      setWorkflows(prevWorkflows => 
-        prevWorkflows.map(w => 
-          w.id === workflowId 
-            ? { ...w, enabled: !w.enabled }
-            : w
-        )
+      setWorkflows((prevWorkflows) =>
+        prevWorkflows.map((w) => {
+          if (w.workflowType === workflowType) {
+            return { ...w, enabled: w.id === workflowId };
+          }
+          return w;
+        }),
       );
     } catch (error) {
-      console.error("Failed to toggle workflow:", error);
+      console.error("Failed to set active workflow:", error);
       // エラー時は元の状態を再取得
       await loadWorkflows();
     }
@@ -251,46 +271,104 @@ export default function WorkflowManager() {
               </Button>
             </Card>
           ) : (
-            <div className="grid gap-4">
-              {workflows.map((workflow) => (
-                <Card
-                  key={workflow.id}
-                  className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
-                  onClick={() => handleEditWorkflow(workflow)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">{workflow.name}</h3>
-                      <p className="text-sm text-gray-500">
-                        {workflow.nodes.length} nodes, {workflow.edges.length}{" "}
-                        connections
-                      </p>
-                      {workflow.description && (
-                        <p className="text-sm text-gray-600 mt-1">
-                          {workflow.description}
-                        </p>
-                      )}
+            <div className="space-y-6">
+              {/* Group workflows by type */}
+              {Object.entries(
+                workflows.reduce(
+                  (acc, workflow) => {
+                    const type = workflow.workflowType;
+                    if (!acc[type]) acc[type] = [];
+                    acc[type].push(workflow);
+                    return acc;
+                  },
+                  {} as Record<string, typeof workflows>,
+                ),
+              ).map(([workflowType, typeWorkflows]) => (
+                <Card key={workflowType} className="p-4">
+                  <h3 className="text-lg font-semibold mb-3">
+                    Type: {workflowType}
+                  </h3>
+                  <RadioGroup
+                    value={typeWorkflows.find((w) => w.enabled)?.id || "none"}
+                    onValueChange={(value) =>
+                      handleSetActiveWorkflow(
+                        value === "none" ? null : value,
+                        workflowType,
+                      )
+                    }
+                  >
+                    <div className="space-y-3">
+                      {/* None option */}
+                      <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-900">
+                        <RadioGroupItem
+                          value="none"
+                          id={`${workflowType}-none`}
+                        />
+                        <Label
+                          htmlFor={`${workflowType}-none`}
+                          className="flex-1 cursor-pointer"
+                        >
+                          <span className="text-gray-500">無効化</span>
+                        </Label>
+                      </div>
+
+                      {/* Workflows */}
+                      {typeWorkflows.map((workflow) => (
+                        <div
+                          key={workflow.id}
+                          className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-900"
+                        >
+                          <RadioGroupItem
+                            value={workflow.id}
+                            id={workflow.id}
+                          />
+                          <Label
+                            htmlFor={workflow.id}
+                            className="flex-1 cursor-pointer"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <span className="font-medium">
+                                  {workflow.name}
+                                </span>
+                                <p className="text-sm text-gray-500">
+                                  {workflow.nodes.length} nodes,{" "}
+                                  {workflow.edges.length} connections
+                                </p>
+                                {workflow.description && (
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    {workflow.description}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditWorkflow(workflow);
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                >
+                                  編集
+                                </Button>
+                                <Button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteWorkflow(workflow.id);
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-500" />
+                                </Button>
+                              </div>
+                            </div>
+                          </Label>
+                        </div>
+                      ))}
                     </div>
-                    <div className="flex gap-2">
-                      <Switch
-                        checked={workflow.enabled}
-                        onCheckedChange={() => {
-                          handleToggleWorkflow(workflow.id);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteWorkflow(workflow.id);
-                        }}
-                        variant="ghost"
-                        size="sm"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </div>
+                  </RadioGroup>
                 </Card>
               ))}
             </div>
@@ -370,8 +448,9 @@ export default function WorkflowManager() {
           )}
 
           {/* Module List - 編集中は表示しない */}
-          {!isCreatingModule && !editingModule && (
-            modules.length === 0 ? (
+          {!isCreatingModule &&
+            !editingModule &&
+            (modules.length === 0 ? (
               <Card className="p-8 text-center">
                 <p className="text-gray-500 mb-4">No modules created yet</p>
                 <Button onClick={startCreateModule}>
@@ -406,8 +485,7 @@ export default function WorkflowManager() {
                   </Card>
                 ))}
               </div>
-            )
-          )}
+            ))}
         </div>
       )}
     </div>

@@ -283,7 +283,8 @@ class ElectronPlatformAPI implements PlatformAPI {
         create: (workflow) => window.electronAPI.createWorkflow(workflow),
         update: (id, updates) => window.electronAPI.updateWorkflow(id, updates),
         delete: (id) => window.electronAPI.deleteWorkflow(id),
-        toggle: (id) => window.electronAPI.toggleWorkflow(id),
+        setActive: (id) => window.electronAPI.setActiveWorkflow(id),
+        disable: (id) => window.electronAPI.disableWorkflow(id),
         execute: (id, context) =>
           window.electronAPI.executeWorkflow(id, context),
         listEnabled: () => window.electronAPI.getEnabledWorkflows(),

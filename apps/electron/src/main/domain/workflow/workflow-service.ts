@@ -95,10 +95,17 @@ export class WorkflowService {
   }
 
   /**
-   * ワークフローの有効/無効を切り替え
+   * 指定したワークフローを有効化し、同じタイプの他のワークフローを無効化
    */
-  public async toggleWorkflow(id: string): Promise<boolean> {
-    return this.repository.toggleWorkflow(id);
+  public async setActiveWorkflow(id: string): Promise<boolean> {
+    return this.repository.setActiveWorkflow(id);
+  }
+
+  /**
+   * 指定したワークフローを無効化
+   */
+  public async disableWorkflow(id: string): Promise<boolean> {
+    return this.repository.disableWorkflow(id);
   }
 
   /**
