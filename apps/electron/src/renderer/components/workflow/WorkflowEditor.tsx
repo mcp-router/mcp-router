@@ -198,7 +198,8 @@ export default function WorkflowEditor({
           const matchedModule = modules.find(
             (module: HookModule) => module.script === script,
           );
-          setSelectedModuleId(matchedModule ? matchedModule.id : "");
+          // If no module matches but script exists, select "custom" (Inline Script)
+          setSelectedModuleId(matchedModule ? matchedModule.id : script ? "custom" : "");
         });
       }
     }
@@ -443,7 +444,7 @@ export default function WorkflowEditor({
             {selectedModuleId === "custom" && (
               <div>
                 <Label htmlFor="hook-script" className="text-sm font-medium">
-                  Custom Script
+                  Inline Script
                 </Label>
                 <div className="mt-1">
                   <HookModuleEditor
