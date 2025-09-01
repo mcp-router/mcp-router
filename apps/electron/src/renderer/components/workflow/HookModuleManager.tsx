@@ -6,8 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@mcp_router/ui";
-import { Button, Input, Label, Textarea } from "@mcp_router/ui";
-import { Plus, Edit2, Trash2, Save, X } from "lucide-react";
+import { Button, Input, Label } from "@mcp_router/ui";
+import { Plus, Edit2 as Edit, Trash2, X } from "lucide-react";
+import HookModuleEditor from "./HookModuleEditor";
 import { usePlatformAPI } from "../../platform-api/hooks/use-platform-api";
 
 interface HookModuleManagerProps {
@@ -106,7 +107,7 @@ export default function HookModuleManager({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Hook Module Manager</DialogTitle>
         </DialogHeader>
@@ -147,19 +148,19 @@ export default function HookModuleManager({
                               onOpenChange(false);
                             }}
                           >
-                            Select
+                            Use
                           </Button>
                         )}
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => startEdit(module)}
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => handleDelete(module.id)}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -175,46 +176,42 @@ export default function HookModuleManager({
           {/* Create/Edit Form */}
           {(isCreating || editingModule) && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">
-                {isCreating ? "Create New Module" : "Edit Module"}
-              </h3>
-
               <div>
-                <Label htmlFor="module-name">Name</Label>
+                <Label htmlFor="name">Module Name</Label>
                 <Input
-                  id="module-name"
-                  value={formData.name}
+                  id="name"
+                  value={formData.name || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  placeholder="Module name"
+                  placeholder="Enter module name"
                 />
               </div>
 
               <div>
-                <Label htmlFor="module-script">Script</Label>
-                <Textarea
-                  id="module-script"
-                  value={formData.script}
-                  onChange={(e) =>
-                    setFormData({ ...formData, script: e.target.value })
-                  }
-                  placeholder="// Enter JavaScript code here
-// context object is available with request and response data"
-                  className="h-64 font-mono text-sm"
-                />
+                <Label htmlFor="script">Module Script</Label>
+                <div className="mt-2">
+                  <HookModuleEditor
+                    value={formData.script || ""}
+                    onChange={(value) =>
+                      setFormData({ ...formData, script: value })
+                    }
+                    height="500px"
+                    placeholder="// Write your hook module code here...
+// Example:
+// export function processData(data) {
+//   // Your code here
+//   return data;
+// }"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={cancelEdit}>
-                  <X className="w-4 h-4 mr-1" />
                   Cancel
                 </Button>
-                <Button
-                  onClick={isCreating ? handleCreate : handleUpdate}
-                  disabled={!formData.name || !formData.script}
-                >
-                  <Save className="w-4 h-4 mr-1" />
+                <Button onClick={isCreating ? handleCreate : handleUpdate}>
                   {isCreating ? "Create" : "Update"}
                 </Button>
               </div>

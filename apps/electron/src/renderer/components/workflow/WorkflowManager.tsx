@@ -1,24 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { WorkflowDefinition, HookModule } from "@mcp_router/shared";
 import WorkflowEditor from "./WorkflowEditor";
-import { Button, Input, Label, Textarea } from "@mcp_router/ui";
+import { Button, Input, Label, Switch } from "@mcp_router/ui";
 import { Card } from "@mcp_router/ui";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  ToggleLeft,
-  ToggleRight,
-  Edit2,
-  Save,
-  X,
-  Package,
-  GitBranch,
-} from "lucide-react";
+import { Plus, Trash2, Edit2, Save, X, Package, GitBranch } from "lucide-react";
 import { usePlatformAPI } from "../../platform-api/hooks/use-platform-api";
+import HookModuleEditor from "./HookModuleEditor";
 
 export default function WorkflowManager() {
   const platformAPI = usePlatformAPI();
+  const navigate = useNavigate();
+  const { workflowId } = useParams<{ workflowId?: string }>();
   const [workflows, setWorkflows] = useState<WorkflowDefinition[]>([]);
   const [selectedWorkflow, setSelectedWorkflow] =
     useState<WorkflowDefinition | null>(null);
@@ -42,6 +35,17 @@ export default function WorkflowManager() {
       loadModules();
     }
   }, [activeTab]);
+
+  // URLパラメータからワークフローIDを取得して選択
+  useEffect(() => {
+    if (workflowId && workflows.length > 0) {
+      const workflow = workflows.find((w) => w.id === workflowId);
+      if (workflow) {
+        setSelectedWorkflow(workflow);
+        setIsEditing(true);
+      }
+    }
+  }, [workflowId, workflows]);
 
   const loadWorkflows = async () => {
     try {
@@ -67,6 +71,7 @@ export default function WorkflowManager() {
       await loadWorkflows();
       setIsEditing(false);
       setSelectedWorkflow(null);
+      navigate("/workflows"); // URLをワークフロー一覧に戻す
     } catch (error) {
       console.error("Failed to save workflow:", error);
     }
@@ -102,11 +107,13 @@ export default function WorkflowManager() {
   const handleCreateWorkflow = () => {
     setSelectedWorkflow(null);
     setIsEditing(true);
+    navigate("/workflows/new"); // 新規作成時のURL
   };
 
   const handleEditWorkflow = (workflow: WorkflowDefinition) => {
     setSelectedWorkflow(workflow);
     setIsEditing(true);
+    navigate(`/workflows/${workflow.id}`); // ワークフローIDをURLに反映
   };
 
   // Hook Module handlers
@@ -237,7 +244,11 @@ export default function WorkflowManager() {
           ) : (
             <div className="grid gap-4">
               {workflows.map((workflow) => (
-                <Card key={workflow.id} className="p-4">
+                <Card
+                  key={workflow.id}
+                  className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                  onClick={() => handleEditWorkflow(workflow)}
+                >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-lg font-semibold">{workflow.name}</h3>
@@ -252,26 +263,18 @@ export default function WorkflowManager() {
                       )}
                     </div>
                     <div className="flex gap-2">
+                      <Switch
+                        checked={workflow.enabled}
+                        onCheckedChange={() => {
+                          handleToggleWorkflow(workflow);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
                       <Button
-                        onClick={() => handleToggleWorkflow(workflow)}
-                        variant="ghost"
-                        size="sm"
-                      >
-                        {workflow.enabled ? (
-                          <ToggleRight className="w-5 h-5 text-green-500" />
-                        ) : (
-                          <ToggleLeft className="w-5 h-5 text-gray-400" />
-                        )}
-                      </Button>
-                      <Button
-                        onClick={() => handleEditWorkflow(workflow)}
-                        variant="ghost"
-                        size="sm"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        onClick={() => handleDeleteWorkflow(workflow.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteWorkflow(workflow.id);
+                        }}
                         variant="ghost"
                         size="sm"
                       >
@@ -315,19 +318,20 @@ export default function WorkflowManager() {
 
                 <div>
                   <Label htmlFor="module-script">Script</Label>
-                  <Textarea
-                    id="module-script"
-                    value={moduleFormData.script}
-                    onChange={(e) =>
-                      setModuleFormData({
-                        ...moduleFormData,
-                        script: e.target.value,
-                      })
-                    }
-                    placeholder="// Enter JavaScript code here
+                  <div className="mt-1">
+                    <HookModuleEditor
+                      value={moduleFormData.script || ""}
+                      onChange={(value) =>
+                        setModuleFormData({
+                          ...moduleFormData,
+                          script: value,
+                        })
+                      }
+                      height="400px"
+                      placeholder="// Enter JavaScript code here
 // context object is available with request and response data"
-                    className="h-64 font-mono text-sm mt-1"
-                  />
+                    />
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-2">

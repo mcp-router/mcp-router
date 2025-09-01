@@ -233,7 +233,15 @@ const App: React.FC = () => {
               <Route path="/servers/add" element={<DiscoverWrapper />} />
               <Route path="/clients" element={<McpAppsManager />} />
               <Route path="/logs" element={<LogViewer />} />
-              <Route path="/hooks" element={<WorkflowManager />} />
+              <Route
+                path="/hooks"
+                element={<Navigate to="/workflows" replace />}
+              />
+              <Route path="/workflows" element={<WorkflowManager />} />
+              <Route
+                path="/workflows/:workflowId"
+                element={<WorkflowManager />}
+              />
               <Route path="/settings" element={<Settings />} />
               <Route
                 path="/settings/workspaces"

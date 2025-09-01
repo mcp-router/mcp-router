@@ -25,7 +25,6 @@ import {
 import { Button } from "@mcp_router/ui";
 import { Plus, Save, X, Check } from "lucide-react";
 import {
-  Textarea,
   Input,
   Label,
   Select,
@@ -36,6 +35,7 @@ import {
 } from "@mcp_router/ui";
 import { usePlatformAPI } from "../../platform-api/hooks/use-platform-api";
 import HookModuleManager from "./HookModuleManager";
+import HookModuleEditor from "./HookModuleEditor";
 import StartNode from "./nodes/StartNode";
 import EndNode from "./nodes/EndNode";
 import MCPCallNode from "./nodes/MCPCallNode";
@@ -116,7 +116,7 @@ export default function WorkflowEditor({
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [nodeScript, setNodeScript] = useState<string>("");
   const [nodeLabel, setNodeLabel] = useState<string>("");
-  const [selectedModuleId, setSelectedModuleId] = useState<string>("custom");
+  const [selectedModuleId, setSelectedModuleId] = useState<string>("");
   const [userModules, setUserModules] = useState<HookModule[]>([]);
   const [moduleManagerOpen, setModuleManagerOpen] = useState(false);
 
@@ -204,7 +204,7 @@ export default function WorkflowEditor({
           const matchedModule = modules.find(
             (module: HookModule) => module.script === script,
           );
-          setSelectedModuleId(matchedModule ? matchedModule.id : "custom");
+          setSelectedModuleId(matchedModule ? matchedModule.id : "");
         });
       }
     }
@@ -355,7 +355,7 @@ export default function WorkflowEditor({
                   }
                   // 編集領域を閉じる
                   setSelectedNode(null);
-                  setSelectedModuleId("custom");
+                  setSelectedModuleId("");
                 }}
               >
                 <X className="w-3 h-3 mr-1" />
@@ -390,7 +390,7 @@ export default function WorkflowEditor({
                   );
                   // 編集領域を閉じる
                   setSelectedNode(null);
-                  setSelectedModuleId("custom");
+                  setSelectedModuleId("");
                 }}
               >
                 <Check className="w-3 h-3 mr-1" />
@@ -427,14 +427,7 @@ export default function WorkflowEditor({
                     <SelectValue placeholder="Select a hook module" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="custom">
-                      Custom Script (Inline)
-                    </SelectItem>
-                    {userModules.length > 0 && (
-                      <div className="px-2 py-1 text-xs text-gray-500 font-semibold">
-                        Your Modules
-                      </div>
-                    )}
+                    <SelectItem value="custom">Inline Script</SelectItem>
                     {userModules.map((module) => (
                       <SelectItem key={module.id} value={module.id}>
                         <div className="font-medium">{module.name}</div>
@@ -458,13 +451,15 @@ export default function WorkflowEditor({
                 <Label htmlFor="hook-script" className="text-sm font-medium">
                   Custom Script
                 </Label>
-                <Textarea
-                  id="hook-script"
-                  value={nodeScript}
-                  onChange={(e) => setNodeScript(e.target.value)}
-                  placeholder="// Enter JavaScript code here\n// context object is available with request and response data"
-                  className="mt-1 w-full h-40 font-mono text-xs"
-                />
+                <div className="mt-1">
+                  <HookModuleEditor
+                    value={nodeScript}
+                    onChange={(value) => setNodeScript(value)}
+                    height="200px"
+                    placeholder="// Enter JavaScript code here
+// context object is available with request and response data"
+                  />
+                </div>
               </div>
             )}
           </div>

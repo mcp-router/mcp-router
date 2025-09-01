@@ -13,11 +13,11 @@ export interface WorkflowAPI {
     list: () => Promise<WorkflowDefinition[]>;
     get: (id: string) => Promise<WorkflowDefinition | null>;
     create: (
-      workflow: Omit<WorkflowDefinition, "id" | "createdAt" | "updatedAt">
+      workflow: Omit<WorkflowDefinition, "id" | "createdAt" | "updatedAt">,
     ) => Promise<WorkflowDefinition>;
     update: (
       id: string,
-      updates: Partial<Omit<WorkflowDefinition, "id" | "createdAt">>
+      updates: Partial<Omit<WorkflowDefinition, "id" | "createdAt">>,
     ) => Promise<WorkflowDefinition | null>;
     delete: (id: string) => Promise<boolean>;
     toggle: (id: string) => Promise<boolean>;
@@ -33,7 +33,7 @@ export interface WorkflowAPI {
     create: (module: Omit<HookModule, "id">) => Promise<HookModule>;
     update: (
       id: string,
-      updates: Partial<Omit<HookModule, "id">>
+      updates: Partial<Omit<HookModule, "id">>,
     ) => Promise<HookModule | null>;
     delete: (id: string) => Promise<boolean>;
     execute: (id: string, context: any) => Promise<any>;

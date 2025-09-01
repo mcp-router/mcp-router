@@ -63,17 +63,14 @@ export function setupHookHandlers(): void {
   });
 
   // Hook Module実行（テスト用）
-  ipcMain.handle(
-    "hook-module:execute",
-    async (_, id: string, context: any) => {
-      try {
-        return await getHookService().executeHookModule(id, context);
-      } catch (error) {
-        console.error("Failed to execute hook module:", error);
-        throw error;
-      }
-    },
-  );
+  ipcMain.handle("hook-module:execute", async (_, id: string, context: any) => {
+    try {
+      return await getHookService().executeHookModule(id, context);
+    } catch (error) {
+      console.error("Failed to execute hook module:", error);
+      throw error;
+    }
+  });
 
   // Hook Moduleインポート
   ipcMain.handle(
