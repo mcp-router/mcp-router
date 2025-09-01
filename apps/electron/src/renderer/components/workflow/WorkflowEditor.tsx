@@ -125,13 +125,7 @@ export default function WorkflowEditor({
       const sourceNode = nodes.find((n) => n.id === params.source);
       const targetNode = nodes.find((n) => n.id === params.target);
 
-      // Fire-and-forget hooks cannot have outgoing connections
-      if (sourceNode?.type === "hook") {
-        const hook = sourceNode.data?.hook as WorkflowHook | undefined;
-        if (hook && typeof hook === "object" && hook.blocking === false) {
-          return false;
-        }
-      }
+      // Hook validation removed - Fire-and-forget hooks no longer have source handles
 
       // Check if target is Sync Hook or End Node - they can only have one incoming edge
       if (targetNode?.type === "end") {

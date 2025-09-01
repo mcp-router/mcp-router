@@ -32,7 +32,7 @@ const HookNode = memo(({ data, selected }: NodeProps<any>) => {
         </div>
       </div>
 
-      {data?.blocking !== false && (
+      {data?.hook?.blocking === true && (
         <Handle
           type="source"
           position={Position.Right}

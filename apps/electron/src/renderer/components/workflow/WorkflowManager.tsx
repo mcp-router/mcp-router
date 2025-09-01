@@ -86,12 +86,21 @@ export default function WorkflowManager() {
     }
   };
 
-  const handleToggleWorkflow = async (workflow: WorkflowDefinition) => {
+  const handleToggleWorkflow = async (workflowId: string) => {
     try {
-      await platformAPI.workflows.workflows.toggle(workflow.id);
-      await loadWorkflows();
+      await platformAPI.workflows.workflows.toggle(workflowId);
+      // ローカルのstateを直接更新して再レンダリングを最小限にする
+      setWorkflows(prevWorkflows => 
+        prevWorkflows.map(w => 
+          w.id === workflowId 
+            ? { ...w, enabled: !w.enabled }
+            : w
+        )
+      );
     } catch (error) {
       console.error("Failed to toggle workflow:", error);
+      // エラー時は元の状態を再取得
+      await loadWorkflows();
     }
   };
 
@@ -266,7 +275,7 @@ export default function WorkflowManager() {
                       <Switch
                         checked={workflow.enabled}
                         onCheckedChange={() => {
-                          handleToggleWorkflow(workflow);
+                          handleToggleWorkflow(workflow.id);
                         }}
                         onClick={(e) => e.stopPropagation()}
                       />
@@ -360,48 +369,44 @@ export default function WorkflowManager() {
             </div>
           )}
 
-          {/* Module List */}
-          {modules.length === 0 && !isCreatingModule && !editingModule ? (
-            <Card className="p-8 text-center">
-              <p className="text-gray-500 mb-4">No modules created yet</p>
-              <Button onClick={startCreateModule}>
-                Create Your First Module
-              </Button>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {modules.map((module) => (
-                <Card key={module.id} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold">{module.name}</h3>
-                      <pre className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded overflow-x-auto max-h-20">
-                        <code>
-                          {module.script.substring(0, 200)}
-                          {module.script.length > 200 ? "..." : ""}
-                        </code>
-                      </pre>
+          {/* Module List - 編集中は表示しない */}
+          {!isCreatingModule && !editingModule && (
+            modules.length === 0 ? (
+              <Card className="p-8 text-center">
+                <p className="text-gray-500 mb-4">No modules created yet</p>
+                <Button onClick={startCreateModule}>
+                  Create Your First Module
+                </Button>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {modules.map((module) => (
+                  <Card key={module.id} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold">{module.name}</h3>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <Button
+                          onClick={() => startEditModule(module)}
+                          variant="ghost"
+                          size="sm"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteModule(module.id)}
+                          variant="ghost"
+                          size="sm"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2 ml-4">
-                      <Button
-                        onClick={() => startEditModule(module)}
-                        variant="ghost"
-                        size="sm"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        onClick={() => handleDeleteModule(module.id)}
-                        variant="ghost"
-                        size="sm"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                  </Card>
+                ))}
+              </div>
+            )
           )}
         </div>
       )}

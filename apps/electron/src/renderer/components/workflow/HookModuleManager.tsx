@@ -107,17 +107,16 @@ export default function HookModuleManager({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Hook Module Manager</DialogTitle>
+          <DialogTitle>Your Hook Modules</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Module List */}
           {!isCreating && !editingModule && (
             <div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Your Modules</h3>
+              <div className="flex justify-end mb-4">
                 <Button onClick={startCreate} size="sm">
                   <Plus className="w-4 h-4 mr-1" />
                   New Module
