@@ -171,8 +171,6 @@ export default function WorkflowManager() {
   };
 
   const handleDeleteModule = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this module?")) return;
-
     await platformAPI.workflows.hooks.delete(id);
     loadModules();
   };
