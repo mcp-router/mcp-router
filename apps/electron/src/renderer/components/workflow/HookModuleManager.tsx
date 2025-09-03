@@ -7,8 +7,9 @@ import {
   DialogTitle,
 } from "@mcp_router/ui";
 import { Button, Input, Label } from "@mcp_router/ui";
-import { Plus, Edit2 as Edit, Trash2, X } from "lucide-react";
+import { Plus, Edit2, Trash2 } from "lucide-react";
 import HookModuleEditor from "./HookModuleEditor";
+import { useHookStore } from "../../stores/hook-store";
 import { usePlatformAPI } from "../../platform-api/hooks/use-platform-api";
 
 interface HookModuleManagerProps {
@@ -23,85 +24,28 @@ export default function HookModuleManager({
   onModuleSelect,
 }: HookModuleManagerProps) {
   const platformAPI = usePlatformAPI();
-  const [modules, setModules] = useState<HookModule[]>([]);
-  const [editingModule, setEditingModule] = useState<HookModule | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [formData, setFormData] = useState<Partial<HookModule>>({
-    name: "",
-    script: "",
-  });
+  const {
+    modules,
+    editingModule,
+    isCreating,
+    formData,
+    setFormData,
+    loadModules,
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+    startEdit,
+    startCreate,
+    resetForm,
+  } = useHookStore();
 
   useEffect(() => {
     if (open) {
-      loadModules();
+      loadModules(platformAPI);
     }
-  }, [open]);
+  }, [open, loadModules, platformAPI]);
 
-  const loadModules = async () => {
-    const userModules = await platformAPI.workflows.hooks.list();
-    setModules(userModules);
-  };
-
-  const handleCreate = async () => {
-    if (!formData.name || !formData.script) return;
-
-    await platformAPI.workflows.hooks.create({
-      name: formData.name,
-      script: formData.script,
-    });
-
-    setIsCreating(false);
-    setFormData({
-      name: "",
-      script: "",
-    });
-    loadModules();
-  };
-
-  const handleUpdate = async () => {
-    if (!editingModule || !formData.name || !formData.script) return;
-
-    await platformAPI.workflows.hooks.update(editingModule.id, formData);
-
-    setEditingModule(null);
-    setFormData({
-      name: "",
-      script: "",
-    });
-    loadModules();
-  };
-
-  const handleDelete = async (id: string) => {
-    await platformAPI.workflows.hooks.delete(id);
-    loadModules();
-  };
-
-  const startEdit = (module: HookModule) => {
-    setEditingModule(module);
-    setFormData({
-      name: module.name,
-      script: module.script,
-    });
-    setIsCreating(false);
-  };
-
-  const startCreate = () => {
-    setIsCreating(true);
-    setEditingModule(null);
-    setFormData({
-      name: "",
-      script: "",
-    });
-  };
-
-  const cancelEdit = () => {
-    setIsCreating(false);
-    setEditingModule(null);
-    setFormData({
-      name: "",
-      script: "",
-    });
-  };
+  const cancelEdit = resetForm;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -127,7 +71,7 @@ export default function HookModuleManager({
                     No modules yet. Create your first module!
                   </p>
                 ) : (
-                  modules.map((module) => (
+                  modules.map((module: HookModule) => (
                     <div
                       key={module.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -145,20 +89,20 @@ export default function HookModuleManager({
                               onOpenChange(false);
                             }}
                           >
-                            Use
+                            Select
                           </Button>
                         )}
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => startEdit(module)}
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit2 className="w-4 h-4" />
                         </Button>
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => handleDelete(module.id)}
+                          variant="ghost"
+                          onClick={() => handleDelete(platformAPI, module.id)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -181,35 +125,33 @@ export default function HookModuleManager({
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  placeholder="Enter module name"
+                  placeholder="e.g., Rate Limit Handler"
                 />
               </div>
 
               <div>
-                <Label htmlFor="script">Module Script</Label>
-                <div className="mt-2">
-                  <HookModuleEditor
-                    value={formData.script || ""}
-                    onChange={(value) =>
-                      setFormData({ ...formData, script: value })
-                    }
-                    height="500px"
-                    placeholder="// Write your hook module code here...
-// Example:
-// export function processData(data) {
-//   // Your code here
-//   return data;
-// }"
-                  />
-                </div>
+                <Label>Module Code</Label>
+                <HookModuleEditor
+                  value={formData.script || ""}
+                  onChange={(value) =>
+                    setFormData({ ...formData, script: value })
+                  }
+                  height="300px"
+                />
               </div>
 
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={cancelEdit}>
                   Cancel
                 </Button>
-                <Button onClick={isCreating ? handleCreate : handleUpdate}>
-                  {isCreating ? "Create" : "Update"}
+                <Button onClick={() => {
+                  if (editingModule) {
+                    handleUpdate(platformAPI);
+                  } else {
+                    handleCreate(platformAPI);
+                  }
+                }}>
+                  {editingModule ? "Update" : "Create"}
                 </Button>
               </div>
             </div>

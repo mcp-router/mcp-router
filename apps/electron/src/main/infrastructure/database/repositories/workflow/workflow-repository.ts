@@ -10,6 +10,49 @@ export class WorkflowRepository {
   private static instance: WorkflowRepository | null = null;
 
   /**
+   * コンストラクタ
+   */
+  private constructor() {
+    this.initializeTable();
+  }
+
+  /**
+   * テーブルを初期化
+   */
+  private initializeTable(): void {
+    const db = getSqliteManager();
+    try {
+      // workflowsテーブルを作成
+      db.execute(`
+        CREATE TABLE IF NOT EXISTS workflows (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          description TEXT,
+          workflow_type TEXT NOT NULL,
+          nodes TEXT NOT NULL,
+          edges TEXT NOT NULL,
+          enabled INTEGER DEFAULT 1,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      `);
+
+      // インデックスを作成
+      db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_workflows_enabled ON workflows(enabled)"
+      );
+      db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_workflows_type ON workflows(workflow_type)"
+      );
+
+      console.log("[WorkflowRepository] テーブルの初期化が完了しました");
+    } catch (error) {
+      console.error("[WorkflowRepository] テーブルの初期化中にエラー:", error);
+      throw error;
+    }
+  }
+
+  /**
    * シングルトンインスタンスの取得
    */
   public static getInstance(): WorkflowRepository {

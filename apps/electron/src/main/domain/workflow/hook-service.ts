@@ -105,6 +105,31 @@ export class HookService {
    * Hook Moduleを削除
    */
   public async deleteHookModule(id: string): Promise<boolean> {
+    // WorkflowでこのHookModuleが使用されているかチェック
+    const { WorkflowService } = await import("./workflow-service");
+    const workflowService = WorkflowService.getInstance();
+    const workflows = await workflowService.getAllWorkflows();
+
+    // 使用しているWorkflowを検索
+    const usingWorkflows: string[] = [];
+    for (const workflow of workflows) {
+      for (const node of workflow.nodes) {
+        if (node.type === "hook") {
+          const hook = node.data?.hook as any;
+          if (hook?.hookModuleId === id) {
+            usingWorkflows.push(workflow.name);
+          }
+        }
+      }
+    }
+
+    // 使用されている場合はエラーを投げる
+    if (usingWorkflows.length > 0) {
+      throw new Error(
+        `Cannot delete hook module. It is used by workflow(s): ${usingWorkflows.join(", ")}`,
+      );
+    }
+
     return this.repository.deleteHookModule(id);
   }
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   ReactFlow,
   Node,
@@ -63,62 +63,138 @@ const defaultEdgeOptions = {
   },
 };
 
+import { useWorkflowStore } from "../../stores/workflow-store";
+import { useHookStore } from "../../stores/hook-store";
+
 export default function WorkflowEditor({
   workflow,
   onSave,
 }: WorkflowEditorProps) {
   const platformAPI = usePlatformAPI();
+  
+  // Use Zustand store for workflow state
+  const {
+    nodes,
+    edges,
+    selectedNode,
+    nodeScript,
+    nodeLabel,
+    selectedModuleId,
+    setNodes,
+    setEdges,
+    setSelectedNode,
+    setNodeScript,
+    setNodeLabel,
+    setSelectedModuleId,
+    addNode,
+    addEdge,
+    resetEditorState,
+  } = useWorkflowStore();
+  
+  // Use Zustand store for hook modules
+  const {
+    modules: userModules,
+    moduleManagerOpen,
+    setModules: setUserModules,
+    setModuleManagerOpen,
+  } = useHookStore();
+  
   const [workflowType, setWorkflowType] = useState<"tools/list" | "tools/call">(
     workflow?.workflowType || "tools/list",
   );
 
-  const initialNodes: Node[] = workflow?.nodes || [
-    {
-      id: "start",
-      type: "start",
-      position: { x: 100, y: 200 },
-      data: { label: "Start" },
-      deletable: false,
-    },
-    {
-      id: "mcp-call",
-      type: "mcp-call",
-      position: { x: 350, y: 200 },
-      data: { label: "MCP Call" },
-      deletable: false,
-    },
-    {
-      id: "end",
-      type: "end",
-      position: { x: 600, y: 200 },
-      data: { label: "End" },
-      deletable: false,
-    },
-  ];
+  // Initialize nodes and edges when workflow prop changes
+  useEffect(() => {
+    if (workflow) {
+      const initialNodes: WorkflowNode[] = workflow.nodes || [
+        {
+          id: "start",
+          type: "start",
+          position: { x: 100, y: 200 },
+          data: { label: "Start" },
+          deletable: false,
+        },
+        {
+          id: "mcp-call",
+          type: "mcp-call",
+          position: { x: 350, y: 200 },
+          data: { label: "MCP Call" },
+          deletable: false,
+        },
+        {
+          id: "end",
+          type: "end",
+          position: { x: 600, y: 200 },
+          data: { label: "End" },
+          deletable: false,
+        },
+      ];
 
-  const initialEdges: Edge[] = (workflow?.edges || []).map((edge) => ({
-    id: edge.id || `${edge.source}-${edge.target}`,
-    source: edge.source,
-    target: edge.target,
-    type: edge.type || "default",
-    animated: edge.animated,
-    markerEnd: edge.markerEnd
-      ? {
-          type: MarkerType.ArrowClosed,
-          width: edge.markerEnd.width,
-          height: edge.markerEnd.height,
-        }
-      : undefined,
-  }));
+      const initialEdges: Edge[] = (workflow.edges || []).map((edge) => ({
+        id: edge.id || `${edge.source}-${edge.target}`,
+        source: edge.source,
+        target: edge.target,
+        type: edge.type || "default",
+        animated: edge.animated,
+        markerEnd: edge.markerEnd
+          ? {
+              type: MarkerType.ArrowClosed,
+              width: edge.markerEnd.width,
+              height: edge.markerEnd.height,
+            }
+          : undefined,
+      }));
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [nodeScript, setNodeScript] = useState<string>("");
-  const [nodeLabel, setNodeLabel] = useState<string>("");
-  const [selectedModuleId, setSelectedModuleId] = useState<string>("");
-  const [userModules, setUserModules] = useState<HookModule[]>([]);
-  const [moduleManagerOpen, setModuleManagerOpen] = useState(false);
+      setNodes(initialNodes);
+      setEdges(initialEdges as WorkflowEdge[]);
+    } else {
+      // New workflow - set default nodes
+      const defaultNodes: WorkflowNode[] = [
+        {
+          id: "start",
+          type: "start",
+          position: { x: 100, y: 200 },
+          data: { label: "Start" },
+          deletable: false,
+        },
+        {
+          id: "mcp-call",
+          type: "mcp-call",
+          position: { x: 350, y: 200 },
+          data: { label: "MCP Call" },
+          deletable: false,
+        },
+        {
+          id: "end",
+          type: "end",
+          position: { x: 600, y: 200 },
+          data: { label: "End" },
+          deletable: false,
+        },
+      ];
+      setNodes(defaultNodes);
+      setEdges([]);
+    }
+  }, [workflow, setNodes, setEdges]);
+
+  // Clean up editor state when unmounting
+  useEffect(() => {
+    return () => {
+      resetEditorState();
+    };
+  }, [resetEditorState]);
+
+  const [localNodes, , onNodesChange] = useNodesState(nodes as Node[]);
+  const [localEdges, , onEdgesChange] = useEdgesState(edges as Edge[]);
+
+  // Sync local React Flow state with Zustand store
+  useEffect(() => {
+    setNodes(localNodes as WorkflowNode[]);
+  }, [localNodes, setNodes]);
+
+  useEffect(() => {
+    setEdges(localEdges as WorkflowEdge[]);
+  }, [localEdges, setEdges]);
 
   const validateConnection = useCallback(
     (params: Connection): boolean => {
@@ -168,6 +244,7 @@ export default function WorkflowEditor({
 
       const newEdge = {
         ...params,
+        id: `${params.source}-${params.target}`,
         type: "default",
         animated: true,
         markerEnd: {
@@ -175,41 +252,45 @@ export default function WorkflowEditor({
           width: 20,
           height: 20,
         },
-      };
-      setEdges((eds) => addEdge(newEdge, eds));
+      } as WorkflowEdge;
+      addEdge(newEdge);
     },
-    [validateConnection, setEdges],
+    [validateConnection, addEdge],
   );
 
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    setSelectedNode(node);
+    setSelectedNode(node as WorkflowNode);
     // ノードのラベルを設定
     const label = node.data?.label;
     setNodeLabel(typeof label === "string" ? label : "");
-    // Hookノードの場合、hookオブジェクトからスクリプトを設定
+    // Hookノードの場合、hookオブジェクトから設定を読み込む
     if (node.type === "hook") {
       const hook = node.data?.hook as WorkflowHook | undefined;
-      if (hook && typeof hook === "object" && hook.script !== undefined) {
-        const script = hook.script;
-        setNodeScript(typeof script === "string" ? script : "");
-
-        // Check if script matches any user module
-        platformAPI.workflows.hooks.list().then((modules: HookModule[]) => {
-          const matchedModule = modules.find(
-            (module: HookModule) => module.script === script,
-          );
-          // If no module matches but script exists, select "custom" (Inline Script)
-          setSelectedModuleId(
-            matchedModule ? matchedModule.id : script ? "custom" : "",
-          );
-        });
+      if (hook && typeof hook === "object") {
+        if (hook.hookModuleId) {
+          // HookModuleを参照している場合
+          setSelectedModuleId(hook.hookModuleId);
+          // モジュールからスクリプトを取得
+          platformAPI.workflows.hooks.get(hook.hookModuleId).then((module) => {
+            if (module) {
+              setNodeScript(module.script);
+            }
+          });
+        } else if (hook.script) {
+          // Inline Scriptの場合
+          setSelectedModuleId("custom");
+          setNodeScript(hook.script);
+        } else {
+          setSelectedModuleId("");
+          setNodeScript("");
+        }
       }
     }
-  }, []);
+  }, [platformAPI, setSelectedNode, setNodeLabel, setSelectedModuleId, setNodeScript]);
 
   const addHookNode = useCallback(
     (blocking: boolean) => {
-      const newNode: Node = {
+      const newNode: WorkflowNode = {
         id: `hook-${Date.now()}`,
         type: "hook",
         position: { x: 300, y: 100 + nodes.length * 50 },
@@ -217,14 +298,13 @@ export default function WorkflowEditor({
           label: blocking ? "Synchronous Hook" : "Fire-and-Forget Hook",
           hook: {
             id: `hook-${Date.now()}`,
-            script: "",
             blocking,
           },
         },
       };
-      setNodes((nds) => [...nds, newNode]);
+      addNode(newNode);
     },
-    [nodes.length, setNodes],
+    [nodes.length, addNode],
   );
 
   const createWorkflowDefinition = useCallback(
@@ -249,7 +329,7 @@ export default function WorkflowEditor({
   // Load user modules when component mounts or when module manager closes
   React.useEffect(() => {
     platformAPI.workflows.hooks.list().then(setUserModules);
-  }, [moduleManagerOpen]);
+  }, [moduleManagerOpen, platformAPI, setUserModules]);
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -279,8 +359,8 @@ export default function WorkflowEditor({
 
       <div className="flex-1 relative">
         <ReactFlow
-          nodes={nodes}
-          edges={edges}
+          nodes={nodes as Node[]}
+          edges={edges as Edge[]}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
@@ -363,15 +443,29 @@ export default function WorkflowEditor({
                 variant="default"
                 onClick={() => {
                   // 現在の編集内容を適用
-                  setNodes((nds) =>
-                    nds.map((node) => {
+                  const updatedNodes = nodes.map((node: WorkflowNode) => {
                       if (node.id === selectedNode.id) {
-                        const updatedHook = node.data?.hook
-                          ? {
-                              ...node.data.hook,
+                        let updatedHook = node.data?.hook;
+                        if (updatedHook) {
+                          if (selectedModuleId === "custom") {
+                            // Inline Scriptの場合
+                            updatedHook = {
+                              ...updatedHook,
+                              hookModuleId: undefined,
                               script: nodeScript,
-                            }
-                          : undefined;
+                            };
+                          } else if (
+                            selectedModuleId &&
+                            selectedModuleId !== "manage"
+                          ) {
+                            // HookModuleを参照する場合
+                            updatedHook = {
+                              ...updatedHook,
+                              hookModuleId: selectedModuleId,
+                              script: undefined,
+                            };
+                          }
+                        }
 
                         return {
                           ...node,
@@ -383,8 +477,8 @@ export default function WorkflowEditor({
                         };
                       }
                       return node;
-                    }),
-                  );
+                    });
+                  setNodes(updatedNodes);
                   // 編集領域を閉じる
                   setSelectedNode(null);
                   setSelectedModuleId("");
@@ -413,6 +507,9 @@ export default function WorkflowEditor({
                         setNodeScript(module.script);
                         setNodeLabel(module.name);
                       }
+                    } else if (value === "custom") {
+                      // Inline Scriptモードに切り替え
+                      setNodeScript("");
                     } else if (value === "manage") {
                       setModuleManagerOpen(true);
                       // Reset to previous value

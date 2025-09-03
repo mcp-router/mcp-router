@@ -10,6 +10,42 @@ export class HookRepository {
   private static instance: HookRepository | null = null;
 
   /**
+   * コンストラクタ
+   */
+  private constructor() {
+    this.initializeTable();
+  }
+
+  /**
+   * テーブルを初期化
+   */
+  private initializeTable(): void {
+    const db = getSqliteManager();
+    try {
+      // hook_modulesテーブルを作成
+      db.execute(`
+        CREATE TABLE IF NOT EXISTS hook_modules (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL UNIQUE,
+          script TEXT NOT NULL,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      `);
+
+      // インデックスを作成
+      db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_hook_modules_name ON hook_modules(name)"
+      );
+
+      console.log("[HookRepository] テーブルの初期化が完了しました");
+    } catch (error) {
+      console.error("[HookRepository] テーブルの初期化中にエラー:", error);
+      throw error;
+    }
+  }
+
+  /**
    * シングルトンインスタンスの取得
    */
   public static getInstance(): HookRepository {

@@ -98,6 +98,24 @@ export class WorkflowService {
    * 指定したワークフローを有効化し、同じタイプの他のワークフローを無効化
    */
   public async setActiveWorkflow(id: string): Promise<boolean> {
+    // Workflowを取得
+    const workflow = await this.getWorkflowById(id);
+    if (!workflow) {
+      throw new Error(`Workflow not found: ${id}`);
+    }
+
+    // WorkflowExecutorで妥当性を検証
+    const { WorkflowExecutor } = await import("./workflow-executor");
+    const isValid = WorkflowExecutor.isValidWorkflow(workflow);
+    
+    if (!isValid) {
+      throw new Error(
+        `Workflow "${workflow.name}" is not valid. ` +
+        `Ensure it has Start -> MCP Call -> End nodes properly connected.`
+      );
+    }
+
+    // 妥当なWorkflowのみ有効化
     return this.repository.setActiveWorkflow(id);
   }
 
@@ -129,16 +147,18 @@ export class WorkflowService {
       throw new Error(`Workflow is disabled: ${id}`);
     }
 
-    // TODO: WorkflowExecutorクラスで実装
-    console.log(`Executing workflow: ${workflow.name}`, context);
+    // WorkflowExecutorを使用して実行
+    const { WorkflowExecutor } = await import("./workflow-executor");
+    const executor = new WorkflowExecutor(workflow);
 
-    // 仮の実装
-    return {
-      workflowId: id,
-      status: "completed",
-      executedAt: Date.now(),
-      context,
-    };
+    try {
+      const result = await executor.execute(context);
+      console.log(`Workflow executed successfully: ${workflow.name}`, result);
+      return result;
+    } catch (error) {
+      console.error(`Failed to execute workflow: ${workflow.name}`, error);
+      throw error;
+    }
   }
 
   /**

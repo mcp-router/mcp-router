@@ -98,18 +98,6 @@ export class DatabaseMigration {
       execute: (db) => this.migrateAgentTableManagement(db),
     });
 
-    // Workflow関連のマイグレーション
-    this.migrations.push({
-      id: "20250830_create_workflows_table",
-      description: "Create workflows table for workflow definitions",
-      execute: (db) => this.migrateCreateWorkflowsTable(db),
-    });
-
-    this.migrations.push({
-      id: "20250830_create_hook_modules_table",
-      description: "Create hook_modules table for reusable hook scripts",
-      execute: (db) => this.migrateCreateHookModulesTable(db),
-    });
 
     // TokenRepository関連のマイグレーション
     this.migrations.push({
@@ -911,69 +899,6 @@ export class DatabaseMigration {
     }
   }
 
-  /**
-   * workflowsテーブルを作成するマイグレーション
-   */
-  private migrateCreateWorkflowsTable(db: SqliteManager): void {
-    try {
-      // workflowsテーブルを作成
-      db.execute(`
-        CREATE TABLE IF NOT EXISTS workflows (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          description TEXT,
-          workflow_type TEXT NOT NULL,
-          nodes TEXT NOT NULL,
-          edges TEXT NOT NULL,
-          enabled INTEGER DEFAULT 1,
-          created_at INTEGER NOT NULL,
-          updated_at INTEGER NOT NULL
-        )
-      `);
-      console.log("workflowsテーブルの作成が完了しました");
-
-      // インデックスを作成
-      db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_workflows_enabled ON workflows(enabled)",
-      );
-      db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_workflows_type ON workflows(workflow_type)",
-      );
-    } catch (error) {
-      console.error("workflowsテーブルの作成中にエラーが発生しました:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * hook_modulesテーブルを作成するマイグレーション
-   */
-  private migrateCreateHookModulesTable(db: SqliteManager): void {
-    try {
-      // hook_modulesテーブルを作成
-      db.execute(`
-        CREATE TABLE IF NOT EXISTS hook_modules (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL UNIQUE,
-          script TEXT NOT NULL,
-          created_at INTEGER NOT NULL,
-          updated_at INTEGER NOT NULL
-        )
-      `);
-      console.log("hook_modulesテーブルの作成が完了しました");
-
-      // インデックスを作成
-      db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_hook_modules_name ON hook_modules(name)",
-      );
-    } catch (error) {
-      console.error(
-        "hook_modulesテーブルの作成中にエラーが発生しました:",
-        error,
-      );
-      throw error;
-    }
-  }
 }
 
 /**

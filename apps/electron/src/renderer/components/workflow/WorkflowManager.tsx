@@ -10,37 +10,54 @@ import {
   RadioGroupItem,
 } from "@mcp_router/ui";
 import { Card } from "@mcp_router/ui";
-import { Plus, Trash2, Edit2, Save, X, Package, GitBranch } from "lucide-react";
+import { Plus, Trash2, Edit2, Save, X, Package, GitBranch, AlertCircle } from "lucide-react";
 import { usePlatformAPI } from "../../platform-api/hooks/use-platform-api";
 import HookModuleEditor from "./HookModuleEditor";
+import { useWorkflowStore } from "../../stores/workflow-store";
+import { useHookStore } from "../../stores/hook-store";
 
 export default function WorkflowManager() {
   const platformAPI = usePlatformAPI();
   const navigate = useNavigate();
   const { workflowId } = useParams<{ workflowId?: string }>();
-  const [workflows, setWorkflows] = useState<WorkflowDefinition[]>([]);
-  const [selectedWorkflow, setSelectedWorkflow] =
-    useState<WorkflowDefinition | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"workflows" | "modules">(
-    "workflows",
-  );
-
-  // Hook Module states
-  const [modules, setModules] = useState<HookModule[]>([]);
-  const [editingModule, setEditingModule] = useState<HookModule | null>(null);
-  const [isCreatingModule, setIsCreatingModule] = useState(false);
-  const [moduleFormData, setModuleFormData] = useState<Partial<HookModule>>({
-    name: "",
-    script: "",
-  });
+  
+  // Use Zustand store for workflow state
+  const {
+    workflows,
+    selectedWorkflow,
+    isEditing,
+    activeTab,
+    setWorkflows,
+    setSelectedWorkflow,
+    setIsEditing,
+    setActiveTab,
+    updateWorkflow,
+    setIsLoading,
+    setError,
+  } = useWorkflowStore();
+  
+  // Use Zustand store for hook modules
+  const {
+    modules,
+    editingModule,
+    isCreating: isCreatingModule,
+    formData: moduleFormData,
+    setFormData: setModuleFormData,
+    loadModules,
+    handleCreate: handleCreateModule,
+    handleUpdate: handleUpdateModule,
+    handleDelete: handleDeleteModule,
+    startEdit: startEditModule,
+    startCreate: startCreateModule,
+    resetForm: cancelEditModule,
+  } = useHookStore();
 
   useEffect(() => {
     loadWorkflows();
     if (activeTab === "modules") {
-      loadModules();
+      loadModules(platformAPI);
     }
-  }, [activeTab]);
+  }, [activeTab, loadModules, platformAPI]);
 
   // URLパラメータからワークフローIDを取得して選択
   useEffect(() => {
@@ -51,23 +68,77 @@ export default function WorkflowManager() {
         setIsEditing(true);
       }
     }
-  }, [workflowId, workflows]);
+  }, [workflowId, workflows, setSelectedWorkflow, setIsEditing]);
 
   const loadWorkflows = async () => {
+    setIsLoading(true);
     try {
       const data = await platformAPI.workflows.workflows.list();
       setWorkflows(data);
+      setError(null);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to load workflows";
+      setError(errorMessage);
       console.error("Failed to load workflows:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const loadModules = async () => {
-    const userModules = await platformAPI.workflows.hooks.list();
-    setModules(userModules);
+  // ワークフローの妥当性チェック関数
+  const checkWorkflowValidity = (workflow: WorkflowDefinition): { isValid: boolean; reason?: string } => {
+    const nodes = workflow.nodes;
+    const edges = workflow.edges;
+
+    // 必須ノードの存在確認
+    const startNode = nodes.find((n) => n.type === "start");
+    const endNode = nodes.find((n) => n.type === "end");
+    const mcpCallNode = nodes.find((n) => n.type === "mcp-call");
+
+    if (!startNode) {
+      return { isValid: false, reason: "Start node is missing" };
+    }
+    if (!mcpCallNode) {
+      return { isValid: false, reason: "MCP Call node is missing" };
+    }
+    if (!endNode) {
+      return { isValid: false, reason: "End node is missing" };
+    }
+
+    // パスの存在確認用ヘルパー関数
+    const hasPath = (from: string, to: string): boolean => {
+      const visited = new Set<string>();
+      const queue = [from];
+
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        if (current === to) return true;
+        if (visited.has(current)) continue;
+        visited.add(current);
+
+        const nextNodes = edges
+          .filter((e) => e.source === current)
+          .map((e) => e.target);
+        queue.push(...nextNodes);
+      }
+      return false;
+    };
+
+    // Start -> MCP Call のパス確認
+    if (!hasPath(startNode.id, mcpCallNode.id)) {
+      return { isValid: false, reason: "No path from Start to MCP Call" };
+    }
+
+    // MCP Call -> End のパス確認
+    if (!hasPath(mcpCallNode.id, endNode.id)) {
+      return { isValid: false, reason: "No path from MCP Call to End" };
+    }
+
+    return { isValid: true };
   };
 
   const handleSaveWorkflow = async (workflow: WorkflowDefinition) => {
+    setIsLoading(true);
     try {
       if (selectedWorkflow) {
         await platformAPI.workflows.workflows.update(workflow.id, workflow);
@@ -79,16 +150,25 @@ export default function WorkflowManager() {
       setSelectedWorkflow(null);
       navigate("/workflows"); // URLをワークフロー一覧に戻す
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to save workflow";
+      setError(errorMessage);
       console.error("Failed to save workflow:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDeleteWorkflow = async (workflowId: string) => {
+    setIsLoading(true);
     try {
       await platformAPI.workflows.workflows.delete(workflowId);
       await loadWorkflows();
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete workflow";
+      setError(errorMessage);
       console.error("Failed to delete workflow:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,27 +189,43 @@ export default function WorkflowManager() {
         }
       }
       // ローカルのstateを直接更新して再レンダリングを最小限にする
-      setWorkflows((prevWorkflows) =>
-        prevWorkflows.map((w) => {
-          if (w.workflowType === workflowType) {
-            return { ...w, enabled: w.id === workflowId };
-          }
-          return w;
-        }),
-      );
-    } catch (error) {
+      workflows.forEach((w) => {
+        if (w.workflowType === workflowType) {
+          updateWorkflow(w.id, { enabled: w.id === workflowId });
+        }
+      });
+    } catch (error: any) {
       console.error("Failed to set active workflow:", error);
+      
+      // エラーメッセージを表示
+      const errorMessage = error?.message || "Failed to set active workflow";
+      
+      // ユーザーにエラーを通知（簡易的なアラート）
+      if (errorMessage.includes("not valid")) {
+        alert(
+          `⚠️ Workflow validation failed:\n\n${errorMessage}\n\n` +
+          `Please edit the workflow to ensure it has the required structure.`
+        );
+      } else {
+        alert(`Error: ${errorMessage}`);
+      }
+      
       // エラー時は元の状態を再取得
       await loadWorkflows();
     }
   };
 
   const handleExecuteWorkflow = async (workflow: WorkflowDefinition) => {
+    setIsLoading(true);
     try {
       const result = await platformAPI.workflows.workflows.execute(workflow.id);
       console.log("Workflow executed:", result);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to execute workflow";
+      setError(errorMessage);
       console.error("Failed to execute workflow:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -143,57 +239,6 @@ export default function WorkflowManager() {
     setSelectedWorkflow(workflow);
     setIsEditing(true);
     navigate(`/workflows/${workflow.id}`); // ワークフローIDをURLに反映
-  };
-
-  // Hook Module handlers
-  const handleCreateModule = async () => {
-    if (!moduleFormData.name || !moduleFormData.script) return;
-
-    await platformAPI.workflows.hooks.create({
-      name: moduleFormData.name,
-      script: moduleFormData.script,
-    });
-
-    setIsCreatingModule(false);
-    setModuleFormData({ name: "", script: "" });
-    loadModules();
-  };
-
-  const handleUpdateModule = async () => {
-    if (!editingModule || !moduleFormData.name || !moduleFormData.script)
-      return;
-
-    await platformAPI.workflows.hooks.update(editingModule.id, moduleFormData);
-
-    setEditingModule(null);
-    setModuleFormData({ name: "", script: "" });
-    loadModules();
-  };
-
-  const handleDeleteModule = async (id: string) => {
-    await platformAPI.workflows.hooks.delete(id);
-    loadModules();
-  };
-
-  const startEditModule = (module: HookModule) => {
-    setEditingModule(module);
-    setModuleFormData({
-      name: module.name,
-      script: module.script,
-    });
-    setIsCreatingModule(false);
-  };
-
-  const startCreateModule = () => {
-    setIsCreatingModule(true);
-    setEditingModule(null);
-    setModuleFormData({ name: "", script: "" });
-  };
-
-  const cancelEditModule = () => {
-    setIsCreatingModule(false);
-    setEditingModule(null);
-    setModuleFormData({ name: "", script: "" });
   };
 
   if (isEditing) {
@@ -311,60 +356,83 @@ export default function WorkflowManager() {
                       </div>
 
                       {/* Workflows */}
-                      {typeWorkflows.map((workflow) => (
-                        <div
-                          key={workflow.id}
-                          className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-900"
-                        >
-                          <RadioGroupItem
-                            value={workflow.id}
-                            id={workflow.id}
-                          />
-                          <Label
-                            htmlFor={workflow.id}
-                            className="flex-1 cursor-pointer"
+                      {typeWorkflows.map((workflow) => {
+                        const validity = checkWorkflowValidity(workflow);
+                        const isDisabled = !validity.isValid;
+                        
+                        return (
+                          <div
+                            key={workflow.id}
+                            className={`flex items-center space-x-3 p-2 rounded ${
+                              isDisabled 
+                                ? "bg-gray-100 dark:bg-gray-900 opacity-60" 
+                                : "hover:bg-gray-50 dark:hover:bg-gray-900"
+                            }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <span className="font-medium">
-                                  {workflow.name}
-                                </span>
-                                <p className="text-sm text-gray-500">
-                                  {workflow.nodes.length} nodes,{" "}
-                                  {workflow.edges.length} connections
-                                </p>
-                                {workflow.description && (
-                                  <p className="text-sm text-gray-600 mt-1">
-                                    {workflow.description}
+                            <RadioGroupItem
+                              value={workflow.id}
+                              id={workflow.id}
+                              disabled={isDisabled}
+                            />
+                            <Label
+                              htmlFor={workflow.id}
+                              className={`flex-1 ${isDisabled ? "" : "cursor-pointer"}`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`font-medium ${isDisabled ? "text-gray-400" : ""}`}>
+                                      {workflow.name}
+                                    </span>
+                                    {isDisabled && (
+                                      <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
+                                        <AlertCircle className="w-4 h-4" />
+                                        <span className="text-xs font-medium">Invalid</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-gray-500">
+                                    {workflow.nodes.length} nodes,{" "}
+                                    {workflow.edges.length} connections
                                   </p>
-                                )}
+                                  {isDisabled && validity.reason && (
+                                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                                      ⚠️ {validity.reason}
+                                    </p>
+                                  )}
+                                  {workflow.description && (
+                                    <p className="text-sm text-gray-600 mt-1">
+                                      {workflow.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditWorkflow(workflow);
+                                    }}
+                                    variant="ghost"
+                                    size="sm"
+                                  >
+                                    編集
+                                  </Button>
+                                  <Button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteWorkflow(workflow.id);
+                                    }}
+                                    variant="ghost"
+                                    size="sm"
+                                  >
+                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEditWorkflow(workflow);
-                                  }}
-                                  variant="ghost"
-                                  size="sm"
-                                >
-                                  編集
-                                </Button>
-                                <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteWorkflow(workflow.id);
-                                  }}
-                                  variant="ghost"
-                                  size="sm"
-                                >
-                                  <Trash2 className="w-4 h-4 text-red-500" />
-                                </Button>
-                              </div>
-                            </div>
-                          </Label>
-                        </div>
-                      ))}
+                            </Label>
+                          </div>
+                        );
+                      })}
                     </div>
                   </RadioGroup>
                 </Card>
@@ -425,9 +493,13 @@ export default function WorkflowManager() {
                     Cancel
                   </Button>
                   <Button
-                    onClick={
-                      isCreatingModule ? handleCreateModule : handleUpdateModule
-                    }
+                    onClick={() => {
+                      if (isCreatingModule) {
+                        handleCreateModule(platformAPI);
+                      } else {
+                        handleUpdateModule(platformAPI);
+                      }
+                    }}
                     disabled={!moduleFormData.name || !moduleFormData.script}
                   >
                     <Save className="w-4 h-4 mr-1" />
@@ -472,7 +544,7 @@ export default function WorkflowManager() {
                           <Edit2 className="w-4 h-4" />
                         </Button>
                         <Button
-                          onClick={() => handleDeleteModule(module.id)}
+                          onClick={() => handleDeleteModule(platformAPI, module.id)}
                           variant="ghost"
                           size="sm"
                         >
