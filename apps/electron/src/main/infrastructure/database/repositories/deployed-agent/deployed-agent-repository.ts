@@ -2,13 +2,47 @@ import { DeployedAgent } from "@mcp_router/shared";
 import { BaseRepository } from "../../core/base-repository";
 import { SqliteManager } from "../../core/sqlite-manager";
 import { v4 as uuidv4 } from "uuid";
-import { DEPLOYED_AGENTS_SCHEMA } from "../../schema/tables/deployed-agents";
 
 /**
  * Repository for managing deployed agents
  * Handles the storage and retrieval of agents that have been deployed to the "Use" section
  */
 export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
+  /**
+   * テーブル作成SQL
+   */
+  private static readonly CREATE_TABLE_SQL = `
+    CREATE TABLE IF NOT EXISTS deployedAgents (
+      id TEXT PRIMARY KEY,
+      original_id TEXT NOT NULL DEFAULT '',
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      mcp_servers TEXT NOT NULL,
+      purpose TEXT NOT NULL,
+      instructions TEXT NOT NULL,
+      tool_permissions TEXT NOT NULL DEFAULT '{}',
+      auto_execute_tool INTEGER NOT NULL DEFAULT 0,
+      mcp_server_enabled INTEGER DEFAULT 0,
+      tags TEXT NOT NULL DEFAULT '[]',
+      status TEXT NOT NULL DEFAULT 'development',
+      deployed_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      deployment_config TEXT,
+      last_used_at TEXT,
+      user_id TEXT
+    )
+  `;
+
+  /**
+   * インデックス作成SQL
+   */
+  private static readonly INDEXES = [
+    "CREATE INDEX IF NOT EXISTS idx_deployed_agents_deployed ON deployedAgents(deployed_at)",
+    "CREATE INDEX IF NOT EXISTS idx_deployed_agents_last_used ON deployedAgents(last_used_at)",
+    "CREATE INDEX IF NOT EXISTS idx_deployed_agents_status ON deployedAgents(status)"
+  ];
+
   /**
    * Constructor
    * @param db SqliteManager instance
@@ -26,15 +60,13 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
    */
   protected initializeTable(): void {
     try {
-      // スキーマ定義を使用してテーブルを作成
-      this.db.execute(DEPLOYED_AGENTS_SCHEMA.createSQL);
+      // テーブルを作成
+      this.db.execute(DeployedAgentRepository.CREATE_TABLE_SQL);
 
-      // スキーマ定義からインデックスを作成
-      if (DEPLOYED_AGENTS_SCHEMA.indexes) {
-        DEPLOYED_AGENTS_SCHEMA.indexes.forEach((indexSQL) => {
-          this.db.execute(indexSQL);
-        });
-      }
+      // インデックスを作成
+      DeployedAgentRepository.INDEXES.forEach((indexSQL) => {
+        this.db.execute(indexSQL);
+      });
 
       console.log("[DeployedAgentRepository] テーブルの初期化が完了しました");
     } catch (error) {

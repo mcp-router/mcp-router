@@ -1,13 +1,32 @@
 import { BaseRepository } from "../../core/base-repository";
 import { SqliteManager } from "../../core/sqlite-manager";
 import { Token, TokenScope } from "@mcp_router/shared";
-import { TOKENS_SCHEMA } from "../../schema/tables/tokens";
 
 /**
  * トークン用リポジトリクラス
  * BetterSQLite3を使用してトークンを管理
  */
 export class TokenRepository extends BaseRepository<Token> {
+  /**
+   * テーブル作成SQL
+   */
+  private static readonly CREATE_TABLE_SQL = `
+    CREATE TABLE IF NOT EXISTS tokens (
+      id TEXT PRIMARY KEY,
+      client_id TEXT NOT NULL,
+      issued_at INTEGER NOT NULL,
+      server_ids TEXT NOT NULL,
+      scopes TEXT DEFAULT '[]'
+    )
+  `;
+
+  /**
+   * インデックス作成SQL
+   */
+  private static readonly INDEXES = [
+    "CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)"
+  ];
+
   /**
    * コンストラクタ
    * @param db SqliteManagerインスタンス
@@ -25,15 +44,13 @@ export class TokenRepository extends BaseRepository<Token> {
    */
   protected initializeTable(): void {
     try {
-      // スキーマ定義を使用してテーブルを作成
-      this.db.execute(TOKENS_SCHEMA.createSQL);
+      // テーブルを作成
+      this.db.execute(TokenRepository.CREATE_TABLE_SQL);
 
-      // スキーマ定義からインデックスを作成
-      if (TOKENS_SCHEMA.indexes) {
-        TOKENS_SCHEMA.indexes.forEach((indexSQL) => {
-          this.db.execute(indexSQL);
-        });
-      }
+      // インデックスを作成
+      TokenRepository.INDEXES.forEach((indexSQL) => {
+        this.db.execute(indexSQL);
+      });
 
       console.log("[TokenRepository] テーブルの初期化が完了しました");
     } catch (error) {

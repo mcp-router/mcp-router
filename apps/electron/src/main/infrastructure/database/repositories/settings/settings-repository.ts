@@ -1,11 +1,21 @@
 import { SqliteManager } from "../../core/sqlite-manager";
 import { AppSettings, DEFAULT_APP_SETTINGS } from "@mcp_router/shared";
-import { SETTINGS_SCHEMA } from "../../schema/tables/settings";
 
 /**
  * アプリケーション設定を管理するリポジトリ
  */
 export class SettingsRepository {
+  /**
+   * テーブル作成SQL
+   */
+  private static readonly CREATE_TABLE_SQL = `
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `;
+
   private db: SqliteManager;
   private settingsCache: AppSettings | null = null;
 
@@ -27,15 +37,8 @@ export class SettingsRepository {
    */
   private initializeTable(): void {
     try {
-      // スキーマ定義を使用してテーブルを作成
-      this.db.execute(SETTINGS_SCHEMA.createSQL);
-
-      // スキーマ定義からインデックスを作成
-      if (SETTINGS_SCHEMA.indexes) {
-        SETTINGS_SCHEMA.indexes.forEach((indexSQL) => {
-          this.db.execute(indexSQL);
-        });
-      }
+      // テーブルを作成
+      this.db.execute(SettingsRepository.CREATE_TABLE_SQL);
 
       console.log("[SettingsRepository] テーブルの初期化が完了しました");
     } catch (error) {

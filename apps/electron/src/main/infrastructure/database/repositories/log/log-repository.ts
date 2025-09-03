@@ -7,13 +7,43 @@ import {
   RequestLogQueryResult,
 } from "@mcp_router/shared";
 import { encodeCursor, decodeCursor } from "@/renderer/utils/cursor";
-import { REQUEST_LOGS_SCHEMA } from "../../schema/tables/request-logs";
 
 /**
  * リクエストログ用リポジトリクラス
  * BetterSQLite3を使用してリクエストログを管理
  */
 export class LogRepository extends BaseRepository<RequestLogEntry> {
+  /**
+   * テーブル作成SQL
+   */
+  private static readonly CREATE_TABLE_SQL = `
+    CREATE TABLE IF NOT EXISTS requestLogs (
+      id TEXT PRIMARY KEY,
+      timestamp INTEGER NOT NULL,
+      client_id TEXT NOT NULL,
+      client_name TEXT NOT NULL,
+      server_id TEXT NOT NULL,
+      server_name TEXT NOT NULL,
+      request_type TEXT NOT NULL,
+      request_params TEXT,
+      response_data TEXT,
+      response_status TEXT NOT NULL,
+      duration INTEGER NOT NULL,
+      error_message TEXT
+    )
+  `;
+
+  /**
+   * インデックス作成SQL
+   */
+  private static readonly INDEXES = [
+    "CREATE INDEX IF NOT EXISTS idx_request_logs_timestamp ON requestLogs(timestamp)",
+    "CREATE INDEX IF NOT EXISTS idx_request_logs_client_id ON requestLogs(client_id)",
+    "CREATE INDEX IF NOT EXISTS idx_request_logs_server_id ON requestLogs(server_id)",
+    "CREATE INDEX IF NOT EXISTS idx_request_logs_request_type ON requestLogs(request_type)",
+    "CREATE INDEX IF NOT EXISTS idx_request_logs_response_status ON requestLogs(response_status)"
+  ];
+
   /**
    * コンストラクタ
    * @param db SqliteManagerインスタンス
@@ -31,15 +61,13 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
    */
   protected initializeTable(): void {
     try {
-      // スキーマ定義を使用してテーブルを作成
-      this.db.execute(REQUEST_LOGS_SCHEMA.createSQL);
+      // テーブルを作成
+      this.db.execute(LogRepository.CREATE_TABLE_SQL);
 
-      // スキーマ定義からインデックスを作成
-      if (REQUEST_LOGS_SCHEMA.indexes) {
-        REQUEST_LOGS_SCHEMA.indexes.forEach((indexSQL) => {
-          this.db.execute(indexSQL);
-        });
-      }
+      // インデックスを作成
+      LogRepository.INDEXES.forEach((indexSQL) => {
+        this.db.execute(indexSQL);
+      });
 
       console.log("[LogRepository] テーブルの初期化が完了しました");
     } catch (error) {

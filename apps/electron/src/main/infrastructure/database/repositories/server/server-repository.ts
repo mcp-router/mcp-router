@@ -2,13 +2,47 @@ import { BaseRepository } from "../../core/base-repository";
 import { SqliteManager } from "../../core/sqlite-manager";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
-import { SERVERS_SCHEMA } from "../../schema/tables/servers";
 
 /**
  * サーバ情報用リポジトリクラス
  * BetterSQLite3を使用してサーバ情報を管理
  */
 export class ServerRepository extends BaseRepository<MCPServer> {
+  /**
+   * テーブル作成SQL
+   */
+  private static readonly CREATE_TABLE_SQL = `
+    CREATE TABLE IF NOT EXISTS servers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      command TEXT,
+      args TEXT,
+      env TEXT,
+      auto_start INTEGER NOT NULL,
+      disabled INTEGER NOT NULL,
+      auto_approve TEXT,
+      context_path TEXT,
+      server_type TEXT NOT NULL DEFAULT 'local',
+      remote_url TEXT,
+      bearer_token TEXT,
+      input_params TEXT,
+      description TEXT,
+      version TEXT,
+      latest_version TEXT,
+      verification_status TEXT,
+      required_params TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `;
+
+  /**
+   * インデックス作成SQL
+   */
+  private static readonly INDEXES = [
+    "CREATE INDEX IF NOT EXISTS idx_servers_name ON servers(name)"
+  ];
+
   /**
    * コンストラクタ
    * @param db SqliteManagerインスタンス
@@ -26,15 +60,13 @@ export class ServerRepository extends BaseRepository<MCPServer> {
    */
   protected initializeTable(): void {
     try {
-      // スキーマ定義を使用してテーブルを作成
-      this.db.execute(SERVERS_SCHEMA.createSQL);
+      // テーブルを作成
+      this.db.execute(ServerRepository.CREATE_TABLE_SQL);
 
-      // スキーマ定義からインデックスを作成
-      if (SERVERS_SCHEMA.indexes) {
-        SERVERS_SCHEMA.indexes.forEach((indexSQL) => {
-          this.db.execute(indexSQL);
-        });
-      }
+      // インデックスを作成
+      ServerRepository.INDEXES.forEach((indexSQL) => {
+        this.db.execute(indexSQL);
+      });
 
       console.log("[ServerRepository] テーブルの初期化が完了しました");
     } catch (error) {

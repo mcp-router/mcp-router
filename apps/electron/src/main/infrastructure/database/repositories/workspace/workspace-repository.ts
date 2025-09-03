@@ -1,9 +1,34 @@
 import { BaseRepository } from "../../core/base-repository";
 import { SqliteManager } from "../../core/sqlite-manager";
 import { Workspace } from "@mcp_router/shared";
-import { WORKSPACES_SCHEMA } from "../../schema/tables/workspaces";
 
 export class WorkspaceRepository extends BaseRepository<Workspace> {
+  /**
+   * テーブル作成SQL
+   */
+  private static readonly CREATE_TABLE_SQL = `
+    CREATE TABLE IF NOT EXISTS workspaces (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL CHECK(type IN ('local', 'remote')),
+      isActive INTEGER NOT NULL DEFAULT 0,
+      createdAt TEXT NOT NULL,
+      lastUsedAt TEXT NOT NULL,
+      localConfig TEXT,
+      remoteConfig TEXT,
+      displayInfo TEXT
+    )
+  `;
+
+  /**
+   * インデックス作成SQL
+   */
+  private static readonly INDEXES = [
+    "CREATE INDEX IF NOT EXISTS idx_workspaces_active ON workspaces(isActive)",
+    "CREATE INDEX IF NOT EXISTS idx_workspaces_type ON workspaces(type)",
+    "CREATE INDEX IF NOT EXISTS idx_workspaces_last_used ON workspaces(lastUsedAt)"
+  ];
+
   constructor(db: SqliteManager) {
     super(db, "workspaces");
     console.log(
@@ -17,15 +42,13 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
    */
   protected initializeTable(): void {
     try {
-      // スキーマ定義を使用してテーブルを作成
-      this.db.execute(WORKSPACES_SCHEMA.createSQL);
+      // テーブルを作成
+      this.db.execute(WorkspaceRepository.CREATE_TABLE_SQL);
 
-      // スキーマ定義からインデックスを作成
-      if (WORKSPACES_SCHEMA.indexes) {
-        WORKSPACES_SCHEMA.indexes.forEach((indexSQL) => {
-          this.db.execute(indexSQL);
-        });
-      }
+      // インデックスを作成
+      WorkspaceRepository.INDEXES.forEach((indexSQL) => {
+        this.db.execute(indexSQL);
+      });
 
       console.log("[WorkspaceRepository] テーブルの初期化が完了しました");
     } catch (error) {

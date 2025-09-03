@@ -1,8 +1,5 @@
 import { SqliteManager } from "../core/sqlite-manager";
-import {
-  createAllTables,
-  recreateOutdatedTables,
-} from "../schema/schema-utils";
+import { RepositoryFactory } from "../factories/repository-factory";
 
 /**
  * Workspace-specific database migration
@@ -20,11 +17,15 @@ export class WorkspaceDatabaseMigration {
    */
   public runMigrations(): void {
     try {
-      // まず、古いスキーマのテーブルを再作成
-      recreateOutdatedTables(this.db);
-
-      // すべてのテーブルを作成（統一されたスキーマ定義を使用）
-      createAllTables(this.db);
+      // 各リポジトリを初期化（テーブル作成が自動的に実行される）
+      RepositoryFactory.getServerRepository(this.db);
+      RepositoryFactory.getAgentRepository(this.db);
+      RepositoryFactory.getDeployedAgentRepository(this.db);
+      RepositoryFactory.getLogRepository(this.db);
+      RepositoryFactory.getSessionRepository(this.db);
+      RepositoryFactory.getSettingsRepository(this.db);
+      RepositoryFactory.getTokenRepository(this.db);
+      RepositoryFactory.getWorkspaceRepository(this.db);
 
       console.log("Workspace database initialization completed");
     } catch (error) {
