@@ -4,7 +4,7 @@ import { getServerService } from "../../mcp-core/server/server-service";
 import { DevelopmentAgent } from "./development-agent";
 import { v4 as uuidv4 } from "uuid";
 import { logError, logInfo } from "@/main/utils/logger";
-import { SingletonService } from "@/main/application/core/singleton-service";
+import { SingletonService } from "@/main/application/singleton-service";
 
 /**
  * 開発中エージェント管理サービス

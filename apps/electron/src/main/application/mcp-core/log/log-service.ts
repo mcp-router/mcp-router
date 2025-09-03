@@ -1,4 +1,4 @@
-import { SingletonService } from "../../core/singleton-service";
+import { SingletonService } from "../../singleton-service";
 import {
   RequestLogEntry,
   RequestLogEntryInput,

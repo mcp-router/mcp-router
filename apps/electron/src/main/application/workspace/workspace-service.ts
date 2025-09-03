@@ -1,4 +1,4 @@
-import { BaseService } from "@/main/application/core/base-service";
+import { BaseService } from "@/main/application/base-service";
 import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
 import { session, app } from "electron";
 import { EventEmitter } from "events";

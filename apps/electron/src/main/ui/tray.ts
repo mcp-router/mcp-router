@@ -1,6 +1,6 @@
 import { app, Menu, Tray, nativeImage } from "electron";
-import { MCPServerManager } from "../mcp-core/mcp-manager";
-import { mainWindow } from "../../../main";
+import { MCPServerManager } from "../application/mcp-core/mcp-manager";
+import { mainWindow } from "../../main";
 
 // Global tray instance
 let tray: Tray | null = null;

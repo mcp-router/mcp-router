@@ -4,7 +4,7 @@ import {
 } from "@mcp_router/shared";
 import { logError, logInfo } from "@/main/utils/logger";
 import { fetchWithTokenJson } from "@/main/utils/fetch-utils";
-import { SingletonService } from "@/main/application/core/singleton-service";
+import { SingletonService } from "@/main/application/singleton-service";
 
 /**
  * エージェント共有サービス

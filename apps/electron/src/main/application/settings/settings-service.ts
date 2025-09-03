@@ -1,5 +1,5 @@
 import { AppSettings } from "@mcp_router/shared";
-import { SingletonService } from "../core/singleton-service";
+import { SingletonService } from "../singleton-service";
 import { getSettingsRepository } from "../../infrastructure/database";
 
 /**
