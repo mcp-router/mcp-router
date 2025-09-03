@@ -71,7 +71,7 @@ export default function WorkflowEditor({
   onSave,
 }: WorkflowEditorProps) {
   const platformAPI = usePlatformAPI();
-  
+
   // Use Zustand store for workflow state
   const {
     nodes,
@@ -90,7 +90,7 @@ export default function WorkflowEditor({
     addEdge,
     resetEditorState,
   } = useWorkflowStore();
-  
+
   // Use Zustand store for hook modules
   const {
     modules: userModules,
@@ -98,7 +98,7 @@ export default function WorkflowEditor({
     setModules: setUserModules,
     setModuleManagerOpen,
   } = useHookStore();
-  
+
   const [workflowType, setWorkflowType] = useState<"tools/list" | "tools/call">(
     workflow?.workflowType || "tools/list",
   );
@@ -258,35 +258,46 @@ export default function WorkflowEditor({
     [validateConnection, addEdge],
   );
 
-  const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    setSelectedNode(node as WorkflowNode);
-    // ノードのラベルを設定
-    const label = node.data?.label;
-    setNodeLabel(typeof label === "string" ? label : "");
-    // Hookノードの場合、hookオブジェクトから設定を読み込む
-    if (node.type === "hook") {
-      const hook = node.data?.hook as WorkflowHook | undefined;
-      if (hook && typeof hook === "object") {
-        if (hook.hookModuleId) {
-          // HookModuleを参照している場合
-          setSelectedModuleId(hook.hookModuleId);
-          // モジュールからスクリプトを取得
-          platformAPI.workflows.hooks.get(hook.hookModuleId).then((module) => {
-            if (module) {
-              setNodeScript(module.script);
-            }
-          });
-        } else if (hook.script) {
-          // Inline Scriptの場合
-          setSelectedModuleId("custom");
-          setNodeScript(hook.script);
-        } else {
-          setSelectedModuleId("");
-          setNodeScript("");
+  const onNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      setSelectedNode(node as WorkflowNode);
+      // ノードのラベルを設定
+      const label = node.data?.label;
+      setNodeLabel(typeof label === "string" ? label : "");
+      // Hookノードの場合、hookオブジェクトから設定を読み込む
+      if (node.type === "hook") {
+        const hook = node.data?.hook as WorkflowHook | undefined;
+        if (hook && typeof hook === "object") {
+          if (hook.hookModuleId) {
+            // HookModuleを参照している場合
+            setSelectedModuleId(hook.hookModuleId);
+            // モジュールからスクリプトを取得
+            platformAPI.workflows.hooks
+              .get(hook.hookModuleId)
+              .then((module) => {
+                if (module) {
+                  setNodeScript(module.script);
+                }
+              });
+          } else if (hook.script) {
+            // Inline Scriptの場合
+            setSelectedModuleId("custom");
+            setNodeScript(hook.script);
+          } else {
+            setSelectedModuleId("");
+            setNodeScript("");
+          }
         }
       }
-    }
-  }, [platformAPI, setSelectedNode, setNodeLabel, setSelectedModuleId, setNodeScript]);
+    },
+    [
+      platformAPI,
+      setSelectedNode,
+      setNodeLabel,
+      setSelectedModuleId,
+      setNodeScript,
+    ],
+  );
 
   const addHookNode = useCallback(
     (blocking: boolean) => {
@@ -444,40 +455,40 @@ export default function WorkflowEditor({
                 onClick={() => {
                   // 現在の編集内容を適用
                   const updatedNodes = nodes.map((node: WorkflowNode) => {
-                      if (node.id === selectedNode.id) {
-                        let updatedHook = node.data?.hook;
-                        if (updatedHook) {
-                          if (selectedModuleId === "custom") {
-                            // Inline Scriptの場合
-                            updatedHook = {
-                              ...updatedHook,
-                              hookModuleId: undefined,
-                              script: nodeScript,
-                            };
-                          } else if (
-                            selectedModuleId &&
-                            selectedModuleId !== "manage"
-                          ) {
-                            // HookModuleを参照する場合
-                            updatedHook = {
-                              ...updatedHook,
-                              hookModuleId: selectedModuleId,
-                              script: undefined,
-                            };
-                          }
+                    if (node.id === selectedNode.id) {
+                      let updatedHook = node.data?.hook;
+                      if (updatedHook) {
+                        if (selectedModuleId === "custom") {
+                          // Inline Scriptの場合
+                          updatedHook = {
+                            ...updatedHook,
+                            hookModuleId: undefined,
+                            script: nodeScript,
+                          };
+                        } else if (
+                          selectedModuleId &&
+                          selectedModuleId !== "manage"
+                        ) {
+                          // HookModuleを参照する場合
+                          updatedHook = {
+                            ...updatedHook,
+                            hookModuleId: selectedModuleId,
+                            script: undefined,
+                          };
                         }
-
-                        return {
-                          ...node,
-                          data: {
-                            ...node.data,
-                            label: nodeLabel,
-                            hook: updatedHook,
-                          },
-                        };
                       }
-                      return node;
-                    });
+
+                      return {
+                        ...node,
+                        data: {
+                          ...node.data,
+                          label: nodeLabel,
+                          hook: updatedHook,
+                        },
+                      };
+                    }
+                    return node;
+                  });
                   setNodes(updatedNodes);
                   // 編集領域を閉じる
                   setSelectedNode(null);

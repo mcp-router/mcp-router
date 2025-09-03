@@ -10,7 +10,16 @@ import {
   RadioGroupItem,
 } from "@mcp_router/ui";
 import { Card } from "@mcp_router/ui";
-import { Plus, Trash2, Edit2, Save, X, Package, GitBranch, AlertCircle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  Save,
+  X,
+  Package,
+  GitBranch,
+  AlertCircle,
+} from "lucide-react";
 import { usePlatformAPI } from "../../platform-api/hooks/use-platform-api";
 import HookModuleEditor from "./HookModuleEditor";
 import { useWorkflowStore } from "../../stores/workflow-store";
@@ -20,7 +29,7 @@ export default function WorkflowManager() {
   const platformAPI = usePlatformAPI();
   const navigate = useNavigate();
   const { workflowId } = useParams<{ workflowId?: string }>();
-  
+
   // Use Zustand store for workflow state
   const {
     workflows,
@@ -35,7 +44,7 @@ export default function WorkflowManager() {
     setIsLoading,
     setError,
   } = useWorkflowStore();
-  
+
   // Use Zustand store for hook modules
   const {
     modules,
@@ -77,7 +86,8 @@ export default function WorkflowManager() {
       setWorkflows(data);
       setError(null);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load workflows";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to load workflows";
       setError(errorMessage);
       console.error("Failed to load workflows:", error);
     } finally {
@@ -86,7 +96,9 @@ export default function WorkflowManager() {
   };
 
   // ワークフローの妥当性チェック関数
-  const checkWorkflowValidity = (workflow: WorkflowDefinition): { isValid: boolean; reason?: string } => {
+  const checkWorkflowValidity = (
+    workflow: WorkflowDefinition,
+  ): { isValid: boolean; reason?: string } => {
     const nodes = workflow.nodes;
     const edges = workflow.edges;
 
@@ -150,7 +162,8 @@ export default function WorkflowManager() {
       setSelectedWorkflow(null);
       navigate("/workflows"); // URLをワークフロー一覧に戻す
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to save workflow";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to save workflow";
       setError(errorMessage);
       console.error("Failed to save workflow:", error);
     } finally {
@@ -164,7 +177,8 @@ export default function WorkflowManager() {
       await platformAPI.workflows.workflows.delete(workflowId);
       await loadWorkflows();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete workflow";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete workflow";
       setError(errorMessage);
       console.error("Failed to delete workflow:", error);
     } finally {
@@ -196,20 +210,20 @@ export default function WorkflowManager() {
       });
     } catch (error: any) {
       console.error("Failed to set active workflow:", error);
-      
+
       // エラーメッセージを表示
       const errorMessage = error?.message || "Failed to set active workflow";
-      
+
       // ユーザーにエラーを通知（簡易的なアラート）
       if (errorMessage.includes("not valid")) {
         alert(
           `⚠️ Workflow validation failed:\n\n${errorMessage}\n\n` +
-          `Please edit the workflow to ensure it has the required structure.`
+            `Please edit the workflow to ensure it has the required structure.`,
         );
       } else {
         alert(`Error: ${errorMessage}`);
       }
-      
+
       // エラー時は元の状態を再取得
       await loadWorkflows();
     }
@@ -221,7 +235,8 @@ export default function WorkflowManager() {
       const result = await platformAPI.workflows.workflows.execute(workflow.id);
       console.log("Workflow executed:", result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to execute workflow";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to execute workflow";
       setError(errorMessage);
       console.error("Failed to execute workflow:", error);
     } finally {
@@ -359,13 +374,13 @@ export default function WorkflowManager() {
                       {typeWorkflows.map((workflow) => {
                         const validity = checkWorkflowValidity(workflow);
                         const isDisabled = !validity.isValid;
-                        
+
                         return (
                           <div
                             key={workflow.id}
                             className={`flex items-center space-x-3 p-2 rounded ${
-                              isDisabled 
-                                ? "bg-gray-100 dark:bg-gray-900 opacity-60" 
+                              isDisabled
+                                ? "bg-gray-100 dark:bg-gray-900 opacity-60"
                                 : "hover:bg-gray-50 dark:hover:bg-gray-900"
                             }`}
                           >
@@ -381,13 +396,17 @@ export default function WorkflowManager() {
                               <div className="flex items-center justify-between">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
-                                    <span className={`font-medium ${isDisabled ? "text-gray-400" : ""}`}>
+                                    <span
+                                      className={`font-medium ${isDisabled ? "text-gray-400" : ""}`}
+                                    >
                                       {workflow.name}
                                     </span>
                                     {isDisabled && (
                                       <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
                                         <AlertCircle className="w-4 h-4" />
-                                        <span className="text-xs font-medium">Invalid</span>
+                                        <span className="text-xs font-medium">
+                                          Invalid
+                                        </span>
                                       </div>
                                     )}
                                   </div>
@@ -544,7 +563,9 @@ export default function WorkflowManager() {
                           <Edit2 className="w-4 h-4" />
                         </Button>
                         <Button
-                          onClick={() => handleDeleteModule(platformAPI, module.id)}
+                          onClick={() =>
+                            handleDeleteModule(platformAPI, module.id)
+                          }
                           variant="ghost"
                           size="sm"
                         >

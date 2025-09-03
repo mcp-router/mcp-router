@@ -144,13 +144,15 @@ export default function HookModuleManager({
                 <Button variant="outline" onClick={cancelEdit}>
                   Cancel
                 </Button>
-                <Button onClick={() => {
-                  if (editingModule) {
-                    handleUpdate(platformAPI);
-                  } else {
-                    handleCreate(platformAPI);
-                  }
-                }}>
+                <Button
+                  onClick={() => {
+                    if (editingModule) {
+                      handleUpdate(platformAPI);
+                    } else {
+                      handleCreate(platformAPI);
+                    }
+                  }}
+                >
                   {editingModule ? "Update" : "Create"}
                 </Button>
               </div>

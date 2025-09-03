@@ -98,7 +98,6 @@ export class DatabaseMigration {
       execute: (db) => this.migrateAgentTableManagement(db),
     });
 
-
     // TokenRepository関連のマイグレーション
     this.migrations.push({
       id: "20250511_add_scopes_to_tokens",
@@ -898,7 +897,6 @@ export class DatabaseMigration {
       throw error;
     }
   }
-
 }
 
 /**

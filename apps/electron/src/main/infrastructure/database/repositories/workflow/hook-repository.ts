@@ -35,7 +35,7 @@ export class HookRepository {
 
       // インデックスを作成
       db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_hook_modules_name ON hook_modules(name)"
+        "CREATE INDEX IF NOT EXISTS idx_hook_modules_name ON hook_modules(name)",
       );
 
       console.log("[HookRepository] テーブルの初期化が完了しました");

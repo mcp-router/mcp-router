@@ -9,7 +9,7 @@ export interface HookStoreState {
   isCreating: boolean;
   formData: Partial<HookModule>;
   moduleManagerOpen: boolean;
-  
+
   // Loading state
   isLoading: boolean;
   error: string | null;
@@ -23,27 +23,27 @@ export interface HookStoreActions {
   setFormData: (formData: Partial<HookModule>) => void;
   updateFormData: (updates: Partial<HookModule>) => void;
   setModuleManagerOpen: (open: boolean) => void;
-  
+
   // API actions with platform API
   loadModules: (platformAPI: PlatformAPI) => Promise<void>;
   handleCreate: (platformAPI: PlatformAPI) => Promise<void>;
   handleUpdate: (platformAPI: PlatformAPI) => Promise<void>;
   handleDelete: (platformAPI: PlatformAPI, id: string) => Promise<void>;
-  
+
   // CRUD actions (local state)
   addModule: (module: HookModule) => void;
   updateModule: (id: string, updates: Partial<HookModule>) => void;
   removeModule: (id: string) => void;
-  
+
   // Edit mode actions
   startEdit: (module: HookModule) => void;
   startCreate: () => void;
   resetForm: () => void;
-  
+
   // Loading and error actions
   setIsLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
-  
+
   // Utility actions
   resetStore: () => void;
 }
@@ -78,7 +78,7 @@ export const useHookStore = create<HookStore>((set, get) => ({
       formData: { ...state.formData, ...updates },
     })),
   setModuleManagerOpen: (open) => set({ moduleManagerOpen: open }),
-  
+
   // API actions with platform API
   loadModules: async (platformAPI: PlatformAPI) => {
     set({ isLoading: true });
@@ -86,7 +86,8 @@ export const useHookStore = create<HookStore>((set, get) => ({
       const userModules = await platformAPI.workflows.hooks.list();
       set({ modules: userModules, error: null });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load modules";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to load modules";
       set({ error: errorMessage });
       console.error("Failed to load modules:", error);
     } finally {
@@ -106,16 +107,17 @@ export const useHookStore = create<HookStore>((set, get) => ({
       });
       // Reload modules after creation
       const updatedModules = await platformAPI.workflows.hooks.list();
-      set({ 
+      set({
         modules: updatedModules,
         isCreating: false,
         editingModule: null,
         formData: initialFormData,
-        error: null 
+        error: null,
       });
       toast.success("Module created successfully");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create module";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create module";
       set({ error: errorMessage });
       toast.error(errorMessage);
       console.error("Failed to create module:", error);
@@ -133,16 +135,17 @@ export const useHookStore = create<HookStore>((set, get) => ({
       await platformAPI.workflows.hooks.update(editingModule.id, formData);
       // Reload modules after update
       const updatedModules = await platformAPI.workflows.hooks.list();
-      set({ 
+      set({
         modules: updatedModules,
         isCreating: false,
         editingModule: null,
         formData: initialFormData,
-        error: null 
+        error: null,
       });
       toast.success("Module updated successfully");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to update module";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update module";
       set({ error: errorMessage });
       toast.error(errorMessage);
       console.error("Failed to update module:", error);
@@ -168,31 +171,31 @@ export const useHookStore = create<HookStore>((set, get) => ({
       set({ isLoading: false });
     }
   },
-  
+
   // CRUD actions (local state)
   addModule: (module) =>
     set((state) => ({
       modules: [...state.modules, module],
     })),
-  
+
   updateModule: (id, updates) =>
     set((state) => ({
       modules: state.modules.map((m) =>
-        m.id === id ? { ...m, ...updates } : m
+        m.id === id ? { ...m, ...updates } : m,
       ),
       editingModule:
         state.editingModule?.id === id
           ? { ...state.editingModule, ...updates }
           : state.editingModule,
     })),
-  
+
   removeModule: (id) =>
     set((state) => ({
       modules: state.modules.filter((m) => m.id !== id),
       editingModule:
         state.editingModule?.id === id ? null : state.editingModule,
     })),
-  
+
   // Edit mode actions
   startEdit: (module) =>
     set({
@@ -203,25 +206,25 @@ export const useHookStore = create<HookStore>((set, get) => ({
       },
       isCreating: false,
     }),
-  
+
   startCreate: () =>
     set({
       isCreating: true,
       editingModule: null,
       formData: initialFormData,
     }),
-  
+
   resetForm: () =>
     set({
       isCreating: false,
       editingModule: null,
       formData: initialFormData,
     }),
-  
+
   // Loading and error actions
   setIsLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
-  
+
   // Utility actions
   resetStore: () => set(initialState),
 }));

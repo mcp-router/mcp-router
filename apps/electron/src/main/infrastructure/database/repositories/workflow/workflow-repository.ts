@@ -39,10 +39,10 @@ export class WorkflowRepository {
 
       // インデックスを作成
       db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_workflows_enabled ON workflows(enabled)"
+        "CREATE INDEX IF NOT EXISTS idx_workflows_enabled ON workflows(enabled)",
       );
       db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_workflows_type ON workflows(workflow_type)"
+        "CREATE INDEX IF NOT EXISTS idx_workflows_type ON workflows(workflow_type)",
       );
 
       console.log("[WorkflowRepository] テーブルの初期化が完了しました");

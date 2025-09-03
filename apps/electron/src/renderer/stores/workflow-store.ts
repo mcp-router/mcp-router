@@ -11,7 +11,7 @@ export interface WorkflowStoreState {
   selectedWorkflow: WorkflowDefinition | null;
   isEditing: boolean;
   activeTab: "workflows" | "modules";
-  
+
   // Workflow Editor state
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
@@ -19,7 +19,7 @@ export interface WorkflowStoreState {
   nodeScript: string;
   nodeLabel: string;
   selectedModuleId: string;
-  
+
   // Loading state
   isLoading: boolean;
   error: string | null;
@@ -34,7 +34,7 @@ export interface WorkflowStoreActions {
   addWorkflow: (workflow: WorkflowDefinition) => void;
   updateWorkflow: (id: string, updates: Partial<WorkflowDefinition>) => void;
   removeWorkflow: (id: string) => void;
-  
+
   // Workflow Editor actions
   setNodes: (nodes: WorkflowNode[]) => void;
   setEdges: (edges: WorkflowEdge[]) => void;
@@ -47,11 +47,11 @@ export interface WorkflowStoreActions {
   removeNode: (nodeId: string) => void;
   addEdge: (edge: WorkflowEdge) => void;
   removeEdge: (edgeId: string) => void;
-  
+
   // Loading and error actions
   setIsLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
-  
+
   // Utility actions
   resetEditorState: () => void;
   resetStore: () => void;
@@ -82,23 +82,23 @@ export const useWorkflowStore = create<WorkflowStore>((set) => ({
   setSelectedWorkflow: (workflow) => set({ selectedWorkflow: workflow }),
   setIsEditing: (isEditing) => set({ isEditing }),
   setActiveTab: (tab) => set({ activeTab: tab }),
-  
+
   addWorkflow: (workflow) =>
     set((state) => ({
       workflows: [...state.workflows, workflow],
     })),
-  
+
   updateWorkflow: (id, updates) =>
     set((state) => ({
       workflows: state.workflows.map((w) =>
-        w.id === id ? { ...w, ...updates } : w
+        w.id === id ? { ...w, ...updates } : w,
       ),
       selectedWorkflow:
         state.selectedWorkflow?.id === id
           ? { ...state.selectedWorkflow, ...updates }
           : state.selectedWorkflow,
     })),
-  
+
   removeWorkflow: (id) =>
     set((state) => ({
       workflows: state.workflows.filter((w) => w.id !== id),
@@ -113,35 +113,35 @@ export const useWorkflowStore = create<WorkflowStore>((set) => ({
   setNodeScript: (script) => set({ nodeScript: script }),
   setNodeLabel: (label) => set({ nodeLabel: label }),
   setSelectedModuleId: (moduleId) => set({ selectedModuleId: moduleId }),
-  
+
   updateNode: (nodeId, updates) =>
     set((state) => ({
       nodes: state.nodes.map((n) =>
-        n.id === nodeId ? { ...n, ...updates } : n
+        n.id === nodeId ? { ...n, ...updates } : n,
       ),
       selectedNode:
         state.selectedNode?.id === nodeId
           ? { ...state.selectedNode, ...updates }
           : state.selectedNode,
     })),
-  
+
   addNode: (node) =>
     set((state) => ({
       nodes: [...state.nodes, node],
     })),
-  
+
   removeNode: (nodeId) =>
     set((state) => ({
       nodes: state.nodes.filter((n) => n.id !== nodeId),
       selectedNode:
         state.selectedNode?.id === nodeId ? null : state.selectedNode,
     })),
-  
+
   addEdge: (edge) =>
     set((state) => ({
       edges: [...state.edges, edge],
     })),
-  
+
   removeEdge: (edgeId) =>
     set((state) => ({
       edges: state.edges.filter((e) => e.id !== edgeId),
@@ -161,6 +161,6 @@ export const useWorkflowStore = create<WorkflowStore>((set) => ({
       nodeLabel: "",
       selectedModuleId: "",
     }),
-  
+
   resetStore: () => set(initialState),
 }));
