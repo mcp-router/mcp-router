@@ -7,11 +7,11 @@
 // Factory exports
 
 // Migration exports
-export { getDatabaseMigration } from "./migrations/database-migration";
+export { getDatabaseMigration } from "./core/main-database-migration";
 
 // Internal imports for backwards compatibility functions
 import { getSqliteManager } from "./core/sqlite-manager";
-import { RepositoryFactory } from "./factories/repository-factory";
+import { RepositoryFactory } from "./core/repository-factory";
 
 // Backwards compatibility functions using RepositoryFactory
 export function getAgentRepository() {

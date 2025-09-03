@@ -1,4 +1,4 @@
-import { SqliteManager } from "../core/sqlite-manager";
+import { SqliteManager } from "./sqlite-manager";
 import { AgentRepository } from "../repositories/agent/agent-repository";
 import { DeployedAgentRepository } from "../repositories/deployed-agent/deployed-agent-repository";
 import { LogRepository } from "../repositories/log/log-repository";

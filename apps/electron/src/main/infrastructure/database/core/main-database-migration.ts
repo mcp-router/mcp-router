@@ -1,4 +1,4 @@
-import { getSqliteManager, SqliteManager } from "../core/sqlite-manager";
+import { getSqliteManager, SqliteManager } from "./sqlite-manager";
 import { getServerRepository } from "../index";
 import { TokenScope, Migration } from "@mcp_router/shared";
 import { safeStorage } from "electron";
@@ -7,19 +7,19 @@ import { safeStorage } from "electron";
  * データベースマイグレーション管理クラス
  * 全てのマイグレーションを一元管理
  */
-export class DatabaseMigration {
-  private static instance: DatabaseMigration | null = null;
+export class MainDatabaseMigration {
+  private static instance: MainDatabaseMigration | null = null;
   // 登録されたマイグレーションリスト（順序付き）
   private migrations: Migration[] = [];
 
   /**
    * シングルトンインスタンスを取得
    */
-  public static getInstance(): DatabaseMigration {
-    if (!DatabaseMigration.instance) {
-      DatabaseMigration.instance = new DatabaseMigration();
+  public static getInstance(): MainDatabaseMigration {
+    if (!MainDatabaseMigration.instance) {
+      MainDatabaseMigration.instance = new MainDatabaseMigration();
     }
-    return DatabaseMigration.instance;
+    return MainDatabaseMigration.instance;
   }
 
   /**
@@ -902,6 +902,6 @@ export class DatabaseMigration {
 /**
  * データベースマイグレーションのシングルトンインスタンスを取得
  */
-export function getDatabaseMigration(): DatabaseMigration {
-  return DatabaseMigration.getInstance();
+export function getDatabaseMigration(): MainDatabaseMigration {
+  return MainDatabaseMigration.getInstance();
 }

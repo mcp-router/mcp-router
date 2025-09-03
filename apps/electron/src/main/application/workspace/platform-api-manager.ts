@@ -5,7 +5,6 @@ import {
   SqliteManager,
   setWorkspaceDatabase,
 } from "../../infrastructure/database/core/sqlite-manager";
-import { WorkspaceDatabaseMigration } from "../../infrastructure/database/migrations/workspace-database-migration";
 import { getDatabaseContext } from "../../infrastructure/database/core/database-context";
 import {
   getDatabaseMigration,
@@ -114,14 +113,12 @@ export class PlatformAPIManager {
     setWorkspaceDatabase(newDatabase);
 
     // マイグレーションを実行
-    // デフォルトのワークスペースだけ特別なマイグレーションを使用する
-    if (workspace.localConfig?.databasePath !== "mcprouter.db") {
-      const migration = new WorkspaceDatabaseMigration(newDatabase);
-      migration.runMigrations();
-    } else {
+    // メインDBの場合のみマイグレーションを実行
+    if (workspace.localConfig?.databasePath === "mcprouter.db") {
       const migration = getDatabaseMigration();
       migration.runMigrations();
     }
+    // ワークスペースDBの初期化は各リポジトリが自動的に行う
 
     // リポジトリをリセット（新しいデータベースを使用するように）
     resetAgentRepository();
