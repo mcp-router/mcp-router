@@ -23,7 +23,7 @@ import {
 import {
   validateMcpServerJson,
   processMcpServerConfigs,
-} from "@/main/domain/mcp-core/server/shared/mcp-server-utils";
+} from "@/main/application/mcp-core/server/shared/mcp-server-utils";
 import { toast } from "sonner";
 import { Textarea } from "@mcp_router/ui";
 import { Alert, AlertDescription, AlertTitle } from "@mcp_router/ui";

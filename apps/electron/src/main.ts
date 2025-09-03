@@ -8,7 +8,7 @@ import { setApplicationMenu } from "@/main/application/ui/menu";
 import { createTray, updateTrayContextMenu } from "@/main/application/ui/tray";
 import { importExistingServerConfigurations } from "@/main/application/mcp-core/apps/mcp-config-importer";
 import { getPlatformAPIManager } from "@/main/application/workspace/platform-api-manager";
-import { getWorkspaceService } from "./main/domain/workspace/workspace-service";
+import { getWorkspaceService } from "./main/application/workspace/workspace-service";
 import { setupIpcHandlers } from "./main/infrastructure/ipc";
 import { getIsAutoUpdateInProgress } from "./main/infrastructure/ipc/handlers/update-handler";
 import {

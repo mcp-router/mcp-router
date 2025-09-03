@@ -14,7 +14,7 @@ import {
   AgentConfig,
 } from "@mcp_router/shared";
 import { useTranslation } from "react-i18next";
-import { isAgentConfigured } from "@/main/domain/agent/shared/agent-utils";
+import { isAgentConfigured } from "@/main/application/agent/shared/agent-utils";
 import { McpSettings } from "@/renderer/components/agent/create/McpSettings";
 import { useAgentStore } from "../../../stores";
 import { cn } from "@/renderer/utils/tailwind-utils";

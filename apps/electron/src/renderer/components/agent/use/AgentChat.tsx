@@ -7,7 +7,7 @@ import { cn } from "@/renderer/utils/tailwind-utils";
 import { Message } from "@ai-sdk/react";
 import ChatInterface from "@/renderer/components/agent/create/ChatInterface";
 import ChatSessions from "./ChatSessions";
-import { isAgentConfigured } from "@/main/domain/agent/shared/agent-utils";
+import { isAgentConfigured } from "@/main/application/agent/shared/agent-utils";
 import { useAgentStore } from "../../../stores";
 import { usePlatformAPI } from "@/renderer/platform-api";
 import { parseErrorMessage } from "@/renderer/utils/error-message-utils";

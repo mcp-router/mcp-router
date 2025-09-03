@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getWorkspaceService } from "../../../domain/workspace/workspace-service";
+import { getWorkspaceService } from "../../../application/workspace/workspace-service";
 import type { WorkspaceCreateConfig } from "@mcp_router/shared";
 
 /**

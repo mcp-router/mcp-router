@@ -5,12 +5,12 @@ import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import {
   getServerService,
   ServerService,
-} from "@/main/domain/mcp-core/server/server-service";
+} from "@/main/application/mcp-core/server/server-service";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   connectToMCPServer,
   substituteArgsParameters,
-} from "@/main/domain/mcp-core/client/mcp-client-util";
+} from "@/main/application/mcp-core/client/mcp-client-util";
 import { LoggingService } from "./logging";
 
 /**

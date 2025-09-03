@@ -12,7 +12,7 @@ import {
   WorkflowDefinition,
   HookModule,
 } from "@mcp_router/shared";
-import { McpAppsManagerResult, McpApp } from "@/main/domain/mcp-apps-service";
+import { McpAppsManagerResult, McpApp } from "@/main/application/mcp-apps-service";
 import { ServerPackageUpdates } from "./lib/utils/backend/package-version-resolver";
 
 declare global {

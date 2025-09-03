@@ -107,11 +107,11 @@ export class WorkflowService {
     // WorkflowExecutorで妥当性を検証
     const { WorkflowExecutor } = await import("./workflow-executor");
     const isValid = WorkflowExecutor.isValidWorkflow(workflow);
-    
+
     if (!isValid) {
       throw new Error(
         `Workflow "${workflow.name}" is not valid. ` +
-        `Ensure it has Start -> MCP Call -> End nodes properly connected.`
+          `Ensure it has Start -> MCP Call -> End nodes properly connected.`,
       );
     }
 

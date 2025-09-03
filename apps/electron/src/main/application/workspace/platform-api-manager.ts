@@ -1,5 +1,5 @@
 import { BrowserWindow } from "electron";
-import { getWorkspaceService } from "../../domain/workspace/workspace-service";
+import { getWorkspaceService } from "../../application/workspace/workspace-service";
 import type { Workspace } from "@mcp_router/shared";
 import {
   SqliteManager,
@@ -18,15 +18,15 @@ import {
   resetTokenRepository,
   resetWorkspaceRepository,
 } from "../../infrastructure/database";
-import { ServerService } from "../../domain/mcp-core/server/server-service";
-import { TokenService } from "../../domain/mcp-core/token/token-service";
+import { ServerService } from "../../application/mcp-core/server/server-service";
+import { TokenService } from "../../application/mcp-core/token/token-service";
 import { LogService } from "../mcp-core/log/log-service";
 import { SettingsService } from "../settings/settings-service";
 import {
   DevelopmentAgentService,
   DeployedAgentService,
   AgentSharingService,
-} from "../../domain/agent";
+} from "../../application/agent";
 
 /**
  * Platform API管理クラス

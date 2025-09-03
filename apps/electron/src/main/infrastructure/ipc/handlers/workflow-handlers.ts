@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getWorkflowService } from "../../../domain/workflow/workflow-service";
+import { getWorkflowService } from "../../../application/workflow/workflow-service";
 import type { WorkflowDefinition } from "@mcp_router/shared";
 
 /**

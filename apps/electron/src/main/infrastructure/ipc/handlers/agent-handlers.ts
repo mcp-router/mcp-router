@@ -4,9 +4,9 @@ import {
   getDevelopmentAgentService,
   getDeployedAgentService,
   getAgentSharingService,
-} from "@/main/domain/agent";
+} from "@/main/application/agent";
 import { backgroundWindow, mainWindow } from "../../../../main";
-import { status } from "../../../domain/auth/auth";
+import { status } from "../../../application/auth/auth";
 import { getSessionRepository } from "../../database";
 
 /**

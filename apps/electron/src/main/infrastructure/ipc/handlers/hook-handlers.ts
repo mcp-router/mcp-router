@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getHookService } from "../../../domain/workflow/hook-service";
+import { getHookService } from "../../../application/workflow/hook-service";
 import type { HookModule } from "@mcp_router/shared";
 
 /**

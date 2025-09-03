@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useChat, Message } from "@ai-sdk/react";
 import { AgentConfig } from "@mcp_router/shared";
-import { getServerAgentId } from "@/main/domain/agent/shared/agent-utils";
+import { getServerAgentId } from "@/main/application/agent/shared/agent-utils";
 import { usePlatformAPI } from "@/renderer/platform-api";
 import {
   ExtendedPlatformChatMessage as PlatformChatMessage,

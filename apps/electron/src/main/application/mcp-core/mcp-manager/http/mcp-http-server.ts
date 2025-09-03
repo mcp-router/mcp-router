@@ -3,12 +3,12 @@ import cors from "cors";
 import * as http from "http";
 import { MCPServerManager } from "..";
 import { getLogService } from "@/main/application/mcp-core/log/log-service";
-import { getTokenService } from "@/main/domain/mcp-core/token/token-service";
+import { getTokenService } from "@/main/application/mcp-core/token/token-service";
 import { listMcpApps } from "@/main/application/mcp-core/apps/mcp-apps-service";
 import {
   validateMcpServerJson,
   processMcpServerConfigs,
-} from "@/main/domain/mcp-core/server/shared/mcp-server-utils";
+} from "@/main/application/mcp-core/server/shared/mcp-server-utils";
 import { TokenScope } from "@mcp_router/shared";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
 import { getPlatformAPIManager } from "../../../workspace/platform-api-manager";
@@ -161,9 +161,7 @@ export class MCPHttpServer {
           }
 
           // Get user auth token instead of workspace token
-          const { getDecryptedAuthToken } = await import(
-            "../../../../domain/auth/auth"
-          );
+          const { getDecryptedAuthToken } = await import("../../../auth/auth");
           const authToken = await getDecryptedAuthToken();
 
           // Forward the request to remote aggregator
