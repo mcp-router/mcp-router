@@ -3,7 +3,7 @@ import cors from "cors";
 import * as http from "http";
 import { MCPServerManager } from "..";
 import { getLogService } from "@/main/modules/mcp-core/log/log-service";
-import { getTokenService } from "@/main/modules/mcp-core/token/token-service";
+import { getTokenService } from "@/main/modules/mcp-core/apps/mcp-apps-service";
 import { listMcpApps } from "@/main/modules/mcp-core/apps/mcp-apps-service";
 import {
   validateMcpServerJson,

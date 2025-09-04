@@ -8,7 +8,7 @@ import {
   cursorConfig,
   vscodeConfig,
   exists,
-} from "@/main/modules/mcp-core/client/mcp-app-paths";
+} from "./mcp-apps-service";
 import { v4 as uuidv4 } from "uuid";
 import { getSettingsService } from "@/main/modules/settings/settings.service";
 

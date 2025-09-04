@@ -6,7 +6,7 @@ import {
   unifyAppConfig,
   deleteCustomApp,
 } from "@/main/modules/mcp-core/apps/mcp-apps-service";
-import { getTokenService } from "@/main/modules/mcp-core/token/token-service";
+import { getTokenService } from "@/main/modules/mcp-core/apps/mcp-apps-service";
 import { TokenScope } from "@mcp_router/shared";
 
 export function setupMcpAppsHandlers(): void {

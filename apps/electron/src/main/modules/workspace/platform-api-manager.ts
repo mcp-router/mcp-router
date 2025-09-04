@@ -18,7 +18,7 @@ import {
   resetWorkspaceRepository,
 } from "../../infrastructure/database";
 import { ServerService } from "@/main/modules/mcp-core/server/server-service";
-import { TokenService } from "@/main/modules/mcp-core/token/token-service";
+import { McpAppsService } from "@/main/modules/mcp-core/apps/mcp-apps-service";
 import { LogService } from "../mcp-core/log/log-service";
 import { SettingsService } from "../settings/settings.service";
 import {
@@ -132,7 +132,7 @@ export class PlatformAPIManager {
 
     // サービスのシングルトンインスタンスもリセット
     ServerService.resetInstance();
-    TokenService.resetInstance();
+    McpAppsService.resetInstance();
     LogService.resetInstance();
     SettingsService.resetInstance();
     DevelopmentAgentService.resetInstance();

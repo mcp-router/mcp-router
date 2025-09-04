@@ -10,7 +10,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   connectToMCPServer,
   substituteArgsParameters,
-} from "@/main/modules/mcp-core/client/mcp-client-util";
+} from "@/main/modules/mcp-core/apps/mcp-apps-service";
 import { LoggingService } from "./logging";
 
 /**
@@ -186,7 +186,7 @@ export class ServerManager {
   private removeServerFromTokens(serverId: string): void {
     try {
       const tokenService =
-        require("@/main/modules/mcp-core/token/token-service").getTokenService();
+        require("@/main/modules/mcp-core/apps/mcp-apps-service").getTokenService();
       const allTokens = tokenService.listTokens();
 
       for (const token of allTokens) {
