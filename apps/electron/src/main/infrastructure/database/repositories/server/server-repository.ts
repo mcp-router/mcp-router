@@ -40,7 +40,7 @@ export class ServerRepository extends BaseRepository<MCPServer> {
    * インデックス作成SQL
    */
   private static readonly INDEXES = [
-    "CREATE INDEX IF NOT EXISTS idx_servers_name ON servers(name)"
+    "CREATE INDEX IF NOT EXISTS idx_servers_name ON servers(name)",
   ];
 
   /**

@@ -34,7 +34,7 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
    */
   private static readonly INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_agents_status ON agents(status)",
-    "CREATE INDEX IF NOT EXISTS idx_agents_created ON agents(created_at)"
+    "CREATE INDEX IF NOT EXISTS idx_agents_created ON agents(created_at)",
   ];
 
   /**

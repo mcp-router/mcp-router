@@ -4,7 +4,7 @@ import {
   checkUvExists,
   installPNPM,
   installUV,
-} from "@/main/application/mcp-core/package/install-package-manager";
+} from "@/main/modules/mcp-core/package/install-package-manager";
 
 /**
  * Register package manager-related IPC handlers

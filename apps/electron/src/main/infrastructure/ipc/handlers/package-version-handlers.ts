@@ -9,7 +9,7 @@ import { ipcMain } from "electron";
 import {
   resolvePackageVersionsInArgs,
   checkMcpServerPackageUpdates,
-} from "@/main/application/mcp-core/package/package-version-resolver";
+} from "@/main/modules/mcp-core/package/package-version-resolver";
 
 /**
  * Register the IPC handlers for package version resolution

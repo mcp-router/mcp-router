@@ -40,7 +40,7 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
   private static readonly INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_deployed_agents_deployed ON deployedAgents(deployed_at)",
     "CREATE INDEX IF NOT EXISTS idx_deployed_agents_last_used ON deployedAgents(last_used_at)",
-    "CREATE INDEX IF NOT EXISTS idx_deployed_agents_status ON deployedAgents(status)"
+    "CREATE INDEX IF NOT EXISTS idx_deployed_agents_status ON deployedAgents(status)",
   ];
 
   /**

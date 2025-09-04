@@ -3,8 +3,8 @@ import { MCPServerConfig, CreateServerInput } from "@mcp_router/shared";
 import {
   fetchMcpServersFromIndex,
   fetchMcpServerVersionDetails,
-} from "@/main/application/mcp-core/registry/mcp-fetcher";
-import { processDxtFile } from "@/main/application/mcp-core/server-processors/dxt-processor";
+} from "@/main/modules/mcp-core/registry/mcp-fetcher";
+import { processDxtFile } from "@/main/modules/mcp-core/server-processors/dxt-processor";
 
 export function setupMcpServerHandlers(): void {
   const getMCPServerManager = () => (global as any).getMCPServerManager();

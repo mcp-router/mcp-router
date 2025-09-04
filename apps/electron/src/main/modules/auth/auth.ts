@@ -1,4 +1,4 @@
-import { getSettingsService } from "@/main/application/settings/settings-service";
+import { getSettingsService } from "@/main/modules/settings/settings-service";
 import { API_BASE_URL, mainWindow } from "../../../main";
 import crypto from "crypto";
 import { shell } from "electron";

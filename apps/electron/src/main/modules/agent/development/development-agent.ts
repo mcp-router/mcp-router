@@ -14,7 +14,7 @@ import {
   fetchServerResources,
   readServerResource,
   substituteArgsParameters,
-} from "@/main/application/mcp-core/client/mcp-client-util";
+} from "@/main/modules/mcp-core/client/mcp-client-util";
 
 /**
  * サーバー情報を表す型

@@ -24,7 +24,7 @@ export class TokenRepository extends BaseRepository<Token> {
    * インデックス作成SQL
    */
   private static readonly INDEXES = [
-    "CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)"
+    "CREATE INDEX IF NOT EXISTS idx_tokens_client_id ON tokens(client_id)",
   ];
 
   /**

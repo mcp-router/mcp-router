@@ -29,7 +29,7 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
   private static readonly INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_chat_sessions_agent_id ON chat_sessions(agent_id)",
     "CREATE INDEX IF NOT EXISTS idx_chat_sessions_created ON chat_sessions(created_at)",
-    "CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status)"
+    "CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status)",
   ];
 
   constructor(db: SqliteManager) {

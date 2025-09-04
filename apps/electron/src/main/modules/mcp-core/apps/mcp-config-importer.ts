@@ -1,5 +1,5 @@
 import { promises as fsPromises } from "fs";
-import { getServerService } from "@/main/application/mcp-core/server/server-service";
+import { getServerService } from "@/main/modules/mcp-core/server/server-service";
 import { MCPServerConfig, ClientType, ClientConfig } from "@mcp_router/shared";
 import {
   claudeConfig,
@@ -8,9 +8,9 @@ import {
   cursorConfig,
   vscodeConfig,
   exists,
-} from "@/main/application/mcp-core/client/mcp-app-paths";
+} from "@/main/modules/mcp-core/client/mcp-app-paths";
 import { v4 as uuidv4 } from "uuid";
-import { getSettingsService } from "@/main/application/settings/settings-service";
+import { getSettingsService } from "@/main/modules/settings/settings-service";
 
 /**
  * Sync server configurations from a provided list of configs

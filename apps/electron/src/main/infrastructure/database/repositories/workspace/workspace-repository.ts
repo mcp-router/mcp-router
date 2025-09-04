@@ -26,7 +26,7 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
   private static readonly INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_workspaces_active ON workspaces(isActive)",
     "CREATE INDEX IF NOT EXISTS idx_workspaces_type ON workspaces(type)",
-    "CREATE INDEX IF NOT EXISTS idx_workspaces_last_used ON workspaces(lastUsedAt)"
+    "CREATE INDEX IF NOT EXISTS idx_workspaces_last_used ON workspaces(lastUsedAt)",
   ];
 
   constructor(db: SqliteManager) {

@@ -1,4 +1,4 @@
-import { getLogService } from "@/main/application/mcp-core/log/log-service";
+import { getLogService } from "@/main/modules/mcp-core/log/log-service";
 import {
   McpManagerRequestLogEntry as RequestLogEntry,
   AGGREGATOR_SERVER_ID,

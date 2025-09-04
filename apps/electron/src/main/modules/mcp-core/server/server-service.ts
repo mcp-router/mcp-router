@@ -1,4 +1,4 @@
-import { SingletonService } from "@/main/application/singleton-service";
+import { SingletonService } from "@/main/modules/singleton-service";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { logInfo } from "@/main/utils/logger";
 import { getServerRepository } from "../../../infrastructure/database";

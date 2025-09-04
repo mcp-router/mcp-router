@@ -1,7 +1,7 @@
 import path from "path";
 import { promises as fsPromises } from "fs";
-import { getTokenService } from "../../../application/mcp-core/token/token-service";
-import { getServerService } from "../../../application/mcp-core/server/server-service";
+import { getTokenService } from "@/main/modules/mcp-core/token/token-service";
+import { getServerService } from "@/main/modules/mcp-core/server/server-service";
 import {
   claudeConfig,
   clineConfig,
@@ -9,7 +9,7 @@ import {
   cursorConfig,
   vscodeConfig,
   exists,
-} from "@/main/application/mcp-core/client/mcp-app-paths";
+} from "@/main/modules/mcp-core/client/mcp-app-paths";
 import {
   syncServersFromClientConfig,
   extractConfigInfo,

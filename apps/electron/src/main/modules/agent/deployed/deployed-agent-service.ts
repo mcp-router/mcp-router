@@ -5,7 +5,7 @@ import {
 import { getDeployedAgentRepository } from "../../../infrastructure/database";
 import { DeployedAgent } from "./deployed-agent";
 import { logError, logInfo } from "@/main/utils/logger";
-import { SingletonService } from "@/main/application/singleton-service";
+import { SingletonService } from "@/main/modules/singleton-service";
 
 /**
  * デプロイ済みエージェント管理サービス（軽量版）

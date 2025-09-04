@@ -41,7 +41,7 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
     "CREATE INDEX IF NOT EXISTS idx_request_logs_client_id ON requestLogs(client_id)",
     "CREATE INDEX IF NOT EXISTS idx_request_logs_server_id ON requestLogs(server_id)",
     "CREATE INDEX IF NOT EXISTS idx_request_logs_request_type ON requestLogs(request_type)",
-    "CREATE INDEX IF NOT EXISTS idx_request_logs_response_status ON requestLogs(response_status)"
+    "CREATE INDEX IF NOT EXISTS idx_request_logs_response_status ON requestLogs(response_status)",
   ];
 
   /**
