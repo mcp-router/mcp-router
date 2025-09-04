@@ -199,7 +199,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Command check
   checkCommandExists: (command: string) =>
-    ipcRenderer.invoke("command:exists", command),
+    ipcRenderer.invoke("system:commandExists", command),
 
   // Token Scope Management
   updateTokenScopes: (tokenId: string, scopes: TokenScope[]) =>
@@ -207,11 +207,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Feedback
   submitFeedback: (feedback: string) =>
-    ipcRenderer.invoke("feedback:submit", feedback),
+    ipcRenderer.invoke("system:submitFeedback", feedback),
 
   // Update Management
-  checkForUpdates: () => ipcRenderer.invoke("update:check"),
-  installUpdate: () => ipcRenderer.invoke("update:install"),
+  checkForUpdates: () => ipcRenderer.invoke("system:checkForUpdates"),
+  installUpdate: () => ipcRenderer.invoke("system:installUpdate"),
   onUpdateAvailable: (callback: (available: boolean) => void) => {
     const listener = (_: any, available: boolean) => callback(available);
     ipcRenderer.on("update:downloaded", listener);
@@ -223,7 +223,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Package Manager Management
   checkPackageManagers: () => ipcRenderer.invoke("packageManager:checkAll"),
   installPackageManagers: () => ipcRenderer.invoke("packageManager:installAll"),
-  restartApp: () => ipcRenderer.invoke("packageManager:restart"),
+  restartApp: () => ipcRenderer.invoke("system:restartApp"),
 
   // Protocol URL handling
   onProtocolUrl: (callback: (url: string) => void) => {

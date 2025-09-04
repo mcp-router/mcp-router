@@ -3,9 +3,7 @@ import { setupMcpServerHandlers } from "./handlers/server-handler";
 import { setupLogHandlers } from "./handlers/log-handler";
 import { setupSettingsHandlers } from "../../modules/settings/settings.ipc";
 import { setupMcpAppsHandlers } from "./handlers/mcp-apps-handler";
-import { setupFeedbackHandlers } from "./handlers/feedback-handler";
-import { setupUtilityHandlers } from "./handlers/utility-handler";
-import { setupUpdateHandlers } from "./handlers/update-handler";
+import { setupSystemHandlers } from "./handlers/system-handler";
 import { setupPackageVersionHandlers } from "./handlers/package-version-handlers";
 import { setupPackageManagerHandlers } from "./handlers/package-manager-handlers";
 import { setupAgentHandlers } from "./handlers/agent-handlers";
@@ -33,14 +31,8 @@ export function setupIpcHandlers(): void {
   // MCPアプリ設定関連
   setupMcpAppsHandlers();
 
-  // ユーティリティ関連
-  setupUtilityHandlers();
-
-  // フィードバック関連
-  setupFeedbackHandlers();
-
-  // アップデート関連
-  setupUpdateHandlers();
+  // システム関連（ユーティリティ、フィードバック、アップデート）
+  setupSystemHandlers();
 
   // パッケージバージョン解決関連
   setupPackageVersionHandlers();

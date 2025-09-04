@@ -10,7 +10,7 @@ import { importExistingServerConfigurations } from "@/main/modules/mcp-core/apps
 import { getPlatformAPIManager } from "@/main/modules/workspace/platform-api-manager";
 import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 import { setupIpcHandlers } from "./main/infrastructure/ipc";
-import { getIsAutoUpdateInProgress } from "./main/infrastructure/ipc/handlers/update-handler";
+import { getIsAutoUpdateInProgress } from "./main/infrastructure/ipc/handlers/system-handler";
 import {
   initializeEnvironment,
   isDevelopment,
