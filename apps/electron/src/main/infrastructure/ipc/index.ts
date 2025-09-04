@@ -3,7 +3,6 @@ import { setupMcpServerHandlers } from "./handlers/server-handler";
 import { setupLogHandlers } from "./handlers/log-handler";
 import { setupSettingsHandlers } from "../../modules/settings/settings.ipc";
 import { setupMcpAppsHandlers } from "./handlers/mcp-apps-handler";
-import { setupTokenHandlers } from "./handlers/token-handler";
 import { setupFeedbackHandlers } from "./handlers/feedback-handler";
 import { setupUtilityHandlers } from "./handlers/utility-handler";
 import { setupUpdateHandlers } from "./handlers/update-handler";
@@ -11,8 +10,8 @@ import { setupPackageVersionHandlers } from "./handlers/package-version-handlers
 import { setupPackageManagerHandlers } from "./handlers/package-manager-handlers";
 import { setupAgentHandlers } from "./handlers/agent-handlers";
 import { setupWorkspaceHandlers } from "../../modules/workspace/workspace.ipc";
-import { setupWorkflowHandlers } from "./handlers/workflow-handlers";
-import { setupHookHandlers } from "./handlers/hook-handlers";
+import { setupWorkflowHandlers } from "../../modules/workflow/workflow.ipc";
+import { setupHookHandlers } from "../../modules/workflow/hook.ipc";
 
 /**
  * IPC通信ハンドラのセットアップを行う関数
@@ -36,9 +35,6 @@ export function setupIpcHandlers(): void {
 
   // ユーティリティ関連
   setupUtilityHandlers();
-
-  // トークン関連
-  setupTokenHandlers();
 
   // フィードバック関連
   setupFeedbackHandlers();

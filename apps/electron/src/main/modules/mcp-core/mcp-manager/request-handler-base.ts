@@ -37,7 +37,7 @@ export abstract class RequestHandlerBase {
     try {
       // WorkflowServiceとWorkflowExecutorをインポート
       const { getWorkflowService } = await import(
-        "../../workflow/workflow-service"
+        "../../workflow/workflow.service"
       );
       const { WorkflowExecutor } = await import(
         "../../workflow/workflow-executor"

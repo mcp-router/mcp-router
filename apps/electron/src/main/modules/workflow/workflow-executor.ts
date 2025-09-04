@@ -4,7 +4,7 @@ import {
   WorkflowEdge,
   WorkflowHook,
 } from "@mcp_router/shared";
-import { getHookService } from "./hook-service";
+import { getHookService } from "./hook.service";
 
 /**
  * WorkflowExecutor

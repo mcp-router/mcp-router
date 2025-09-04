@@ -1,8 +1,5 @@
 import { HookModule } from "@mcp_router/shared";
-import {
-  getHookRepository,
-  HookRepository,
-} from "../../infrastructure/database/repositories/workflow/hook-repository";
+import { getHookRepository, HookRepository } from "./hook.repository";
 import vm from "vm";
 
 /**
@@ -106,7 +103,7 @@ export class HookService {
    */
   public async deleteHookModule(id: string): Promise<boolean> {
     // WorkflowでこのHookModuleが使用されているかチェック
-    const { WorkflowService } = await import("./workflow-service");
+    const { WorkflowService } = await import("./workflow.service");
     const workflowService = WorkflowService.getInstance();
     const workflows = await workflowService.getAllWorkflows();
 

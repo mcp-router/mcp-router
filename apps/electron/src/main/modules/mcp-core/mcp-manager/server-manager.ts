@@ -186,7 +186,7 @@ export class ServerManager {
   private removeServerFromTokens(serverId: string): void {
     try {
       const tokenService =
-        require("@/main/domain/mcp-core/token/token-service").getTokenService();
+        require("@/main/modules/mcp-core/token/token-service").getTokenService();
       const allTokens = tokenService.listTokens();
 
       for (const token of allTokens) {

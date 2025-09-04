@@ -203,7 +203,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Token Scope Management
   updateTokenScopes: (tokenId: string, scopes: TokenScope[]) =>
-    ipcRenderer.invoke("token:updateScopes", tokenId, scopes),
+    ipcRenderer.invoke("mcp-apps:updateScopes", tokenId, scopes),
 
   // Feedback
   submitFeedback: (feedback: string) =>

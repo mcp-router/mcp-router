@@ -2,7 +2,7 @@ import { WorkflowDefinition } from "@mcp_router/shared";
 import {
   getWorkflowRepository,
   WorkflowRepository,
-} from "../../infrastructure/database/repositories/workflow/workflow-repository";
+} from "./workflow.repository";
 
 /**
  * Workflowドメインサービス
