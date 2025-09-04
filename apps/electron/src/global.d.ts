@@ -2,7 +2,6 @@
  * Augment the global Window interface so TypeScript knows about "window.electronAPI".
  */
 
-import { TokenScope } from "@mcp_router/shared";
 import { AppSettings } from "@mcp_router/shared";
 import {
   Agent,
@@ -173,11 +172,6 @@ declare global {
       onChatStreamEnd: (callback: (data: any) => void) => () => void;
       onChatStreamError: (callback: (data: any) => void) => () => void;
 
-      // Token Scope Management
-      updateTokenScopes: (
-        tokenId: string,
-        scopes: TokenScope[],
-      ) => Promise<McpAppsManagerResult>;
 
       // Feedback
       submitFeedback: (feedback: string) => Promise<boolean>;

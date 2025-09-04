@@ -181,8 +181,6 @@ class ElectronPlatformAPI implements PlatformAPI {
 
       // Token management
       tokens: {
-        updateScopes: (tokenId, scopes) =>
-          window.electronAPI.updateTokenScopes(tokenId, scopes),
         generate: async () => {
           throw new Error("Token generation not available in Electron");
         },

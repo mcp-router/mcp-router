@@ -3,7 +3,6 @@
 
 import { contextBridge, ipcRenderer } from "electron";
 import { CreateServerInput } from "@mcp_router/shared";
-import { TokenScope } from "@mcp_router/shared";
 
 // Consolidate everything into one contextBridge call
 
@@ -192,9 +191,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   checkCommandExists: (command: string) =>
     ipcRenderer.invoke("system:commandExists", command),
 
-  // Token Scope Management
-  updateTokenScopes: (tokenId: string, scopes: TokenScope[]) =>
-    ipcRenderer.invoke("mcp-apps:updateScopes", tokenId, scopes),
 
   // Feedback
   submitFeedback: (feedback: string) =>

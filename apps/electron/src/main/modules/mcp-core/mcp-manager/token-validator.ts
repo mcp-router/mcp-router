@@ -1,13 +1,13 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
-import { getTokenService } from "@/main/modules/mcp-core/apps/mcp-apps-service";
+import { TokenManager } from "@/main/modules/mcp-core/apps/token-manager";
 
 export class TokenValidator {
-  private tokenService: any;
+  private tokenManager: TokenManager;
   private serverNameToIdMap: Map<string, string>;
 
   constructor(serverNameToIdMap: Map<string, string>) {
     this.serverNameToIdMap = serverNameToIdMap;
-    this.tokenService = getTokenService();
+    this.tokenManager = new TokenManager();
   }
 
   /**
@@ -32,7 +32,7 @@ export class TokenValidator {
       throw new McpError(ErrorCode.InvalidRequest, "Token is required");
     }
 
-    const validation = this.tokenService.validateToken(token);
+    const validation = this.tokenManager.validateToken(token);
     if (!validation.isValid) {
       throw new McpError(
         ErrorCode.InvalidRequest,
@@ -50,7 +50,7 @@ export class TokenValidator {
     }
 
     // Check server access
-    if (!this.tokenService.hasServerAccess(token, serverId)) {
+    if (!this.tokenManager.hasServerAccess(token, serverId)) {
       throw new McpError(
         ErrorCode.InvalidRequest,
         "Token does not have access to this server",
@@ -64,27 +64,27 @@ export class TokenValidator {
    * Check if a token has access to a server
    */
   public hasServerAccess(token: string, serverId: string): boolean {
-    return this.tokenService.hasServerAccess(token, serverId);
+    return this.tokenManager.hasServerAccess(token, serverId);
   }
 
   /**
    * Validate a token
    */
   public validateToken(token: string): any {
-    return this.tokenService.validateToken(token);
+    return this.tokenManager.validateToken(token);
   }
 
   /**
    * Update token server access
    */
   public updateTokenServerAccess(tokenId: string, serverIds: string[]): void {
-    this.tokenService.updateTokenServerAccess(tokenId, serverIds);
+    this.tokenManager.updateTokenServerAccess(tokenId, serverIds);
   }
 
   /**
    * List all tokens
    */
   public listTokens(): any[] {
-    return this.tokenService.listTokens();
+    return this.tokenManager.listTokens();
   }
 }

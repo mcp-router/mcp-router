@@ -1,6 +1,6 @@
 import { getSqliteManager, SqliteManager } from "./sqlite-manager";
 import { getServerRepository } from "../index";
-import { TokenScope, Migration } from "@mcp_router/shared";
+import { Migration } from "@mcp_router/shared";
 import { safeStorage } from "electron";
 
 /**
@@ -96,14 +96,6 @@ export class MainDatabaseMigration {
       description:
         "Manage agent tables: drop for reinitialization and add auto_execute_tool column to deployedAgents",
       execute: (db) => this.migrateAgentTableManagement(db),
-    });
-
-    // TokenRepository関連のマイグレーション
-    this.migrations.push({
-      id: "20250511_add_scopes_to_tokens",
-      description:
-        "Add scopes column to tokens table and populate with default scopes",
-      execute: (db) => this.migrateTokensAddScopes(db),
     });
 
     // データ暗号化マイグレーション
@@ -531,65 +523,6 @@ export class MainDatabaseMigration {
       }
     } catch (error) {
       console.error("required_params列の追加中にエラーが発生しました:", error);
-      throw error;
-    }
-  }
-
-  // ==========================================================================
-  // Token Repository関連のマイグレーション
-  // ==========================================================================
-
-  /**
-   * トークンテーブルにスコープカラムを追加するマイグレーション
-   */
-  private migrateTokensAddScopes(db: SqliteManager): void {
-    try {
-      // テーブルが存在するか確認
-      const tableExists = db.get(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'tokens'",
-        {},
-      );
-
-      if (!tableExists) {
-        console.log(
-          "tokensテーブルが存在しないため、このマイグレーションをスキップします",
-        );
-        return;
-      }
-
-      // スコープカラムがまだ存在しない場合は追加
-      db.transaction(() => {
-        // テーブル情報を取得
-        const tableInfo = db.all("PRAGMA table_info(tokens)");
-
-        // スコープカラムが存在しない場合は追加
-        if (!tableInfo.some((column: any) => column.name === "scopes")) {
-          db.execute("ALTER TABLE tokens ADD COLUMN scopes TEXT DEFAULT '[]'");
-          console.log("トークンテーブルにスコープカラムを追加しました");
-        } else {
-          console.log("scopesカラムは既に存在するため、追加をスキップします");
-          return;
-        }
-
-        // 既存のトークンに全スコープを付与
-        const scopesJson = JSON.stringify([
-          TokenScope.MCP_SERVER_MANAGEMENT,
-          TokenScope.LOG_MANAGEMENT,
-          TokenScope.APPLICATION,
-        ]);
-
-        db.execute(
-          "UPDATE tokens SET scopes = :scopes WHERE scopes IS NULL OR scopes = '[]'",
-          { scopes: scopesJson },
-        );
-
-        console.log("既存のトークンに全スコープを付与しました");
-      });
-    } catch (error) {
-      console.error(
-        "トークンテーブルのスコープカラム追加中にエラーが発生しました:",
-        error,
-      );
       throw error;
     }
   }

@@ -8,7 +8,6 @@ import {
 } from "./mcp-config-importer";
 import {
   Token,
-  TokenScope,
   TokenGenerateOptions,
   TokenValidationResult,
   McpApp,
@@ -202,21 +201,6 @@ export class McpAppsService extends SingletonService<
     }
   }
 
-  public hasScope(tokenId: string, requiredScope: TokenScope): boolean {
-    try {
-      return this.tokenManager.hasScope(tokenId, requiredScope);
-    } catch (error) {
-      return this.handleError("スコープ権限確認", error, false);
-    }
-  }
-
-  public updateTokenScopes(tokenId: string, scopes: TokenScope[]): boolean {
-    try {
-      return this.tokenManager.updateTokenScopes(tokenId, scopes);
-    } catch (error) {
-      return this.handleError("スコープ更新", error, false);
-    }
-  }
 
   // ========== Client Utilities (delegated to MCPClient) ==========
 
@@ -451,7 +435,6 @@ export class McpAppsService extends SingletonService<
             token: token.id,
             serverIds: token.serverIds,
             isCustom: true,
-            scopes: token.scopes || [],
             icon: undefined,
           };
         }),
@@ -481,9 +464,6 @@ export class McpAppsService extends SingletonService<
       return this.checkApp(appName, configPath, token.id, token.serverIds);
     } else {
       // カスタムアプリの処理
-      // トークンからスコープ情報を取得
-      const tokenObj = this.listTokens().find((t) => t.id === token.id);
-      const scopes = tokenObj?.scopes || [];
 
       return {
         name: appName,
@@ -493,7 +473,6 @@ export class McpAppsService extends SingletonService<
         token: token.id,
         serverIds: token.serverIds,
         isCustom: true,
-        scopes,
         icon: undefined,
       };
     }
@@ -525,11 +504,9 @@ export class McpAppsService extends SingletonService<
       let hasOtherServers = false;
 
       // アプリトークンから取得
-      let scopes: TokenScope[] = [];
       if (!token && appTokens.length > 0) {
         token = appTokens[0].id;
         serverIds = appTokens[0].serverIds || serverIds;
-        scopes = appTokens[0].scopes || [];
       }
 
       // トークンの有効性チェックと設定状態の判定
@@ -566,13 +543,10 @@ export class McpAppsService extends SingletonService<
         }
       }
 
-      // トークンからスコープとserverIdsを取得
+      // トークンからserverIdsを取得
       if (token) {
         const tokenObj = allTokens.find((t) => t.id === token);
         if (tokenObj) {
-          if (!scopes.length) {
-            scopes = tokenObj.scopes || [];
-          }
           // serverIdsがまだ空の場合、トークンから取得
           if (!serverIds.length) {
             serverIds = tokenObj.serverIds || [];
@@ -589,7 +563,6 @@ export class McpAppsService extends SingletonService<
         serverIds,
         isCustom,
         hasOtherServers,
-        scopes,
         icon: this.getStandardAppIcon(name),
       };
     } catch (_) {
@@ -598,7 +571,6 @@ export class McpAppsService extends SingletonService<
         installed: false,
         configPath,
         configured: false,
-        scopes: [],
         icon: this.getStandardAppIcon(name),
       };
     }
@@ -903,11 +875,6 @@ export function substituteArgsParameters(
     env,
     inputParams,
   );
-}
-
-// Token service exports for backward compatibility
-export function getTokenService(): McpAppsService {
-  return getMcpAppsService();
 }
 
 // App path exports for mcp-config-importer

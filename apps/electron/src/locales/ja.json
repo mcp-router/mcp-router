@@ -455,9 +455,7 @@
     "notAvailable": "利用不可",
     "serverAccess": "アクセス管理",
     "serverAccessTab": "サーバーアクセス",
-    "scopeSettingsTab": "APIスコープ設定",
     "selectServers": "このアプリがアクセスできるサーバを選択してください:",
-    "selectScopes": "このアプリのアクセス権限を設定してください:",
     "accessControlSaved": "アクセス設定を保存しました",
     "noTokenAvailable": "このアプリ用のトークンが利用できません。トークン権限はアクティブなトークンを持つアプリのみ設定できます。",
     "enterValidName": "有効なアプリ名を入力してください",
@@ -645,14 +643,6 @@
   "updateNotification": {
     "title": "アップデートが利用可能です",
     "installNow": "今すぐインストール"
-  },
-  "tokenScopes": {
-    "serverManagement": "サーバー管理",
-    "serverManagementDesc": "MCPサーバーの接続、作成、変更、削除などの管理を許可します",
-    "logManagement": "ログ管理",
-    "logManagementDesc": "MCPサーバーからのログの表示と管理のアクセスを提供します",
-    "application": "アプリケーションアクセス",
-    "applicationDesc": "接続されたクライアントの取得を許可します"
   },
   "workspace": {
     "title": "ワークスペース",

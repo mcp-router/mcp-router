@@ -185,16 +185,18 @@ export class ServerManager {
    */
   private removeServerFromTokens(serverId: string): void {
     try {
-      const tokenService =
-        require("@/main/modules/mcp-core/apps/mcp-apps-service").getTokenService();
-      const allTokens = tokenService.listTokens();
+      const {
+        TokenManager,
+      } = require("@/main/modules/mcp-core/apps/token-manager");
+      const tokenManager = new TokenManager();
+      const allTokens = tokenManager.listTokens();
 
       for (const token of allTokens) {
         if (token.serverIds.includes(serverId)) {
           const updatedServerIds = token.serverIds.filter(
             (id: string) => id !== serverId,
           );
-          tokenService.updateTokenServerAccess(token.id, updatedServerIds);
+          tokenManager.updateTokenServerAccess(token.id, updatedServerIds);
         }
       }
     } catch (error) {

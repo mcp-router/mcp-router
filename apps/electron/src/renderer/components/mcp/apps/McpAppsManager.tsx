@@ -23,9 +23,8 @@ import {
 } from "@mcp_router/ui";
 import HowToUse, { HowToUseHandle } from "./HowToUse";
 import { toast } from "sonner";
-import { TokenScope } from "@mcp_router/shared";
 import { ScrollArea } from "@mcp_router/ui";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp_router/ui";
+
 import { McpApp, McpAppsManagerResult } from "@mcp_router/shared";
 
 const McpAppsManager: React.FC = () => {
@@ -37,12 +36,10 @@ const McpAppsManager: React.FC = () => {
   const [servers, setServers] = useState<any[]>([]);
   const [selectedApp, setSelectedApp] = useState<McpApp | null>(null);
   const [selectedServerIds, setSelectedServerIds] = useState<string[]>([]);
-  const [selectedScopes, setSelectedScopes] = useState<TokenScope[]>([]);
   const [isAccessControlDialogOpen, setIsAccessControlDialogOpen] =
     useState<boolean>(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const [appToDelete, setAppToDelete] = useState<McpApp | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("servers");
 
   // Add ref for HowToUse component
   const howToUseRef = useRef<HowToUseHandle>(null);
@@ -52,34 +49,6 @@ const McpAppsManager: React.FC = () => {
     loadServers();
   }, []);
 
-  // ヘルパー関数：スコープのラベルを取得
-  const getScopeLabel = (scope: TokenScope): string => {
-    switch (scope) {
-      case TokenScope.MCP_SERVER_MANAGEMENT:
-        return t("tokenScopes.serverManagement");
-      case TokenScope.LOG_MANAGEMENT:
-        return t("tokenScopes.logManagement");
-      case TokenScope.APPLICATION:
-        return t("tokenScopes.application");
-      default:
-        return scope;
-    }
-  };
-
-  // ヘルパー関数：スコープの説明を取得
-  const getScopeDescription = (scope: TokenScope): string => {
-    switch (scope) {
-      case TokenScope.MCP_SERVER_MANAGEMENT:
-        return t("tokenScopes.serverManagementDesc");
-      case TokenScope.LOG_MANAGEMENT:
-        return t("tokenScopes.logManagementDesc");
-      case TokenScope.APPLICATION:
-        return t("tokenScopes.applicationDesc");
-      default:
-        return "";
-    }
-  };
-
   // アクセス制御ダイアログを開く
   const openAccessControlDialog = (app: McpApp) => {
     setSelectedApp(app);
@@ -88,24 +57,7 @@ const McpAppsManager: React.FC = () => {
     const appServerIds = app.serverIds || [];
     setSelectedServerIds(appServerIds);
 
-    // アプリのスコープを設定
-    const appScopes = app.scopes || [];
-    setSelectedScopes(appScopes);
-
-    // デフォルトタブを設定
-    setActiveTab("servers");
-
-    // ダイアログを開く
     setIsAccessControlDialogOpen(true);
-  };
-
-  // スコープチェックボックスの変更
-  const handleScopeCheckboxChange = (scope: TokenScope, checked: boolean) => {
-    if (checked) {
-      setSelectedScopes((prev) => [...prev, scope]);
-    } else {
-      setSelectedScopes((prev) => prev.filter((s) => s !== scope));
-    }
   };
 
   // サーバーチェックボックスの変更
@@ -133,39 +85,15 @@ const McpAppsManager: React.FC = () => {
         return;
       }
 
-      // トークンスコープの更新（トークンが存在する場合のみ）
-      if (selectedApp.token) {
-        const scopeResult = await platformAPI.apps.tokens.updateScopes(
-          selectedApp.token,
-          selectedScopes,
+      // サーバー結果を更新
+      if (serverResult.app) {
+        setApps((prevApps) =>
+          prevApps.map((app) =>
+            app.name === selectedApp.name
+              ? { ...serverResult.app!, isCustom: app.isCustom }
+              : app,
+          ),
         );
-
-        if (!scopeResult.success) {
-          toast.error(scopeResult.message);
-          return;
-        }
-
-        // アプリを更新（サーバー+スコープの最終結果）
-        if (scopeResult.app) {
-          setApps((prevApps) =>
-            prevApps.map((app) =>
-              app.name === selectedApp.name
-                ? { ...scopeResult.app!, isCustom: app.isCustom }
-                : app,
-            ),
-          );
-        }
-      } else {
-        // トークンがない場合はサーバー結果のみ更新
-        if (serverResult.app) {
-          setApps((prevApps) =>
-            prevApps.map((app) =>
-              app.name === selectedApp.name
-                ? { ...serverResult.app!, isCustom: app.isCustom }
-                : app,
-            ),
-          );
-        }
       }
 
       toast.success(t("mcpApps.accessControlSaved"));
@@ -473,93 +401,28 @@ const McpAppsManager: React.FC = () => {
             </DialogTitle>
           </DialogHeader>
 
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="w-full">
-              <TabsTrigger value="servers" className="flex-1">
-                {t("mcpApps.serverAccessTab")}
-              </TabsTrigger>
-              <TabsTrigger value="scopes" className="flex-1">
-                {t("mcpApps.scopeSettingsTab")}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="servers" className="py-4">
-              <p className="text-sm text-muted-foreground mb-4">
-                {t("mcpApps.selectServers")}
-              </p>
-
-              <ScrollArea className="max-h-[50vh]">
-                <div className="space-y-2">
-                  {servers.map((server) => (
-                    <div
-                      key={server.id}
-                      className="flex items-center space-x-3"
-                    >
-                      <Checkbox
-                        id={`server-${server.id}`}
-                        checked={selectedServerIds.includes(server.id)}
-                        onCheckedChange={(checked) =>
-                          handleServerCheckboxChange(server.id, !!checked)
-                        }
-                      />
-                      <Label htmlFor={`server-${server.id}`}>
-                        {server.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-
-            <TabsContent value="scopes" className="py-4">
-              {selectedApp?.token ? (
-                <>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {t("mcpApps.selectScopes")}
-                  </p>
-
-                  <ScrollArea className="max-h-[50vh]">
-                    <div className="space-y-4">
-                      {Object.values(TokenScope).map((scope) => (
-                        <div key={scope} className="flex flex-col space-y-1">
-                          <div className="flex items-start space-x-3">
-                            <Checkbox
-                              id={`scope-${scope}`}
-                              checked={selectedScopes.includes(scope)}
-                              onCheckedChange={(checked) =>
-                                handleScopeCheckboxChange(scope, !!checked)
-                              }
-                            />
-                            <div>
-                              <Label
-                                htmlFor={`scope-${scope}`}
-                                className="font-medium"
-                              >
-                                {getScopeLabel(scope)}
-                              </Label>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {getScopeDescription(scope)}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </>
-              ) : (
-                <div className="py-8 text-center">
-                  <p className="text-muted-foreground">
-                    {t("mcpApps.noTokenAvailable")}
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+          {/* Replaced Tabs with direct content */}
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground mb-4">
+              {t("mcpApps.selectServers")}
+            </p>
+            <ScrollArea className="max-h-[50vh]">
+              <div className="space-y-2">
+                {servers.map((server) => (
+                  <div key={server.id} className="flex items-center space-x-3">
+                    <Checkbox
+                      id={`server-${server.id}`}
+                      checked={selectedServerIds.includes(server.id)}
+                      onCheckedChange={(checked) =>
+                        handleServerCheckboxChange(server.id, !!checked)
+                      }
+                    />
+                    <Label htmlFor={`server-${server.id}`}>{server.name}</Label>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
 
           <DialogFooter>
             <Button

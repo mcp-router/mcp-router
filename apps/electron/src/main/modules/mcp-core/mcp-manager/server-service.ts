@@ -2,7 +2,7 @@ import { SingletonService } from "@/main/modules/singleton-service";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { logInfo } from "@/main/utils/logger";
 import { getServerRepository } from "../../../infrastructure/database";
-import { getTokenService } from "../apps/mcp-apps-service";
+import { TokenManager } from "../apps/token-manager";
 
 /**
  * Service class for managing server information
@@ -51,8 +51,8 @@ export class ServerService extends SingletonService<
 
       // Give all MCP clients access to this new server
       try {
-        const tokenService = getTokenService();
-        const allTokens = tokenService.listTokens();
+        const tokenManager = new TokenManager();
+        const allTokens = tokenManager.listTokens();
 
         // For each token, add this server's ID to its access list
         allTokens.forEach((token) => {
@@ -60,7 +60,7 @@ export class ServerService extends SingletonService<
           if (!token.serverIds.includes(server.id)) {
             // Add the new server ID to the token's server access list
             const updatedServerIds = [...token.serverIds, server.id];
-            tokenService.updateTokenServerAccess(token.id, updatedServerIds);
+            tokenManager.updateTokenServerAccess(token.id, updatedServerIds);
           }
         });
       } catch (error) {

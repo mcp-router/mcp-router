@@ -451,9 +451,7 @@
     "notAvailable": "Not Available",
     "serverAccess": "Access Control",
     "serverAccessTab": "Server Access",
-    "scopeSettingsTab": "API Scope Settings",
     "selectServers": "Select which servers this app can access:",
-    "selectScopes": "Configure access permissions for this app:",
     "accessControlSaved": "Access control settings saved successfully",
     "noTokenAvailable": "No token available for this app. Token scopes can only be configured for apps with active tokens.",
     "enterValidName": "Please enter a valid app name",
@@ -637,14 +635,6 @@
   "updateNotification": {
     "title": "Update Available",
     "installNow": "Install Now"
-  },
-  "tokenScopes": {
-    "serverManagement": "Server Management",
-    "serverManagementDesc": "Allows managing MCP servers including connection, creation, modification, and deletion",
-    "logManagement": "Log Management",
-    "logManagementDesc": "Provides access to view and manage logs from MCP servers",
-    "application": "Application Access",
-    "applicationDesc": "Allows retrieving connected clients"
   },
   "hooks": {
     "title": "Hooks",

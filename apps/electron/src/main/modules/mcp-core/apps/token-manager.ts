@@ -2,7 +2,6 @@ import crypto from "crypto";
 import { getTokenRepository } from "@/main/infrastructure/database";
 import {
   Token,
-  TokenScope,
   TokenGenerateOptions,
   TokenValidationResult,
 } from "@mcp_router/shared";
@@ -37,11 +36,6 @@ export class TokenManager {
       clientId,
       issuedAt: now,
       serverIds: options.serverIds || [],
-      scopes: options.scopes || [
-        TokenScope.MCP_SERVER_MANAGEMENT,
-        TokenScope.LOG_MANAGEMENT,
-        TokenScope.APPLICATION,
-      ],
     };
 
     // トークンを永続化
@@ -116,30 +110,5 @@ export class TokenManager {
     serverIds: string[],
   ): boolean {
     return getTokenRepository().updateTokenServerIds(tokenId, serverIds);
-  }
-
-  /**
-   * トークンのスコープ権限を確認
-   */
-  public hasScope(tokenId: string, requiredScope: TokenScope): boolean {
-    const token = getTokenRepository().getToken(tokenId);
-    if (!token) {
-      return false;
-    }
-    return token.scopes?.includes(requiredScope) || false;
-  }
-
-  /**
-   * トークンのスコープを更新
-   */
-  public updateTokenScopes(tokenId: string, scopes: TokenScope[]): boolean {
-    const token = getTokenRepository().getToken(tokenId);
-    if (!token) {
-      return false;
-    }
-
-    token.scopes = scopes;
-    getTokenRepository().saveToken(token);
-    return true;
   }
 }
