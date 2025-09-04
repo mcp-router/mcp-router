@@ -5,7 +5,7 @@ import {
   SqliteManager,
   setWorkspaceDatabase,
 } from "../../infrastructure/database/core/sqlite-manager";
-import { getDatabaseContext } from "../../infrastructure/database/core/database-context";
+import { getDatabaseContext } from "./database-context";
 import {
   getDatabaseMigration,
   resetAgentRepository,

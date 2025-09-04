@@ -1,4 +1,4 @@
-import { SqliteManager } from "./sqlite-manager";
+import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
 
 /**
  * Database context manager class

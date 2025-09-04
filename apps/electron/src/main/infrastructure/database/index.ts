@@ -7,7 +7,7 @@
 // Factory exports
 
 // Migration exports
-export { getDatabaseMigration } from "./core/main-database-migration";
+export { getDatabaseMigration } from "./main-database-migration";
 
 // Internal imports for backwards compatibility functions
 import { getSqliteManager } from "./core/sqlite-manager";
