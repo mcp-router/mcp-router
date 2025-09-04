@@ -4,7 +4,7 @@ import {
   logout,
   status,
   handleAuthToken,
-} from "@/main/modules/auth/auth";
+} from "@/main/modules/auth/auth.service";
 import { mainWindow } from "@/main";
 
 export function setupAuthHandlers(): void {

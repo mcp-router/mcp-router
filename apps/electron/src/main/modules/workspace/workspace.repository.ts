@@ -1,5 +1,5 @@
-import { BaseRepository } from "../../core/base-repository";
-import { SqliteManager } from "../../core/sqlite-manager";
+import { BaseRepository } from "../../infrastructure/database/core/base-repository";
+import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
 import { Workspace } from "@mcp_router/shared";
 
 export class WorkspaceRepository extends BaseRepository<Workspace> {

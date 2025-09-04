@@ -1,5 +1,5 @@
 import { BrowserWindow } from "electron";
-import { getWorkspaceService } from "@/main/modules/workspace/workspace-service";
+import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 import type { Workspace } from "@mcp_router/shared";
 import {
   SqliteManager,

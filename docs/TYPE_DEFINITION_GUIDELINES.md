@@ -49,7 +49,7 @@ packages/shared/src/types/
 ├── domains/          # Domain entities
 │   ├── mcp.ts       # MCP server, tool, resource types
 │   ├── agent.ts     # Agent configuration types
-│   ├── auth.ts      # Authentication types
+│   ├── auth.service.ts      # Authentication types
 │   └── workspace.ts # Workspace types
 ├── api/             # API-related types
 │   ├── requests.ts  # API request types

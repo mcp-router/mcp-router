@@ -6,7 +6,7 @@ import {
   getAgentSharingService,
 } from "@/main/modules/agent";
 import { backgroundWindow, mainWindow } from "../../../../main";
-import { status } from "@/main/modules/auth/auth";
+import { status } from "@/main/modules/auth/auth.service";
 import { getSessionRepository } from "../../database";
 
 /**

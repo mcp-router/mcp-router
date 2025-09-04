@@ -6,7 +6,7 @@ import { ServerRepository } from "../repositories/server/server-repository";
 import { SessionRepository } from "../repositories/session/session-repository";
 import { SettingsRepository } from "../../../modules/settings/settings.repository";
 import { TokenRepository } from "../repositories/token/token-repository";
-import { WorkspaceRepository } from "../repositories/workspace/workspace-repository";
+import { WorkspaceRepository } from "../../../modules/workspace/workspace.repository";
 
 /**
  * リポジトリインスタンスのマップ型

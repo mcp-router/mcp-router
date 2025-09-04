@@ -1,4 +1,4 @@
-import { setupAuthHandlers } from "./handlers/auth-handler";
+import { setupAuthHandlers } from "../../modules/auth/auth.ipc";
 import { setupMcpServerHandlers } from "./handlers/server-handler";
 import { setupLogHandlers } from "./handlers/log-handler";
 import { setupSettingsHandlers } from "../../modules/settings/settings.ipc";
@@ -10,7 +10,7 @@ import { setupUpdateHandlers } from "./handlers/update-handler";
 import { setupPackageVersionHandlers } from "./handlers/package-version-handlers";
 import { setupPackageManagerHandlers } from "./handlers/package-manager-handlers";
 import { setupAgentHandlers } from "./handlers/agent-handlers";
-import { setupWorkspaceHandlers } from "./handlers/workspace-handlers";
+import { setupWorkspaceHandlers } from "../../modules/workspace/workspace.ipc";
 import { setupWorkflowHandlers } from "./handlers/workflow-handlers";
 import { setupHookHandlers } from "./handlers/hook-handlers";
 
