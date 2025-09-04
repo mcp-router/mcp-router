@@ -139,17 +139,29 @@ export class PlatformAPIManager {
     DeployedAgentService.resetInstance();
     AgentSharingService.resetInstance();
 
-    // MCPServerManagerの再初期化をトリガー
-    // グローバル変数からMCPServerManagerを取得して再初期化
-    const getMCPServerManager = (global as any).getMCPServerManager;
-    if (getMCPServerManager && typeof getMCPServerManager === "function") {
-      const mcpServerManager = getMCPServerManager();
+    // ServerManagerとAggregatorServerの再初期化をトリガー
+    // グローバル変数からServerManagerを取得して再初期化
+    const getServerManager = (global as any).getServerManager;
+    if (getServerManager && typeof getServerManager === "function") {
+      const serverManager = getServerManager();
       if (
-        mcpServerManager &&
-        typeof mcpServerManager.initializeAsync === "function"
+        serverManager &&
+        typeof serverManager.initializeAsync === "function"
       ) {
         // サーバーリストを再読み込み
-        await mcpServerManager.initializeAsync();
+        await serverManager.initializeAsync();
+      }
+    }
+
+    // AggregatorServerの再初期化
+    const getAggregatorServer = (global as any).getAggregatorServer;
+    if (getAggregatorServer && typeof getAggregatorServer === "function") {
+      const aggregatorServer = getAggregatorServer();
+      if (
+        aggregatorServer &&
+        typeof aggregatorServer.initAgentToolsServer === "function"
+      ) {
+        aggregatorServer.initAgentToolsServer();
       }
     }
   }
@@ -159,11 +171,11 @@ export class PlatformAPIManager {
    */
   private async handleWorkspaceSwitch(workspace: Workspace): Promise<void> {
     // 先に現在のワークスペースのサーバーを停止
-    const getMCPServerManager = (global as any).getMCPServerManager;
-    if (getMCPServerManager && typeof getMCPServerManager === "function") {
-      const mcpServerManager = getMCPServerManager();
+    const getServerManager = (global as any).getServerManager;
+    if (getServerManager && typeof getServerManager === "function") {
+      const serverManager = getServerManager();
       // 現在のワークスペースでサーバーを停止（ログは現在のDBに記録される）
-      mcpServerManager.clearAllServers();
+      serverManager.clearAllServers();
     }
 
     // その後、新しいワークスペースに切り替え

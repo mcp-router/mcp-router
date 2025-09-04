@@ -83,7 +83,6 @@ npx -y mcpr-cli@latest connect`
           </pre>
         </div>
       </div>
-
     </>
   );
 };
@@ -155,53 +154,50 @@ npx -y mcpr-cli connect`}
           </pre>
         </div>
       </div>
-
     </>
   );
 };
 
 // Main component that switches based on language
-const HowToUse = forwardRef<HowToUseHandle, HowToUseProps>(
-  ({ token }, ref) => {
-    const { t, i18n } = useTranslation();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+const HowToUse = forwardRef<HowToUseHandle, HowToUseProps>(({ token }, ref) => {
+  const { t, i18n } = useTranslation();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    useImperativeHandle(ref, () => ({
-      showDialog: () => setIsDialogOpen(true),
-    }));
+  useImperativeHandle(ref, () => ({
+    showDialog: () => setIsDialogOpen(true),
+  }));
 
-    const content =
-      i18n.language === "ja" ? (
-        <HowToUseJA token={token} />
-      ) : (
-        <HowToUseEN token={token} />
-      );
-
-    return (
-      <>
-        {/* Inline display when used directly */}
-        {!isDialogOpen && content}
-
-        {/* Dialog version */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="w-[100vw] mx-auto flex flex-col">
-            <DialogHeader>
-              <DialogTitle>{t("mcpApps.howToUse")}</DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="max-h-[70vh] overflow-auto">
-              {content}
-            </ScrollArea>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                {t("common.close")}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </>
+  const content =
+    i18n.language === "ja" ? (
+      <HowToUseJA token={token} />
+    ) : (
+      <HowToUseEN token={token} />
     );
-  },
-);
+
+  return (
+    <>
+      {/* Inline display when used directly */}
+      {!isDialogOpen && content}
+
+      {/* Dialog version */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="w-[100vw] mx-auto flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{t("mcpApps.howToUse")}</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[70vh] overflow-auto">
+            {content}
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              {t("common.close")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+});
 
 HowToUse.displayName = "HowToUse";
 

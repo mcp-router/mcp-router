@@ -10,7 +10,7 @@ import {
   ListPromptsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { RequestHandlers } from "./request-handlers";
-import { ServerManager } from "./server-manager";
+import { ServerManager } from "../mcp-server-manager/server-manager";
 import { getLogService } from "@/main/modules/mcp-logger/log-service";
 
 /**

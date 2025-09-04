@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
 import * as http from "http";
-import { MCPServerManager } from "../index";
+import { ServerManager } from "../../mcp-server-manager/server-manager";
+import { AggregatorServer } from "../aggregator-server";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
 import { getPlatformAPIManager } from "../../workspace/platform-api-manager";
 import { TokenValidator } from "../token-validator";
@@ -13,14 +14,21 @@ export class MCPHttpServer {
   private app: express.Application;
   private server: http.Server | null = null;
   private port: number;
-  private serverManager: MCPServerManager;
+  private serverManager: ServerManager;
+  private aggregatorServer: AggregatorServer;
   private tokenValidator: TokenValidator;
   private v0Router: express.Router;
   // SSEセッション用のマップ
   private sseSessions: Map<string, SSEServerTransport> = new Map();
 
-  constructor(serverManager: MCPServerManager, port: number) {
+  constructor(
+    serverManager: ServerManager,
+    port: number,
+    aggregatorServer?: AggregatorServer,
+  ) {
     this.serverManager = serverManager;
+    this.aggregatorServer =
+      aggregatorServer || new AggregatorServer(serverManager);
     this.port = port;
     this.app = express();
     this.v0Router = express.Router();
@@ -190,7 +198,7 @@ export class MCPHttpServer {
             };
           }
           // For local workspaces, use local aggregator
-          await this.serverManager
+          await this.aggregatorServer
             .getTransport()
             .handleRequest(req, res, modifiedBody);
         }
@@ -246,10 +254,10 @@ export class MCPHttpServer {
           console.warn(
             "Remote aggregator SSE not yet implemented, using local aggregator",
           );
-          await this.serverManager.getAggregatorServer().connect(transport);
+          await this.aggregatorServer.getAggregatorServer().connect(transport);
         } else {
           // For local workspaces, connect to local aggregator server
-          await this.serverManager.getAggregatorServer().connect(transport);
+          await this.aggregatorServer.getAggregatorServer().connect(transport);
         }
 
         // セッションID情報をクライアントに送信

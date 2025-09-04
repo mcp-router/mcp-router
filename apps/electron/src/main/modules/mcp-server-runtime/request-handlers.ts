@@ -6,7 +6,7 @@ import {
   createResourceUri,
   createUriVariants,
 } from "@/main/utils/uri-utils";
-import { ServerManager } from "./server-manager";
+import { ServerManager } from "../mcp-server-manager/server-manager";
 import { TokenValidator } from "./token-validator";
 import { RequestHandlerBase } from "./request-handler-base";
 

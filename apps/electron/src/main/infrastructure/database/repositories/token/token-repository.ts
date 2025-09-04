@@ -167,7 +167,6 @@ export class TokenRepository extends BaseRepository<Token> {
     return true;
   }
 
-
   /**
    * クライアントIDに関連付けられたトークンを取得
    */

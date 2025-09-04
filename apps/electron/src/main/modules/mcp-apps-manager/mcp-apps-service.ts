@@ -201,7 +201,6 @@ export class McpAppsService extends SingletonService<
     }
   }
 
-
   // ========== Client Utilities (delegated to MCPClient) ==========
 
   public async connectToMCPServer(

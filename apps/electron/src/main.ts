@@ -1,7 +1,8 @@
 import { app, BrowserWindow, session, shell } from "electron";
 import path from "node:path";
-import { MCPServerManager } from "@/main/modules/mcp-server-manager";
-import { MCPHttpServer } from "@/main/modules/mcp-server-manager/http/mcp-http-server";
+import { ServerManager } from "@/main/modules/mcp-server-manager/server-manager";
+import { AggregatorServer } from "@/main/modules/mcp-server-runtime/aggregator-server";
+import { MCPHttpServer } from "@/main/modules/mcp-server-runtime/http/mcp-http-server";
 import started from "electron-squirrel-startup";
 import { updateElectronApp } from "update-electron-app";
 import { setApplicationMenu } from "@/main/ui/menu";
@@ -76,11 +77,14 @@ declare const BACKGROUND_WINDOW_PRELOAD_WEBPACK_ENTRY: string | undefined;
 declare const BACKGROUND_WINDOW_WEBPACK_ENTRY: string;
 
 // グローバル変数の宣言（初期化は後で行う）
-let mcpServerManager: MCPServerManager;
+let serverManager: ServerManager;
+let aggregatorServer: AggregatorServer;
 let mcpHttpServer: MCPHttpServer;
 
-// MCPServerManagerインスタンスを取得する関数をグローバルに公開
-(global as any).getMCPServerManager = () => mcpServerManager;
+// ServerManagerインスタンスを取得する関数をグローバルに公開
+(global as any).getServerManager = () => serverManager;
+// AggregatorServerインスタンスを取得する関数をグローバルに公開
+(global as any).getAggregatorServer = () => aggregatorServer;
 
 const createWindow = () => {
   // Platform-specific window options
@@ -187,19 +191,16 @@ const createBackgroundWindow = () => {
 
 /**
  * Sets up a timer to periodically update the tray context menu
- * @param mcpServerManager The MCPServerManager instance
+ * @param serverManager The ServerManager instance
  * @param intervalMs Time between updates in milliseconds
  */
-function setupTrayUpdateTimer(
-  mcpServerManager: MCPServerManager,
-  intervalMs = 5000,
-) {
+function setupTrayUpdateTimer(serverManager: ServerManager, intervalMs = 5000) {
   if (trayUpdateTimer) {
     clearInterval(trayUpdateTimer);
   }
 
   trayUpdateTimer = setInterval(() => {
-    updateTrayContextMenu(mcpServerManager);
+    updateTrayContextMenu(serverManager);
   }, intervalMs);
 }
 
@@ -235,14 +236,18 @@ async function initMCPServices(): Promise<void> {
   // Platform APIマネージャーの初期化（ワークスペースDBを設定）
   await getPlatformAPIManager().initialize();
 
-  // MCPサーバーマネージャーの初期化
-  mcpServerManager = new MCPServerManager();
+  // ServerManagerの初期化
+  serverManager = new ServerManager();
 
   // データベースからサーバーリストを読み込む
-  await mcpServerManager.initializeAsync();
+  await serverManager.initializeAsync();
+
+  // AggregatorServerの初期化
+  aggregatorServer = new AggregatorServer(serverManager);
+  aggregatorServer.initAgentToolsServer();
 
   // HTTPサーバーの初期化とスタート
-  mcpHttpServer = new MCPHttpServer(mcpServerManager, 3282);
+  mcpHttpServer = new MCPHttpServer(serverManager, 3282, aggregatorServer);
   try {
     await mcpHttpServer.start();
   } catch (error) {
@@ -269,10 +274,10 @@ function initUI(): void {
   createBackgroundWindow();
 
   // システムトレイ作成
-  createTray(mcpServerManager);
+  createTray(serverManager);
 
   // トレイコンテキストメニューの定期更新を設定
-  setupTrayUpdateTimer(mcpServerManager);
+  setupTrayUpdateTimer(serverManager);
 }
 
 /**
@@ -400,7 +405,8 @@ app.on("will-quit", async () => {
     console.error("Failed to stop MCP HTTP Server:", error);
   }
 
-  mcpServerManager.shutdown();
+  serverManager.shutdown();
+  aggregatorServer.shutdown();
 });
 
 // Override the default app.quit to set our isQuitting flag first
