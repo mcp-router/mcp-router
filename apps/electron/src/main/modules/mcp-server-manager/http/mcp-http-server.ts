@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
 import * as http from "http";
-import { MCPServerManager } from "..";
+import { MCPServerManager } from "../index";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
-import { getPlatformAPIManager } from "../../../workspace/platform-api-manager";
+import { getPlatformAPIManager } from "../../workspace/platform-api-manager";
 import { TokenValidator } from "../token-validator";
 
 /**
@@ -127,7 +127,7 @@ export class MCPHttpServer {
 
           // Get user auth token instead of workspace token
           const { getDecryptedAuthToken } = await import(
-            "../../../auth/auth.service"
+            "../../auth/auth.service"
           );
           const authToken = await getDecryptedAuthToken();
 

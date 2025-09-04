@@ -1,8 +1,8 @@
 import { SingletonService } from "@/main/modules/singleton-service";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { logInfo } from "@/main/utils/logger";
-import { getServerRepository } from "../../../infrastructure/database";
-import { TokenManager } from "../apps/token-manager";
+import { getServerRepository } from "../../infrastructure/database";
+import { TokenManager } from "@/main/modules/mcp-apps-manager/token-manager";
 
 /**
  * Service class for managing server information

@@ -17,9 +17,9 @@ import {
   resetTokenRepository,
   resetWorkspaceRepository,
 } from "../../infrastructure/database";
-import { ServerService } from "@/main/modules/mcp-core/mcp-manager/server-service";
-import { McpAppsService } from "@/main/modules/mcp-core/apps/mcp-apps-service";
-import { LogService } from "../mcp-core/log/log-service";
+import { ServerService } from "@/main/modules/mcp-server-manager/server-service";
+import { McpAppsService } from "@/main/modules/mcp-apps-manager/mcp-apps-service";
+import { LogService } from "@/main/modules/mcp-logger/log-service";
 import { SettingsService } from "../settings/settings.service";
 import {
   DevelopmentAgentService,

@@ -1,12 +1,12 @@
 import { app, BrowserWindow, session, shell } from "electron";
 import path from "node:path";
-import { MCPServerManager } from "@/main/modules/mcp-core/mcp-manager";
-import { MCPHttpServer } from "@/main/modules/mcp-core/mcp-manager/http/mcp-http-server";
+import { MCPServerManager } from "@/main/modules/mcp-server-manager";
+import { MCPHttpServer } from "@/main/modules/mcp-server-manager/http/mcp-http-server";
 import started from "electron-squirrel-startup";
 import { updateElectronApp } from "update-electron-app";
 import { setApplicationMenu } from "@/main/ui/menu";
 import { createTray, updateTrayContextMenu } from "@/main/ui/tray";
-import { importExistingServerConfigurations } from "@/main/modules/mcp-core/apps/mcp-config-importer";
+import { importExistingServerConfigurations } from "@/main/modules/mcp-apps-manager/mcp-config-importer";
 import { getPlatformAPIManager } from "@/main/modules/workspace/platform-api-manager";
 import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 import { setupIpcHandlers } from "./main/infrastructure/ipc";

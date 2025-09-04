@@ -1,6 +1,6 @@
 import { AgentConfig, MCPServerConfig, MCPTool } from "@mcp_router/shared";
 import { getAgentRepository } from "../../../infrastructure/database";
-import { getServerService } from "../../mcp-core/mcp-manager/server-service";
+import { getServerService } from "@/main/modules/mcp-server-manager/server-service";
 import { DevelopmentAgent } from "./development-agent";
 import { v4 as uuidv4 } from "uuid";
 import { logError, logInfo } from "@/main/utils/logger";

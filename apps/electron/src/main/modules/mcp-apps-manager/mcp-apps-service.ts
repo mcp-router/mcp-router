@@ -1,6 +1,6 @@
 import path from "path";
 import { promises as fsPromises } from "fs";
-import { getServerService } from "@/main/modules/mcp-core/mcp-manager/server-service";
+import { getServerService } from "@/main/modules/mcp-server-manager/server-service";
 import { SingletonService } from "@/main/modules/singleton-service";
 import {
   syncServersFromClientConfig,
@@ -27,11 +27,11 @@ import { MCPClient } from "./mcp-client";
 import { AppPaths } from "./app-paths";
 
 // SVGアイコンのインポート
-import claudeIcon from "../../../../../public/images/apps/claude.svg";
-import clineIcon from "../../../../../public/images/apps/cline.svg";
-import windsurfIcon from "../../../../../public/images/apps/windsurf.svg";
-import cursorIcon from "../../../../../public/images/apps/cursor.svg";
-import vscodeIcon from "../../../../../public/images/apps/vscode.svg";
+import claudeIcon from "../../../../public/images/apps/claude.svg";
+import clineIcon from "../../../../public/images/apps/cline.svg";
+import windsurfIcon from "../../../../public/images/apps/windsurf.svg";
+import cursorIcon from "../../../../public/images/apps/cursor.svg";
+import vscodeIcon from "../../../../public/images/apps/vscode.svg";
 
 // アイコンのマッピング
 const ICON_MAP: Record<string, string> = {

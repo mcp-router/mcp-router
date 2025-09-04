@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { logService } from "@/main/modules/mcp-core/log/log-service";
+import { logService } from "@/main/modules/mcp-logger/log-service";
 
 export function setupLogHandlers(): void {
   ipcMain.handle(

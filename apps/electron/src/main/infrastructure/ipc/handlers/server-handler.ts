@@ -1,6 +1,6 @@
 import { ipcMain, dialog, BrowserWindow } from "electron";
 import { MCPServerConfig, CreateServerInput } from "@mcp_router/shared";
-import { processDxtFile } from "@/main/modules/mcp-core/server-processors/dxt-processor";
+import { processDxtFile } from "@/main/modules/mcp-server-manager/dxt-processor/dxt-processor";
 
 export function setupMcpServerHandlers(): void {
   const getMCPServerManager = () => (global as any).getMCPServerManager();

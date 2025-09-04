@@ -1,11 +1,11 @@
-import { SingletonService } from "../../singleton-service";
+import { SingletonService } from "../singleton-service";
 import {
   RequestLogEntry,
   RequestLogEntryInput,
   RequestLogQueryOptions,
   RequestLogQueryResult,
 } from "@mcp_router/shared";
-import { getLogRepository } from "../../../infrastructure/database";
+import { getLogRepository } from "../../infrastructure/database";
 
 /**
  * Request log service class

@@ -5,12 +5,12 @@ import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import {
   getServerService,
   ServerService,
-} from "@/main/modules/mcp-core/mcp-manager/server-service";
+} from "@/main/modules/mcp-server-manager/server-service";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   connectToMCPServer,
   substituteArgsParameters,
-} from "@/main/modules/mcp-core/apps/mcp-apps-service";
+} from "@/main/modules/mcp-apps-manager/mcp-apps-service";
 import { LoggingService } from "./logging";
 
 /**
@@ -187,7 +187,7 @@ export class ServerManager {
     try {
       const {
         TokenManager,
-      } = require("@/main/modules/mcp-core/apps/token-manager");
+      } = require("@/main/modules/mcp-apps-manager/token-manager");
       const tokenManager = new TokenManager();
       const allTokens = tokenManager.listTokens();
 
