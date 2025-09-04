@@ -1,6 +1,6 @@
 import path from "path";
 import { promises as fsPromises } from "fs";
-import { getServerService } from "@/main/modules/mcp-core/server/server-service";
+import { getServerService } from "@/main/modules/mcp-core/mcp-manager/server-service";
 import { SingletonService } from "@/main/modules/singleton-service";
 import {
   syncServersFromClientConfig,

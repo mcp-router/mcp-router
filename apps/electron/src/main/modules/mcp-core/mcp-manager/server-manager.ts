@@ -5,7 +5,7 @@ import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import {
   getServerService,
   ServerService,
-} from "@/main/modules/mcp-core/server/server-service";
+} from "@/main/modules/mcp-core/mcp-manager/server-service";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   connectToMCPServer,
