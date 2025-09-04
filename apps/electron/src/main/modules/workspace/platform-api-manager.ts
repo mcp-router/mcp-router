@@ -20,7 +20,7 @@ import {
 import { ServerService } from "@/main/modules/mcp-core/server/server-service";
 import { TokenService } from "@/main/modules/mcp-core/token/token-service";
 import { LogService } from "../mcp-core/log/log-service";
-import { SettingsService } from "../settings/settings-service";
+import { SettingsService } from "../settings/settings.service";
 import {
   DevelopmentAgentService,
   DeployedAgentService,

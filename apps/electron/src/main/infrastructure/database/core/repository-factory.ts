@@ -4,7 +4,7 @@ import { DeployedAgentRepository } from "../repositories/deployed-agent/deployed
 import { LogRepository } from "../repositories/log/log-repository";
 import { ServerRepository } from "../repositories/server/server-repository";
 import { SessionRepository } from "../repositories/session/session-repository";
-import { SettingsRepository } from "../repositories/settings/settings-repository";
+import { SettingsRepository } from "../../../modules/settings/settings.repository";
 import { TokenRepository } from "../repositories/token/token-repository";
 import { WorkspaceRepository } from "../repositories/workspace/workspace-repository";
 

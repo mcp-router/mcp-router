@@ -1,7 +1,7 @@
 import { setupAuthHandlers } from "./handlers/auth-handler";
 import { setupMcpServerHandlers } from "./handlers/server-handler";
 import { setupLogHandlers } from "./handlers/log-handler";
-import { setupSettingsHandlers } from "./handlers/settings-handler";
+import { setupSettingsHandlers } from "../../modules/settings/settings.ipc";
 import { setupMcpAppsHandlers } from "./handlers/mcp-apps-handler";
 import { setupTokenHandlers } from "./handlers/token-handler";
 import { setupFeedbackHandlers } from "./handlers/feedback-handler";

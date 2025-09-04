@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getSettingsService } from "@/main/modules/settings/settings-service";
+import { getSettingsService } from "@/main/modules/settings/settings.service";
 
 export function setupSettingsHandlers(): void {
   ipcMain.handle("settings:get", () => {
