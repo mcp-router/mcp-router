@@ -4,8 +4,7 @@ import { setupLogHandlers } from "./handlers/log-handler";
 import { setupSettingsHandlers } from "../../modules/settings/settings.ipc";
 import { setupMcpAppsHandlers } from "./handlers/mcp-apps-handler";
 import { setupSystemHandlers } from "./handlers/system-handler";
-import { setupPackageVersionHandlers } from "./handlers/package-version-handlers";
-import { setupPackageManagerHandlers } from "./handlers/package-manager-handlers";
+import { setupPackageHandlers } from "./handlers/package-handlers";
 import { setupAgentHandlers } from "./handlers/agent-handlers";
 import { setupWorkspaceHandlers } from "../../modules/workspace/workspace.ipc";
 import { setupWorkflowHandlers } from "../../modules/workflow/workflow.ipc";
@@ -34,11 +33,8 @@ export function setupIpcHandlers(): void {
   // システム関連（ユーティリティ、フィードバック、アップデート）
   setupSystemHandlers();
 
-  // パッケージバージョン解決関連
-  setupPackageVersionHandlers();
-
-  // パッケージマネージャー関連
-  setupPackageManagerHandlers();
+  // パッケージ関連（バージョン解決とマネージャー管理）
+  setupPackageHandlers();
 
   // エージェント関連
   setupAgentHandlers();

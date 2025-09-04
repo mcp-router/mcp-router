@@ -1,4 +1,4 @@
-import { extractServerVariables } from "@/main/modules/mcp-core/server/shared/server-variable-utils";
+import { extractServerVariables } from "@/main/modules/agent/shared/server-variable-utils";
 import { AgentConfig, DeployedAgent } from "@mcp_router/shared";
 
 /**

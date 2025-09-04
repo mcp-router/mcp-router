@@ -1,15 +1,69 @@
+/**
+ * package-handlers.ts
+ *
+ * Unified package management and version resolution handlers
+ * Combines package manager installation/checking with version resolution functionality
+ */
+
 import { ipcMain } from "electron";
+import {
+  resolvePackageVersionsInArgs,
+  checkMcpServerPackageUpdates,
+} from "@/main/modules/agent/package/package-version-resolver";
 import {
   checkPnpmExists,
   checkUvExists,
   installPNPM,
   installUV,
-} from "@/main/modules/mcp-core/package/install-package-manager";
+} from "@/main/modules/agent/package/install-package-manager";
 
 /**
- * Register package manager-related IPC handlers
+ * Register unified package-related IPC handlers
  */
-export function setupPackageManagerHandlers(): void {
+export function setupPackageHandlers(): void {
+  // ====================
+  // Package Version Resolution
+  // ====================
+
+  // Handler for resolving package versions in arguments
+  ipcMain.handle(
+    "package:resolve-versions",
+    async (_, argsString: string, packageManager: "pnpm" | "uvx") => {
+      try {
+        // Call the utility function directly
+        const result = await resolvePackageVersionsInArgs(
+          argsString,
+          packageManager,
+        );
+        return { success: true, resolvedArgs: result };
+      } catch (error) {
+        console.error("Error resolving package versions:", error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
+
+  // Handler to check for updates to packages in a server
+  ipcMain.handle(
+    "package:check-updates",
+    async (_, args: string[], packageManager: "pnpm" | "uvx") => {
+      try {
+        const updates = await checkMcpServerPackageUpdates(
+          args,
+          packageManager,
+        );
+        return { success: true, updates };
+      } catch (error) {
+        console.error("Failed to check for package updates:", error);
+        return { success: false, error: String(error) };
+      }
+    },
+  );
+
+  // ====================
+  // Package Manager Management
+  // ====================
+
   // Check both package managers and Node.js
   ipcMain.handle("packageManager:checkAll", async () => {
     try {
