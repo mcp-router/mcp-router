@@ -1,6 +1,6 @@
 import { app, BrowserWindow, session, shell } from "electron";
 import path from "node:path";
-import { ServerManager } from "@/main/modules/mcp-server-manager/server-manager";
+import { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { AggregatorServer } from "@/main/modules/mcp-server-runtime/aggregator-server";
 import { MCPHttpServer } from "@/main/modules/mcp-server-runtime/http/mcp-http-server";
 import started from "electron-squirrel-startup";
@@ -77,12 +77,12 @@ declare const BACKGROUND_WINDOW_PRELOAD_WEBPACK_ENTRY: string | undefined;
 declare const BACKGROUND_WINDOW_WEBPACK_ENTRY: string;
 
 // グローバル変数の宣言（初期化は後で行う）
-let serverManager: ServerManager;
+let serverManager: MCPServerManager;
 let aggregatorServer: AggregatorServer;
 let mcpHttpServer: MCPHttpServer;
 
-// ServerManagerインスタンスを取得する関数をグローバルに公開
-(global as any).getServerManager = () => serverManager;
+// MCPServerManagerインスタンスを取得する関数をグローバルに公開
+(global as any).getMCPServerManager = () => serverManager;
 // AggregatorServerインスタンスを取得する関数をグローバルに公開
 (global as any).getAggregatorServer = () => aggregatorServer;
 
@@ -191,10 +191,10 @@ const createBackgroundWindow = () => {
 
 /**
  * Sets up a timer to periodically update the tray context menu
- * @param serverManager The ServerManager instance
+ * @param serverManager The MCPServerManager instance
  * @param intervalMs Time between updates in milliseconds
  */
-function setupTrayUpdateTimer(serverManager: ServerManager, intervalMs = 5000) {
+function setupTrayUpdateTimer(serverManager: MCPServerManager, intervalMs = 5000) {
   if (trayUpdateTimer) {
     clearInterval(trayUpdateTimer);
   }
@@ -236,8 +236,8 @@ async function initMCPServices(): Promise<void> {
   // Platform APIマネージャーの初期化（ワークスペースDBを設定）
   await getPlatformAPIManager().initialize();
 
-  // ServerManagerの初期化
-  serverManager = new ServerManager();
+  // MCPServerManagerの初期化
+  serverManager = new MCPServerManager();
 
   // データベースからサーバーリストを読み込む
   await serverManager.initializeAsync();

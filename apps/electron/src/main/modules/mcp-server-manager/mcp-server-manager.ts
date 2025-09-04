@@ -16,7 +16,7 @@ import { getLogService } from "@/main/modules/mcp-logger/log-service";
 /**
  * Core server lifecycle management
  */
-export class ServerManager {
+export class MCPServerManager {
   private servers: Map<string, MCPServer> = new Map();
   private clients: Map<string, Client> = new Map();
   private serverNameToIdMap: Map<string, string> = new Map();
@@ -38,7 +38,7 @@ export class ServerManager {
    */
   public async initializeAsync(): Promise<void> {
     try {
-      console.log("[ServerManager] Initializing...");
+      console.log("[MCPServerManager] Initializing...");
 
       // Initialize server service
       this.serverService = getServerService();
@@ -46,7 +46,7 @@ export class ServerManager {
       // Load servers from database
       await this.loadServersFromDatabase();
 
-      console.log("[ServerManager] Initialization complete");
+      console.log("[MCPServerManager] Initialization complete");
     } catch (error) {
       console.error("Failed to initialize Server Manager:", error);
     }
@@ -57,10 +57,10 @@ export class ServerManager {
    */
   private async loadServersFromDatabase(): Promise<void> {
     try {
-      console.log("[ServerManager] Loading servers from database...");
+      console.log("[MCPServerManager] Loading servers from database...");
       const servers = this.serverService.getAllServers();
       console.log(
-        `[ServerManager] Found ${servers.length} servers in database`,
+        `[MCPServerManager] Found ${servers.length} servers in database`,
       );
 
       for (const server of servers) {
@@ -78,7 +78,7 @@ export class ServerManager {
         }
       }
 
-      console.log(`[ServerManager] ${servers.length} servers loaded`);
+      console.log(`[MCPServerManager] ${servers.length} servers loaded`);
     } catch (error) {
       console.error("Error loading servers:", error);
     }

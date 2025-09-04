@@ -1,5 +1,5 @@
 import { app, Menu, Tray, nativeImage } from "electron";
-import { ServerManager } from "@/main/modules/mcp-server-manager/server-manager";
+import { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { mainWindow } from "../../main";
 
 // Global tray instance
@@ -7,9 +7,9 @@ let tray: Tray | null = null;
 
 /**
  * Creates the system tray icon and menu
- * @param serverManager The ServerManager instance to get server info
+ * @param serverManager The MCPServerManager instance to get server info
  */
-export function createTray(serverManager: ServerManager): Tray | null {
+export function createTray(serverManager: MCPServerManager): Tray | null {
   try {
     // Create tray instance - if no icon is found, use a simple fallback
     const icon = nativeImage.createFromDataURL(
@@ -63,9 +63,9 @@ export function createTray(serverManager: ServerManager): Tray | null {
 
 /**
  * Updates the tray context menu based on current server status
- * @param serverManager The ServerManager instance to get server info
+ * @param serverManager The MCPServerManager instance to get server info
  */
-export function updateTrayContextMenu(serverManager: ServerManager): void {
+export function updateTrayContextMenu(serverManager: MCPServerManager): void {
   if (!tray) return;
 
   // Get all servers and filter to running ones

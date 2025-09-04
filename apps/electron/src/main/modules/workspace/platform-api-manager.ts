@@ -139,11 +139,11 @@ export class PlatformAPIManager {
     DeployedAgentService.resetInstance();
     AgentSharingService.resetInstance();
 
-    // ServerManagerとAggregatorServerの再初期化をトリガー
-    // グローバル変数からServerManagerを取得して再初期化
-    const getServerManager = (global as any).getServerManager;
-    if (getServerManager && typeof getServerManager === "function") {
-      const serverManager = getServerManager();
+    // MCPServerManagerとAggregatorServerの再初期化をトリガー
+    // グローバル変数からMCPServerManagerを取得して再初期化
+    const getMCPServerManager = (global as any).getMCPServerManager;
+    if (getMCPServerManager && typeof getMCPServerManager === "function") {
+      const serverManager = getMCPServerManager();
       if (
         serverManager &&
         typeof serverManager.initializeAsync === "function"
@@ -171,9 +171,9 @@ export class PlatformAPIManager {
    */
   private async handleWorkspaceSwitch(workspace: Workspace): Promise<void> {
     // 先に現在のワークスペースのサーバーを停止
-    const getServerManager = (global as any).getServerManager;
-    if (getServerManager && typeof getServerManager === "function") {
-      const serverManager = getServerManager();
+    const getMCPServerManager = (global as any).getMCPServerManager;
+    if (getMCPServerManager && typeof getMCPServerManager === "function") {
+      const serverManager = getMCPServerManager();
       // 現在のワークスペースでサーバーを停止（ログは現在のDBに記録される）
       serverManager.clearAllServers();
     }

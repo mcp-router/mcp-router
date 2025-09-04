@@ -6,7 +6,7 @@ import {
   createResourceUri,
   createUriVariants,
 } from "@/main/utils/uri-utils";
-import { ServerManager } from "../mcp-server-manager/server-manager";
+import { MCPServerManager } from "../mcp-server-manager/mcp-server-manager";
 import { TokenValidator } from "./token-validator";
 import { RequestHandlerBase } from "./request-handler-base";
 
@@ -21,7 +21,7 @@ export class RequestHandlers extends RequestHandlerBase {
   private clients: Map<string, Client>;
   private serverNameToIdMap: Map<string, string>;
 
-  constructor(serverManager: ServerManager) {
+  constructor(serverManager: MCPServerManager) {
     const maps = serverManager.getMaps();
     const tokenValidator = new TokenValidator(maps.serverNameToIdMap);
     super(tokenValidator);

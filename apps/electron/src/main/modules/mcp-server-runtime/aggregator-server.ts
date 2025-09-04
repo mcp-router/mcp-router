@@ -10,7 +10,7 @@ import {
   ListPromptsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { RequestHandlers } from "./request-handlers";
-import { ServerManager } from "../mcp-server-manager/server-manager";
+import { MCPServerManager } from "../mcp-server-manager/mcp-server-manager";
 import { getLogService } from "@/main/modules/mcp-logger/log-service";
 
 /**
@@ -21,7 +21,7 @@ export class AggregatorServer {
   private transport!: StreamableHTTPServerTransport;
   private requestHandlers: RequestHandlers;
 
-  constructor(serverManager: ServerManager) {
+  constructor(serverManager: MCPServerManager) {
     this.requestHandlers = new RequestHandlers(serverManager);
     this.initAggregatorServer();
   }

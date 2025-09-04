@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import * as http from "http";
-import { ServerManager } from "../../mcp-server-manager/server-manager";
+import { MCPServerManager } from "../../mcp-server-manager/mcp-server-manager";
 import { AggregatorServer } from "../aggregator-server";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
 import { getPlatformAPIManager } from "../../workspace/platform-api-manager";
@@ -14,7 +14,7 @@ export class MCPHttpServer {
   private app: express.Application;
   private server: http.Server | null = null;
   private port: number;
-  private serverManager: ServerManager;
+  private serverManager: MCPServerManager;
   private aggregatorServer: AggregatorServer;
   private tokenValidator: TokenValidator;
   private v0Router: express.Router;
@@ -22,7 +22,7 @@ export class MCPHttpServer {
   private sseSessions: Map<string, SSEServerTransport> = new Map();
 
   constructor(
-    serverManager: ServerManager,
+    serverManager: MCPServerManager,
     port: number,
     aggregatorServer?: AggregatorServer,
   ) {
