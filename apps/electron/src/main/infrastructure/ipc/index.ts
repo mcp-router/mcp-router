@@ -5,7 +5,7 @@ import { setupSettingsHandlers } from "../../modules/settings/settings.ipc";
 import { setupMcpAppsHandlers } from "../../modules/mcp-apps-manager/mcp-apps-handler";
 import { setupSystemHandlers } from "./handlers/system-handler";
 import { setupPackageHandlers } from "./handlers/package-handlers";
-import { setupAgentHandlers } from "./handlers/agent-handlers";
+import { setupAgentHandlers } from "../../modules/agent/agent-handlers";
 import { setupWorkspaceHandlers } from "../../modules/workspace/workspace.ipc";
 import { setupWorkflowHandlers } from "../../modules/workflow/workflow.ipc";
 import { setupHookHandlers } from "../../modules/workflow/hook.ipc";

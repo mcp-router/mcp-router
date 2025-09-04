@@ -4,10 +4,10 @@ import {
   getDevelopmentAgentService,
   getDeployedAgentService,
   getAgentSharingService,
-} from "@/main/modules/agent";
-import { backgroundWindow, mainWindow } from "../../../../main";
+} from "@/main/modules/agent/index";
+import { backgroundWindow, mainWindow } from "../../../main";
 import { status } from "@/main/modules/auth/auth.service";
-import { getSessionRepository } from "../../database";
+import { getSessionRepository } from "../../infrastructure/database";
 
 /**
  * エージェント関連のIPC通信ハンドラをセットアップ

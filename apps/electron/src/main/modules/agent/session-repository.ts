@@ -1,5 +1,5 @@
-import { BaseRepository } from "../../core/base-repository";
-import { SqliteManager } from "../../core/sqlite-manager";
+import { BaseRepository } from "../../infrastructure/database/core/base-repository";
+import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
 import { v4 as uuidv4 } from "uuid";
 import { LocalChatSession, LocalSessionStatus } from "@mcp_router/shared";
 
