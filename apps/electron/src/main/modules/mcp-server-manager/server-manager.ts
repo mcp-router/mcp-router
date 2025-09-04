@@ -11,7 +11,7 @@ import {
   connectToMCPServer,
   substituteArgsParameters,
 } from "@/main/modules/mcp-apps-manager/mcp-apps-service";
-import { LoggingService } from "./logging";
+import { getLogService } from "@/main/modules/mcp-logger/log-service";
 
 /**
  * Core server lifecycle management
@@ -23,14 +23,14 @@ export class ServerManager {
   private serverStatusMap: Map<string, boolean> = new Map();
   private serversDir: string;
   private serverService!: ServerService;
-  private loggingService: LoggingService;
 
   constructor() {
     this.serversDir = path.join(app.getPath("userData"), "mcp-servers");
     if (!fs.existsSync(this.serversDir)) {
       fs.mkdirSync(this.serversDir, { recursive: true });
     }
-    this.loggingService = new LoggingService(this.serverNameToIdMap);
+    // Set server name to ID map for log service
+    getLogService().setServerNameToIdMap(this.serverNameToIdMap);
   }
 
   /**
@@ -238,7 +238,7 @@ export class ServerManager {
     this.serverStatusMap.set(server.name, true);
 
     // Record log
-    this.loggingService.recordRequestLog({
+    getLogService().recordMcpRequestLog({
       timestamp: new Date().toISOString(),
       requestType: "StartServer",
       params: { serverName: server.name },
@@ -272,7 +272,7 @@ export class ServerManager {
       this.serverStatusMap.set(server.name, false);
 
       // Record log
-      this.loggingService.recordRequestLog({
+      getLogService().recordMcpRequestLog({
         timestamp: new Date().toISOString(),
         requestType: "StopServer",
         params: { serverName: server.name },

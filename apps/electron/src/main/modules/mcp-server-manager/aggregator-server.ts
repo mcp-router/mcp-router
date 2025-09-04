@@ -10,8 +10,8 @@ import {
   ListPromptsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { RequestHandlers } from "./request-handlers";
-import { LoggingService } from "./logging";
 import { ServerManager } from "./server-manager";
+import { getLogService } from "@/main/modules/mcp-logger/log-service";
 
 /**
  * MCP Aggregator Server that combines multiple MCP servers into one
@@ -20,11 +20,9 @@ export class AggregatorServer {
   private aggregatorServer!: Server;
   private transport!: StreamableHTTPServerTransport;
   private requestHandlers: RequestHandlers;
-  private loggingService: LoggingService;
 
-  constructor(serverManager: ServerManager, loggingService: LoggingService) {
-    this.loggingService = loggingService;
-    this.requestHandlers = new RequestHandlers(serverManager, loggingService);
+  constructor(serverManager: ServerManager) {
+    this.requestHandlers = new RequestHandlers(serverManager);
     this.initAggregatorServer();
   }
 
@@ -55,7 +53,7 @@ export class AggregatorServer {
       this.aggregatorServer.onerror = (error) => {
         console.error("[MCP Aggregator Error]", error);
         // Log server errors
-        this.loggingService.recordRequestLog({
+        getLogService().recordMcpRequestLog({
           timestamp: new Date().toISOString(),
           requestType: "ServerError",
           params: {},

@@ -3,7 +3,6 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { ServerManager } from "./server-manager";
 import { AggregatorServer } from "./aggregator-server";
-import { LoggingService } from "./logging";
 import { RequestHandlers } from "./request-handlers";
 
 /**
@@ -12,25 +11,14 @@ import { RequestHandlers } from "./request-handlers";
 export class MCPServerManager {
   private serverManager: ServerManager;
   private aggregatorServer: AggregatorServer;
-  private loggingService: LoggingService;
   private requestHandlers: RequestHandlers;
 
   constructor() {
     this.serverManager = new ServerManager();
 
-    // Get server name to ID map from server manager
-    const maps = this.serverManager.getMaps();
-    this.loggingService = new LoggingService(maps.serverNameToIdMap);
+    this.aggregatorServer = new AggregatorServer(this.serverManager);
 
-    this.aggregatorServer = new AggregatorServer(
-      this.serverManager,
-      this.loggingService,
-    );
-
-    this.requestHandlers = new RequestHandlers(
-      this.serverManager,
-      this.loggingService,
-    );
+    this.requestHandlers = new RequestHandlers(this.serverManager);
   }
 
   /**

@@ -4,6 +4,9 @@ import {
   RequestLogEntryInput,
   RequestLogQueryOptions,
   RequestLogQueryResult,
+  McpManagerRequestLogEntry,
+  AGGREGATOR_SERVER_ID,
+  AGGREGATOR_SERVER_NAME,
 } from "@mcp_router/shared";
 import { getLogRepository } from "../../infrastructure/database";
 
@@ -15,11 +18,27 @@ export class LogService extends SingletonService<
   string,
   LogService
 > {
+  private serverNameToIdMap: Map<string, string> | undefined;
+
   /**
    * Constructor
    */
   protected constructor() {
     super();
+  }
+
+  /**
+   * Set server name to ID map for logging
+   */
+  public setServerNameToIdMap(map: Map<string, string>): void {
+    this.serverNameToIdMap = map;
+  }
+
+  /**
+   * Get server ID by name
+   */
+  private getServerIdByName(name: string): string | undefined {
+    return this.serverNameToIdMap?.get(name);
   }
 
   /**
@@ -62,6 +81,61 @@ export class LogService extends SingletonService<
   }
 
   /**
+   * Record a MCP manager request log entry
+   * @param logEntry The log entry to record
+   * @param clientServerName Optional client server name to use instead of the aggregator name
+   */
+  public recordMcpRequestLog(
+    logEntry: McpManagerRequestLogEntry,
+    clientServerName?: string,
+  ): void {
+    // Determine server name and ID
+    let serverName = AGGREGATOR_SERVER_NAME;
+    let serverId = AGGREGATOR_SERVER_ID;
+
+    if (clientServerName) {
+      serverName = clientServerName;
+
+      // サーバ名からIDへの変換を試みる
+      const serverIdFromName = this.getServerIdByName(clientServerName);
+      if (serverIdFromName) {
+        serverId = serverIdFromName;
+      } else {
+        serverId = clientServerName; // IDが見つからない場合は名前をそのまま使用
+      }
+    }
+
+    // Extract client information from the request parameters
+    const clientId = logEntry.clientId;
+    const clientName = clientId; // Default to clientId
+
+    // Try to determine client from the parameters
+    if (logEntry.params) {
+      // Remove token from logged parameters for security
+      if (logEntry.params.token) {
+        delete logEntry.params.token;
+      }
+      if (logEntry.params._meta?.token) {
+        delete logEntry.params._meta.token;
+      }
+    }
+
+    // Save as request log for visualization
+    this.addRequestLog({
+      clientId,
+      clientName,
+      serverId,
+      serverName,
+      requestType: logEntry.requestType,
+      requestParams: logEntry.params,
+      responseStatus: logEntry.result,
+      responseData: logEntry.response,
+      duration: logEntry.duration,
+      errorMessage: logEntry.errorMessage,
+    });
+  }
+
+  /**
    * リクエストログを取得（カーソルベースページネーション、フィルタリング対応）
    */
   public async getRequestLogs(
@@ -75,19 +149,6 @@ export class LogService extends SingletonService<
         total: 0,
         hasMore: false,
       });
-    }
-  }
-
-  /**
-   * IDでログエントリを取得
-   * @param id ログエントリのID
-   * @returns 見つかった場合はログエントリ、見つからない場合はundefined
-   */
-  public getLogById(id: string): RequestLogEntry | undefined {
-    try {
-      return getLogRepository().getById(id);
-    } catch (error) {
-      return this.handleError("ID検索", error, undefined);
     }
   }
 }

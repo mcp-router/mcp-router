@@ -6,7 +6,6 @@ import {
   createResourceUri,
   createUriVariants,
 } from "@/main/utils/uri-utils";
-import { LoggingService } from "./logging";
 import { ServerManager } from "./server-manager";
 import { TokenValidator } from "./token-validator";
 import { RequestHandlerBase } from "./request-handler-base";
@@ -22,10 +21,10 @@ export class RequestHandlers extends RequestHandlerBase {
   private clients: Map<string, Client>;
   private serverNameToIdMap: Map<string, string>;
 
-  constructor(serverManager: ServerManager, loggingService: LoggingService) {
+  constructor(serverManager: ServerManager) {
     const maps = serverManager.getMaps();
     const tokenValidator = new TokenValidator(maps.serverNameToIdMap);
-    super(tokenValidator, loggingService);
+    super(tokenValidator);
 
     // Get maps from server manager
     this.servers = maps.servers;

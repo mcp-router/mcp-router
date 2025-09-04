@@ -1,5 +1,5 @@
 import { TokenValidator } from "./token-validator";
-import { LoggingService } from "./logging";
+import { getLogService } from "@/main/modules/mcp-logger/log-service";
 import { McpManagerRequestLogEntry as RequestLogEntry } from "@mcp_router/shared";
 
 /**
@@ -7,11 +7,9 @@ import { McpManagerRequestLogEntry as RequestLogEntry } from "@mcp_router/shared
  */
 export abstract class RequestHandlerBase {
   protected tokenValidator: TokenValidator;
-  protected loggingService: LoggingService;
 
-  constructor(tokenValidator: TokenValidator, loggingService: LoggingService) {
+  constructor(tokenValidator: TokenValidator) {
     this.tokenValidator = tokenValidator;
-    this.loggingService = loggingService;
   }
 
   /**
@@ -152,7 +150,7 @@ export abstract class RequestHandlerBase {
       // Log success
       logEntry.response = result;
       logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
-      this.loggingService.recordRequestLog(logEntry, serverName);
+      getLogService().recordMcpRequestLog(logEntry, serverName);
 
       return result;
     } catch (error: any) {
@@ -160,7 +158,7 @@ export abstract class RequestHandlerBase {
       logEntry.result = "error";
       logEntry.errorMessage = error.message || String(error);
       logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
-      this.loggingService.recordRequestLog(logEntry, serverName);
+      getLogService().recordMcpRequestLog(logEntry, serverName);
 
       // Re-throw the original error
       throw error;
