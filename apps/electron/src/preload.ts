@@ -34,15 +34,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   removeMcpServer: (id: string) => ipcRenderer.invoke("mcp:remove", id),
   updateMcpServerConfig: (id: string, config: any) =>
     ipcRenderer.invoke("mcp:update-config", id, config),
-  fetchMcpServersFromIndex: (
-    page?: number,
-    limit?: number,
-    search?: string,
-    isVerified?: boolean,
-  ) =>
-    ipcRenderer.invoke("mcp:fetch-from-index", page, limit, search, isVerified),
-  fetchMcpServerVersionDetails: (displayId: string, version: string) =>
-    ipcRenderer.invoke("mcp:fetch-server-version-details", displayId, version),
 
   // Package Version Resolution
   resolvePackageVersionsInArgs: (

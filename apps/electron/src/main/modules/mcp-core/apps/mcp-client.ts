@@ -134,7 +134,8 @@ export class MCPClient {
         client,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       logError(`Failed to connect to MCP server: ${errorMessage}`);
       return {
         status: "error",
@@ -198,12 +199,12 @@ export class MCPClient {
       const match = arg.match(/^\$\{(.+)\}$/);
       if (match) {
         const paramName = match[1];
-        
+
         // First check env variables
         if (env[paramName]) {
           return env[paramName];
         }
-        
+
         // Then check input params
         if (inputParams[paramName]) {
           const param = inputParams[paramName];

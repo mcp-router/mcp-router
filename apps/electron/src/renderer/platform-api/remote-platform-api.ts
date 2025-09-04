@@ -127,23 +127,6 @@ export class RemotePlatformAPI implements PlatformAPI {
       return this.unwrapResponse<ServerStatus>(response);
     },
 
-    fetchFromIndex: async (
-      _page?: number,
-      _limit?: number,
-      _search?: string,
-      _isVerified?: boolean,
-    ) => {
-      // This operation is specific to the MCP index and might not be available remotely
-      throw new Error("fetchFromIndex is not supported in remote workspaces");
-    },
-
-    fetchVersionDetails: async (_displayId: string, _version: string) => {
-      // This operation is specific to the MCP index and might not be available remotely
-      throw new Error(
-        "fetchVersionDetails is not supported in remote workspaces",
-      );
-    },
-
     selectFile: (options?: {
       title?: string;
       mode?: "file" | "directory";

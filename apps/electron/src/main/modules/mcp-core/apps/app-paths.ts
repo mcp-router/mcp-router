@@ -52,7 +52,12 @@ export class AppPaths {
           "claude_desktop_config.json",
         );
       default:
-        return path.join(this.HOME, ".config", "Claude", "claude_desktop_config.json");
+        return path.join(
+          this.HOME,
+          ".config",
+          "Claude",
+          "claude_desktop_config.json",
+        );
     }
   }
 

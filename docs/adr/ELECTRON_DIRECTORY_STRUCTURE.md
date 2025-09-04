@@ -46,7 +46,6 @@ apps/electron/src/
 │   │   │   ├── apps/       # MCPアプリ管理
 │   │   │   ├── log/        # ログ管理
 │   │   │   ├── mcp-manager/ # MCPマネージャー
-│   │   │   ├── registry/   # レジストリ
 │   │   │   └── server-processors/ # サーバー処理
 │   │   ├── settings/       # 設定管理
 │   │   ├── ui/             # UI関連（メニュー、トレイ）

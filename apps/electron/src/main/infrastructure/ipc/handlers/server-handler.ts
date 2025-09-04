@@ -1,9 +1,5 @@
 import { ipcMain, dialog, BrowserWindow } from "electron";
 import { MCPServerConfig, CreateServerInput } from "@mcp_router/shared";
-import {
-  fetchMcpServersFromIndex,
-  fetchMcpServerVersionDetails,
-} from "@/main/modules/mcp-core/registry/mcp-fetcher";
 import { processDxtFile } from "@/main/modules/mcp-core/server-processors/dxt-processor";
 
 export function setupMcpServerHandlers(): void {
@@ -74,26 +70,6 @@ export function setupMcpServerHandlers(): void {
       const mcpServerManager = getMCPServerManager();
       const result = mcpServerManager.updateServer(id, config);
       return result;
-    },
-  );
-
-  ipcMain.handle(
-    "mcp:fetch-from-index",
-    async (
-      _,
-      page?: number,
-      limit?: number,
-      search?: string,
-      isVerified?: boolean,
-    ) => {
-      return await fetchMcpServersFromIndex(page, limit, search, isVerified);
-    },
-  );
-
-  ipcMain.handle(
-    "mcp:fetch-server-version-details",
-    async (_, displayId: string, version: string) => {
-      return await fetchMcpServerVersionDetails(displayId, version);
     },
   );
 

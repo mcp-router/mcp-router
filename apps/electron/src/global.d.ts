@@ -12,10 +12,7 @@ import {
   WorkflowDefinition,
   HookModule,
 } from "@mcp_router/shared";
-import {
-  McpAppsManagerResult,
-  McpApp,
-} from "@/main/modules/mcp-apps-service";
+import { McpAppsManagerResult, McpApp } from "@/main/modules/mcp-apps-service";
 import { ServerPackageUpdates } from "./lib/utils/backend/package-version-resolver";
 
 declare global {
@@ -46,16 +43,6 @@ declare global {
       serverSelectFile: (options: any) => Promise<any>;
       removeMcpServer: (id: string) => Promise<any>;
       updateMcpServerConfig: (id: string, config: any) => Promise<any>;
-      fetchMcpServersFromIndex: (
-        page?: number,
-        limit?: number,
-        search?: string,
-        isVerified?: boolean,
-      ) => Promise<any>;
-      fetchMcpServerVersionDetails: (
-        displayId: string,
-        version: string,
-      ) => Promise<any>;
 
       getRequestLogs: (options?: {
         clientId?: string;

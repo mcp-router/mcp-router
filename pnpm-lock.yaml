@@ -185,9 +185,6 @@ importers:
       lucide-react:
         specifier: ^0.487.0
         version: 0.487.0(react@19.1.1)
-      node-fetch:
-        specifier: ^3.3.2
-        version: 3.3.2
       node-machine-id:
         specifier: ^1.1.12
         version: 1.1.12
@@ -5754,6 +5751,7 @@ packages:
   /escape-string-regexp@4.0.0:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
+    requiresBuild: true
     dev: true
 
   /escape-string-regexp@5.0.0:

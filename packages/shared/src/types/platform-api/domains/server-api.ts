@@ -32,13 +32,6 @@ export interface ServerAPI {
   start(id: string): Promise<boolean>;
   stop(id: string): Promise<boolean>;
   getStatus(id: string): Promise<ServerStatus>;
-  fetchFromIndex(
-    page?: number,
-    limit?: number,
-    search?: string,
-    isVerified?: boolean,
-  ): Promise<any>;
-  fetchVersionDetails(displayId: string, version: string): Promise<any>;
   selectFile(options?: {
     title?: string;
     mode?: "file" | "directory";

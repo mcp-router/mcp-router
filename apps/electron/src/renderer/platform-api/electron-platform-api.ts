@@ -70,15 +70,6 @@ class ElectronPlatformAPI implements PlatformAPI {
         const server = servers.find((s: any) => s.id === id);
         return server?.status || { type: "stopped" };
       },
-      fetchFromIndex: (page, limit, search, isVerified) =>
-        window.electronAPI.fetchMcpServersFromIndex(
-          page,
-          limit,
-          search,
-          isVerified,
-        ),
-      fetchVersionDetails: (displayId, version) =>
-        window.electronAPI.fetchMcpServerVersionDetails(displayId, version),
       selectFile: (options) => window.electronAPI.serverSelectFile(options),
     };
 

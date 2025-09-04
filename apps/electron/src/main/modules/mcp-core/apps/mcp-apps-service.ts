@@ -45,16 +45,36 @@ const ICON_MAP: Record<string, string> = {
 
 // 標準アプリの定義
 const STANDARD_APPS = [
-  { id: "claude", name: "Claude", configPathFn: () => "claudeConfig", icon: "claude" },
-  { id: "cline", name: "Cline", configPathFn: () => "clineConfig", icon: "cline" },
+  {
+    id: "claude",
+    name: "Claude",
+    configPathFn: () => "claudeConfig",
+    icon: "claude",
+  },
+  {
+    id: "cline",
+    name: "Cline",
+    configPathFn: () => "clineConfig",
+    icon: "cline",
+  },
   {
     id: "windsurf",
     name: "Windsurf",
     configPathFn: () => "windsurfConfig",
     icon: "windsurf",
   },
-  { id: "cursor", name: "Cursor", configPathFn: () => "cursorConfig", icon: "cursor" },
-  { id: "vscode", name: "VSCode", configPathFn: () => "vscodeConfig", icon: "vscode" },
+  {
+    id: "cursor",
+    name: "Cursor",
+    configPathFn: () => "cursorConfig",
+    icon: "cursor",
+  },
+  {
+    id: "vscode",
+    name: "VSCode",
+    configPathFn: () => "vscodeConfig",
+    icon: "vscode",
+  },
 ];
 
 /**
@@ -227,7 +247,11 @@ export class McpAppsService extends SingletonService<
     env: Record<string, string>,
     inputParams: Record<string, MCPInputParam>,
   ): string[] {
-    return this.mcpClient.substituteArgsParameters(argsTemplate, env, inputParams);
+    return this.mcpClient.substituteArgsParameters(
+      argsTemplate,
+      env,
+      inputParams,
+    );
   }
 
   // ========== App Path Methods (delegated to AppPaths) ==========
@@ -246,7 +270,7 @@ export class McpAppsService extends SingletonService<
       (app) => app.id.toLowerCase() === name.toLowerCase(),
     );
     if (!standardApp) return "";
-    
+
     const methodName = standardApp.configPathFn();
     switch (methodName) {
       case "claudeConfig":
@@ -622,7 +646,9 @@ export class McpAppsService extends SingletonService<
 
         // 既に同名のアプリが存在するかチェック
         if (
-          customApps.some((app) => app.name.toLowerCase() === name.toLowerCase())
+          customApps.some(
+            (app) => app.name.toLowerCase() === name.toLowerCase(),
+          )
         ) {
           return {
             success: false,
@@ -681,10 +707,7 @@ export class McpAppsService extends SingletonService<
       }
 
       // トークンのサーバアクセス権限を更新
-      const success = this.updateTokenServerAccess(
-        appToken.id,
-        serverIds,
-      );
+      const success = this.updateTokenServerAccess(appToken.id, serverIds);
 
       if (!success) {
         return {
@@ -726,9 +749,9 @@ export class McpAppsService extends SingletonService<
       const clientId = appName.toLowerCase();
 
       // トークンが存在するか確認
-      const appTokens = this
-        .listTokens()
-        .filter((token) => token.clientId === clientId);
+      const appTokens = this.listTokens().filter(
+        (token) => token.clientId === clientId,
+      );
 
       if (appTokens.length === 0) {
         return false;
@@ -747,9 +770,7 @@ export class McpAppsService extends SingletonService<
   /**
    * アプリの設定を統一（他のMCPサーバ設定を削除）
    */
-  public async unifyAppConfig(
-    appName: string,
-  ): Promise<McpAppsManagerResult> {
+  public async unifyAppConfig(appName: string): Promise<McpAppsManagerResult> {
     try {
       // 標準アプリかどうかを確認
       const isStdApp = this.isStandardApp(appName);
@@ -877,7 +898,11 @@ export function substituteArgsParameters(
   env: Record<string, string>,
   inputParams: Record<string, MCPInputParam>,
 ): string[] {
-  return getMcpAppsService().substituteArgsParameters(argsTemplate, env, inputParams);
+  return getMcpAppsService().substituteArgsParameters(
+    argsTemplate,
+    env,
+    inputParams,
+  );
 }
 
 // Token service exports for backward compatibility
