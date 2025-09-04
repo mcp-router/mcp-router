@@ -1,8 +1,8 @@
 import { setupAuthHandlers } from "../../modules/auth/auth.ipc";
 import { setupMcpServerHandlers } from "./handlers/server-handler";
-import { setupLogHandlers } from "./handlers/log-handler";
+import { setupLogHandlers } from "../../modules/mcp-logger/log-handler";
 import { setupSettingsHandlers } from "../../modules/settings/settings.ipc";
-import { setupMcpAppsHandlers } from "./handlers/mcp-apps-handler";
+import { setupMcpAppsHandlers } from "../../modules/mcp-apps-manager/mcp-apps-handler";
 import { setupSystemHandlers } from "./handlers/system-handler";
 import { setupPackageHandlers } from "./handlers/package-handlers";
 import { setupAgentHandlers } from "./handlers/agent-handlers";

@@ -1,5 +1,5 @@
-import { BaseRepository } from "../../core/base-repository";
-import { SqliteManager } from "../../core/sqlite-manager";
+import { BaseRepository } from "../../infrastructure/database/core/base-repository";
+import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
 import {
   RequestLogEntry,
   RequestLogEntryInput,
