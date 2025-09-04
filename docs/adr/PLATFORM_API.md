@@ -23,7 +23,7 @@ MCP Routerは、MCPサーバーとエージェントを管理するクロスプ�
 関連する機能を論理的なドメインに再編成し、9つのドメインAPIに整理しました：
 
 ```typescript
-// packages/shared/src/types/platform-api/index.ts
+// packages/shared/src/types/platform-api/ipc.ts
 interface PlatformAPI {
   agent: AgentAPI;      // エージェント管理（チャット機能含む）
   app: AppAPI;          // アプリケーション管理（トークン管理含む）
@@ -42,7 +42,7 @@ interface PlatformAPI {
 ### 現在のコードベース構造
 
 1. **型定義の配置**
-   - `packages/shared/src/types/platform-api/index.ts`: メインのインターフェース定義
+   - `packages/shared/src/types/platform-api/ipc.ts`: メインのインターフェース定義
    - `packages/shared/src/types/platform-api/domains/`: 各ドメインAPIの型定義
    - `apps/electron/src/lib/platform-api/types/platform-api.ts`: Electron固有の型定義
 

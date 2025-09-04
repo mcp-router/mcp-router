@@ -1,14 +1,14 @@
-import { setupAuthHandlers } from "../../modules/auth/auth.ipc";
-import { setupMcpServerHandlers } from "./handlers/server-handler";
-import { setupLogHandlers } from "../../modules/mcp-logger/log-handler";
-import { setupSettingsHandlers } from "../../modules/settings/settings.ipc";
-import { setupMcpAppsHandlers } from "../../modules/mcp-apps-manager/mcp-apps-handler";
-import { setupSystemHandlers } from "./handlers/system-handler";
-import { setupPackageHandlers } from "./handlers/package-handlers";
-import { setupAgentHandlers } from "../../modules/agent/agent-handlers";
-import { setupWorkspaceHandlers } from "../../modules/workspace/workspace.ipc";
-import { setupWorkflowHandlers } from "../../modules/workflow/workflow.ipc";
-import { setupHookHandlers } from "../../modules/workflow/hook.ipc";
+import { setupAuthHandlers } from "../modules/auth/auth.ipc";
+import { setupMcpServerHandlers } from "../modules/mcp-server-manager/server-handler";
+import { setupLogHandlers } from "../modules/mcp-logger/log-handler";
+import { setupSettingsHandlers } from "../modules/settings/settings.ipc";
+import { setupMcpAppsHandlers } from "../modules/mcp-apps-manager/mcp-apps-handler";
+import { setupSystemHandlers } from "../modules/system/system-handler";
+import { setupPackageHandlers } from "../modules/system/package-handlers";
+import { setupAgentHandlers } from "../modules/agent/agent-handlers";
+import { setupWorkspaceHandlers } from "../modules/workspace/workspace.ipc";
+import { setupWorkflowHandlers } from "../modules/workflow/workflow.ipc";
+import { setupHookHandlers } from "../modules/workflow/hook.ipc";
 
 /**
  * IPC通信ハンドラのセットアップを行う関数

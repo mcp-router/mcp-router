@@ -50,7 +50,7 @@ apps/electron/src/main/infrastructure/database/
 │       ├── settings.ts
 │       ├── tokens.ts
 │       └── workspaces.ts
-└── index.ts                  # パブリックAPI
+└── ipc.ts                  # パブリックAPI
 ```
 
 ### アーキテクチャパターン

@@ -2,7 +2,7 @@ import { SqliteManager } from "./sqlite-manager";
 import { AgentRepository } from "../../../modules/agent/agent-repository";
 import { DeployedAgentRepository } from "../../../modules/agent/deployed-agent-repository";
 import { LogRepository } from "../../../modules/mcp-logger/log-repository";
-import { ServerRepository } from "../repositories/server/server-repository";
+import { ServerRepository } from "../../../modules/mcp-server-manager/server-repository";
 import { SessionRepository } from "../../../modules/agent/session-repository";
 import { SettingsRepository } from "../../../modules/settings/settings.repository";
 import { TokenRepository } from "../../../modules/mcp-apps-manager/token-repository";

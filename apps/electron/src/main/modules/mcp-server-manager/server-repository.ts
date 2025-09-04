@@ -1,5 +1,5 @@
-import { BaseRepository } from "../../core/base-repository";
-import { SqliteManager } from "../../core/sqlite-manager";
+import { BaseRepository } from "../../infrastructure/database/core/base-repository";
+import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
 

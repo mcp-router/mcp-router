@@ -11,7 +11,7 @@ import { importExistingServerConfigurations } from "@/main/modules/mcp-apps-mana
 import { getPlatformAPIManager } from "@/main/modules/workspace/platform-api-manager";
 import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 import { setupIpcHandlers } from "./main/infrastructure/ipc";
-import { getIsAutoUpdateInProgress } from "./main/infrastructure/ipc/handlers/system-handler";
+import { getIsAutoUpdateInProgress } from "./main/modules/system/system-handler";
 import {
   initializeEnvironment,
   isDevelopment,

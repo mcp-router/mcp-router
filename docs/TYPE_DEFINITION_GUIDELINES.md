@@ -59,8 +59,8 @@ packages/shared/src/types/
 │   ├── props.ts     # Common prop interfaces
 │   └── state.ts     # Common state patterns
 ├── store/           # Store state types
-│   └── index.ts     # Store state interfaces
-└── index.ts         # Main export file
+│   └── ipc.ts     # Store state interfaces
+└── ipc.ts         # Main export file
 ```
 
 ## Type Definition Rules
