@@ -80,10 +80,10 @@ const STANDARD_APPS = [
  * MCP Apps Service - 統合されたMCPアプリケーション管理サービス
  * アプリケーション設定、トークン管理、クライアントユーティリティを統合
  */
-export class McpAppsService extends SingletonService<
+export class McpAppsManagerService extends SingletonService<
   Token,
   string,
-  McpAppsService
+  McpAppsManagerService
 > {
   private tokenManager: TokenManager;
   private mcpClient: MCPClient;
@@ -109,7 +109,7 @@ export class McpAppsService extends SingletonService<
   /**
    * Get singleton instance
    */
-  public static getInstance(): McpAppsService {
+  public static getInstance(): McpAppsManagerService {
     return (this as any).getInstanceBase();
   }
 
@@ -810,8 +810,8 @@ export class McpAppsService extends SingletonService<
 /**
  * Get McpAppsService instance
  */
-export function getMcpAppsService(): McpAppsService {
-  return McpAppsService.getInstance();
+export function getMcpAppsService(): McpAppsManagerService {
+  return McpAppsManagerService.getInstance();
 }
 
 // ========== Exported standalone functions for backward compatibility ==========

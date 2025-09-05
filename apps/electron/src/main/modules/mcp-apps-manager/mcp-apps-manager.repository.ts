@@ -9,8 +9,8 @@ import { Token } from "@mcp_router/shared";
  * トークン用リポジトリクラス
  * BetterSQLite3を使用してトークンを管理
  */
-export class TokenRepository extends BaseRepository<Token> {
-  private static instance: TokenRepository | null = null;
+export class McpAppsManagerRepository extends BaseRepository<Token> {
+  private static instance: McpAppsManagerRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -45,19 +45,19 @@ export class TokenRepository extends BaseRepository<Token> {
   /**
    * シングルトンインスタンスを取得
    */
-  public static getInstance(): TokenRepository {
+  public static getInstance(): McpAppsManagerRepository {
     const db = getSqliteManager();
-    if (!TokenRepository.instance || TokenRepository.instance.db !== db) {
-      TokenRepository.instance = new TokenRepository(db);
+    if (!McpAppsManagerRepository.instance || McpAppsManagerRepository.instance.db !== db) {
+      McpAppsManagerRepository.instance = new McpAppsManagerRepository(db);
     }
-    return TokenRepository.instance;
+    return McpAppsManagerRepository.instance;
   }
 
   /**
    * インスタンスをリセット
    */
   public static resetInstance(): void {
-    TokenRepository.instance = null;
+    McpAppsManagerRepository.instance = null;
   }
 
   /**
@@ -66,10 +66,10 @@ export class TokenRepository extends BaseRepository<Token> {
   protected initializeTable(): void {
     try {
       // テーブルを作成
-      this.db.execute(TokenRepository.CREATE_TABLE_SQL);
+      this.db.execute(McpAppsManagerRepository.CREATE_TABLE_SQL);
 
       // インデックスを作成
-      TokenRepository.INDEXES.forEach((indexSQL) => {
+      McpAppsManagerRepository.INDEXES.forEach((indexSQL) => {
         this.db.execute(indexSQL);
       });
 

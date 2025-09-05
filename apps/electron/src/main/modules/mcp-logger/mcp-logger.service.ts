@@ -8,15 +8,15 @@ import {
   AGGREGATOR_SERVER_ID,
   AGGREGATOR_SERVER_NAME,
 } from "@mcp_router/shared";
-import { LogRepository } from "./log-repository";
+import { McpLoggerRepository } from "./mcp-logger.repository";
 
 /**
  * Request log service class
  */
-export class LogService extends SingletonService<
+export class McpLoggerService extends SingletonService<
   RequestLogEntry,
   string,
-  LogService
+  McpLoggerService
 > {
   private serverNameToIdMap: Map<string, string> | undefined;
 
@@ -51,7 +51,7 @@ export class LogService extends SingletonService<
   /**
    * Get singleton instance of LogService
    */
-  public static getInstance(): LogService {
+  public static getInstance(): McpLoggerService {
     return (this as any).getInstanceBase();
   }
 
@@ -60,7 +60,7 @@ export class LogService extends SingletonService<
    * Used when switching workspaces
    */
   public static resetInstance(): void {
-    (this as any).resetInstanceBase(LogService);
+    (this as any).resetInstanceBase(McpLoggerService);
   }
 
   //--------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ export class LogService extends SingletonService<
     entry: RequestLogEntryInput,
   ): Promise<RequestLogEntry> {
     try {
-      return await LogRepository.getInstance().addRequestLog(entry);
+      return await McpLoggerRepository.getInstance().addRequestLog(entry);
     } catch (error) {
       return this.handleError("追加", error);
     }
@@ -142,7 +142,7 @@ export class LogService extends SingletonService<
     options: RequestLogQueryOptions = {},
   ): Promise<RequestLogQueryResult> {
     try {
-      return await LogRepository.getInstance().getRequestLogs(options);
+      return await McpLoggerRepository.getInstance().getRequestLogs(options);
     } catch (error) {
       return this.handleError("取得", error, {
         logs: [],
@@ -156,9 +156,9 @@ export class LogService extends SingletonService<
 /**
  * LogServiceのシングルトンインスタンスを取得
  */
-export function getLogService(): LogService {
-  return LogService.getInstance();
+export function getLogService(): McpLoggerService {
+  return McpLoggerService.getInstance();
 }
 
 // アプリケーション起動時にインスタンスを初期化
-export const logService = LogService.getInstance();
+export const logService = McpLoggerService.getInstance();

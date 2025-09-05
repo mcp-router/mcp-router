@@ -10,8 +10,8 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   connectToMCPServer,
   substituteArgsParameters,
-} from "@/main/modules/mcp-apps-manager/mcp-apps-service";
-import { getLogService } from "@/main/modules/mcp-logger/log-service";
+} from "../mcp-apps-manager/mcp-apps-manager.service";
+import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 
 /**
  * Core server lifecycle management

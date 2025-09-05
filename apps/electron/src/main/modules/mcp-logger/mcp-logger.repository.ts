@@ -15,8 +15,8 @@ import { encodeCursor, decodeCursor } from "@/renderer/utils/cursor";
  * リクエストログ用リポジトリクラス
  * BetterSQLite3を使用してリクエストログを管理
  */
-export class LogRepository extends BaseRepository<RequestLogEntry> {
-  private static instance: LogRepository | null = null;
+export class McpLoggerRepository extends BaseRepository<RequestLogEntry> {
+  private static instance: McpLoggerRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -63,19 +63,19 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
   /**
    * シングルトンインスタンスを取得
    */
-  public static getInstance(): LogRepository {
+  public static getInstance(): McpLoggerRepository {
     const db = getSqliteManager();
-    if (!LogRepository.instance || LogRepository.instance.db !== db) {
-      LogRepository.instance = new LogRepository(db);
+    if (!McpLoggerRepository.instance || McpLoggerRepository.instance.db !== db) {
+      McpLoggerRepository.instance = new McpLoggerRepository(db);
     }
-    return LogRepository.instance;
+    return McpLoggerRepository.instance;
   }
 
   /**
    * インスタンスをリセット
    */
   public static resetInstance(): void {
-    LogRepository.instance = null;
+    McpLoggerRepository.instance = null;
   }
 
   /**
@@ -84,10 +84,10 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
   protected initializeTable(): void {
     try {
       // テーブルを作成
-      this.db.execute(LogRepository.CREATE_TABLE_SQL);
+      this.db.execute(McpLoggerRepository.CREATE_TABLE_SQL);
 
       // インデックスを作成
-      LogRepository.INDEXES.forEach((indexSQL) => {
+      McpLoggerRepository.INDEXES.forEach((indexSQL) => {
         this.db.execute(indexSQL);
       });
 

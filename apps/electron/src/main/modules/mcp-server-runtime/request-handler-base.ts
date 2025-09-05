@@ -1,5 +1,5 @@
 import { TokenValidator } from "./token-validator";
-import { getLogService } from "@/main/modules/mcp-logger/log-service";
+import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import { McpManagerRequestLogEntry as RequestLogEntry } from "@mcp_router/shared";
 
 /**

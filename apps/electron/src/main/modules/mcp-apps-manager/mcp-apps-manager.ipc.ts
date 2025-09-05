@@ -5,7 +5,7 @@ import {
   addApp,
   unifyAppConfig,
   deleteCustomApp,
-} from "@/main/modules/mcp-apps-manager/mcp-apps-service";
+} from "./mcp-apps-manager.service";
 
 export function setupMcpAppsHandlers(): void {
   ipcMain.handle("mcp-apps:list", async () => {

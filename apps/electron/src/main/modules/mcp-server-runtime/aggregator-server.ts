@@ -11,7 +11,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { RequestHandlers } from "./request-handlers";
 import { MCPServerManager } from "../mcp-server-manager/mcp-server-manager";
-import { getLogService } from "@/main/modules/mcp-logger/log-service";
+import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 
 /**
  * MCP Aggregator Server that combines multiple MCP servers into one

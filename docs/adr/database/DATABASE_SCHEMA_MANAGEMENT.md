@@ -88,11 +88,11 @@ export const DATABASE_SCHEMA = {
 | AgentRepository | agents | agents.ts | ✓ |
 | DeployedAgentRepository | deployedAgents | deployed-agents.ts | ✓ |
 | HookRepository | hooks | hooks.ts | ✓ |
-| LogRepository | requestLogs | request-logs.ts | ✓ |
+| McpLoggerRepository | requestLogs | request-logs.ts | ✓ |
 | ServerRepository | servers | servers.ts | ✓ |
 | SessionRepository | chat_sessions | chat-sessions.ts | ✓ |
 | SettingsRepository | settings | settings.ts | ✗ |
-| TokenRepository | tokens | tokens.ts | ✓ |
+| McpAppsManagerRepository | tokens | tokens.ts | ✓ |
 | WorkspaceRepository | workspaces | workspaces.ts | ✓ |
 
 ### SettingsRepositoryの特殊対応

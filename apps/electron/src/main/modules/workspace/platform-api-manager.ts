@@ -10,14 +10,14 @@ import { MainDatabaseMigration } from "../../infrastructure/database/main-databa
 import { AgentRepository } from "../agent/agent-repository";
 import { DeployedAgentRepository } from "../agent/deployed-agent-repository";
 import { SessionRepository } from "../agent/session-repository";
-import { LogRepository } from "../mcp-logger/log-repository";
+import { McpLoggerRepository } from "../mcp-logger/mcp-logger.repository";
 import { ServerRepository } from "../mcp-server-manager/server-repository";
 import { SettingsRepository } from "../settings/settings.repository";
-import { TokenRepository } from "../mcp-apps-manager/token-repository";
+import { McpAppsManagerRepository } from "../mcp-apps-manager/mcp-apps-manager.repository";
 import { WorkspaceRepository } from "./workspace.repository";
 import { ServerService } from "@/main/modules/mcp-server-manager/server-service";
-import { McpAppsService } from "@/main/modules/mcp-apps-manager/mcp-apps-service";
-import { LogService } from "@/main/modules/mcp-logger/log-service";
+import { McpAppsManagerService } from "../mcp-apps-manager/mcp-apps-manager.service";
+import { McpLoggerService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import { SettingsService } from "../settings/settings.service";
 import {
   DevelopmentAgentService,
@@ -121,17 +121,17 @@ export class PlatformAPIManager {
     // リポジトリをリセット（新しいデータベースを使用するように）
     AgentRepository.resetInstance();
     DeployedAgentRepository.resetInstance();
-    LogRepository.resetInstance();
+    McpLoggerRepository.resetInstance();
     ServerRepository.resetInstance();
     SessionRepository.resetInstance();
     SettingsRepository.resetInstance();
-    TokenRepository.resetInstance();
+    McpAppsManagerRepository.resetInstance();
     WorkspaceRepository.resetInstance();
 
     // サービスのシングルトンインスタンスもリセット
     ServerService.resetInstance();
-    McpAppsService.resetInstance();
-    LogService.resetInstance();
+    McpAppsManagerService.resetInstance();
+    McpLoggerService.resetInstance();
     SettingsService.resetInstance();
     DevelopmentAgentService.resetInstance();
     DeployedAgentService.resetInstance();

@@ -12,7 +12,7 @@ import {
   connectToMCPServer,
   fetchServerTools,
   substituteArgsParameters,
-} from "@/main/modules/mcp-apps-manager/mcp-apps-service";
+} from "../../mcp-apps-manager/mcp-apps-manager.service";
 
 /**
  * サーバー情報を表す型
