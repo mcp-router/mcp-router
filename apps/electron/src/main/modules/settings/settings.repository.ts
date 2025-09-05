@@ -1,7 +1,7 @@
 import {
   SqliteManager,
   getSqliteManager,
-} from "../../infrastructure/database/core/sqlite-manager";
+} from "../../infrastructure/database/sqlite-manager";
 import { AppSettings, DEFAULT_APP_SETTINGS } from "@mcp_router/shared";
 
 /**

@@ -1,5 +1,5 @@
 import { SingletonService } from "@/main/modules/singleton-service";
-import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
+import { SqliteManager } from "../../infrastructure/database/sqlite-manager";
 import { session, app } from "electron";
 import { EventEmitter } from "events";
 import path from "path";

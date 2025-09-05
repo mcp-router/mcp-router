@@ -1,4 +1,4 @@
-import { getSqliteManager } from "../../infrastructure/database/core/sqlite-manager";
+import { getSqliteManager } from "../../infrastructure/database/sqlite-manager";
 import { HookModule } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
 

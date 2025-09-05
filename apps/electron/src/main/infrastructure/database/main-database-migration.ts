@@ -1,4 +1,4 @@
-import { getSqliteManager, SqliteManager } from "./core/sqlite-manager";
+import { getSqliteManager, SqliteManager } from "./sqlite-manager";
 import { ServerRepository } from "../../modules/mcp-server-manager/server-repository";
 import { Migration } from "@mcp_router/shared";
 import { safeStorage } from "electron";

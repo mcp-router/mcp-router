@@ -4,7 +4,7 @@ import type { Workspace } from "@mcp_router/shared";
 import {
   SqliteManager,
   setWorkspaceDatabase,
-} from "../../infrastructure/database/core/sqlite-manager";
+} from "../../infrastructure/database/sqlite-manager";
 import { getDatabaseContext } from "./database-context";
 import { MainDatabaseMigration } from "../../infrastructure/database/main-database-migration";
 import { AgentRepository } from "../agent/agent-repository";
