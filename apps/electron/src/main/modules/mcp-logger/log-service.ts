@@ -8,7 +8,7 @@ import {
   AGGREGATOR_SERVER_ID,
   AGGREGATOR_SERVER_NAME,
 } from "@mcp_router/shared";
-import { getLogRepository } from "../../infrastructure/database";
+import { LogRepository } from "./log-repository";
 
 /**
  * Request log service class
@@ -74,7 +74,7 @@ export class LogService extends SingletonService<
     entry: RequestLogEntryInput,
   ): Promise<RequestLogEntry> {
     try {
-      return await getLogRepository().addRequestLog(entry);
+      return await LogRepository.getInstance().addRequestLog(entry);
     } catch (error) {
       return this.handleError("追加", error);
     }
@@ -142,7 +142,7 @@ export class LogService extends SingletonService<
     options: RequestLogQueryOptions = {},
   ): Promise<RequestLogQueryResult> {
     try {
-      return await getLogRepository().getRequestLogs(options);
+      return await LogRepository.getInstance().getRequestLogs(options);
     } catch (error) {
       return this.handleError("取得", error, {
         logs: [],

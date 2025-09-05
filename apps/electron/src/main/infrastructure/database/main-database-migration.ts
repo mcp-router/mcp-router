@@ -1,5 +1,5 @@
 import { getSqliteManager, SqliteManager } from "./core/sqlite-manager";
-import { getServerRepository } from "./index";
+import { ServerRepository } from "../../modules/mcp-server-manager/server-repository";
 import { Migration } from "@mcp_router/shared";
 import { safeStorage } from "electron";
 
@@ -15,9 +15,9 @@ export class MainDatabaseMigration {
   /**
    * シングルトンインスタンスを取得
    */
-  public static getInstance(): MainDatabaseMigration {
+  public static getInstance(db: SqliteManager): MainDatabaseMigration {
     if (!MainDatabaseMigration.instance) {
-      MainDatabaseMigration.instance = new MainDatabaseMigration();
+      MainDatabaseMigration.instance = new MainDatabaseMigration(db);
     }
     return MainDatabaseMigration.instance;
   }
@@ -25,7 +25,7 @@ export class MainDatabaseMigration {
   /**
    * コンストラクタ - マイグレーションを登録
    */
-  private constructor() {
+  public constructor(private db: SqliteManager) {
     // マイグレーションを実行順に登録
     this.registerMigrations();
   }
@@ -727,7 +727,7 @@ export class MainDatabaseMigration {
       }
 
       // サーバーリポジトリを取得
-      const serverRepository = getServerRepository();
+      const serverRepository = ServerRepository.getInstance();
 
       // すべてのサーバーを取得
       const allServers = serverRepository.getAllServers();
@@ -830,11 +830,4 @@ export class MainDatabaseMigration {
       throw error;
     }
   }
-}
-
-/**
- * データベースマイグレーションのシングルトンインスタンスを取得
- */
-export function getDatabaseMigration(): MainDatabaseMigration {
-  return MainDatabaseMigration.getInstance();
 }

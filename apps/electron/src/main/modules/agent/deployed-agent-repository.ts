@@ -1,6 +1,9 @@
 import { DeployedAgent } from "@mcp_router/shared";
 import { BaseRepository } from "../../infrastructure/database/core/base-repository";
-import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
+import {
+  SqliteManager,
+  getSqliteManager,
+} from "../../infrastructure/database/core/sqlite-manager";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -8,6 +11,7 @@ import { v4 as uuidv4 } from "uuid";
  * Handles the storage and retrieval of agents that have been deployed to the "Use" section
  */
 export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
+  private static instance: DeployedAgentRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -47,12 +51,33 @@ export class DeployedAgentRepository extends BaseRepository<DeployedAgent> {
    * Constructor
    * @param db SqliteManager instance
    */
-  constructor(db: SqliteManager) {
+  private constructor(db: SqliteManager) {
     super(db, "deployedAgents");
     console.log(
       "[DeployedAgentRepository] Constructor called with database:",
       db?.getDbPath?.() || "database instance",
     );
+  }
+
+  /**
+   * シングルトンインスタンスを取得
+   */
+  public static getInstance(): DeployedAgentRepository {
+    const db = getSqliteManager();
+    if (
+      !DeployedAgentRepository.instance ||
+      DeployedAgentRepository.instance.db !== db
+    ) {
+      DeployedAgentRepository.instance = new DeployedAgentRepository(db);
+    }
+    return DeployedAgentRepository.instance;
+  }
+
+  /**
+   * インスタンスをリセット
+   */
+  public static resetInstance(): void {
+    DeployedAgentRepository.instance = null;
   }
 
   /**

@@ -1,5 +1,8 @@
 import { BaseRepository } from "../../infrastructure/database/core/base-repository";
-import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
+import {
+  SqliteManager,
+  getSqliteManager,
+} from "../../infrastructure/database/core/sqlite-manager";
 import { Token } from "@mcp_router/shared";
 
 /**
@@ -7,6 +10,7 @@ import { Token } from "@mcp_router/shared";
  * BetterSQLite3を使用してトークンを管理
  */
 export class TokenRepository extends BaseRepository<Token> {
+  private static instance: TokenRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -30,12 +34,30 @@ export class TokenRepository extends BaseRepository<Token> {
    * コンストラクタ
    * @param db SqliteManagerインスタンス
    */
-  constructor(db: SqliteManager) {
+  private constructor(db: SqliteManager) {
     super(db, "tokens");
     console.log(
       "[TokenRepository] Constructor called with database:",
       db?.getDbPath?.() || "database instance",
     );
+  }
+
+  /**
+   * シングルトンインスタンスを取得
+   */
+  public static getInstance(): TokenRepository {
+    const db = getSqliteManager();
+    if (!TokenRepository.instance || TokenRepository.instance.db !== db) {
+      TokenRepository.instance = new TokenRepository(db);
+    }
+    return TokenRepository.instance;
+  }
+
+  /**
+   * インスタンスをリセット
+   */
+  public static resetInstance(): void {
+    TokenRepository.instance = null;
   }
 
   /**

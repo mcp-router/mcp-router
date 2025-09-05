@@ -194,7 +194,10 @@ const createBackgroundWindow = () => {
  * @param serverManager The MCPServerManager instance
  * @param intervalMs Time between updates in milliseconds
  */
-function setupTrayUpdateTimer(serverManager: MCPServerManager, intervalMs = 5000) {
+function setupTrayUpdateTimer(
+  serverManager: MCPServerManager,
+  intervalMs = 5000,
+) {
   if (trayUpdateTimer) {
     clearInterval(trayUpdateTimer);
   }

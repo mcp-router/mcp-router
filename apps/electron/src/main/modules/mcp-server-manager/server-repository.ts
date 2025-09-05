@@ -1,5 +1,8 @@
 import { BaseRepository } from "../../infrastructure/database/core/base-repository";
-import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
+import {
+  SqliteManager,
+  getSqliteManager,
+} from "../../infrastructure/database/core/sqlite-manager";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
 
@@ -8,6 +11,7 @@ import { v4 as uuidv4 } from "uuid";
  * BetterSQLite3を使用してサーバ情報を管理
  */
 export class ServerRepository extends BaseRepository<MCPServer> {
+  private static instance: ServerRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -47,12 +51,30 @@ export class ServerRepository extends BaseRepository<MCPServer> {
    * コンストラクタ
    * @param db SqliteManagerインスタンス
    */
-  constructor(db: SqliteManager) {
+  private constructor(db: SqliteManager) {
     super(db, "servers");
     console.log(
       "[ServerRepository] Initialized with database:",
       db ? "Present" : "Missing",
     );
+  }
+
+  /**
+   * シングルトンインスタンスを取得
+   */
+  public static getInstance(): ServerRepository {
+    const db = getSqliteManager();
+    if (!ServerRepository.instance || ServerRepository.instance.db !== db) {
+      ServerRepository.instance = new ServerRepository(db);
+    }
+    return ServerRepository.instance;
+  }
+
+  /**
+   * インスタンスをリセット
+   */
+  public static resetInstance(): void {
+    ServerRepository.instance = null;
   }
 
   /**

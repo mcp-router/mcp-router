@@ -6,17 +6,15 @@ import {
   setWorkspaceDatabase,
 } from "../../infrastructure/database/core/sqlite-manager";
 import { getDatabaseContext } from "./database-context";
-import {
-  getDatabaseMigration,
-  resetAgentRepository,
-  resetDeployedAgentRepository,
-  resetLogRepository,
-  resetServerRepository,
-  resetSessionRepository,
-  resetSettingsRepository,
-  resetTokenRepository,
-  resetWorkspaceRepository,
-} from "../../infrastructure/database";
+import { MainDatabaseMigration } from "../../infrastructure/database/main-database-migration";
+import { AgentRepository } from "../agent/agent-repository";
+import { DeployedAgentRepository } from "../agent/deployed-agent-repository";
+import { SessionRepository } from "../agent/session-repository";
+import { LogRepository } from "../mcp-logger/log-repository";
+import { ServerRepository } from "../mcp-server-manager/server-repository";
+import { SettingsRepository } from "../settings/settings.repository";
+import { TokenRepository } from "../mcp-apps-manager/token-repository";
+import { WorkspaceRepository } from "./workspace.repository";
 import { ServerService } from "@/main/modules/mcp-server-manager/server-service";
 import { McpAppsService } from "@/main/modules/mcp-apps-manager/mcp-apps-service";
 import { LogService } from "@/main/modules/mcp-logger/log-service";
@@ -115,20 +113,20 @@ export class PlatformAPIManager {
     // マイグレーションを実行
     // メインDBの場合のみマイグレーションを実行
     if (workspace.localConfig?.databasePath === "mcprouter.db") {
-      const migration = getDatabaseMigration();
+      const migration = new MainDatabaseMigration(newDatabase);
       migration.runMigrations();
     }
     // ワークスペースDBの初期化は各リポジトリが自動的に行う
 
     // リポジトリをリセット（新しいデータベースを使用するように）
-    resetAgentRepository();
-    resetDeployedAgentRepository();
-    resetLogRepository();
-    resetServerRepository();
-    resetSessionRepository();
-    resetSettingsRepository();
-    resetTokenRepository();
-    resetWorkspaceRepository();
+    AgentRepository.resetInstance();
+    DeployedAgentRepository.resetInstance();
+    LogRepository.resetInstance();
+    ServerRepository.resetInstance();
+    SessionRepository.resetInstance();
+    SettingsRepository.resetInstance();
+    TokenRepository.resetInstance();
+    WorkspaceRepository.resetInstance();
 
     // サービスのシングルトンインスタンスもリセット
     ServerService.resetInstance();

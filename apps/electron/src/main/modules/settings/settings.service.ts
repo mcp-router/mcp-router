@@ -1,6 +1,6 @@
 import { AppSettings } from "@mcp_router/shared";
 import { SingletonService } from "../singleton-service";
-import { getSettingsRepository } from "../../infrastructure/database";
+import { SettingsRepository } from "./settings.repository";
 
 /**
  * Service for managing application settings
@@ -44,7 +44,7 @@ export class SettingsService extends SingletonService<
    */
   public getSettings(): AppSettings {
     try {
-      return getSettingsRepository().getSettings();
+      return SettingsRepository.getInstance().getSettings();
     } catch (error) {
       return this.handleError("設定取得", error);
     }
@@ -55,7 +55,7 @@ export class SettingsService extends SingletonService<
    */
   public saveSettings(settings: AppSettings): boolean {
     try {
-      return getSettingsRepository().saveSettings(settings);
+      return SettingsRepository.getInstance().saveSettings(settings);
     } catch (error) {
       return this.handleError("設定保存", error, false);
     }

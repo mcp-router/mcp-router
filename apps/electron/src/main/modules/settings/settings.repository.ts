@@ -1,10 +1,14 @@
-import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
+import {
+  SqliteManager,
+  getSqliteManager,
+} from "../../infrastructure/database/core/sqlite-manager";
 import { AppSettings, DEFAULT_APP_SETTINGS } from "@mcp_router/shared";
 
 /**
  * アプリケーション設定を管理するリポジトリ
  */
 export class SettingsRepository {
+  private static instance: SettingsRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -22,7 +26,7 @@ export class SettingsRepository {
   /**
    * コンストラクタ
    */
-  constructor(db: SqliteManager) {
+  private constructor(db: SqliteManager) {
     this.db = db;
     console.log(
       "[SettingsRepository] Constructor called with database:",
@@ -30,6 +34,24 @@ export class SettingsRepository {
     );
     this.initializeTable();
     this.loadSettingsToCache();
+  }
+
+  /**
+   * シングルトンインスタンスを取得
+   */
+  public static getInstance(): SettingsRepository {
+    const db = getSqliteManager();
+    if (!SettingsRepository.instance || SettingsRepository.instance.db !== db) {
+      SettingsRepository.instance = new SettingsRepository(db);
+    }
+    return SettingsRepository.instance;
+  }
+
+  /**
+   * インスタンスをリセット
+   */
+  public static resetInstance(): void {
+    SettingsRepository.instance = null;
   }
 
   /**

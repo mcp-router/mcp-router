@@ -1,8 +1,12 @@
 import { BaseRepository } from "../../infrastructure/database/core/base-repository";
-import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
+import {
+  SqliteManager,
+  getSqliteManager,
+} from "../../infrastructure/database/core/sqlite-manager";
 import { Workspace } from "@mcp_router/shared";
 
 export class WorkspaceRepository extends BaseRepository<Workspace> {
+  private static instance: WorkspaceRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -29,12 +33,33 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
     "CREATE INDEX IF NOT EXISTS idx_workspaces_last_used ON workspaces(lastUsedAt)",
   ];
 
-  constructor(db: SqliteManager) {
+  private constructor(db: SqliteManager) {
     super(db, "workspaces");
     console.log(
       "[WorkspaceRepository] Constructor called with database:",
       db?.getDbPath?.() || "database instance",
     );
+  }
+
+  /**
+   * シングルトンインスタンスを取得
+   */
+  public static getInstance(): WorkspaceRepository {
+    const db = getSqliteManager();
+    if (
+      !WorkspaceRepository.instance ||
+      WorkspaceRepository.instance.db !== db
+    ) {
+      WorkspaceRepository.instance = new WorkspaceRepository(db);
+    }
+    return WorkspaceRepository.instance;
+  }
+
+  /**
+   * インスタンスをリセット
+   */
+  public static resetInstance(): void {
+    WorkspaceRepository.instance = null;
   }
 
   /**

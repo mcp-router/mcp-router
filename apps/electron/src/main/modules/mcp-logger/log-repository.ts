@@ -1,5 +1,8 @@
 import { BaseRepository } from "../../infrastructure/database/core/base-repository";
-import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
+import {
+  SqliteManager,
+  getSqliteManager,
+} from "../../infrastructure/database/core/sqlite-manager";
 import {
   RequestLogEntry,
   RequestLogEntryInput,
@@ -13,6 +16,7 @@ import { encodeCursor, decodeCursor } from "@/renderer/utils/cursor";
  * BetterSQLite3を使用してリクエストログを管理
  */
 export class LogRepository extends BaseRepository<RequestLogEntry> {
+  private static instance: LogRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -48,12 +52,30 @@ export class LogRepository extends BaseRepository<RequestLogEntry> {
    * コンストラクタ
    * @param db SqliteManagerインスタンス
    */
-  constructor(db: SqliteManager) {
+  private constructor(db: SqliteManager) {
     super(db, "requestLogs");
     console.log(
       "[LogRepository] Constructor called with database:",
       db?.getDbPath?.() || "database instance",
     );
+  }
+
+  /**
+   * シングルトンインスタンスを取得
+   */
+  public static getInstance(): LogRepository {
+    const db = getSqliteManager();
+    if (!LogRepository.instance || LogRepository.instance.db !== db) {
+      LogRepository.instance = new LogRepository(db);
+    }
+    return LogRepository.instance;
+  }
+
+  /**
+   * インスタンスをリセット
+   */
+  public static resetInstance(): void {
+    LogRepository.instance = null;
   }
 
   /**

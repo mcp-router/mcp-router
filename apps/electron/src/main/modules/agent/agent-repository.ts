@@ -1,5 +1,8 @@
 import { BaseRepository } from "../../infrastructure/database/core/base-repository";
-import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
+import {
+  SqliteManager,
+  getSqliteManager,
+} from "../../infrastructure/database/core/sqlite-manager";
 import { AgentConfig } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
 
@@ -8,6 +11,7 @@ import { v4 as uuidv4 } from "uuid";
  * BetterSQLite3を使用してエージェント情報を管理
  */
 export class AgentRepository extends BaseRepository<AgentConfig> {
+  private static instance: AgentRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -41,12 +45,30 @@ export class AgentRepository extends BaseRepository<AgentConfig> {
    * コンストラクタ
    * @param db SqliteManagerインスタンス
    */
-  constructor(db: SqliteManager) {
+  private constructor(db: SqliteManager) {
     super(db, "agents");
     console.log(
       "[AgentRepository] Constructor called with database:",
       db?.getDbPath?.() || "database instance",
     );
+  }
+
+  /**
+   * シングルトンインスタンスを取得
+   */
+  public static getInstance(): AgentRepository {
+    const db = getSqliteManager();
+    if (!AgentRepository.instance || AgentRepository.instance.db !== db) {
+      AgentRepository.instance = new AgentRepository(db);
+    }
+    return AgentRepository.instance;
+  }
+
+  /**
+   * インスタンスをリセット
+   */
+  public static resetInstance(): void {
+    AgentRepository.instance = null;
   }
 
   /**

@@ -1,4 +1,4 @@
-import { BaseService } from "@/main/modules/base-service";
+import { SingletonService } from "@/main/modules/singleton-service";
 import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
 import { session, app } from "electron";
 import { EventEmitter } from "events";
@@ -8,28 +8,27 @@ import { v4 as uuidv4 } from "uuid";
 import * as fsSync from "fs";
 import type { Workspace, WorkspaceCreateConfig } from "@mcp_router/shared";
 
-export class WorkspaceService extends BaseService<Workspace, string> {
-  private static instance: WorkspaceService | null = null;
+export class WorkspaceService extends SingletonService<
+  Workspace,
+  string,
+  WorkspaceService
+> {
   private electronSessions: Map<string, Electron.Session> = new Map();
   private databaseInstances: Map<string, SqliteManager> = new Map();
   private metaDb: SqliteManager | null = null;
   private eventEmitter: EventEmitter = new EventEmitter();
 
   public static getInstance(): WorkspaceService {
-    if (!WorkspaceService.instance) {
-      WorkspaceService.instance = new WorkspaceService();
-    }
-    return WorkspaceService.instance;
+    return this.getInstanceBase();
   }
 
   public static resetInstance(): void {
-    if (WorkspaceService.instance) {
-      WorkspaceService.instance.cleanup();
-    }
-    WorkspaceService.instance = null;
+    const instance = this.getInstance();
+    instance.cleanup();
+    this.resetInstanceBase(WorkspaceService);
   }
 
-  private constructor() {
+  public constructor() {
     super();
     this.initializeMetaDatabase();
   }

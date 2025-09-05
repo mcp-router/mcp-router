@@ -1,4 +1,4 @@
-import { BaseService } from "./base-service";
+import { logError } from "@/main/utils/logger";
 
 /**
  * シングルトンサービスの基底クラス
@@ -7,16 +7,13 @@ import { BaseService } from "./base-service";
  * 1. シングルトンパターンの実装
  * 2. ワークスペース切り替え時のインスタンスリセット
  * 3. 動的なリポジトリ取得（ワークスペース切り替えに対応）
+ * 4. エラーハンドリング共通処理
  *
  * @template T - サービスが扱うエンティティの型
  * @template K - エンティティのIDの型（デフォルトはstring）
  * @template S - サービスクラス自身の型
  */
-export abstract class SingletonService<
-  T,
-  K = string,
-  S = any,
-> extends BaseService<T, K> {
+export abstract class SingletonService<T, K = string, S = any> {
   /**
    * シングルトンインスタンスを格納するMapオブジェクト
    * キー: サービスクラスのコンストラクタ
@@ -25,10 +22,39 @@ export abstract class SingletonService<
   private static instances: Map<Function, any> = new Map();
 
   /**
-   * コンストラクタはprotectedにして直接インスタンス化を防ぐ
+   * コンストラクタ
+   * 注意: シングルトンパターンを維持するため、直接インスタンス化せず、
+   * getInstance()メソッドを使用してください
    */
-  protected constructor() {
-    super();
+  public constructor() {}
+
+  /**
+   * エンティティ名を取得する抽象メソッド（エラーメッセージなどに使用）
+   * 各サブクラスで実装が必要
+   */
+  protected abstract getEntityName(): string;
+
+  /**
+   * エラーハンドリング共通処理
+   * @param operation - 処理名
+   * @param error - エラーオブジェクト
+   * @param defaultValue - エラー時に返す値（指定なしの場合は例外が投げられる）
+   * @returns デフォルト値または例外をスロー
+   */
+  protected handleError(
+    operation: string,
+    error: unknown,
+    defaultValue?: any,
+  ): any {
+    const entityName = this.getEntityName();
+    const message = `${entityName}の${operation}中にエラーが発生しました`;
+    logError(message, error);
+
+    if (arguments.length > 2) {
+      return defaultValue;
+    }
+
+    throw error;
   }
 
   /**
@@ -36,13 +62,13 @@ export abstract class SingletonService<
    * @param ServiceClass - サービスクラスのコンストラクタ
    * @returns サービスのインスタンス
    */
-  protected static getInstanceBase<
-    T extends new (...args: any[]) => InstanceType<T>,
-  >(this: T): InstanceType<T> {
+  protected static getInstanceBase<T extends SingletonService<any, any, any>>(
+    this: new () => T,
+  ): T {
     if (!SingletonService.instances.has(this)) {
       SingletonService.instances.set(this, new this());
     }
-    return SingletonService.instances.get(this) as InstanceType<T>;
+    return SingletonService.instances.get(this) as T;
   }
 
   /**

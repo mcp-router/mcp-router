@@ -1,5 +1,8 @@
 import { BaseRepository } from "../../infrastructure/database/core/base-repository";
-import { SqliteManager } from "../../infrastructure/database/core/sqlite-manager";
+import {
+  SqliteManager,
+  getSqliteManager,
+} from "../../infrastructure/database/core/sqlite-manager";
 import { v4 as uuidv4 } from "uuid";
 import { LocalChatSession, LocalSessionStatus } from "@mcp_router/shared";
 
@@ -7,6 +10,7 @@ import { LocalChatSession, LocalSessionStatus } from "@mcp_router/shared";
  * Chat session repository for local database storage
  */
 export class SessionRepository extends BaseRepository<LocalChatSession> {
+  private static instance: SessionRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -32,12 +36,30 @@ export class SessionRepository extends BaseRepository<LocalChatSession> {
     "CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status)",
   ];
 
-  constructor(db: SqliteManager) {
+  private constructor(db: SqliteManager) {
     super(db, "chat_sessions");
     console.log(
       "[SessionRepository] Constructor called with database:",
       db?.getDbPath?.() || "database instance",
     );
+  }
+
+  /**
+   * シングルトンインスタンスを取得
+   */
+  public static getInstance(): SessionRepository {
+    const db = getSqliteManager();
+    if (!SessionRepository.instance || SessionRepository.instance.db !== db) {
+      SessionRepository.instance = new SessionRepository(db);
+    }
+    return SessionRepository.instance;
+  }
+
+  /**
+   * インスタンスをリセット
+   */
+  public static resetInstance(): void {
+    SessionRepository.instance = null;
   }
 
   /**

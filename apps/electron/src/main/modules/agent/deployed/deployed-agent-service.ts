@@ -2,7 +2,7 @@ import {
   DeployedAgent as DeployedAgentType,
   MCPTool,
 } from "@mcp_router/shared";
-import { getDeployedAgentRepository } from "../../../infrastructure/database";
+import { DeployedAgentRepository } from "../deployed-agent-repository";
 import { DeployedAgent } from "./deployed-agent";
 import { logError, logInfo } from "@/main/utils/logger";
 import { SingletonService } from "@/main/modules/singleton-service";
@@ -52,7 +52,8 @@ class DeployedAgentService extends SingletonService<
    */
   private loadAgents(): void {
     try {
-      const agents = getDeployedAgentRepository().getAllDeployedAgents();
+      const agents =
+        DeployedAgentRepository.getInstance().getAllDeployedAgents();
 
       for (const agent of agents) {
         this.agents.set(agent.id, new DeployedAgent(agent));
@@ -77,7 +78,8 @@ class DeployedAgentService extends SingletonService<
       return this.agents.get(id);
     }
 
-    const agentConfig = getDeployedAgentRepository().getDeployedAgentById(id);
+    const agentConfig =
+      DeployedAgentRepository.getInstance().getDeployedAgentById(id);
     if (!agentConfig) {
       return undefined;
     }
@@ -93,7 +95,7 @@ class DeployedAgentService extends SingletonService<
    */
   public getDeployedAgents(): DeployedAgentType[] {
     try {
-      return getDeployedAgentRepository().getAllDeployedAgents();
+      return DeployedAgentRepository.getInstance().getAllDeployedAgents();
     } catch (error) {
       logError("デプロイ済みエージェントの取得中にエラーが発生しました", error);
       return [];
@@ -105,7 +107,7 @@ class DeployedAgentService extends SingletonService<
    */
   public getDeployedAgentById(id: string): DeployedAgentType | undefined {
     try {
-      return getDeployedAgentRepository().getDeployedAgentById(id);
+      return DeployedAgentRepository.getInstance().getDeployedAgentById(id);
     } catch (error) {
       logError(
         `ID: ${id} のデプロイ済みエージェントの取得中にエラーが発生しました`,
@@ -133,10 +135,13 @@ class DeployedAgentService extends SingletonService<
       const updatedConfig = await agentInstance.updateConfig(updates, true);
 
       // データベースに保存
-      const result = getDeployedAgentRepository().updateDeployedAgent(id, {
-        ...updatedConfig,
-        updatedAt: Date.now(),
-      });
+      const result = DeployedAgentRepository.getInstance().updateDeployedAgent(
+        id,
+        {
+          ...updatedConfig,
+          updatedAt: Date.now(),
+        },
+      );
 
       if (result) {
         logInfo(
@@ -166,7 +171,8 @@ class DeployedAgentService extends SingletonService<
         this.agents.delete(id);
       }
 
-      const result = getDeployedAgentRepository().deleteDeployedAgent(id);
+      const result =
+        DeployedAgentRepository.getInstance().deleteDeployedAgent(id);
 
       if (result) {
         logInfo(`デプロイ済みエージェントが削除されました (ID: ${id})`);
@@ -348,7 +354,7 @@ class DeployedAgentService extends SingletonService<
   ): DeployedAgentType {
     try {
       const deployedAgent =
-        getDeployedAgentRepository().createDeployedAgent(agentData);
+        DeployedAgentRepository.getInstance().createDeployedAgent(agentData);
 
       // エージェントインスタンスを作成してキャッシュ
       this.agents.set(deployedAgent.id, new DeployedAgent(deployedAgent));
@@ -370,7 +376,7 @@ class DeployedAgentService extends SingletonService<
   public deployFromDevelopmentAgent(sourceAgent: any): DeployedAgentType {
     try {
       const deployedAgent =
-        getDeployedAgentRepository().deployFromAgent(sourceAgent);
+        DeployedAgentRepository.getInstance().deployFromAgent(sourceAgent);
 
       // エージェントインスタンスを作成してキャッシュ
       this.agents.set(deployedAgent.id, new DeployedAgent(deployedAgent));

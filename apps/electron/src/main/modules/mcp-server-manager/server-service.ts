@@ -1,7 +1,7 @@
 import { SingletonService } from "@/main/modules/singleton-service";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { logInfo } from "@/main/utils/logger";
-import { getServerRepository } from "../../infrastructure/database";
+import { ServerRepository } from "./server-repository";
 import { TokenManager } from "@/main/modules/mcp-apps-manager/token-manager";
 
 /**
@@ -47,7 +47,7 @@ export class ServerService extends SingletonService<
    */
   public addServer(serverConfig: MCPServerConfig): MCPServer {
     try {
-      const server = getServerRepository().addServer(serverConfig);
+      const server = ServerRepository.getInstance().addServer(serverConfig);
 
       // Give all MCP clients access to this new server
       try {
@@ -80,7 +80,7 @@ export class ServerService extends SingletonService<
    */
   public getAllServers(): MCPServer[] {
     try {
-      return getServerRepository().getAllServers();
+      return ServerRepository.getInstance().getAllServers();
     } catch (error) {
       return this.handleError("取得", error, []);
     }
@@ -93,7 +93,7 @@ export class ServerService extends SingletonService<
    */
   public getServerById(id: string): MCPServer | undefined {
     try {
-      return getServerRepository().getServerById(id);
+      return ServerRepository.getInstance().getServerById(id);
     } catch (error) {
       return this.handleError(`ID:${id}の取得`, error, undefined);
     }
@@ -110,7 +110,7 @@ export class ServerService extends SingletonService<
     config: Partial<MCPServerConfig>,
   ): MCPServer | undefined {
     try {
-      const result = getServerRepository().updateServer(id, config);
+      const result = ServerRepository.getInstance().updateServer(id, config);
       if (result) {
         logInfo(`サーバ "${result.name}" が更新されました (ID: ${id})`);
       }
@@ -128,7 +128,7 @@ export class ServerService extends SingletonService<
   public deleteServer(id: string): boolean {
     try {
       const server = this.getServerById(id);
-      const result = getServerRepository().deleteServer(id);
+      const result = ServerRepository.getInstance().deleteServer(id);
 
       if (result && server) {
         logInfo(`サーバ "${server.name}" が削除されました (ID: ${id})`);

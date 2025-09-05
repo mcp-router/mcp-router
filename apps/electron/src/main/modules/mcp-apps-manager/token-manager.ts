@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { getTokenRepository } from "@/main/infrastructure/database";
+import { TokenRepository } from "./token-repository";
 import {
   Token,
   TokenGenerateOptions,
@@ -18,9 +18,10 @@ export class TokenManager {
     const clientId = options.clientId;
 
     // 同じクライアントIDのトークンが存在する場合は削除
-    const clientTokens = getTokenRepository().getTokensByClientId(clientId);
+    const clientTokens =
+      TokenRepository.getInstance().getTokensByClientId(clientId);
     if (clientTokens.length > 0) {
-      getTokenRepository().deleteClientTokens(clientId);
+      TokenRepository.getInstance().deleteClientTokens(clientId);
     }
 
     // より強固なランダム値を生成（24バイト = 192ビット）
@@ -39,7 +40,7 @@ export class TokenManager {
     };
 
     // トークンを永続化
-    getTokenRepository().saveToken(token);
+    TokenRepository.getInstance().saveToken(token);
     return token;
   }
 
@@ -47,7 +48,7 @@ export class TokenManager {
    * トークンを検証
    */
   public validateToken(tokenId: string): TokenValidationResult {
-    const token = getTokenRepository().getToken(tokenId);
+    const token = TokenRepository.getInstance().getToken(tokenId);
 
     if (!token) {
       return {
@@ -74,28 +75,28 @@ export class TokenManager {
    * トークンを削除
    */
   public deleteToken(tokenId: string): boolean {
-    return getTokenRepository().deleteToken(tokenId);
+    return TokenRepository.getInstance().deleteToken(tokenId);
   }
 
   /**
    * クライアントIDに関連付けられた全てのトークンを削除
    */
   public deleteClientTokens(clientId: string): number {
-    return getTokenRepository().deleteClientTokens(clientId);
+    return TokenRepository.getInstance().deleteClientTokens(clientId);
   }
 
   /**
    * 全てのトークンをリスト表示
    */
   public listTokens(): Token[] {
-    return getTokenRepository().listTokens();
+    return TokenRepository.getInstance().listTokens();
   }
 
   /**
    * トークンのサーバアクセス権限を確認
    */
   public hasServerAccess(tokenId: string, serverId: string): boolean {
-    const token = getTokenRepository().getToken(tokenId);
+    const token = TokenRepository.getInstance().getToken(tokenId);
     if (!token) {
       return false;
     }
@@ -109,6 +110,9 @@ export class TokenManager {
     tokenId: string,
     serverIds: string[],
   ): boolean {
-    return getTokenRepository().updateTokenServerIds(tokenId, serverIds);
+    return TokenRepository.getInstance().updateTokenServerIds(
+      tokenId,
+      serverIds,
+    );
   }
 }

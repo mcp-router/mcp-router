@@ -7,7 +7,7 @@ import {
 } from "@/main/modules/agent/index";
 import { backgroundWindow, mainWindow } from "../../../main";
 import { status } from "@/main/modules/auth/auth.service";
-import { getSessionRepository } from "../../infrastructure/database";
+import { SessionRepository } from "./session-repository";
 
 /**
  * エージェント関連のIPC通信ハンドラをセットアップ
@@ -16,7 +16,7 @@ export function setupAgentHandlers(): void {
   const developmentAgentService = getDevelopmentAgentService();
   const deployedAgentService = getDeployedAgentService();
   const agentSharingService = getAgentSharingService();
-  const sessionRepository = getSessionRepository();
+  const sessionRepository = SessionRepository.getInstance();
   // 開発中エージェント基本操作のIPC通信ハンドラ
   ipcMain.handle("agent:list", () => {
     return developmentAgentService.getAgents();
