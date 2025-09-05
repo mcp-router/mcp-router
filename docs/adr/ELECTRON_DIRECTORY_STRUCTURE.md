@@ -19,47 +19,40 @@ Electron アプリケーションのディレクトリ構造が複雑化し、�
 ```
 apps/electron/src/
 ├── main/                    # メインプロセス
-│   ├── domain/             # ドメイン層（ビジネスロジック）
+│   ├── modules/            # モジュール層（ビジネスロジック）
 │   │   ├── agent/          # エージェント管理
-│   │   ├── auth/           # 認証
-│   │   ├── mcp-core/       # MCPコア機能
-│   │   │   ├── client/     # MCPクライアント
-│   │   │   ├── hook/       # MCPフック
+│   │   │   ├── deployed/   # デプロイ済みエージェント
+│   │   │   ├── development/ # 開発用エージェント
 │   │   │   ├── package/    # パッケージ管理
-│   │   │   ├── rule/       # ルール管理
-│   │   │   ├── server/     # サーバー管理
-│   │   │   └── token/      # トークン管理
+│   │   │   └── shared/     # 共通ユーティリティ
+│   │   ├── auth/           # 認証
+│   │   ├── mcp-apps-manager/ # MCPアプリ管理
+│   │   │   └── (mcp-client, token-manager等)
+│   │   ├── mcp-logger/     # MCPログ管理
+│   │   ├── mcp-server-manager/ # MCPサーバー管理
+│   │   │   └── dxt-processor/ # DXTデータ処理
+│   │   ├── mcp-server-runtime/ # MCPサーバーランタイム
+│   │   │   └── http/       # HTTPサーバー
+│   │   ├── settings/       # 設定管理
+│   │   ├── system/         # システム管理
+│   │   ├── workflow/       # ワークフロー・フック管理
 │   │   └── workspace/      # ワークスペース管理
 │   ├── infrastructure/     # インフラストラクチャ層
 │   │   ├── database/       # データベースアクセス
-│   │   │   ├── core/       # 基盤クラス
-│   │   │   ├── factories/  # ファクトリ
-│   │   │   ├── migrations/ # マイグレーション
-│   │   │   ├── repositories/ # リポジトリ実装
-│   │   │   └── schema/     # スキーマ定義
-│   │   │       └── tables/ # テーブル定義
-│   │   └── ipc/            # IPC通信
-│   │       └── handlers/   # IPCハンドラー
-│   ├── application/        # アプリケーション層
-│   │   ├── core/           # 基盤サービス
-│   │   ├── mcp-core/       # MCPアプリケーション機能
-│   │   │   ├── apps/       # MCPアプリ管理
-│   │   │   ├── log/        # ログ管理
-│   │   │   ├── mcp-manager/ # MCPマネージャー
-│   │   │   └── server-processors/ # サーバー処理
-│   │   ├── settings/       # 設定管理
-│   │   ├── ui/             # UI関連（メニュー、トレイ）
-│   │   └── workspace/      # ワークスペース管理
+│   │   └── ipc.ts          # IPC通信
+│   ├── ui/                 # UI関連
+│   │   ├── menu.ts         # メニュー
+│   │   └── tray.ts         # トレイ
 │   └── utils/              # メインプロセス用ユーティリティ
 ├── renderer/               # レンダラープロセス
 │   ├── components/         # UIコンポーネント
 │   │   ├── agent/          # エージェント関連UI
 │   │   ├── auth/           # 認証UI
 │   │   ├── common/         # 共通コンポーネント
-│   │   ├── hook/           # フック管理UI
 │   │   ├── layout/         # レイアウト
 │   │   ├── mcp/            # MCP関連UI
 │   │   ├── setting/        # 設定UI
+│   │   ├── workflow/       # ワークフロー・フック管理UI
 │   │   └── workspace/      # ワークスペースUI
 │   ├── platform-api/       # Platform API
 │   ├── services/           # レンダラーサービス
@@ -70,40 +63,33 @@ apps/electron/src/
 
 ### レイヤーの責務
 
-#### 1. ドメイン層 (`main/domain/`)
-- **責務**: ビジネスロジックとビジネスルール
-- **依存**: 他のレイヤーに依存しない
+#### 1. モジュール層 (`main/modules/`)
+- **責務**: ビジネスロジックとビジネスルール、アプリケーション機能
+- **依存**: インフラストラクチャ層に依存
 - **内容**: 
-  - エンティティ
-  - ドメインサービス
+  - 各機能モジュール（agent, auth, workspace等）
+  - サービスクラス
+  - リポジトリインターフェース
   - ビジネスルールの実装
 
 #### 2. インフラストラクチャ層 (`main/infrastructure/`)
-- **責務**: 外部システムとの接続
-- **依存**: ドメイン層
+- **責務**: データベースとIPC通信の基盤
+- **依存**: 外部ライブラリのみ
 - **内容**:
-  - データベースアクセス（Repository実装）
-    - 統一されたスキーマ定義（`schema/tables/`）
-    - BaseRepositoryパターン
-    - RepositoryFactoryによる管理
-  - IPC通信ハンドラー
-    - 各機能別ハンドラー（agent, hook, server等）
-  - 外部APIクライアント
+  - データベース基盤
+    - SQLiteManager
+    - BaseRepository
+    - マイグレーション管理
+  - IPC通信基盤
 
-#### 3. アプリケーション層 (`main/application/`)
-- **責務**: アプリケーション固有のビジネスロジック
-- **依存**: ドメイン層、インフラストラクチャ層
+#### 3. UI層 (`main/ui/`)
+- **責務**: メインプロセス側のUI制御
+- **依存**: Electronフレームワーク
 - **内容**:
-  - アプリケーションサービス
-  - MCPコア機能
-    - Aggregator Server（リクエスト集約）
-    - Hook Manager（フック管理）
-    - MCP Apps Service（アプリ管理）
-    - DXT Processor（データ変換）
-  - ユースケースの実装
-  - Platform API Manager
+  - メニュー管理
+  - トレイアイコン管理
 
-#### 4. プレゼンテーション層 (`renderer/`)
+#### 4. レンダラー層 (`renderer/`)
 - **責務**: ユーザーインターフェース
 - **依存**: IPC経由でメインプロセスと通信
 - **内容**:
@@ -113,33 +99,34 @@ apps/electron/src/
     - MCP Apps UI
     - Server管理UI
   - 状態管理（Zustand）
-    - hook-store（新規追加）
+    - hook-store
+    - workflow-store
+    - theme-store
+    - view-preferences-store
   - Platform API抽象化
   - UIロジック
 
 ### インポートルール
 
-1. **ドメイン層** は他のレイヤーに依存してはいけない
-2. **インフラストラクチャ層** はドメイン層のみに依存可能
-3. **アプリケーション層** はドメイン層とインフラストラクチャ層に依存可能
-4. **プレゼンテーション層** は直接メインプロセスのコードをインポートしない
+1. **インフラストラクチャ層** は他のアプリケーションコードに依存しない
+2. **モジュール層** はインフラストラクチャ層に依存可能
+3. **UI層** はElectronフレームワークに依存
+4. **レンダラー層** は直接メインプロセスのコードをインポートしない（IPC経由）
 
 ### パスエイリアス
 
 TypeScriptのパスエイリアスを使用して、インポートを明確にします：
 
 ```typescript
-// ドメイン層
-import { ServerService } from "@/main/domain/server/server-service";
+// モジュール層
+import { ServerService } from "@/main/modules/mcp-server-manager/server-service";
+import { WorkspaceService } from "@/main/modules/workspace/workspace-service";
 
 // インフラストラクチャ層
-import { getServerRepository } from "@/main/infrastructure/database";
-
-// アプリケーション層
-import { getPlatformAPIManager } from "@/main/application/platform-api-manager";
+import { BaseRepository } from "@/main/infrastructure/database/base-repository";
 
 // レンダラー層
-import { ServerList } from "@/renderer/components/server/ServerList";
+import { ServerList } from "@/renderer/components/mcp/ServerList";
 
 // 共有
 import { ServerConfig } from "@/shared/types";
@@ -175,6 +162,11 @@ src/
 - **却下理由**: 現在の問題が解決されない
 
 ## 更新履歴
+- **2025年9月**: モジュール層への移行を反映
+  - domain層をmodules層に変更
+  - application層を廃止し、機能をmodules層に統合
+  - 新しいモジュール構成を反映（mcp-apps-manager, mcp-server-manager等）
+  - workflow（フック管理含む）、system、mcp-loggerモジュールを追加
 - **2025年8月**: 実際のディレクトリ構造に合わせて更新
   - MCP Hook System関連のディレクトリを追加
   - MCPアプリケーション機能の詳細を追加
@@ -185,5 +177,5 @@ src/
 - [Clean Architecture by Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Domain-Driven Design by Eric Evans](https://www.domainlanguage.com/ddd/)
 - [Electron Best Practices](https://www.electronjs.org/docs/latest/tutorial/security)
-- [DATABASE_ARCHITECTURE.md](./DATABASE_ARCHITECTURE.md) - データベースアーキテクチャ
-- [DATABASE_SCHEMA_MANAGEMENT.md](./DATABASE_SCHEMA_MANAGEMENT.md) - スキーマ管理戦略
+- [DATABASE_ARCHITECTURE.md](./database/DATABASE_ARCHITECTURE.md) - データベースアーキテクチャ
+- [DATABASE_SCHEMA_MANAGEMENT.md](./database/DATABASE_SCHEMA_MANAGEMENT.md) - スキーマ管理戦略
