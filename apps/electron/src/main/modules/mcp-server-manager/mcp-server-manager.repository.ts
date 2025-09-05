@@ -10,8 +10,8 @@ import { v4 as uuidv4 } from "uuid";
  * サーバ情報用リポジトリクラス
  * BetterSQLite3を使用してサーバ情報を管理
  */
-export class ServerRepository extends BaseRepository<MCPServer> {
-  private static instance: ServerRepository | null = null;
+export class McpServerManagerRepository extends BaseRepository<MCPServer> {
+  private static instance: McpServerManagerRepository | null = null;
   /**
    * テーブル作成SQL
    */
@@ -62,19 +62,19 @@ export class ServerRepository extends BaseRepository<MCPServer> {
   /**
    * シングルトンインスタンスを取得
    */
-  public static getInstance(): ServerRepository {
+  public static getInstance(): McpServerManagerRepository {
     const db = getSqliteManager();
-    if (!ServerRepository.instance || ServerRepository.instance.db !== db) {
-      ServerRepository.instance = new ServerRepository(db);
+    if (!McpServerManagerRepository.instance || McpServerManagerRepository.instance.db !== db) {
+      McpServerManagerRepository.instance = new McpServerManagerRepository(db);
     }
-    return ServerRepository.instance;
+    return McpServerManagerRepository.instance;
   }
 
   /**
    * インスタンスをリセット
    */
   public static resetInstance(): void {
-    ServerRepository.instance = null;
+    McpServerManagerRepository.instance = null;
   }
 
   /**
@@ -83,10 +83,10 @@ export class ServerRepository extends BaseRepository<MCPServer> {
   protected initializeTable(): void {
     try {
       // テーブルを作成
-      this.db.execute(ServerRepository.CREATE_TABLE_SQL);
+      this.db.execute(McpServerManagerRepository.CREATE_TABLE_SQL);
 
       // インデックスを作成
-      ServerRepository.INDEXES.forEach((indexSQL) => {
+      McpServerManagerRepository.INDEXES.forEach((indexSQL) => {
         this.db.execute(indexSQL);
       });
 

@@ -1,5 +1,5 @@
 import { getSqliteManager, SqliteManager } from "./sqlite-manager";
-import { ServerRepository } from "../../modules/mcp-server-manager/server-repository";
+import { McpServerManagerRepository } from "../../modules/mcp-server-manager/mcp-server-manager.repository";
 import { Migration } from "@mcp_router/shared";
 import { safeStorage } from "electron";
 
@@ -727,7 +727,7 @@ export class MainDatabaseMigration {
       }
 
       // サーバーリポジトリを取得
-      const serverRepository = ServerRepository.getInstance();
+      const serverRepository = McpServerManagerRepository.getInstance();
 
       // すべてのサーバーを取得
       const allServers = serverRepository.getAllServers();

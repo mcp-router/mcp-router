@@ -11,7 +11,7 @@ import { AgentRepository } from "../agent/agent-repository";
 import { DeployedAgentRepository } from "../agent/deployed-agent-repository";
 import { SessionRepository } from "../agent/session-repository";
 import { McpLoggerRepository } from "../mcp-logger/mcp-logger.repository";
-import { ServerRepository } from "../mcp-server-manager/server-repository";
+import { McpServerManagerRepository } from "../mcp-server-manager/mcp-server-manager.repository";
 import { SettingsRepository } from "../settings/settings.repository";
 import { McpAppsManagerRepository } from "../mcp-apps-manager/mcp-apps-manager.repository";
 import { WorkspaceRepository } from "./workspace.repository";
@@ -122,7 +122,7 @@ export class PlatformAPIManager {
     AgentRepository.resetInstance();
     DeployedAgentRepository.resetInstance();
     McpLoggerRepository.resetInstance();
-    ServerRepository.resetInstance();
+    McpServerManagerRepository.resetInstance();
     SessionRepository.resetInstance();
     SettingsRepository.resetInstance();
     McpAppsManagerRepository.resetInstance();

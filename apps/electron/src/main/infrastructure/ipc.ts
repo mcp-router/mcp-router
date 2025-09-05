@@ -1,5 +1,5 @@
 import { setupAuthHandlers } from "../modules/auth/auth.ipc";
-import { setupMcpServerHandlers } from "../modules/mcp-server-manager/server-handler";
+import { setupMcpServerHandlers } from "../modules/mcp-server-manager/mcp-server-manager.ipc";
 import { setupLogHandlers } from "../modules/mcp-logger/mcp-logger.ipc";
 import { setupSettingsHandlers } from "../modules/settings/settings.ipc";
 import { setupMcpAppsHandlers } from "../modules/mcp-apps-manager/mcp-apps-manager.ipc";
