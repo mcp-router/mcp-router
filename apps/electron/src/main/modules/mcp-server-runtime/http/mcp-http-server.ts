@@ -14,10 +14,8 @@ export class MCPHttpServer {
   private app: express.Application;
   private server: http.Server | null = null;
   private port: number;
-  private serverManager: MCPServerManager;
   private aggregatorServer: AggregatorServer;
   private tokenValidator: TokenValidator;
-  private v0Router: express.Router;
   // SSEセッション用のマップ
   private sseSessions: Map<string, SSEServerTransport> = new Map();
 
@@ -26,12 +24,10 @@ export class MCPHttpServer {
     port: number,
     aggregatorServer?: AggregatorServer,
   ) {
-    this.serverManager = serverManager;
     this.aggregatorServer =
       aggregatorServer || new AggregatorServer(serverManager);
     this.port = port;
     this.app = express();
-    this.v0Router = express.Router();
     // TokenValidatorはサーバー名とIDのマッピングが必要
     this.tokenValidator = new TokenValidator(new Map());
     this.configureMiddleware();
@@ -93,11 +89,6 @@ export class MCPHttpServer {
       next();
     };
 
-    // バージョン別のルーターに認証ミドルウェアを適用
-    this.v0Router.use(authMiddleware);
-
-    // メインアプリにv0ルーターをマウント
-    this.app.use("/v0", this.v0Router);
 
     // /mcp エンドポイントを直接ルートに設定し、バージョニングなしで公開
     this.app.use("/mcp", authMiddleware);
