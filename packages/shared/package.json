@@ -14,9 +14,8 @@
     "format:check": "prettier --check .",
     "knip": "cd ../.. && knip --workspace packages/shared"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@types/node": "^20.19.1",
-    "typescript": "^5.8.3"
+    "@types/node": "^20.19.16",
+    "typescript": "^5.9.2"
   }
 }

@@ -54,15 +54,15 @@
     "publish:npm": "pnpm publish --access public"
   },
   "dependencies": {
-    "@trpc/client": "^11.0.0",
+    "@trpc/client": "^11.5.1",
     "superjson": "^2.2.2",
-    "zod": "^3.22.4"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@mcp_router/shared": "workspace:*",
-    "@types/node": "^20.14.2",
-    "eslint": "^9.6.0",
-    "tsup": "^8.0.2",
-    "typescript": "^5.8.3"
+    "@types/node": "^20.19.16",
+    "eslint": "^9.35.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
   }
 }
