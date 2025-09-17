@@ -16,12 +16,12 @@
 **MCP Router** is a desktop application for simplifies the management of Model Context Protocol (MCP) servers.
 
 ### ✨ Key Features
-
 - 🌐 **Universal** - Connect to any MCP server
   - Remote or local servers
   - Supports DXT, JSON, Manual
 - 🖥️ **Cross-platform** - Available for Windows and macOS
-- 🤖 **AI Agent Feature** - Create, share, and use AI Agents with MCP tools, and use your agents as MCP servers in other apps
+- 🔒 **Privacy** - All data is stored locally on your device
+- ⬆️ **Data portability** - Easily export and import your mcp configurations
 
 ## 🔒 Privacy & Security
 
@@ -31,7 +31,7 @@
 - ✅ **Complete control** - You have full control over your MCP server connections and data
 
 ### Transparency
-- 🔍 **Auditable application** - The desktop application source code is publicly available on GitHub
+- 🔍 **Auditable** - The desktop application source code is publicly available on GitHub
 - 🛡️ **Verifiable privacy** - You can verify that your data stays local by examining the application code
 - 🤝 **Community-driven** - Security improvements and audits are welcomed from the [community](https://discord.com/invite/dwG9jPrhxB)
 
