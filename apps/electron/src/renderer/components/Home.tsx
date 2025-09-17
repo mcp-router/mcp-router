@@ -12,7 +12,7 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/renderer/utils/tailwind-utils";
-import { Trash, AlertCircle, Grid3X3, List } from "lucide-react";
+import { Trash, AlertCircle, Grid3X3, List, Share } from "lucide-react";
 import { hasUnsetRequiredParams } from "@/renderer/utils/server-validation-utils";
 import { toast } from "sonner";
 import {
@@ -125,6 +125,35 @@ const Home: React.FC = () => {
     setIsRefreshing(false);
   };
 
+  // Handle export servers
+  const handleExportServers = () => {
+    // Convert servers array to mcpServers object format
+    const mcpServers: Record<string, any> = {};
+
+    servers.forEach((server) => {
+      mcpServers[server.name] = {
+        command: server.command,
+        args: server.args || [],
+        env: server.env || {},
+      };
+    });
+
+    const exportData = {
+      mcpServers: mcpServers,
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataUri =
+      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+
+    const exportFileDefaultName = `mcp-servers-${new Date().toISOString().split("T")[0]}.json`;
+
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", dataUri);
+    linkElement.setAttribute("download", exportFileDefaultName);
+    linkElement.click();
+  };
+
   // Show login screen for remote workspaces if not authenticated
   if (currentWorkspace?.type === "remote" && !isAuthenticated) {
     return <LoginScreen onLogin={login} />;
@@ -172,6 +201,15 @@ const Home: React.FC = () => {
           title={"Refresh Servers"}
         >
           <IconRefresh />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportServers}
+          className="gap-1"
+          title={"Export Servers"}
+        >
+          <Share className="h-4 w-4" />
         </Button>
         <Button asChild variant="outline" size="sm" className="gap-1">
           <Link to="/servers/add">
