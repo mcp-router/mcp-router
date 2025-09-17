@@ -599,7 +599,7 @@
     "successCreate": "サーバー \"{{name}}\" が正常に作成されました",
     "remote": {
       "name": "リモートサーバ",
-      "description": "リモートMCPサーバに接続する",
+      "description": "リモートMCPサーバに接続する。OAuthフローを利用したい場合は、mcp-remoteの利用をお勧めします。",
       "serverName": "サーバ名",
       "serverUrl": "サーバURL",
       "bearerToken": "認証トークン",

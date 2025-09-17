@@ -593,7 +593,7 @@
     "autoStart": "Auto Start",
     "remote": {
       "name": "Remote Server",
-      "description": "Connect to a remote MCP server",
+      "description": "Connect to a remote MCP server. For OAuth flows, we recommend using mcp-remote.",
       "serverName": "Server Name",
       "serverUrl": "Server URL",
       "bearerToken": "Bearer Token",
