@@ -311,6 +311,7 @@ export class McpAppsManagerService extends SingletonService<
     return {
       command: "npx",
       args: [
+        "-y",
         "mcp-remote",
         "http://localhost:3282/mcp",
         "--header",
