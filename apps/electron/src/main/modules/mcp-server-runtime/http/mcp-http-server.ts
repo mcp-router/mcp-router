@@ -89,7 +89,6 @@ export class MCPHttpServer {
       next();
     };
 
-
     // /mcp エンドポイントを直接ルートに設定し、バージョニングなしで公開
     this.app.use("/mcp", authMiddleware);
 

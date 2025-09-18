@@ -4,8 +4,8 @@
 export interface McpRouterConfig {
   command: string;
   args: string[];
-  env: {
-    MCPR_TOKEN: string;
+  env?: {
+    MCPR_TOKEN?: string;
   };
 }
 

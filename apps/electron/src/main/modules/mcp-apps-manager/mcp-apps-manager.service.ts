@@ -310,10 +310,12 @@ export class McpAppsManagerService extends SingletonService<
   private createMcpRouterConfig(tokenId: string): McpRouterConfig {
     return {
       command: "npx",
-      args: ["-y", "mcpr-cli@latest", "connect"],
-      env: {
-        MCPR_TOKEN: tokenId,
-      },
+      args: [
+        "mcp-remote",
+        "http://localhost:3282/mcp",
+        "--header",
+        `Authorization: Bearer ${tokenId}`,
+      ],
     };
   }
 

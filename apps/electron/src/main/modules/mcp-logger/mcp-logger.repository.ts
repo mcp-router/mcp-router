@@ -65,7 +65,10 @@ export class McpLoggerRepository extends BaseRepository<RequestLogEntry> {
    */
   public static getInstance(): McpLoggerRepository {
     const db = getSqliteManager();
-    if (!McpLoggerRepository.instance || McpLoggerRepository.instance.db !== db) {
+    if (
+      !McpLoggerRepository.instance ||
+      McpLoggerRepository.instance.db !== db
+    ) {
       McpLoggerRepository.instance = new McpLoggerRepository(db);
     }
     return McpLoggerRepository.instance;

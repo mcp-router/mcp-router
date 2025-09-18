@@ -47,7 +47,8 @@ export class ServerService extends SingletonService<
    */
   public addServer(serverConfig: MCPServerConfig): MCPServer {
     try {
-      const server = McpServerManagerRepository.getInstance().addServer(serverConfig);
+      const server =
+        McpServerManagerRepository.getInstance().addServer(serverConfig);
 
       // Give all MCP clients access to this new server
       try {
@@ -110,7 +111,10 @@ export class ServerService extends SingletonService<
     config: Partial<MCPServerConfig>,
   ): MCPServer | undefined {
     try {
-      const result = McpServerManagerRepository.getInstance().updateServer(id, config);
+      const result = McpServerManagerRepository.getInstance().updateServer(
+        id,
+        config,
+      );
       if (result) {
         logInfo(`サーバ "${result.name}" が更新されました (ID: ${id})`);
       }
