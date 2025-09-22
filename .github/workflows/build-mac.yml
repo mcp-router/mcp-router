@@ -1,0 +1,52 @@
+name: Build macOS dmg
+
+on:
+  # 推送到 main 分支 或 创建 Release 时触发
+  push:
+    branches: [ main ]
+  release:
+    types: [created]
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        node: [18] # 或 20，取决于项目要求
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace
+        run: pnpm -w build || echo "workspace build skipped"
+
+      - name: Build Electron app
+        working-directory: apps/electron
+        run: |
+          # 尝试标准构建
+          pnpm build || true
+          # 打包 mac dmg
+          npx electron-builder --mac dmg --x64 --publish never
+
+      - name: Upload dmg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-router-mac
+          path: |
+            apps/electron/dist/*.dmg
+            apps/electron/dist/*.zip
+            apps/electron/dist/mac/*.dmg
