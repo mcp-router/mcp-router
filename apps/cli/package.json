@@ -1,0 +1,55 @@
+{
+  "name": "@mcp_router/cli",
+  "version": "0.1.7",
+  "description": "CLI for MCP Router - connect to an MCP HTTP server",
+  "main": "dist/mcpr.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "bin": {
+    "mcpr": "dist/mcpr.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/mcpr.js",
+    "dev": "tsc && node dist/mcpr.js",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "knip": "cd ../.. && knip --workspace apps/cli",
+    "prepublishOnly": "npm run build",
+    "publish:npm": "pnpm publish --access public"
+  },
+  "dependencies": {
+    "@mcp_router/shared": "workspace:^",
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.5",
+    "typescript": "^5.9.2"
+  },
+  "keywords": [
+    "mcp",
+    "cli",
+    "router",
+    "model-context-protocol"
+  ],
+  "author": "fjm2u",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fjm2u/mcp-router.git",
+    "directory": "apps/cli"
+  },
+  "homepage": "https://github.com/fjm2u/mcp-router/tree/main/apps/cli#readme",
+  "bugs": {
+    "url": "https://github.com/fjm2u/mcp-router/issues"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ]
+}
