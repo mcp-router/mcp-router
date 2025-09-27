@@ -191,7 +191,10 @@ export async function extractConfigInfo(
         !!config.mcp.servers["mcp-router"] &&
         config.mcp.servers["mcp-router"].command === "npx" &&
         Array.isArray(config.mcp.servers["mcp-router"].args) &&
-        config.mcp.servers["mcp-router"].args.includes("connect");
+        (config.mcp.servers["mcp-router"].args.includes("connect") ||
+          config.mcp.servers["mcp-router"].args.includes(
+            "@mcp_router/cli@latest",
+          ));
 
       // トークンを取得
       if (config.mcp?.servers?.["mcp-router"]?.env?.MCPR_TOKEN) {
@@ -209,10 +212,13 @@ export async function extractConfigInfo(
         !!config.mcpServers["mcp-router"] &&
         config.mcpServers["mcp-router"].command === "npx" &&
         Array.isArray(config.mcpServers["mcp-router"].args) &&
-        config.mcpServers["mcp-router"].args.some(
+        ((config.mcpServers["mcp-router"].args.some(
           (arg: string) => arg === "mcpr-cli" || arg === "mcpr-cli@latest",
         ) &&
-        config.mcpServers["mcp-router"].args.includes("connect");
+          config.mcpServers["mcp-router"].args.includes("connect")) ||
+          config.mcpServers["mcp-router"].args.includes(
+            "@mcp_router/cli@latest",
+          ));
 
       // トークンを取得
       if (config.mcpServers?.["mcp-router"]?.env?.MCPR_TOKEN) {

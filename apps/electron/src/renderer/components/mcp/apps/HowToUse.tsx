@@ -27,8 +27,8 @@ const HowToUseEN: React.FC<HowToUseProps> = ({ token }) => {
         <h4 className="text-md font-semibold mb-3">1. Using with CLI</h4>
         <p className="mb-3 text-muted-foreground">
           {token
-            ? "Set the token as an environment variable and connect:"
-            : "Connect using mcpr-cli:"}
+            ? "Connect to the MCP Router server:"
+            : "Connect using @mcp_router/cli:"}
         </p>
         <div className="overflow-x-auto w-full">
           <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
@@ -36,8 +36,8 @@ const HowToUseEN: React.FC<HowToUseProps> = ({ token }) => {
               ? `# Export token as environment variable
 export MCPR_TOKEN="${token}"
 
-npx -y mcpr-cli@latest connect`
-              : `npx -y mcpr-cli@latest connect`}
+npx -y @mcp_router/cli@latest connect`
+              : `npx -y @mcp_router/cli@latest connect`}
           </pre>
         </div>
       </div>
@@ -52,31 +52,18 @@ npx -y mcpr-cli@latest connect`
         </p>
         <div className="overflow-x-auto w-full">
           <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
-            {token
-              ? `{
+            {`{
   "mcpServers": {
     "mcp-router": {
       "command": "npx",
       "args": [
         "-y",
-        "mcpr-cli@latest",
+        "@mcp_router/cli@latest",
         "connect"
       ],
       "env": {
         "MCPR_TOKEN": "${token}"
       }
-    }
-  }
-}`
-              : `{
-  "mcpServers": {
-    "mcp-router": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcpr-cli",
-        "connect"
-      ]
     }
   }
 }`}
@@ -97,7 +84,7 @@ const HowToUseJA: React.FC<HowToUseProps> = ({ token }) => {
         <p className="mb-3 text-muted-foreground">
           {token
             ? "トークンを環境変数として設定して接続します："
-            : "mcpr-cliを使って接続します："}
+            : "@mcp_router/cliを使って接続します："}
         </p>
         <div className="overflow-x-auto w-full">
           <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
@@ -106,9 +93,9 @@ const HowToUseJA: React.FC<HowToUseProps> = ({ token }) => {
 export MCPR_TOKEN="${token}"
 
 # mcpr-cliを使って接続
-npx -y mcpr-cli connect`
+npx -y @mcp_router/cli@latest connect`
               : `# mcpr-cliを使って接続
-npx -y mcpr-cli connect`}
+npx -y @mcp_router/cli@latest connect`}
           </pre>
         </div>
       </div>
@@ -123,31 +110,18 @@ npx -y mcpr-cli connect`}
         </p>
         <div className="overflow-x-auto w-full">
           <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
-            {token
-              ? `{
+            {`{
   "mcpServers": {
     "mcp-router": {
       "command": "npx",
       "args": [
         "-y",
-        "mcpr-cli@latest",
+        "@mcp_router/cli@latest",
         "connect"
       ],
       "env": {
         "MCPR_TOKEN": "${token}"
       }
-    }
-  }
-}`
-              : `{
-  "mcpServers": {
-    "mcp-router": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcpr-cli",
-        "connect"
-      ]
     }
   }
 }`}
