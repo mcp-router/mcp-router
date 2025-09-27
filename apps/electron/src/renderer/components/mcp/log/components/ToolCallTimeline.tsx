@@ -47,7 +47,7 @@ const ToolCallTimeline: React.FC<ToolCallTimelineProps> = ({
       (log) =>
         log.requestType === "CallTool" &&
         log.requestParams &&
-        log.requestParams.toolName,
+        log.requestParams.name,
     );
 
     // Group by date (YYYY-MM-DD), ensuring local date is used
@@ -95,7 +95,7 @@ const ToolCallTimeline: React.FC<ToolCallTimelineProps> = ({
             const groups: Record<string, ToolCallGroup> = {};
 
             intervalLogs.forEach((log) => {
-              const toolName = log.requestParams.toolName;
+              const toolName = log.requestParams.name;
               const key = `${log.serverId}_${toolName}`;
 
               if (!groups[key]) {

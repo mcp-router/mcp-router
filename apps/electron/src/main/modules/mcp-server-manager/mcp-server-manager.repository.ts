@@ -64,7 +64,10 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
    */
   public static getInstance(): McpServerManagerRepository {
     const db = getSqliteManager();
-    if (!McpServerManagerRepository.instance || McpServerManagerRepository.instance.db !== db) {
+    if (
+      !McpServerManagerRepository.instance ||
+      McpServerManagerRepository.instance.db !== db
+    ) {
       McpServerManagerRepository.instance = new McpServerManagerRepository(db);
     }
     return McpServerManagerRepository.instance;

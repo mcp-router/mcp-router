@@ -47,7 +47,10 @@ export class McpAppsManagerRepository extends BaseRepository<Token> {
    */
   public static getInstance(): McpAppsManagerRepository {
     const db = getSqliteManager();
-    if (!McpAppsManagerRepository.instance || McpAppsManagerRepository.instance.db !== db) {
+    if (
+      !McpAppsManagerRepository.instance ||
+      McpAppsManagerRepository.instance.db !== db
+    ) {
       McpAppsManagerRepository.instance = new McpAppsManagerRepository(db);
     }
     return McpAppsManagerRepository.instance;
