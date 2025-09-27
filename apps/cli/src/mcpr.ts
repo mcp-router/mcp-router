@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 import { executeConnect } from "./commands/connect.js";
-import { executeHelp } from "./commands/help.js";
-import { executeVersion } from "./commands/version.js";
 import { executeServe } from "./commands/serve.js";
 
 export const VERSION = "0.1.6";
@@ -9,7 +7,7 @@ export const SERVER_NAME = "MCP Router";
 
 // Parse command-line arguments
 const args = process.argv.slice(2);
-const command = args[0] || "help";
+const command = args[0] || "connect";
 const commandArgs = args.slice(1);
 
 // Execute the appropriate command based on the input
@@ -22,12 +20,8 @@ async function main() {
       case "serve":
         await executeServe(commandArgs);
         break;
-      case "version":
-        executeVersion(VERSION);
-        break;
-      case "help":
       default:
-        executeHelp();
+        await executeConnect(args);
         break;
     }
   } catch (error) {
