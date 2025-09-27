@@ -227,7 +227,7 @@ export class RequestHandlers extends RequestHandlerBase {
           const resourceWithSource = {
             ...resource,
             sourceServer: serverName,
-            uri: createResourceUri(resource.uri, serverName),
+            uri: createResourceUri(serverName, resource.uri),
           };
 
           allResources.push(resourceWithSource);
@@ -290,8 +290,8 @@ export class RequestHandlers extends RequestHandlerBase {
                 ...template,
                 sourceServer: serverName,
                 uriTemplate: createResourceUri(
-                  template.uriTemplate,
                   serverName,
+                  template.uriTemplate,
                 ),
               };
 
