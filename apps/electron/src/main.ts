@@ -215,7 +215,6 @@ async function initDatabase(): Promise<void> {
   try {
     // 共通設定マネージャーを初期化（既存データからのマイグレーションを含む）
     await getSharedConfigManager().initialize();
-    console.log("[Main] SharedConfigManager initialized successfully");
 
     // ワークスペースサービスは自動的にメタデータベースを初期化する
     const workspaceService = getWorkspaceService();

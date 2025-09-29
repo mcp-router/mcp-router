@@ -7,6 +7,7 @@ import {
 } from "../../infrastructure/database/sqlite-manager";
 import { getDatabaseContext } from "./database-context";
 import { MainDatabaseMigration } from "../../infrastructure/database/main-database-migration";
+import { getSharedConfigManager } from "../../infrastructure/shared-config-manager";
 import { AgentRepository } from "../agent/agent-repository";
 import { DeployedAgentRepository } from "../agent/deployed-agent-repository";
 import { SessionRepository } from "../agent/session-repository";
@@ -151,6 +152,16 @@ export class PlatformAPIManager {
       }
     }
 
+    // 新しいワークスペースのサーバーIDを取得してトークンを同期
+
+    const serverRows = newDatabase.all<{ id: string }>(
+      "SELECT id FROM servers",
+    );
+    const serverIds = serverRows.map((row) => row.id);
+
+    if (serverIds.length > 0) {
+      getSharedConfigManager().syncTokensWithWorkspaceServers(serverIds);
+    }
     // AggregatorServerの再初期化
     const getAggregatorServer = (global as any).getAggregatorServer;
     if (getAggregatorServer && typeof getAggregatorServer === "function") {

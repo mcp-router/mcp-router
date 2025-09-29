@@ -175,9 +175,6 @@ export class SharedConfigManager implements ISharedConfigManager {
           }
         });
         this.config.settings = settings;
-        console.log(
-          `[SharedConfigManager] Migrated ${settingsRows.length} settings`,
-        );
       } catch (error) {
         console.error(
           "[SharedConfigManager] Failed to migrate settings:",
@@ -187,18 +184,8 @@ export class SharedConfigManager implements ISharedConfigManager {
 
       // 現在のワークスペースのすべてのサーバーIDを取得
       let allServerIds: string[] = [];
-      try {
-        const serverRows = db.all<{ id: string }>("SELECT id FROM servers");
-        allServerIds = serverRows.map((row) => row.id);
-        console.log(
-          `[SharedConfigManager] Found ${allServerIds.length} servers in workspace`,
-        );
-      } catch (error) {
-        console.warn(
-          "[SharedConfigManager] Failed to get server IDs:",
-          error,
-        );
-      }
+      const serverRows = db.all<{ id: string }>("SELECT id FROM servers");
+      allServerIds = serverRows.map((row) => row.id);
 
       // tokensテーブルからデータを移行
       try {
@@ -234,7 +221,10 @@ export class SharedConfigManager implements ISharedConfigManager {
 
           // マイグレーション時は、現在のワークスペースのすべてのサーバーへのアクセス権を付与
           // 既存のserverIdsとマージして重複を除去
-          const uniqueServerIds = new Set([...token.serverIds, ...allServerIds]);
+          const uniqueServerIds = new Set([
+            ...token.serverIds,
+            ...allServerIds,
+          ]);
           token.serverIds = Array.from(uniqueServerIds);
 
           return token;
@@ -344,6 +334,40 @@ export class SharedConfigManager implements ISharedConfigManager {
     if (token) {
       token.serverIds = serverIds;
       this.saveConfig();
+    }
+  }
+
+  /**
+   * ワークスペースのサーバーリストとトークンを同期
+   * 新しいサーバーがあれば自動的にトークンに追加
+   */
+  syncTokensWithWorkspaceServers(serverIds: string[]): void {
+    let updated = false;
+
+    this.config.mcpApps.tokens.forEach((token) => {
+      // 既存のserverIdsと新しいserverIdsをマージして重複を除去
+      const currentServerIds = new Set(token.serverIds);
+      const initialSize = currentServerIds.size;
+
+      // 新しいサーバーIDを追加
+      serverIds.forEach((id) => currentServerIds.add(id));
+
+      // 変更があった場合のみ更新
+      if (currentServerIds.size > initialSize) {
+        token.serverIds = Array.from(currentServerIds);
+        updated = true;
+        console.log(
+          `[SharedConfigManager] Updated token ${token.id} with ${currentServerIds.size - initialSize} new server(s)`,
+        );
+      }
+    });
+
+    // 変更があった場合は保存
+    if (updated) {
+      this.saveConfig();
+      console.log(
+        "[SharedConfigManager] Tokens synchronized with workspace servers",
+      );
     }
   }
 }

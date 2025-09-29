@@ -80,4 +80,10 @@ export interface ISharedConfigManager {
    * 既存データからマイグレーション
    */
   migrateFromDatabase(workspaceId: string): Promise<void>;
+
+  /**
+   * ワークスペースのサーバーリストとトークンを同期
+   * 新しいサーバーがあれば自動的にトークンに追加
+   */
+  syncTokensWithWorkspaceServers(serverIds: string[]): void;
 }
