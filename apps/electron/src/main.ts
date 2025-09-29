@@ -10,6 +10,7 @@ import { createTray, updateTrayContextMenu } from "@/main/ui/tray";
 import { importExistingServerConfigurations } from "@/main/modules/mcp-apps-manager/mcp-config-importer";
 import { getPlatformAPIManager } from "@/main/modules/workspace/platform-api-manager";
 import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
+import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
 import { setupIpcHandlers } from "./main/infrastructure/ipc";
 import { getIsAutoUpdateInProgress } from "./main/modules/system/system-handler";
 import {
@@ -212,6 +213,10 @@ function setupTrayUpdateTimer(
  */
 async function initDatabase(): Promise<void> {
   try {
+    // 共通設定マネージャーを初期化（既存データからのマイグレーションを含む）
+    await getSharedConfigManager().initialize();
+    console.log("[Main] SharedConfigManager initialized successfully");
+
     // ワークスペースサービスは自動的にメタデータベースを初期化する
     const workspaceService = getWorkspaceService();
 

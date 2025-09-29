@@ -48,3 +48,4 @@ export * from "./utils";
 export * from "./cli";
 export * from "./chat-types";
 export * from "./workflow-types";
+export * from "./shared-config";
