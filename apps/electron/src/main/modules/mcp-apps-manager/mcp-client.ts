@@ -195,19 +195,30 @@ export class MCPClient {
     inputParams: Record<string, MCPInputParam>,
   ): string[] {
     return argsTemplate.map((arg) => {
-      // Check if arg is a placeholder like "${paramName}"
+      // Check if arg is a placeholder like "${paramName}" or "${user_config.paramName}"
       const match = arg.match(/^\$\{(.+)\}$/);
       if (match) {
-        const paramName = match[1];
+        const fullParamName = match[1];
+
+        // Handle user_config.paramName format
+        if (fullParamName.startsWith("user_config.")) {
+          const paramName = fullParamName.substring("user_config.".length);
+          if (inputParams[paramName]) {
+            const param = inputParams[paramName];
+            if (param.default !== undefined) {
+              return String(param.default);
+            }
+          }
+        }
 
         // First check env variables
-        if (env[paramName]) {
-          return env[paramName];
+        if (env[fullParamName]) {
+          return env[fullParamName];
         }
 
         // Then check input params
-        if (inputParams[paramName]) {
-          const param = inputParams[paramName];
+        if (inputParams[fullParamName]) {
+          const param = inputParams[fullParamName];
           if (param.default !== undefined) {
             return String(param.default);
           }
