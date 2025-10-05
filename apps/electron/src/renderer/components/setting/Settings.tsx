@@ -44,9 +44,10 @@ const Settings: React.FC = () => {
   // Get normalized language code for select
   const getCurrentLanguage = () => {
     const currentLang = i18n.language;
-    // Handle cases like 'en-US' -> 'en', 'ja-JP' -> 'ja'
+    // Handle cases like 'en-US' -> 'en', 'ja-JP' -> 'ja', 'zh-CN' -> 'zh'
     if (currentLang.startsWith("en")) return "en";
     if (currentLang.startsWith("ja")) return "ja";
+    if (currentLang.startsWith("zh")) return "zh";
     return "en"; // fallback
   };
 
@@ -193,8 +194,9 @@ const Settings: React.FC = () => {
                   <SelectValue placeholder={t("common.language")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="en">{t("languages.en")}</SelectItem>
-                  <SelectItem value="ja">{t("languages.ja")}</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="zh">中文</SelectItem>
+                  <SelectItem value="ja">日本語</SelectItem>
                 </SelectContent>
               </Select>
             </div>

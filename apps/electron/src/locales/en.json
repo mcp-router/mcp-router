@@ -39,10 +39,6 @@
     "sent": "Thank you! Feedback sent successfully",
     "failed": "Failed to send feedback"
   },
-  "languages": {
-    "en": "English",
-    "ja": "日本語"
-  },
   "locale": "en-US",
   "login": {
     "title": "Login to MCP Router",

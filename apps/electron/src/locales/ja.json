@@ -552,10 +552,6 @@
     "autoStart": "自動起動",
     "autoStartToggleLabel": "自動起動を有効にする"
   },
-  "languages": {
-    "en": "英語",
-    "ja": "日本語"
-  },
   "locale": "ja-JP",
   "importFromJson": {
     "title": "JSONからインポート",

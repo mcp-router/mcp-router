@@ -172,7 +172,6 @@ declare global {
       onChatStreamEnd: (callback: (data: any) => void) => () => void;
       onChatStreamError: (callback: (data: any) => void) => () => void;
 
-
       // Feedback
       submitFeedback: (feedback: string) => Promise<boolean>;
 

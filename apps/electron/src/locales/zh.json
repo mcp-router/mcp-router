@@ -39,11 +39,6 @@
     "sent": "谢谢！反馈发送成功",
     "failed": "反馈发送失败"
   },
-  "languages": {
-    "en": "English",
-    "ja": "日本語",
-    "zh": "中文"
-  },
   "locale": "zh-CN",
   "login": {
     "title": "登录 MCP Router",
