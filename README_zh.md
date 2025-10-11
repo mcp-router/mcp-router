@@ -11,8 +11,6 @@
 
 </div>
 
-> 更新：2025-10-12 01:14（UTC+8），由 Codex 撰写
-
 ## 🎯 概览
 
 **MCP Router** 是一款用于简化 Model Context Protocol (MCP) 服务器管理的桌面应用。
