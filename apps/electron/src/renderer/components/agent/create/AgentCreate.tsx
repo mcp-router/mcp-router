@@ -677,7 +677,7 @@ const AgentCreate: React.FC = () => {
                           `#AIAgent #MCP_Router`,
                       );
                       window.open(
-                        `https://twitter.com/intent/tweet?text=${tweetText}`,
+                        `https://x.com/intent/tweet?text=${tweetText}`,
                         "_blank",
                       );
                     }}
