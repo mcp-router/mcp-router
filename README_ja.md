@@ -5,7 +5,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/mcp-router/mcp-router?style=flat&logo=github&label=Star)](https://github.com/mcp-router/mcp-router)
 [![Discord](https://img.shields.io/badge/Discord-参加する-7289DA?style=flat&logo=discord)](https://discord.com/invite/dwG9jPrhxB)
-[![X](https://img.shields.io/badge/X(Twitter)-@mcp__router-1DA1F2?style=flat&logo=x)](https://twitter.com/mcp_router)
+[![X](https://img.shields.io/badge/X(Twitter)-@mcp__router-1DA1F2?style=flat&logo=x)](https://x.com/mcp_router)
 
 [[English](https://github.com/mcp-router/mcp-router/blob/main/README.md) | 日本語 | [中文](https://github.com/mcp-router/mcp-router/blob/main/README_zh.md)]
 
@@ -38,7 +38,7 @@
 
 ## 📥 インストール
 
-[インストールページ](http://mcp-router.net/install)か[リリースページ](https://github.com/mcp-router/mcp-router/releases)からダウンロード可能です。
+[リリースページ](https://github.com/mcp-router/mcp-router/releases)からダウンロード可能です。
 
 
 ## 🚀 機能
@@ -68,7 +68,7 @@ Claude、Cline、Windsurf、Cursorなどの人気AIツールやカスタムク�
 ヘルプを得たり、アイデアを共有したり、最新情報を入手するためにコミュニティに参加しましょう：
 
 - 💬 [Discordコミュニティ](https://discord.com/invite/dwG9jPrhxB)
-- 🐦 [X (Twitter) でフォロー](https://twitter.com/mcp_router)
+- 🐦 [X (Twitter) でフォロー](https://x.com/mcp_router)
 - ⭐ [GitHubでスター](https://github.com/mcp-router/mcp-router)
 
 ## 📝 ライセンス

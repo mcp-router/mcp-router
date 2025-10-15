@@ -5,7 +5,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/mcp-router/mcp-router?style=flat&logo=github&label=Star)](https://github.com/mcp-router/mcp-router)
 [![Discord](https://img.shields.io/badge/Discord-加入我们-7289DA?style=flat&logo=discord)](https://discord.com/invite/dwG9jPrhxB)
-[![X](https://img.shields.io/badge/X(Twitter)-@mcp__router-1DA1F2?style=flat&logo=x)](https://twitter.com/mcp_router)
+[![X](https://img.shields.io/badge/X(Twitter)-@mcp__router-1DA1F2?style=flat&logo=x)](https://x.com/mcp_router)
 
 [[English](https://github.com/mcp-router/mcp-router/blob/main/README.md) | [日本語](https://github.com/mcp-router/mcp-router/blob/main/README_ja.md) | 中文]
 
@@ -38,7 +38,7 @@
 
 ## 📥 安装
 
-可通过我们的 [安装页面](http://mcp-router.net/install) 或 [GitHub 发布页](https://github.com/mcp-router/mcp-router/releases) 获取最新版本。
+可在 [GitHub 发布页](https://github.com/mcp-router/mcp-router/releases) 获取最新版本。
 
 ## 🚀 功能亮点
 
@@ -67,7 +67,7 @@
 欢迎加入社区，获取帮助、分享想法并获取最新动态：
 
 - 💬 [Discord 社区](https://discord.com/invite/dwG9jPrhxB)
-- 🐦 [在 X (Twitter) 关注我们](https://twitter.com/mcp_router)
+- 🐦 [在 X (Twitter) 关注我们](https://x.com/mcp_router)
 - ⭐ [在 GitHub 上为我们加星](https://github.com/mcp-router/mcp-router)
 
 ## 📝 许可证

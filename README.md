@@ -5,7 +5,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/mcp-router/mcp-router?style=flat&logo=github&label=Star)](https://github.com/mcp-router/mcp-router)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289DA?style=flat&logo=discord)](https://discord.com/invite/dwG9jPrhxB)
-[![X](https://img.shields.io/badge/X(Twitter)-@mcp__router-1DA1F2?style=flat&logo=x)](https://twitter.com/mcp_router)
+[![X](https://img.shields.io/badge/X(Twitter)-@mcp__router-1DA1F2?style=flat&logo=x)](https://x.com/mcp_router)
 
 [English | [日本語](https://github.com/mcp-router/mcp-router/blob/main/README_ja.md) | [中文](https://github.com/mcp-router/mcp-router/blob/main/README_zh.md)]
 
@@ -38,7 +38,7 @@
 
 ## 📥 Installation
 
-Download from our [installation page](http://mcp-router.net/install) or [releases page](https://github.com/mcp-router/mcp-router/releases).
+Download from our [releases page](https://github.com/mcp-router/mcp-router/releases).
 
 
 ## 🚀 Features
@@ -69,7 +69,7 @@ Monitor and display detailed request logs
 Join our community to get help, share ideas, and stay updated:
 
 - 💬 [Discord Community](https://discord.com/invite/dwG9jPrhxB)
-- 🐦 [Follow us on X (Twitter)](https://twitter.com/mcp_router)
+- 🐦 [Follow us on X (Twitter)](https://x.com/mcp_router)
 - ⭐ [Star us on GitHub](https://github.com/mcp-router/mcp-router)
 
 ## 📝 License
