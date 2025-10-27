@@ -94,7 +94,7 @@ export class AppPaths {
           "Roaming",
           "Code",
           "User",
-          "settings.json",
+          "mcp.json",
         );
       case "darwin":
         return path.join(
@@ -103,10 +103,10 @@ export class AppPaths {
           "Application Support",
           "Code",
           "User",
-          "settings.json",
+          "mcp.json",
         );
       default:
-        return path.join(this.HOME, ".config", "Code", "User", "settings.json");
+        return path.join(this.HOME, ".config", "Code", "User", "mcp.json");
     }
   }
 

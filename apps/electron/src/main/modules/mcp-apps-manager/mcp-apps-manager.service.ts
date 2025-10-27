@@ -325,14 +325,10 @@ export class McpAppsManagerService extends SingletonService<
     existingConfig: any = {},
   ): VSCodeAppConfig {
     const config = { ...existingConfig };
-    if (!config.mcp) config.mcp = {};
-
-    // mcp.serversオブジェクトを作成・更新
-    // 既存のserversを保持しながらmcp-routerを追加/更新
-    if (!config.mcp.servers) {
-      config.mcp.servers = {};
+    if (!config.servers) {
+      config.servers = {};
     }
-    config.mcp.servers["mcp-router"] = this.createMcpRouterConfig(tokenId);
+    config.servers["mcp-router"] = this.createMcpRouterConfig(tokenId);
 
     return config;
   }

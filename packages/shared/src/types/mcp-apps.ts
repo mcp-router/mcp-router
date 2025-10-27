@@ -18,10 +18,8 @@ export interface StandardAppConfig {
 
 // VSCode用の設定構造
 export interface VSCodeAppConfig {
-  mcp: {
-    servers: {
-      "mcp-router": McpRouterConfig;
-    };
+  servers: {
+    "mcp-router": McpRouterConfig;
   };
 }
 

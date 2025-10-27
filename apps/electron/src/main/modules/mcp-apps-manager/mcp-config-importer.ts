@@ -185,25 +185,26 @@ export async function extractConfigInfo(
 
     if (name.toLowerCase() === "vscode") {
       // VSCodeの場合
+      const servers = config.servers;
+
       hasMcpConfig =
-        !!config.mcp &&
-        !!config.mcp.servers &&
-        !!config.mcp.servers["mcp-router"] &&
-        config.mcp.servers["mcp-router"].command === "npx" &&
-        Array.isArray(config.mcp.servers["mcp-router"].args) &&
-        (config.mcp.servers["mcp-router"].args.includes("connect") ||
-          config.mcp.servers["mcp-router"].args.includes(
+        !!servers &&
+        !!servers["mcp-router"] &&
+        servers["mcp-router"].command === "npx" &&
+        Array.isArray(servers["mcp-router"].args) &&
+        (servers["mcp-router"].args.includes("connect") ||
+          servers["mcp-router"].args.includes(
             "@mcp_router/cli@latest",
           ));
 
       // トークンを取得
-      if (config.mcp?.servers?.["mcp-router"]?.env?.MCPR_TOKEN) {
-        configToken = config.mcp.servers["mcp-router"].env.MCPR_TOKEN;
+      if (servers?.["mcp-router"]?.env?.MCPR_TOKEN) {
+        configToken = servers["mcp-router"].env.MCPR_TOKEN;
       }
 
       // 他のMCPサーバ設定を抽出
-      if (config.mcp?.servers) {
-        otherServers = extractServersFromConfig(config.mcp.servers);
+      if (servers) {
+        otherServers = extractServersFromConfig(servers);
       }
     } else {
       // 他のアプリの場合
@@ -287,9 +288,9 @@ function extractServerConfigs(
   try {
     switch (clientType) {
       case "vscode":
-        // VSCode uses 'mcp.servers' structure
-        if (content.mcp?.servers) {
-          extractVSCodeServerConfigs(content.mcp.servers, configs, clientType);
+        // VSCode uses 'servers' structure
+        if (content.servers) {
+          extractVSCodeServerConfigs(content.servers, configs, clientType);
         }
         break;
 
