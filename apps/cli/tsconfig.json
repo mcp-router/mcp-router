@@ -1,15 +1,16 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "es2020",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true,
     "outDir": "dist",
     "sourceMap": true,
-    "resolveJsonModule": true
+    "baseUrl": ".",
+    "paths": {
+      "@mcp_router/shared": ["../../packages/shared/src/index.ts"],
+      "@mcp_router/shared/*": ["../../packages/shared/src/*"]
+    }
   },
+  "references": [{ "path": "../../packages/shared" }],
   "include": ["src"]
 }
