@@ -18,7 +18,10 @@ import {
   isDevelopment,
   isProduction,
 } from "@/main/utils/environment";
-import { getSettingsService } from "@/main/modules/settings/settings.service";
+import {
+  applyLoginItemSettings,
+  getSettingsService,
+} from "@/main/modules/settings/settings.service";
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -100,7 +103,11 @@ let mcpHttpServer: MCPHttpServer;
 // AggregatorServerインスタンスを取得する関数をグローバルに公開
 (global as any).getAggregatorServer = () => aggregatorServer;
 
-const createWindow = () => {
+type CreateWindowOptions = {
+  showOnCreate?: boolean;
+};
+
+const createWindow = ({ showOnCreate = true }: CreateWindowOptions = {}) => {
   // Platform-specific window options
   const windowOptions: Electron.BrowserWindowConstructorOptions = {
     width: 1200,
@@ -110,6 +117,7 @@ const createWindow = () => {
     title: "MCP Router",
     icon: path.join(__dirname, "assets/icon.png"),
     autoHideMenuBar: true,
+    show: false,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       contextIsolation: true,
@@ -136,6 +144,18 @@ const createWindow = () => {
 
   // Create the browser window.
   mainWindow = new BrowserWindow(windowOptions);
+
+  mainWindow.once("ready-to-show", () => {
+    if (!mainWindow) {
+      return;
+    }
+
+    if (showOnCreate) {
+      mainWindow.show();
+    } else {
+      mainWindow.hide();
+    }
+  });
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
@@ -281,9 +301,13 @@ async function initMCPServices(): Promise<void> {
 /**
  * ユーザーインターフェース関連の初期化を行う
  */
-function initUI(): void {
+function initUI({ showMainWindow = true }: { showMainWindow?: boolean } = {}): void {
   // メインウィンドウ作成
-  createWindow();
+  createWindow({ showOnCreate: showMainWindow });
+
+  if (!showMainWindow && process.platform === "darwin" && app.dock) {
+    app.dock.hide();
+  }
 
   // Platform APIマネージャーにメインウィンドウを設定
   if (mainWindow) {
@@ -330,12 +354,26 @@ async function initApplication(): Promise<void> {
   // アプリケーションメニューを設定
   setApplicationMenu();
 
-  // システム起動時の自動起動を設定
-  if (!app.getLoginItemSettings().openAtLogin) {
-    app.setLoginItemSettings({
-      openAtLogin: true,
-    });
+  // 起動時のウィンドウ表示設定を取得
+  const settingsService = getSettingsService();
+  let showWindowOnStartup = true;
+  try {
+    const currentSettings = settingsService.getSettings();
+    showWindowOnStartup = currentSettings.showWindowOnStartup ?? true;
+  } catch (error) {
+    console.error(
+      "Failed to load startup visibility preference, defaulting to true:",
+      error,
+    );
   }
+
+  const loginItemState = app.getLoginItemSettings();
+  const launchedAtLogin = loginItemState.wasOpenedAtLogin ?? false;
+  const launchedWithHiddenFlag = process.argv.some((arg) =>
+    ["--hidden", "--minimized"].includes(arg),
+  );
+
+  applyLoginItemSettings(showWindowOnStartup);
 
   // データベース初期化
   await initDatabase();
@@ -346,8 +384,11 @@ async function initApplication(): Promise<void> {
   // IPC通信ハンドラの初期化
   setupIpcHandlers();
 
+  const shouldShowMainWindow =
+    (!launchedAtLogin || showWindowOnStartup) && !launchedWithHiddenFlag;
+
   // UI初期化
-  initUI();
+  initUI({ showMainWindow: shouldShowMainWindow });
 }
 
 app.on("ready", initApplication);

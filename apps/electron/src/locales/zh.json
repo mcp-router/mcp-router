@@ -218,6 +218,8 @@
     "advanced": "高级设置",
     "autoUpdate": "启用自动更新",
     "autoUpdateDescription": "自动下载并安装应用更新",
+    "showWindowOnStartup": "系统启动时显示主窗口",
+    "showWindowOnStartupDescription": "当电脑启动时显示 MCP Router 主窗口。关闭后将在后台启动。",
     "loadExternalMCPConfigs": "从外部应用程序加载 MCP 配置",
     "loadExternalMCPConfigsDescription": "允许 MCP Router 从其他应用程序（如 Claude for Desktop）导入服务器配置",
     "analytics": "发送使用情况分析",

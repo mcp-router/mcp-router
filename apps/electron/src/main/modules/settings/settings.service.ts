@@ -1,3 +1,4 @@
+import { app } from "electron";
 import { AppSettings } from "@mcp_router/shared";
 import { SingletonService } from "../singleton-service";
 import { SettingsRepository } from "./settings.repository";
@@ -55,7 +56,11 @@ export class SettingsService extends SingletonService<
    */
   public saveSettings(settings: AppSettings): boolean {
     try {
-      return SettingsRepository.getInstance().saveSettings(settings);
+      const result = SettingsRepository.getInstance().saveSettings(settings);
+      if (result) {
+        applyLoginItemSettings(settings.showWindowOnStartup ?? true);
+      }
+      return result;
     } catch (error) {
       return this.handleError("設定保存", error, false);
     }
@@ -67,4 +72,25 @@ export class SettingsService extends SingletonService<
  */
 export function getSettingsService(): SettingsService {
   return SettingsService.getInstance();
+}
+
+/**
+ * OS起動時のウィンドウ表示設定に応じてログイン項目設定を更新
+ */
+export function applyLoginItemSettings(showWindowOnStartup: boolean): void {
+  try {
+    const loginItemOptions: Electron.Settings = {
+      openAtLogin: true,
+    };
+
+    if (process.platform === "darwin") {
+      loginItemOptions.openAsHidden = !showWindowOnStartup;
+    } else if (process.platform === "win32") {
+      loginItemOptions.args = showWindowOnStartup ? [] : ["--hidden"];
+    }
+
+    app.setLoginItemSettings(loginItemOptions);
+  } catch (error) {
+    console.error("Failed to update login item settings:", error);
+  }
 }

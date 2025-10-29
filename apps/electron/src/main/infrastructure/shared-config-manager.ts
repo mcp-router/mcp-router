@@ -259,14 +259,21 @@ export class SharedConfigManager implements ISharedConfigManager {
    * アプリケーション設定を取得
    */
   getSettings(): AppSettings {
-    return { ...this.config.settings };
+    return {
+      ...DEFAULT_APP_SETTINGS,
+      ...this.config.settings,
+    };
   }
 
   /**
    * アプリケーション設定を保存
    */
   saveSettings(settings: AppSettings): void {
-    this.config.settings = { ...settings };
+    this.config.settings = {
+      ...DEFAULT_APP_SETTINGS,
+      ...this.config.settings,
+      ...settings,
+    };
     this.saveConfig();
   }
 

@@ -230,7 +230,9 @@
     "analytics": "使用状況の送信",
     "analyticsDescription": "アプリの改善のため、匿名の使用状況データを送信します",
     "autoUpdate": "自動アップデート",
-    "autoUpdateDescription": "アプリのアップデートを自動でダウンロード・インストールします"
+    "autoUpdateDescription": "アプリのアップデートを自動でダウンロード・インストールします",
+    "showWindowOnStartup": "OS起動時にウィンドウを表示",
+    "showWindowOnStartupDescription": "コンピューター起動時にMCP Routerのウィンドウを表示します。無効にするとバックグラウンドで起動します。"
   },
   "agents": {
     "title": "エージェント",

@@ -221,7 +221,9 @@
     "analytics": "Send usage analytics",
     "analyticsDescription": "Send anonymous usage data to help improve the app",
     "autoUpdate": "Enable automatic updates",
-    "autoUpdateDescription": "Automatically download and install app updates"
+    "autoUpdateDescription": "Automatically download and install app updates",
+    "showWindowOnStartup": "Show main window at system startup",
+    "showWindowOnStartupDescription": "Display MCP Router when your computer boots. Disable to start in the background."
   },
   "agents": {
     "title": "Agents",

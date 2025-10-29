@@ -43,6 +43,12 @@ export interface AppSettings {
    * デフォルト: true
    */
   autoUpdateEnabled?: boolean;
+
+  /**
+   * OS起動時にアプリのメインウィンドウを表示するか
+   * デフォルト: true
+   */
+  showWindowOnStartup?: boolean;
 }
 
 /**
@@ -56,4 +62,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   loadExternalMCPConfigs: true,
   analyticsEnabled: true,
   autoUpdateEnabled: true,
+  showWindowOnStartup: true,
 };
