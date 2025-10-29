@@ -7,10 +7,71 @@ import {
   windsurfConfig,
   cursorConfig,
   vscodeConfig,
+  codexConfig,
   exists,
 } from "./mcp-apps-manager.service";
 import { v4 as uuidv4 } from "uuid";
 import { getSettingsService } from "@/main/modules/settings/settings.service";
+
+// Helper to match CLI arg variations like "@mcp_router/cli", "@mcp_router/cli@latest", "@mcp_router/cli@0.x",
+// and legacy aliases like "mcpr-cli", "mcpr-cli@latest"
+function isMcpRouterCliArg(arg: string): boolean {
+  if (!arg || typeof arg !== "string") return false;
+  return (
+    /^@mcp_router\/cli(?:@.*)?$/.test(arg) || /^mcpr-cli(?:@.*)?$/.test(arg)
+  );
+}
+
+function stripOuterQuotes(val: any): any {
+  if (typeof val !== "string") return val;
+  let s = val.trim();
+  // Remove single or double quotes if present on both ends
+  if (
+    (s.startsWith('"') && s.endsWith('"')) ||
+    (s.startsWith("'") && s.endsWith("'"))
+  ) {
+    s = s.slice(1, -1);
+  }
+  // Also remove stray leading/trailing quotes if mismatched
+  if (s.startsWith('"') || s.startsWith("'")) s = s.slice(1);
+  if (s.endsWith('"') || s.endsWith("'")) s = s.slice(0, -1);
+  return s;
+}
+
+// Fallback: extract MCPR_TOKEN from TOML by scanning env table text
+function extractCodexTokenFromToml(tomlText: string): string | null {
+  const lines = tomlText.replace(/\r\n?/g, "\n").split("\n");
+  let inTargetEnv = false;
+
+  const envTableNames = new Set([
+    "mcp_servers.mcp_router.env",
+    "mcp_servers.mcp-router.env",
+    "mcp.servers.mcp_router.env",
+    "mcp.servers.mcp-router.env",
+  ]);
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    if (line.startsWith("[")) {
+      const tableName = line.replace(/^\[\s*/, "").replace(/\s*\]$/, "");
+      const normalized = tableName.replace(/"/g, "");
+      inTargetEnv = envTableNames.has(normalized);
+      continue;
+    }
+
+    if (!inTargetEnv) continue;
+
+    const m = line.match(/^MCPR_TOKEN\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s#]+))/);
+    if (m) {
+      const token = m[1] || m[2] || m[3] || "";
+      return stripOuterQuotes(token);
+    }
+  }
+
+  return null;
+}
 
 /**
  * Sync server configurations from a provided list of configs
@@ -134,6 +195,7 @@ async function loadAllClientConfigs(): Promise<ClientConfig[]> {
     { type: "cline", path: clineConfig() },
     { type: "windsurf", path: windsurfConfig() },
     { type: "cursor", path: cursorConfig() },
+    { type: "codex", path: codexConfig() },
   ];
 
   // Load content for each existing config file
@@ -144,11 +206,19 @@ async function loadAllClientConfigs(): Promise<ClientConfig[]> {
       if (await exists(config.path)) {
         const content = await fsPromises.readFile(config.path, "utf8");
         try {
-          const parsedContent = JSON.parse(content);
-          results.push({
-            ...config,
-            content: parsedContent,
-          });
+          if (config.type === "codex") {
+            const mcpServers = parseCodexTomlServers(content);
+            results.push({
+              ...config,
+              content: { mcpServers },
+            });
+          } else {
+            const parsedContent = JSON.parse(content);
+            results.push({
+              ...config,
+              content: parsedContent,
+            });
+          }
         } catch (parseError) {
           console.error(
             `Failed to parse ${config.type} config file:`,
@@ -177,59 +247,87 @@ export async function extractConfigInfo(
 }> {
   try {
     const fileContent = await fsPromises.readFile(configPath, "utf8");
-    const config = JSON.parse(fileContent);
+    const isVSCode = name.toLowerCase() === "vscode";
+    const isCodex = name.toLowerCase() === "codex";
+
+    const config = isCodex
+      ? { mcpServers: parseCodexTomlServers(fileContent) }
+      : JSON.parse(fileContent);
 
     let hasMcpConfig = false;
     let configToken = "";
     let otherServers: MCPServerConfig[] = [];
 
-    if (name.toLowerCase() === "vscode") {
+    if (isVSCode) {
       // VSCodeの場合
       const servers = config.servers;
 
+      const argsArr = servers?.["mcp-router"]?.args;
       hasMcpConfig =
         !!servers &&
         !!servers["mcp-router"] &&
         servers["mcp-router"].command === "npx" &&
-        Array.isArray(servers["mcp-router"].args) &&
-        (servers["mcp-router"].args.includes("connect") ||
-          servers["mcp-router"].args.includes(
-            "@mcp_router/cli@latest",
-          ));
+        Array.isArray(argsArr) &&
+        argsArr.includes("connect") &&
+        argsArr.some(isMcpRouterCliArg);
 
       // トークンを取得
       if (servers?.["mcp-router"]?.env?.MCPR_TOKEN) {
-        configToken = servers["mcp-router"].env.MCPR_TOKEN;
+        configToken = stripOuterQuotes(servers["mcp-router"].env.MCPR_TOKEN);
       }
 
       // 他のMCPサーバ設定を抽出
       if (servers) {
         otherServers = extractServersFromConfig(servers);
       }
-    } else {
+    } else if (!isCodex) {
       // 他のアプリの場合
+      const srv = config.mcpServers?.["mcp-router"];
+      const argsArr = srv?.args;
       hasMcpConfig =
         !!config.mcpServers &&
-        !!config.mcpServers["mcp-router"] &&
-        config.mcpServers["mcp-router"].command === "npx" &&
-        Array.isArray(config.mcpServers["mcp-router"].args) &&
-        ((config.mcpServers["mcp-router"].args.some(
-          (arg: string) => arg === "mcpr-cli" || arg === "mcpr-cli@latest",
-        ) &&
-          config.mcpServers["mcp-router"].args.includes("connect")) ||
-          config.mcpServers["mcp-router"].args.includes(
-            "@mcp_router/cli@latest",
-          ));
+        !!srv &&
+        srv.command === "npx" &&
+        Array.isArray(argsArr) &&
+        argsArr.includes("connect") &&
+        argsArr.some(isMcpRouterCliArg);
 
       // トークンを取得
       if (config.mcpServers?.["mcp-router"]?.env?.MCPR_TOKEN) {
-        configToken = config.mcpServers["mcp-router"].env.MCPR_TOKEN;
+        configToken = stripOuterQuotes(
+          config.mcpServers["mcp-router"].env.MCPR_TOKEN,
+        );
       }
 
       // 他のMCPサーバ設定を抽出
       if (config.mcpServers) {
         otherServers = extractServersFromConfig(config.mcpServers);
       }
+    } else if (isCodex) {
+      const servers = (config as any).mcpServers || {};
+
+      // Check for mcp-router
+      const mcpr = servers["mcp-router"] || servers["mcp_router"];
+      const argsArr = mcpr?.args;
+      const hasCommand = !!mcpr && mcpr.command === "npx";
+      const hasArgs = Array.isArray(argsArr);
+      const hasConnect = !!hasArgs && (argsArr as string[]).includes("connect");
+      const hasCli = !!hasArgs && (argsArr as string[]).some(isMcpRouterCliArg);
+      hasMcpConfig = !!(hasCommand && hasArgs && hasConnect && hasCli);
+
+      // Token
+      if (mcpr?.env?.MCPR_TOKEN) {
+        configToken = stripOuterQuotes(mcpr.env.MCPR_TOKEN);
+      }
+      if (!configToken) {
+        const fallback = extractCodexTokenFromToml(fileContent);
+        if (fallback) {
+          configToken = fallback;
+        }
+      }
+
+      // Others
+      otherServers = extractServersFromConfig(servers);
     }
 
     return { hasMcpConfig, configToken, otherServers };
@@ -251,7 +349,7 @@ function extractServersFromConfig(
   for (const [serverName, serverConfig] of Object.entries(servers)) {
     if (serverConfig && typeof serverConfig === "object") {
       // mcp-router 自体は除外
-      if (serverName === "mcp-router") continue;
+      if (serverName === "mcp-router" || serverName === "mcp_router") continue;
 
       // サーバ設定を作成
       const config: MCPServerConfig = {
@@ -308,12 +406,182 @@ function extractServerConfigs(
           );
         }
         break;
+      case "codex":
+        // Codex config is TOML; we already normalized to { mcpServers }
+        if (content.mcpServers) {
+          extractStandardServerConfigs(
+            content.mcpServers,
+            configs,
+            clientType,
+            configPath,
+          );
+        }
+        break;
     }
   } catch (error) {
     console.error(`Error extracting server configs from ${clientType}:`, error);
   }
 
   return configs;
+}
+
+/**
+ * Parse Codex config.toml and extract MCP servers
+ * Supports both tables like [mcp.servers."name"] and array-of-tables [[mcp.servers]] with name="..."
+ */
+function parseCodexTomlServers(tomlText: string): Record<string, any> {
+  const servers: Record<string, any> = {};
+
+  // Normalize newlines
+  const text = tomlText.replace(/\r\n?/g, "\n");
+
+  // Helper to parse key = "value" pairs inside a block
+  const parseKeyValue = (block: string): Record<string, any> => {
+    const result: Record<string, any> = {};
+    const lines = block.split(/\n/);
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith("#") || line.startsWith("[")) continue;
+      const m = line.match(/^(\w[\w\-]*)\s*=\s*(.*)$/);
+      if (!m) continue;
+      const key = m[1];
+      let value = m[2].trim();
+      // Strip comments at EOL
+      value = value.replace(/\s+#.*$/, "").trim();
+
+      // String
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        result[key] = value.slice(1, -1);
+        continue;
+      }
+      // Array of strings
+      if (value.startsWith("[") && value.endsWith("]")) {
+        const inner = value.slice(1, -1);
+        const arr = inner
+          .split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .map((s) =>
+            s.startsWith('"') && s.endsWith('"')
+              ? s.slice(1, -1)
+              : s.replace(/^'|'$/g, ""),
+          );
+        result[key] = arr;
+        continue;
+      }
+      // Inline table for env: { KEY = "VALUE", ... }
+      if (value.startsWith("{") && value.endsWith("}")) {
+        const inner = value.slice(1, -1);
+        const env: Record<string, string> = {};
+        inner
+          .split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .forEach((pair) => {
+            const mm = pair.match(/^(\w[\w\-]*)\s*=\s*(.+)$/);
+            if (!mm) return;
+            const k = mm[1];
+            let v = mm[2].trim();
+            if (
+              (v.startsWith('"') && v.endsWith('"')) ||
+              (v.startsWith("'") && v.endsWith("'"))
+            ) {
+              v = v.slice(1, -1);
+            }
+            env[k] = v;
+          });
+        result[key] = env;
+        continue;
+      }
+      // Bare words
+      result[key] = value;
+    }
+    return result;
+  };
+
+  // Parse [mcp.servers."name"] and [mcp_servers.name] styles
+  const tableRe =
+    /^\s*\[\s*(?:mcp\.servers|mcp_servers)\.(?:"([^"]+)"|([^\]\n#]+))\s*]\s*\n([\s\S]*?)(?=^\s*\[|\Z)/gm;
+  let m: RegExpExecArray | null;
+  while ((m = tableRe.exec(text))) {
+    const name = (m[1] || m[2] || "").trim();
+    // Skip accidental match of nested env table as a server
+    if (name.endsWith(".env")) {
+      continue;
+    }
+    const body = m[3] || "";
+    const data = parseKeyValue(body);
+    // Look for nested env table [mcp.servers."name".env] or [mcp_servers.name.env]
+    const envTableRe = new RegExp(
+      String.raw`^\s*\[\s*(?:mcp\.servers|mcp_servers)\.(?:"${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"|${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\.env\s*]\s*\n([\s\S]*?)(?=^\s*\[|\Z)`,
+      "gm",
+    );
+    // Prefer the last matching env table for this server name
+    let envMatch: RegExpExecArray | null;
+    let lastEnvBlock: string | null = null;
+    while ((envMatch = envTableRe.exec(text))) {
+      lastEnvBlock = envMatch[1] || "";
+    }
+    if (lastEnvBlock !== null) {
+      const envPairs = parseKeyValue(lastEnvBlock);
+      data.env = Object.fromEntries(
+        Object.entries(envPairs).map(([k, v]) => [
+          k,
+          stripOuterQuotes(typeof v === "string" ? v : String(v)),
+        ]),
+      );
+    }
+
+    if (name) {
+      servers[name] = {
+        command: data.command,
+        args: Array.isArray(data.args) ? data.args : [],
+        env: (data.env as Record<string, string>) || {},
+      };
+    }
+  }
+
+  // Parse array-of-tables [[mcp.servers]] or [[mcp_servers]] with name="..."
+  const arrRe =
+    /^\s*\[\[\s*(?:mcp\.servers|mcp_servers)\s*]]\s*\n([\s\S]*?)(?=^\s*\[|\Z)/gm;
+  while ((m = arrRe.exec(text))) {
+    const body = m[1] || "";
+    const data = parseKeyValue(body);
+    const name = (data as any).name as string;
+    if (!name) continue;
+
+    // Optional inline or subsequent env table
+    const envTableRe2 = new RegExp(
+      String.raw`^\s*\[\s*(?:mcp\.servers|mcp_servers)\.env\s*]\s*\n([\s\S]*?)(?=^\s*\[|\Z)`,
+      "gm",
+    );
+    // Prefer the last env table appearance
+    let envMatch2: RegExpExecArray | null;
+    let lastEnvBlock2: string | null = null;
+    while ((envMatch2 = envTableRe2.exec(text))) {
+      lastEnvBlock2 = envMatch2[1] || "";
+    }
+    if (lastEnvBlock2 !== null) {
+      const envPairs = parseKeyValue(lastEnvBlock2);
+      data.env = Object.fromEntries(
+        Object.entries(envPairs).map(([k, v]) => [
+          k,
+          stripOuterQuotes(typeof v === "string" ? v : String(v)),
+        ]),
+      );
+    }
+
+    servers[name] = {
+      command: data.command,
+      args: Array.isArray(data.args) ? data.args : [],
+      env: (data.env as Record<string, string>) || {},
+    };
+  }
+
+  return servers;
 }
 
 /**
@@ -361,7 +629,7 @@ function extractStandardServerConfigs(
   for (const [serverName, serverConfig] of Object.entries(servers)) {
     if (serverConfig && typeof serverConfig === "object") {
       // Skip 'mcp-router' server as it's this app itself
-      if (serverName === "mcp-router") continue;
+      if (serverName === "mcp-router" || serverName === "mcp_router") continue;
 
       // Create server config
       const config: MCPServerConfig = {

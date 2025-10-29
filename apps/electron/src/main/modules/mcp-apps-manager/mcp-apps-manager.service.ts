@@ -32,6 +32,7 @@ import clineIcon from "../../../../public/images/apps/cline.svg";
 import windsurfIcon from "../../../../public/images/apps/windsurf.svg";
 import cursorIcon from "../../../../public/images/apps/cursor.svg";
 import vscodeIcon from "../../../../public/images/apps/vscode.svg";
+import openAiIcon from "../../../../public/images/apps/openai.svg";
 
 // アイコンのマッピング
 const ICON_MAP: Record<string, string> = {
@@ -40,10 +41,17 @@ const ICON_MAP: Record<string, string> = {
   windsurf: windsurfIcon,
   cursor: cursorIcon,
   vscode: vscodeIcon,
+  openai: openAiIcon,
 };
 
 // 標準アプリの定義
 const STANDARD_APPS = [
+  {
+    id: "codex",
+    name: "Codex",
+    configPathFn: () => "codexConfig",
+    icon: "openai",
+  },
   {
     id: "claude",
     name: "Claude",
@@ -256,6 +264,8 @@ export class McpAppsManagerService extends SingletonService<
 
     const methodName = standardApp.configPathFn();
     switch (methodName) {
+      case "codexConfig":
+        return this.appPaths.codexConfig();
       case "claudeConfig":
         return this.appPaths.claudeConfig();
       case "clineConfig":
@@ -375,6 +385,60 @@ export class McpAppsManagerService extends SingletonService<
   }
 
   /**
+   * Codex 用 TOML 設定を更新/作成
+   * 生成フォーマット:
+   * [mcp_servers.mcp_router]
+   * command = "npx"
+   * args    = ["-y", "@mcp_router/cli@latest"]
+   *
+   * [mcp_servers.mcp_router.env]
+   * MCPR_TOKEN = "<token>"
+   */
+  private async updateCodexConfigToml(
+    filePath: string,
+    tokenId: string,
+  ): Promise<void> {
+    const dir = path.dirname(filePath);
+    await fsPromises.mkdir(dir, { recursive: true });
+
+    const blockMain =
+      `[mcp_servers.mcp_router]\n` +
+      `command = "npx"\n` +
+      `args    = ["-y", "@mcp_router/cli@latest", "connect"]\n`;
+    const blockEnv =
+      `\n[mcp_servers.mcp_router.env]\n` + `MCPR_TOKEN = "${tokenId}"\n`;
+
+    let content = "";
+    try {
+      content = await fsPromises.readFile(filePath, "utf8");
+    } catch {
+      // no file yet
+    }
+
+    if (content) {
+      // Remove existing mcp_router sections (quoted or unquoted), also mcp.servers variants just in case
+      const patterns = [
+        /^\s*\[\s*mcp_servers\.(?:"mcp_router"|mcp_router)\s*]\s*\n[\s\S]*?(?=^\s*\[|\Z)/gm,
+        /^\s*\[\s*mcp_servers\.(?:"mcp_router"|mcp_router)\.env\s*]\s*\n[\s\S]*?(?=^\s*\[|\Z)/gm,
+        /^\s*\[\s*mcp\.servers\.(?:"mcp-router"|mcp-router)\s*]\s*\n[\s\S]*?(?=^\s*\[|\Z)/gm,
+        /^\s*\[\s*mcp\.servers\.(?:"mcp-router"|mcp-router)\.env\s*]\s*\n[\s\S]*?(?=^\s*\[|\Z)/gm,
+      ];
+      for (const re of patterns) {
+        content = content.replace(re, "");
+      }
+      content = content.trimEnd();
+      if (content.length > 0 && !content.endsWith("\n")) {
+        content += "\n";
+      }
+      content += `\n${blockMain}${blockEnv}`;
+    } else {
+      content = `${blockMain}${blockEnv}`;
+    }
+
+    await fsPromises.writeFile(filePath, content, "utf8");
+  }
+
+  /**
    * アプリ用の設定を更新
    */
   private async updateAppConfig(
@@ -382,6 +446,11 @@ export class McpAppsManagerService extends SingletonService<
     configPath: string,
     tokenId: string,
   ): Promise<void> {
+    // Codex uses TOML and a different structure; write in TOML
+    if (appName.toLowerCase() === "codex") {
+      await this.updateCodexConfigToml(configPath, tokenId);
+      return;
+    }
     // アプリがインストールされているか確認
     const installed = await this.exists(configPath);
     if (!installed) {
@@ -896,6 +965,11 @@ export function cursorConfig(projectDir = ""): string {
 export function vscodeConfig(): string {
   const appPaths = new AppPaths();
   return appPaths.vscodeConfig();
+}
+
+export function codexConfig(): string {
+  const appPaths = new AppPaths();
+  return appPaths.codexConfig();
 }
 
 export async function exists(filePath: string): Promise<boolean> {

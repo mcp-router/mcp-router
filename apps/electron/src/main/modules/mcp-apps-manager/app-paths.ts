@@ -110,6 +110,15 @@ export class AppPaths {
     }
   }
 
+  /**
+   * Codex CLI / IDE shared config path
+   * macOS / Linux / WSL: ~/.codex/config.toml
+   * Windows (native): C:\\Users\\<User>\\.codex\\config.toml
+   */
+  public codexConfig(): string {
+    return path.join(this.HOME, ".codex", "config.toml");
+  }
+
   public async exists(filePath: string): Promise<boolean> {
     try {
       await fs.promises.access(filePath, fs.constants.F_OK);

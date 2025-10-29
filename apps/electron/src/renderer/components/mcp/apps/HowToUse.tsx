@@ -199,14 +199,13 @@ const HowToUse = forwardRef<HowToUseHandle, HowToUseProps>(({ token }, ref) => {
     showDialog: () => setIsDialogOpen(true),
   }));
 
-  const content =
-    i18n.language.startsWith("ja") ? (
-      <HowToUseJA token={token} />
-    ) : i18n.language.startsWith("zh") ? (
-      <HowToUseZH token={token} />
-    ) : (
-      <HowToUseEN token={token} />
-    );
+  const content = i18n.language.startsWith("ja") ? (
+    <HowToUseJA token={token} />
+  ) : i18n.language.startsWith("zh") ? (
+    <HowToUseZH token={token} />
+  ) : (
+    <HowToUseEN token={token} />
+  );
 
   return (
     <>
