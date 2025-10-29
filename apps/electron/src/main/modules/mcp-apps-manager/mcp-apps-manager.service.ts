@@ -25,6 +25,11 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { TokenManager } from "./token-manager";
 import { MCPClient } from "./mcp-client";
 import { AppPaths } from "./app-paths";
+import {
+  STANDARD_APP_DEFINITIONS,
+  findStandardAppDefinition,
+  getStandardAppIds,
+} from "./app-definitions";
 
 // SVGアイコンのインポート
 import claudeIcon from "../../../../public/images/apps/claude.svg";
@@ -43,46 +48,6 @@ const ICON_MAP: Record<string, string> = {
   vscode: vscodeIcon,
   openai: openAiIcon,
 };
-
-// 標準アプリの定義
-const STANDARD_APPS = [
-  {
-    id: "codex",
-    name: "Codex",
-    configPathFn: () => "codexConfig",
-    icon: "openai",
-  },
-  {
-    id: "claude",
-    name: "Claude",
-    configPathFn: () => "claudeConfig",
-    icon: "claude",
-  },
-  {
-    id: "cline",
-    name: "Cline",
-    configPathFn: () => "clineConfig",
-    icon: "cline",
-  },
-  {
-    id: "windsurf",
-    name: "Windsurf",
-    configPathFn: () => "windsurfConfig",
-    icon: "windsurf",
-  },
-  {
-    id: "cursor",
-    name: "Cursor",
-    configPathFn: () => "cursorConfig",
-    icon: "cursor",
-  },
-  {
-    id: "vscode",
-    name: "VSCode",
-    configPathFn: () => "vscodeConfig",
-    icon: "vscode",
-  },
-];
 
 /**
  * MCP Apps Service - 統合されたMCPアプリケーション管理サービス
@@ -257,61 +222,27 @@ export class McpAppsManagerService extends SingletonService<
    * アプリの設定ファイルパスを取得
    */
   private getAppConfigPath(name: string): string {
-    const standardApp = STANDARD_APPS.find(
-      (app) => app.id.toLowerCase() === name.toLowerCase(),
-    );
-    if (!standardApp) return "";
-
-    const methodName = standardApp.configPathFn();
-    switch (methodName) {
-      case "codexConfig":
-        return this.appPaths.codexConfig();
-      case "claudeConfig":
-        return this.appPaths.claudeConfig();
-      case "clineConfig":
-        return this.appPaths.clineConfig();
-      case "windsurfConfig":
-        return this.appPaths.windsurfConfig();
-      case "cursorConfig":
-        return this.appPaths.cursorConfig();
-      case "vscodeConfig":
-        return this.appPaths.vscodeConfig();
-      default:
-        return "";
-    }
+    const definition = findStandardAppDefinition(name);
+    if (!definition) return "";
+    return definition.getConfigPath(this.appPaths);
   }
 
   /**
    * 標準アプリかどうかを判定
    */
   private isStandardApp(name: string): boolean {
-    return STANDARD_APPS.some(
-      (app) =>
-        app.id.toLowerCase() === name.toLowerCase() ||
-        app.name.toLowerCase() === name.toLowerCase(),
-    );
+    return !!findStandardAppDefinition(name);
   }
 
   /**
    * 標準アプリのアイコンを取得
    */
   private getStandardAppIcon(name: string): string | undefined {
-    const standardApp = STANDARD_APPS.find(
-      (app) =>
-        app.id.toLowerCase() === name.toLowerCase() ||
-        app.name.toLowerCase() === name.toLowerCase(),
-    );
-    if (standardApp?.icon) {
-      return ICON_MAP[standardApp.icon];
+    const definition = findStandardAppDefinition(name);
+    if (definition?.iconKey) {
+      return ICON_MAP[definition.iconKey];
     }
     return undefined;
-  }
-
-  /**
-   * VSCodeアプリかどうかを判定
-   */
-  private isVSCodeApp(name: string): boolean {
-    return name.toLowerCase() === "vscode";
   }
 
   /**
@@ -446,8 +377,13 @@ export class McpAppsManagerService extends SingletonService<
     configPath: string,
     tokenId: string,
   ): Promise<void> {
+    const definition = findStandardAppDefinition(appName);
+    if (!definition) {
+      return;
+    }
+
     // Codex uses TOML and a different structure; write in TOML
-    if (appName.toLowerCase() === "codex") {
+    if (definition.configKind === "codex-toml") {
       await this.updateCodexConfigToml(configPath, tokenId);
       return;
     }
@@ -461,8 +397,8 @@ export class McpAppsManagerService extends SingletonService<
     // 既存の設定を読み込む
     let config = installed ? await this.readConfigFile(configPath) : {};
 
-    // VSCodeとClaude Codeとその他のアプリで異なる設定構造を処理
-    if (this.isVSCodeApp(appName)) {
+    // VSCodeとその他のアプリで異なる設定構造を処理
+    if (definition.configKind === "vscode-json") {
       config = this.createVSCodeConfig(tokenId, config);
     } else {
       config = this.createStandardAppConfig(tokenId, config);
@@ -480,7 +416,7 @@ export class McpAppsManagerService extends SingletonService<
       const tokens = this.listTokens();
 
       // 標準アプリでないトークンだけをフィルタリング
-      const standardAppIds = STANDARD_APPS.map((app) => app.id.toLowerCase());
+      const standardAppIds = getStandardAppIds().map((id) => id.toLowerCase());
 
       const additionalAppTokens = tokens.filter(
         (token) => !standardAppIds.includes(token.clientId),
@@ -648,9 +584,9 @@ export class McpAppsManagerService extends SingletonService<
   public async listMcpApps(): Promise<McpApp[]> {
     // 標準アプリ
     const standardApps = await Promise.all(
-      STANDARD_APPS.map((app) => {
-        const configPath = this.getAppConfigPath(app.name);
-        return this.checkApp(app.name, configPath);
+      STANDARD_APP_DEFINITIONS.map((definition) => {
+        const configPath = definition.getConfigPath(this.appPaths);
+        return this.checkApp(definition.name, configPath);
       }),
     );
 

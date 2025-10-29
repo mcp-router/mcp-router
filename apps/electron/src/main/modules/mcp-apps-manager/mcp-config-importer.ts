@@ -1,17 +1,13 @@
 import { promises as fsPromises } from "fs";
 import { getServerService } from "@/main/modules/mcp-server-manager/server-service";
 import { MCPServerConfig, ClientType, ClientConfig } from "@mcp_router/shared";
-import {
-  claudeConfig,
-  clineConfig,
-  windsurfConfig,
-  cursorConfig,
-  vscodeConfig,
-  codexConfig,
-  exists,
-} from "./mcp-apps-manager.service";
 import { v4 as uuidv4 } from "uuid";
 import { getSettingsService } from "@/main/modules/settings/settings.service";
+import { AppPaths } from "./app-paths";
+import {
+  STANDARD_APP_DEFINITIONS,
+  findStandardAppDefinition,
+} from "./app-definitions";
 
 // Helper to match CLI arg variations like "@mcp_router/cli", "@mcp_router/cli@latest", "@mcp_router/cli@0.x",
 // and legacy aliases like "mcpr-cli", "mcpr-cli@latest"
@@ -189,21 +185,20 @@ export async function importExistingServerConfigurations(): Promise<void> {
  */
 async function loadAllClientConfigs(): Promise<ClientConfig[]> {
   // Define client config paths and types
-  const clientConfigPaths: ClientConfig[] = [
-    { type: "vscode", path: vscodeConfig() },
-    { type: "claude", path: claudeConfig() },
-    { type: "cline", path: clineConfig() },
-    { type: "windsurf", path: windsurfConfig() },
-    { type: "cursor", path: cursorConfig() },
-    { type: "codex", path: codexConfig() },
-  ];
+  const appPaths = new AppPaths();
+  const clientConfigPaths: ClientConfig[] = STANDARD_APP_DEFINITIONS.map(
+    (definition) => ({
+      type: definition.clientType,
+      path: definition.getConfigPath(appPaths),
+    }),
+  );
 
   // Load content for each existing config file
   const results: ClientConfig[] = [];
 
   for (const config of clientConfigPaths) {
     try {
-      if (await exists(config.path)) {
+      if (await appPaths.exists(config.path)) {
         const content = await fsPromises.readFile(config.path, "utf8");
         try {
           if (config.type === "codex") {
@@ -247,87 +242,89 @@ export async function extractConfigInfo(
 }> {
   try {
     const fileContent = await fsPromises.readFile(configPath, "utf8");
-    const isVSCode = name.toLowerCase() === "vscode";
-    const isCodex = name.toLowerCase() === "codex";
+    const definition = findStandardAppDefinition(name);
+    const configKind = definition?.configKind ?? "standard-json";
 
-    const config = isCodex
-      ? { mcpServers: parseCodexTomlServers(fileContent) }
-      : JSON.parse(fileContent);
+    const config =
+      configKind === "codex-toml"
+        ? { mcpServers: parseCodexTomlServers(fileContent) }
+        : JSON.parse(fileContent);
 
     let hasMcpConfig = false;
     let configToken = "";
     let otherServers: MCPServerConfig[] = [];
 
-    if (isVSCode) {
-      // VSCodeの場合
-      const servers = config.servers;
+    switch (configKind) {
+      case "vscode-json": {
+        const servers = (config as any).servers;
+        const argsArr = servers?.["mcp-router"]?.args;
+        hasMcpConfig =
+          !!servers &&
+          !!servers["mcp-router"] &&
+          servers["mcp-router"].command === "npx" &&
+          Array.isArray(argsArr) &&
+          argsArr.includes("connect") &&
+          argsArr.some(isMcpRouterCliArg);
 
-      const argsArr = servers?.["mcp-router"]?.args;
-      hasMcpConfig =
-        !!servers &&
-        !!servers["mcp-router"] &&
-        servers["mcp-router"].command === "npx" &&
-        Array.isArray(argsArr) &&
-        argsArr.includes("connect") &&
-        argsArr.some(isMcpRouterCliArg);
-
-      // トークンを取得
-      if (servers?.["mcp-router"]?.env?.MCPR_TOKEN) {
-        configToken = stripOuterQuotes(servers["mcp-router"].env.MCPR_TOKEN);
-      }
-
-      // 他のMCPサーバ設定を抽出
-      if (servers) {
-        otherServers = extractServersFromConfig(servers);
-      }
-    } else if (!isCodex) {
-      // 他のアプリの場合
-      const srv = config.mcpServers?.["mcp-router"];
-      const argsArr = srv?.args;
-      hasMcpConfig =
-        !!config.mcpServers &&
-        !!srv &&
-        srv.command === "npx" &&
-        Array.isArray(argsArr) &&
-        argsArr.includes("connect") &&
-        argsArr.some(isMcpRouterCliArg);
-
-      // トークンを取得
-      if (config.mcpServers?.["mcp-router"]?.env?.MCPR_TOKEN) {
-        configToken = stripOuterQuotes(
-          config.mcpServers["mcp-router"].env.MCPR_TOKEN,
-        );
-      }
-
-      // 他のMCPサーバ設定を抽出
-      if (config.mcpServers) {
-        otherServers = extractServersFromConfig(config.mcpServers);
-      }
-    } else if (isCodex) {
-      const servers = (config as any).mcpServers || {};
-
-      // Check for mcp-router
-      const mcpr = servers["mcp-router"] || servers["mcp_router"];
-      const argsArr = mcpr?.args;
-      const hasCommand = !!mcpr && mcpr.command === "npx";
-      const hasArgs = Array.isArray(argsArr);
-      const hasConnect = !!hasArgs && (argsArr as string[]).includes("connect");
-      const hasCli = !!hasArgs && (argsArr as string[]).some(isMcpRouterCliArg);
-      hasMcpConfig = !!(hasCommand && hasArgs && hasConnect && hasCli);
-
-      // Token
-      if (mcpr?.env?.MCPR_TOKEN) {
-        configToken = stripOuterQuotes(mcpr.env.MCPR_TOKEN);
-      }
-      if (!configToken) {
-        const fallback = extractCodexTokenFromToml(fileContent);
-        if (fallback) {
-          configToken = fallback;
+        if (servers?.["mcp-router"]?.env?.MCPR_TOKEN) {
+          configToken = stripOuterQuotes(
+            servers["mcp-router"].env.MCPR_TOKEN,
+          );
         }
-      }
 
-      // Others
-      otherServers = extractServersFromConfig(servers);
+        if (servers) {
+          otherServers = extractServersFromConfig(servers);
+        }
+        break;
+      }
+      case "codex-toml": {
+        const servers = (config as any).mcpServers || {};
+        const mcpr = servers["mcp-router"] || servers["mcp_router"];
+        const argsArr = mcpr?.args;
+        const hasCommand = !!mcpr && mcpr.command === "npx";
+        const hasArgs = Array.isArray(argsArr);
+        const hasConnect =
+          !!hasArgs && (argsArr as string[]).includes("connect");
+        const hasCli =
+          !!hasArgs && (argsArr as string[]).some(isMcpRouterCliArg);
+        hasMcpConfig = !!(hasCommand && hasArgs && hasConnect && hasCli);
+
+        if (mcpr?.env?.MCPR_TOKEN) {
+          configToken = stripOuterQuotes(mcpr.env.MCPR_TOKEN);
+        }
+        if (!configToken) {
+          const fallback = extractCodexTokenFromToml(fileContent);
+          if (fallback) {
+            configToken = fallback;
+          }
+        }
+
+        otherServers = extractServersFromConfig(servers);
+        break;
+      }
+      default: {
+        const servers = (config as any).mcpServers;
+        const srv = servers?.["mcp-router"];
+        const argsArr = srv?.args;
+        hasMcpConfig =
+          !!servers &&
+          !!srv &&
+          srv.command === "npx" &&
+          Array.isArray(argsArr) &&
+          argsArr.includes("connect") &&
+          argsArr.some(isMcpRouterCliArg);
+
+        if (servers?.["mcp-router"]?.env?.MCPR_TOKEN) {
+          configToken = stripOuterQuotes(
+            servers["mcp-router"].env.MCPR_TOKEN,
+          );
+        }
+
+        if (servers) {
+          otherServers = extractServersFromConfig(servers);
+        }
+        break;
+      }
     }
 
     return { hasMcpConfig, configToken, otherServers };
