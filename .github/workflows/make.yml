@@ -1,9 +1,9 @@
 name: Make Build
 
 on:
-  push:
+  pull_request:
     branches:
-      - release
+      - main
 
 jobs:
   make:
