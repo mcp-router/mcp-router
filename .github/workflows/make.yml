@@ -15,7 +15,8 @@ jobs:
         include:
           - os: macos-latest
             label: macOS
-            build_command: pnpm run make
+          - os: windows-latest
+            label: Windows
     env:
       CI: true
 
