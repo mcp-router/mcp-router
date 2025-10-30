@@ -118,10 +118,17 @@ export class RequestHandlers extends RequestHandlerBase {
       "CallTool",
       async () => {
         // Call the tool on the server
-        return await client.callTool({
-          name: originalToolName,
-          arguments: request.params.arguments || {},
-        });
+        return await client.callTool(
+          {
+            name: originalToolName,
+            arguments: request.params.arguments || {},
+          },
+          undefined,
+          {
+            timeout: 60 * 60 * 1000, // 60分
+            resetTimeoutOnProgress: true,
+          },
+        );
       },
       { serverId },
     );
