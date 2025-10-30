@@ -181,10 +181,17 @@ class HttpMcpBridgeServer {
     // Call Tool
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
-        const result = await this.client.callTool({
-          name: request.params.name,
-          arguments: request.params.arguments || {},
-        });
+        const result = await this.client.callTool(
+          {
+            name: request.params.name,
+            arguments: request.params.arguments || {},
+          },
+          undefined,
+          {
+            timeout: 60 * 60 * 1000, // 60分
+            resetTimeoutOnProgress: true,
+          },
+        );
         return result as CallToolResult;
       } catch (error: any) {
         // If already McpError, re-throw as-is to avoid wrapping
