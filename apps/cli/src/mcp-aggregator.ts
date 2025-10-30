@@ -11,7 +11,7 @@ import {
   GetPromptRequestSchema,
   ListPromptsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { ServerClient } from "@mcp_router/shared";
+import type { ServerClient } from "@mcp_router/shared";
 
 /**
  * Pure MCP Aggregator that combines capabilities from multiple MCP servers

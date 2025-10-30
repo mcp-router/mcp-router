@@ -3,7 +3,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { MCPAggregator } from "../mcp-aggregator.js";
-import { ServeServerConfig } from "@mcp_router/shared";
+import type { ServeServerConfig } from "@mcp_router/shared";
 
 /**
  * Executes the serve command, starting an HTTP server that accepts
