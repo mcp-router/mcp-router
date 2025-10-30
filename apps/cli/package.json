@@ -11,9 +11,9 @@
   },
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --build",
     "start": "node dist/mcpr.js",
-    "dev": "tsc && node dist/mcpr.js",
+    "dev": "tsc --build && node dist/mcpr.js",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
