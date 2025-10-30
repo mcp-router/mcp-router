@@ -344,8 +344,8 @@ importers:
         specifier: ^11.5.1
         version: 11.5.1(@trpc/server@11.5.1)(typescript@5.9.2)
       superjson:
-        specifier: ^2.2.2
-        version: 2.2.2
+        specifier: ^2.2.5
+        version: 2.2.5
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -5104,11 +5104,11 @@ packages:
     engines: {node: '>=18'}
     dev: false
 
-  /copy-anything@3.0.5:
-    resolution: {integrity: sha512-yCEafptTtb4bk7GLEQoM8KVJpxAfdBJYaXyzQEgQQQgYrZiDp8SJmGKlYza6CYjEDNstAdNdKA3UuoULlEbS6w==}
-    engines: {node: '>=12.13'}
+  /copy-anything@4.0.5:
+    resolution: {integrity: sha512-7Vv6asjS4gMOuILabD3l739tsaxFQmC+a7pLZm02zyvs8p977bL3zEgq3yDk5rn9B0PbYgIv++jmHcuUab4RhA==}
+    engines: {node: '>=18'}
     dependencies:
-      is-what: 4.1.16
+      is-what: 5.5.0
     dev: false
 
   /core-js@3.45.1:
@@ -7297,9 +7297,9 @@ packages:
     resolution: {integrity: sha512-ITvGim8FhRiYe4IQ5uHSkj7pVaPDrCTkNd3yq3cV7iZAcJdHTUMPMEHcqSOy9xZ9qFenQCvi+2wjH9a1nXqHww==}
     dev: false
 
-  /is-what@4.1.16:
-    resolution: {integrity: sha512-ZhMwEosbFJkA0YhFnNDgTM4ZxDRsS6HqTo7qsZM08fehyRYIYa0yHu5R6mgo1n/8MgaPBXiPimPD77baVFYg+A==}
-    engines: {node: '>=12.13'}
+  /is-what@5.5.0:
+    resolution: {integrity: sha512-oG7cgbmg5kLYae2N5IVd3jm2s+vldjxJzK1pcu9LfpGuQ93MQSzo0okvRna+7y5ifrD+20FE8FvjusyGaz14fw==}
+    engines: {node: '>=18'}
     dev: false
 
   /is-wsl@3.1.0:
@@ -10354,11 +10354,11 @@ packages:
       - supports-color
     dev: true
 
-  /superjson@2.2.2:
-    resolution: {integrity: sha512-5JRxVqC8I8NuOUjzBbvVJAKNM8qoVuH0O77h4WInc/qC2q5IreqKxYwgkga3PfA22OayK2ikceb/B26dztPl+Q==}
+  /superjson@2.2.5:
+    resolution: {integrity: sha512-zWPTX96LVsA/eVYnqOM2+ofcdPqdS1dAF1LN4TS2/MWuUpfitd9ctTa87wt4xrYnZnkLtS69xpBdSxVBP5Rm6w==}
     engines: {node: '>=16'}
     dependencies:
-      copy-anything: 3.0.5
+      copy-anything: 4.0.5
     dev: false
 
   /supports-color@7.2.0:
