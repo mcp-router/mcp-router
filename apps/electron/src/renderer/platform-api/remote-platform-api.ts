@@ -185,10 +185,6 @@ export class RemotePlatformAPI implements PlatformAPI {
   };
 
   // All other APIs delegate to local implementation
-  get agents() {
-    return this.localPlatformAPI.agents;
-  }
-
   get apps() {
     return this.localPlatformAPI.apps;
   }

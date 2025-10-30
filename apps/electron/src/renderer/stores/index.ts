@@ -8,7 +8,7 @@ export * from "./view-preferences-store";
 // Platform-dependent store factories
 export * from "./server-store";
 export * from "./auth-store";
-export * from "./agent-store";
+// Agent機能は削除済みのためエージェント関連ストアはエクスポートしない
 
 // Import platform API type
 import type { PlatformAPI } from "@mcp_router/shared";
@@ -16,7 +16,6 @@ import type { PlatformAPI } from "@mcp_router/shared";
 // Import store factories
 import { createServerStore } from "./server-store";
 import { createAuthStore } from "./auth-store";
-import { createAgentStore } from "./agent-store";
 import { useWorkspaceStore } from "./workspace-store";
 
 // Get the appropriate platform API based on current workspace
@@ -27,7 +26,6 @@ function getPlatformAPI(): PlatformAPI {
 // Create store instances with dynamic platform API getter
 export const useServerStore = createServerStore(getPlatformAPI);
 export const useAuthStore = createAuthStore(getPlatformAPI);
-export const useAgentStore = createAgentStore(getPlatformAPI);
 
 // Store initialization utility
 export const initializeStores = async () => {
@@ -57,12 +55,5 @@ export const initializeStores = async () => {
     await useServerStore.getState().refreshServers();
   } catch (error) {
     console.error("Failed to load initial servers:", error);
-  }
-
-  // Load initial agent data
-  try {
-    await useAgentStore.getState().refreshAgents();
-  } catch (error) {
-    console.error("Failed to load initial agents:", error);
   }
 };

@@ -23,8 +23,6 @@ export {
   ServerAPI,
   ServerStatus,
   CreateServerInput,
-  // Agent API
-  AgentAPI,
   // App API
   AppAPI,
   // Package API

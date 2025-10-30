@@ -59,7 +59,6 @@ if (started) app.quit();
 
 // Global references
 export let mainWindow: BrowserWindow | null = null;
-export let backgroundWindow: BrowserWindow | null = null;
 // Flag to track if app.quit() was explicitly called
 let isQuitting = false;
 // Timer for updating tray context menu
@@ -90,8 +89,6 @@ try {
 // Declare global variables defined by Electron Forge
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string | undefined;
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
-declare const BACKGROUND_WINDOW_PRELOAD_WEBPACK_ENTRY: string | undefined;
-declare const BACKGROUND_WINDOW_WEBPACK_ENTRY: string;
 
 // グローバル変数の宣言（初期化は後で行う）
 let serverManager: MCPServerManager;
@@ -193,36 +190,6 @@ const createWindow = ({ showOnCreate = true }: CreateWindowOptions = {}) => {
   }
 };
 
-const createBackgroundWindow = () => {
-  // Create the background window for agent chat processing
-  backgroundWindow = new BrowserWindow({
-    width: isProduction() ? 1 : 800,
-    height: isProduction() ? 1 : 600,
-    show: isDevelopment(), // Show during development for debugging
-    frame: isDevelopment(),
-    skipTaskbar: isProduction(),
-    title: "Background Chat Window",
-    webPreferences: {
-      preload: BACKGROUND_WINDOW_PRELOAD_WEBPACK_ENTRY,
-      contextIsolation: true,
-      nodeIntegration: false,
-      devTools: isDevelopment(),
-    },
-  });
-
-  // Load the background renderer
-  backgroundWindow.loadURL(BACKGROUND_WINDOW_WEBPACK_ENTRY);
-
-  backgroundWindow.on("closed", () => {
-    backgroundWindow = null;
-  });
-
-  if (isDevelopment()) {
-    // Open dev tools for debugging background window
-    backgroundWindow.webContents.openDevTools();
-  }
-};
-
 /**
  * Sets up a timer to periodically update the tray context menu
  * @param serverManager The MCPServerManager instance
@@ -284,7 +251,6 @@ async function initMCPServices(): Promise<void> {
 
   // AggregatorServerの初期化
   aggregatorServer = new AggregatorServer(serverManager);
-  aggregatorServer.initAgentToolsServer();
 
   // HTTPサーバーの初期化とスタート
   mcpHttpServer = new MCPHttpServer(serverManager, 3282, aggregatorServer);
@@ -313,9 +279,6 @@ function initUI({ showMainWindow = true }: { showMainWindow?: boolean } = {}): v
   if (mainWindow) {
     getPlatformAPIManager().setMainWindow(mainWindow);
   }
-
-  // バックグラウンドウィンドウ作成
-  createBackgroundWindow();
 
   // システムトレイ作成
   createTray(serverManager);

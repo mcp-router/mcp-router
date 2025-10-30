@@ -18,9 +18,6 @@ interface UIStoreState extends UIState {
   openDialog: (config: Omit<DialogState, "isOpen">) => void;
   closeDialog: () => void;
 
-  // Actions for overlays
-  setPackageManagerOverlay: (open: boolean) => void;
-
   // Actions for navigation
   setCurrentPage: (page: string) => void;
   setSidebarOpen: (open: boolean) => void;
@@ -43,7 +40,6 @@ export const useUIStore = create<UIStoreState>((set, get) => ({
   loadingMessage: "",
   toasts: [],
   dialog: { isOpen: false },
-  packageManagerOverlay: false,
   currentPage: "home",
   sidebarOpen: true,
   theme: "system",
@@ -86,10 +82,6 @@ export const useUIStore = create<UIStoreState>((set, get) => ({
     set({
       dialog: { isOpen: false },
     }),
-
-  // Overlay actions
-  setPackageManagerOverlay: (packageManagerOverlay) =>
-    set({ packageManagerOverlay }),
 
   // Navigation actions
   setCurrentPage: (currentPage) => set({ currentPage }),

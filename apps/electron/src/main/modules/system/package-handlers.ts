@@ -9,13 +9,13 @@ import { ipcMain } from "electron";
 import {
   resolvePackageVersionsInArgs,
   checkMcpServerPackageUpdates,
-} from "@/main/modules/agent/package/package-version-resolver";
+} from "@/main/modules/system/package/package-version-resolver";
 import {
   checkPnpmExists,
   checkUvExists,
   installPNPM,
   installUV,
-} from "@/main/modules/agent/package/install-package-manager";
+} from "@/main/modules/system/package/install-package-manager";
 
 /**
  * Register unified package-related IPC handlers

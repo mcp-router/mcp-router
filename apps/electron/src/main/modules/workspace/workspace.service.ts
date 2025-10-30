@@ -290,15 +290,7 @@ export class WorkspaceService extends SingletonService<
       const sourceDb = new SqliteManager(sourceDbPath);
 
       // テーブルごとにデータをコピー
-      const tables = [
-        "servers",
-        "agents",
-        "deployedAgents",
-        "logs",
-        "settings",
-        "tokens",
-        "chat_sessions",
-      ];
+      const tables = ["servers", "logs", "settings", "tokens"];
 
       for (const table of tables) {
         try {

@@ -47,9 +47,6 @@ export interface UIState {
   // Dialog state
   dialog: DialogState;
 
-  // Modal and overlay states
-  packageManagerOverlay: boolean;
-
   // Navigation state
   currentPage: string;
   sidebarOpen: boolean;
@@ -73,49 +70,4 @@ export interface AuthStoreState {
 
   // Credit information (if applicable)
   credits: number | null;
-}
-
-export interface AgentStoreChatSession {
-  id: string;
-  agentId: string;
-  lastMessage?: string;
-  createdAt: number;
-  updatedAt?: number;
-  messages?: any[]; // Messages from @ai-sdk/react (stored locally in database)
-}
-
-export interface AgentState {
-  // Development agents
-  developmentAgents: any[]; // AgentConfig[]
-  currentDevelopmentAgent: any | null; // AgentConfig
-
-  // Deployed agents
-  deployedAgents: any[]; // DeployedAgent[]
-  currentDeployedAgent: any | null; // DeployedAgent
-
-  // Chat sessions
-  chatSessions: AgentStoreChatSession[];
-  currentSessionId: string | null;
-  hasMoreSessions: boolean;
-  nextCursor: string | undefined;
-
-  // Chat messages for current session
-  messages: any[]; // Message[] from @ai-sdk/react
-  currentStreamMessage: any | null; // Message
-  isStreaming: boolean;
-
-  // Loading states
-  isLoading: boolean;
-  isLoadingSessions: boolean;
-  isLoadingMoreSessions: boolean;
-  isProcessingMessage: boolean;
-  deletingSessions: Set<string>;
-
-  // Error states
-  error: string | null;
-  chatError: string | null;
-  sessionsError: string | null;
-
-  // Auth state for chat operations
-  authToken: string | null;
 }

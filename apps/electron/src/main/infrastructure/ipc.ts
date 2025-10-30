@@ -5,7 +5,6 @@ import { setupSettingsHandlers } from "../modules/settings/settings.ipc";
 import { setupMcpAppsHandlers } from "../modules/mcp-apps-manager/mcp-apps-manager.ipc";
 import { setupSystemHandlers } from "../modules/system/system-handler";
 import { setupPackageHandlers } from "../modules/system/package-handlers";
-import { setupAgentHandlers } from "../modules/agent/agent-handlers";
 import { setupWorkspaceHandlers } from "../modules/workspace/workspace.ipc";
 import { setupWorkflowHandlers } from "../modules/workflow/workflow.ipc";
 import { setupHookHandlers } from "../modules/workflow/hook.ipc";
@@ -35,9 +34,6 @@ export function setupIpcHandlers(): void {
 
   // パッケージ関連（バージョン解決とマネージャー管理）
   setupPackageHandlers();
-
-  // エージェント関連
-  setupAgentHandlers();
 
   // ワークスペース関連
   setupWorkspaceHandlers();
