@@ -36,7 +36,13 @@
     },
     "make": {
       "dependsOn": ["build"],
-      "cache": false
+      "cache": false,
+      "passThroughEnv": [
+        "PUBLIC_IDENTIFIER",
+        "APPLE_API_KEY",
+        "APPLE_API_KEY_ID",
+        "APPLE_API_ISSUER"
+      ]
     },
     "publish": {
       "dependsOn": ["build"],
