@@ -9,57 +9,19 @@ import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { mainConfig } from "./webpack.main.config";
 import { rendererConfig } from "./webpack.renderer.config";
 import { MakerDMG } from "@electron-forge/maker-dmg";
-import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 
-const prepareAppleApiKeyFile = (rawValue: string | undefined): string | undefined => {
-  if (!rawValue) {
-    return undefined;
-  }
-
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mcp-router-notary-"));
-  const keyFilePath = path.join(tempDir, "AuthKey.p8");
-  const keyMaterial = rawValue.includes("\\n") ? rawValue.replace(/\\n/g, "\n") : rawValue;
-  fs.writeFileSync(keyFilePath, keyMaterial, { mode: 0o600 });
-
-  process.once("exit", () => {
-    fs.rmSync(tempDir, { recursive: true, force: true });
-  });
-
-  return keyFilePath;
-};
 
 const isMac = process.platform === "darwin";
 const hasSignIdentity = !!process.env.PUBLIC_IDENTIFIER;
-const appleApiKeyPath = prepareAppleApiKeyFile(process.env.APPLE_API_KEY);
 const hasNotarizeCreds = !!(
-  appleApiKeyPath &&
+  process.env.APPLE_API_KEY &&
   process.env.APPLE_API_KEY_ID &&
   process.env.APPLE_API_ISSUER
 );
-const isProductionBuild = process.env.NODE_ENV === "production";
-const shouldRequireNotarization = isMac && isProductionBuild;
-
-if (shouldRequireNotarization) {
-  const missing = [
-    ["PUBLIC_IDENTIFIER", process.env.PUBLIC_IDENTIFIER],
-    ["APPLE_API_KEY", appleApiKeyPath],
-    ["APPLE_API_KEY_ID", process.env.APPLE_API_KEY_ID],
-    ["APPLE_API_ISSUER", process.env.APPLE_API_ISSUER],
-  ]
-    .filter(([, value]) => !value)
-    .map(([key]) => key);
-
-  if (missing.length > 0) {
-    throw new Error(
-      `macOS production builds require notarization credentials. Missing: ${missing.join(", ")}`,
-    );
-  }
-}
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -75,9 +37,9 @@ const config: ForgeConfig = {
       : undefined,
     osxNotarize: isMac && hasNotarizeCreds
       ? {
-          appleApiKey: appleApiKeyPath as string,
-          appleApiKeyId: process.env.APPLE_API_KEY_ID as string,
-          appleApiIssuer: process.env.APPLE_API_ISSUER as string,
+          appleApiKey: process.env.APPLE_API_KEY || "",
+          appleApiKeyId: process.env.APPLE_API_KEY_ID || "",
+          appleApiIssuer: process.env.APPLE_API_ISSUER || "",
         }
       : undefined,
   },

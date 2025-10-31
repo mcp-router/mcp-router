@@ -1,9 +1,7 @@
 name: Make Build
 
 on:
-  pull_request:
-    branches:
-      - main
+  push:
   workflow_dispatch:
 
 jobs:
@@ -20,10 +18,6 @@ jobs:
             label: Windows
     env:
       CI: true
-      PUBLIC_IDENTIFIER: ${{ secrets.PUBLIC_IDENTIFIER }}
-      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-      APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-      APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
 
     steps:
       - name: Checkout code
@@ -52,56 +46,3 @@ jobs:
           name: make-${{ matrix.label }}
           path: apps/electron/out/make
           if-no-files-found: error
-
-  release:
-    name: Draft Release
-    needs: make
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release-artifacts
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Read version
-        id: version
-        run: |
-          VERSION=$(node -p "require('./apps/electron/package.json').version")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Create or update draft release
-        run: |
-          set -euo pipefail
-          TAG="v${{ steps.version.outputs.version }}"
-          TITLE="MCP Router v${{ steps.version.outputs.version }}"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists. Reusing it."
-          else
-            gh release create "$TAG" --title "$TITLE" --draft --prerelease --notes ""
-          fi
-
-      - name: Upload release assets
-        run: |
-          set -euo pipefail
-          TAG="v${{ steps.version.outputs.version }}"
-          if [ ! -d release-artifacts ]; then
-            echo "No artifacts found to upload."
-            exit 1
-          fi
-          find release-artifacts -type f -print0 | while IFS= read -r -d '' file; do
-            echo "Uploading $file"
-            gh release upload "$TAG" "$file" --clobber
-          done
