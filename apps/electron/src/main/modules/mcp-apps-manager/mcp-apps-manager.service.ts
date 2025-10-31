@@ -347,16 +347,6 @@ export class McpAppsManagerService extends SingletonService<
     }
 
     if (content) {
-      // Remove existing mcp_router sections (quoted or unquoted), also mcp.servers variants just in case
-      const patterns = [
-        /^\s*\[\s*mcp_servers\.(?:"mcp_router"|mcp_router)\s*]\s*\n[\s\S]*?(?=^\s*\[|\Z)/gm,
-        /^\s*\[\s*mcp_servers\.(?:"mcp_router"|mcp_router)\.env\s*]\s*\n[\s\S]*?(?=^\s*\[|\Z)/gm,
-        /^\s*\[\s*mcp\.servers\.(?:"mcp-router"|mcp-router)\s*]\s*\n[\s\S]*?(?=^\s*\[|\Z)/gm,
-        /^\s*\[\s*mcp\.servers\.(?:"mcp-router"|mcp-router)\.env\s*]\s*\n[\s\S]*?(?=^\s*\[|\Z)/gm,
-      ];
-      for (const re of patterns) {
-        content = content.replace(re, "");
-      }
       content = content.trimEnd();
       if (content.length > 0 && !content.endsWith("\n")) {
         content += "\n";
