@@ -24,7 +24,6 @@
         "src/main.ts",
         "src/renderer.tsx",
         "src/preload.ts",
-        "src/background.tsx",
         "forge.config.ts",
         "webpack.main.config.ts",
         "webpack.renderer.config.ts",

@@ -353,9 +353,6 @@ const Settings: React.FC = () => {
                       {userInfo?.creditBalance || 0}
                     </Badge>
                   </div>
-                  <p className="text-xs text-green-600 dark:text-green-400">
-                    {t("settings.freeCreditsDescription")}
-                  </p>
                 </div>
 
                 {/* Paid Credits Card */}

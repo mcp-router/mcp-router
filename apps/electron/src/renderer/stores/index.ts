@@ -8,7 +8,6 @@ export * from "./view-preferences-store";
 // Platform-dependent store factories
 export * from "./server-store";
 export * from "./auth-store";
-// Agent機能は削除済みのためエージェント関連ストアはエクスポートしない
 
 // Import platform API type
 import type { PlatformAPI } from "@mcp_router/shared";

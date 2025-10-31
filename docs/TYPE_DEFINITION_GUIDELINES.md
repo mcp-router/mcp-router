@@ -11,7 +11,7 @@ This document outlines the guidelines for TypeScript type definitions in the MCP
 Types must only be defined in the following directories:
 
 1. **`packages/shared/src/types/`** - Primary location for all shared types
-   - Domain types (MCP, Agent, User, etc.)
+   - Domain types (MCP, User, Workspaceなど)
    - API types (request/response)
    - Common UI prop patterns
    - Store state types
@@ -48,7 +48,6 @@ Types should NOT be defined in:
 packages/shared/src/types/
 ├── domains/          # Domain entities
 │   ├── mcp.ts       # MCP server, tool, resource types
-│   ├── agent.ts     # Agent configuration types
 │   ├── auth.service.ts      # Authentication types
 │   └── workspace.ts # Workspace types
 ├── api/             # API-related types
@@ -88,7 +87,7 @@ Always import types from the shared package:
 
 ```typescript
 // ✅ Good
-import { MCPServer, AgentConfig } from '@mcp_router/shared/types';
+import { MCPServer } from '@mcp_router/shared/types';
 
 // ❌ Bad - local type definition
 interface MCPServer {

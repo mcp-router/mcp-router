@@ -64,11 +64,8 @@ protected initializeTable(): void {
 ```typescript
 export const DATABASE_SCHEMA = {
   servers: SERVERS_SCHEMA,
-  agents: AGENTS_SCHEMA,
-  deployedAgents: DEPLOYED_AGENTS_SCHEMA,
   requestLogs: REQUEST_LOGS_SCHEMA,
   settings: SETTINGS_SCHEMA,
-  chat_sessions: CHAT_SESSIONS_SCHEMA,
   migrations: MIGRATIONS_SCHEMA,
   workspaces: WORKSPACES_SCHEMA,
   hooks: HOOKS_SCHEMA,
@@ -85,12 +82,9 @@ export const DATABASE_SCHEMA = {
 
 | リポジトリクラス | テーブル名 | スキーマファイル | BaseRepository継承 |
 |---|---|---|---|
-| AgentRepository | agents | agents.ts | ✓ |
-| DeployedAgentRepository | deployedAgents | deployed-agents.ts | ✓ |
 | HookRepository | hooks | hooks.ts | ✓ |
 | McpLoggerRepository | requestLogs | request-logs.ts | ✓ |
 | McpServerManagerRepository | servers | servers.ts | ✓ |
-| SessionRepository | chat_sessions | chat-sessions.ts | ✓ |
 | SettingsRepository | settings | settings.ts | ✗ |
 | McpAppsManagerRepository | tokens | tokens.ts | ✓ |
 | WorkspaceRepository | workspaces | workspaces.ts | ✓ |

@@ -54,13 +54,6 @@ apps/electron/src/main/
 │   │   ├── mcp.types.ts
 │   │   └── __tests__/
 │   │
-│   ├── agent/              # エージェントモジュール
-│   │   ├── agent.service.ts
-│   │   ├── agent.repository.ts
-│   │   ├── agent.ipc.ts
-│   │   ├── agent.types.ts
-│   │   └── __tests__/
-│   │
 │   ├── workflow/           # ワークフローモジュール
 │   │   ├── workflow.service.ts
 │   │   ├── workflow.repository.ts

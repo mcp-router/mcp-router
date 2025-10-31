@@ -41,14 +41,6 @@ export class RequestHandlers extends RequestHandlerBase {
   }
 
   /**
-   * Initialize Agent Tools virtual server
-   */
-  public initAgentToolsServer(): void {
-    const agentServerName = "Agent Tools";
-    this.serverStatusMap.set(agentServerName, true);
-  }
-
-  /**
    * Handle a request to list all tools from all servers
    */
   public async handleListTools(token?: string): Promise<any> {
@@ -70,16 +62,16 @@ export class RequestHandlers extends RequestHandlerBase {
     const routingInfo = this.toolRoutingMap.get(toolName);
     const serverName =
       routingInfo?.serverName ||
-      this.legacyToolNameToServerMap.get(toolName) ||
-      "Agent Tools";
+      this.legacyToolNameToServerMap.get(toolName);
+    if (!serverName) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Unknown tool: ${toolName}`,
+      );
+    }
     const originalToolName = routingInfo?.originalName || toolName;
 
     const token = request.params._meta?.token as string | undefined;
-
-    // Check if this is an agent tool first
-    if (serverName === "Agent Tools") {
-      return this.handleAgentToolCall(toolName, request.params.arguments || {});
-    }
 
     // Validate token and get client ID for regular servers
     const clientId = this.tokenValidator.validateTokenAndAccess(
@@ -580,31 +572,12 @@ export class RequestHandlers extends RequestHandlerBase {
   public getServerNameForTool(toolName: string): string | undefined {
     return (
       this.toolRoutingMap.get(toolName)?.serverName ||
-      this.legacyToolNameToServerMap.get(toolName) ||
-      "Agent Tools"
+      this.legacyToolNameToServerMap.get(toolName)
     );
   }
 
-  /**
-   * Get server ID by name
-   */
   public getServerIdByName(name: string): string | undefined {
     return this.serverNameToIdMap.get(name);
   }
 
-  /**
-   * Handle agent tool calls
-   */
-  public async handleAgentToolCall(toolName: string, args: any): Promise<any> {
-    // This would be implemented based on your agent tools logic
-    // For now, returning a placeholder
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Agent tool ${toolName} called with args: ${JSON.stringify(args)}`,
-        },
-      ],
-    };
-  }
 }

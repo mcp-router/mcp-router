@@ -14,7 +14,7 @@ export async function waitForAppReady(page: Page) {
 }
 
 /**
- * Get the main window (the one with #root element, not the background window)
+ * Get the main application window (the one with #root element)
  */
 export async function getMainWindow(
   electronApp: ElectronApplication,
@@ -34,36 +34,6 @@ export async function getMainWindow(
     } catch (error) {
       // Window might be closed or not ready
       console.log("Failed to check window for #root element:", error);
-    }
-  }
-
-  return null;
-}
-
-/**
- * Get the background window (the one with #background-root element)
- */
-export async function getBackgroundWindow(
-  electronApp: ElectronApplication,
-): Promise<Page | null> {
-  const allWindows = await electronApp.windows();
-
-  for (const window of allWindows) {
-    try {
-      // Check if this window has #background-root element (background window)
-      const hasBackgroundRootElement = await window.evaluate(() => {
-        return document.querySelector("#background-root") !== null;
-      });
-
-      if (hasBackgroundRootElement) {
-        return window;
-      }
-    } catch (error) {
-      // Window might be closed or not ready
-      console.log(
-        "Failed to check window for #background-root element:",
-        error,
-      );
     }
   }
 

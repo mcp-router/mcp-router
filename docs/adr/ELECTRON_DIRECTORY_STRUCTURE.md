@@ -20,11 +20,6 @@ Electron アプリケーションのディレクトリ構造が複雑化し、�
 apps/electron/src/
 ├── main/                    # メインプロセス
 │   ├── modules/            # モジュール層（ビジネスロジック）
-│   │   ├── agent/          # エージェント管理
-│   │   │   ├── deployed/   # デプロイ済みエージェント
-│   │   │   ├── development/ # 開発用エージェント
-│   │   │   ├── package/    # パッケージ管理
-│   │   │   └── shared/     # 共通ユーティリティ
 │   │   ├── auth/           # 認証
 │   │   ├── mcp-apps-manager/ # MCPアプリ管理
 │   │   │   └── (mcp-client, token-manager等)
@@ -46,7 +41,6 @@ apps/electron/src/
 │   └── utils/              # メインプロセス用ユーティリティ
 ├── renderer/               # レンダラープロセス
 │   ├── components/         # UIコンポーネント
-│   │   ├── agent/          # エージェント関連UI
 │   │   ├── auth/           # 認証UI
 │   │   ├── common/         # 共通コンポーネント
 │   │   ├── layout/         # レイアウト
@@ -67,7 +61,7 @@ apps/electron/src/
 - **責務**: ビジネスロジックとビジネスルール、アプリケーション機能
 - **依存**: インフラストラクチャ層に依存
 - **内容**: 
-  - 各機能モジュール（agent, auth, workspace等）
+  - 各機能モジュール（auth, workspace等）
   - サービスクラス
   - リポジトリインターフェース
   - ビジネスルールの実装
@@ -94,7 +88,6 @@ apps/electron/src/
 - **依存**: IPC経由でメインプロセスと通信
 - **内容**:
   - Reactコンポーネント
-    - Agent管理UI（作成・使用）
     - Hook管理UI
     - MCP Apps UI
     - Server管理UI

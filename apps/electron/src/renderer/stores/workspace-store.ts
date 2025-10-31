@@ -162,7 +162,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
           }
         }
 
-        // 2. Now refresh servers and agents (auth is ready)
+        // 2. Now refresh servers (auth is ready)
         try {
           // Initial refresh
           await useServerStore.getState().refreshServers();

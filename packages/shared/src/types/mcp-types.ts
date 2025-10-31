@@ -68,49 +68,6 @@ export interface MCPServer extends MCPServerConfig {
   prompts?: MCPPrompt[];
 }
 
-// Agent type alias for backward compatibility
-export type Agent = AgentConfig;
-
-// Agent関連の型定義
-export interface AgentConfig {
-  id: string;
-  name: string;
-  purpose: string; // エージェントの目的
-  description: string; // エージェントの説明
-  instructions: string; // エージェントへの指示（振る舞いの指示）
-  mcpServers: MCPServerConfig[];
-  toolPermissions?: Record<string, MCPAgentToolPermission[]>; // サーバーIDをキーとしたツール権限の配列
-  autoExecuteTool: boolean;
-  mcpServerEnabled?: boolean; // MCPサーバとして利用可能にするかどうか
-  createdAt?: number;
-  updatedAt?: number;
-}
-
-// エージェント固有のツール権限
-export interface MCPAgentToolPermission {
-  toolName: string; // ツール名
-  description: string; // ツールの説明
-  inputSchema?: any; // ツールのスキーマ情報
-  enabled: boolean; // 権限状態
-}
-
-// デプロイされたエージェント関連の型定義
-export interface DeployedAgent {
-  id: string;
-  name: string;
-  description: string;
-  mcpServers: MCPServerConfig[];
-  purpose: string;
-  instructions: string;
-  autoExecuteTool: boolean;
-  toolPermissions?: Record<string, MCPAgentToolPermission[]>; // サーバーIDをキーとしたツール権限の配列
-  mcpServerEnabled?: boolean; // MCPサーバとして利用可能にするかどうか
-  userId?: string; // エージェントの作成者ID
-  originalId: string; // インポート元のオリジナルID
-  createdAt: number;
-  updatedAt: number;
-}
-
 export interface APIMCPServer {
   id: string;
   tags: string[];
@@ -157,24 +114,4 @@ export interface Pagination {
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: Pagination;
-}
-
-// Base agent information interface
-export interface BaseAgentInfo {
-  id: string;
-  name: string;
-  purpose: string;
-  description: string;
-  instructions: string;
-  mcpServers: MCPServerConfig[];
-  toolPermissions?: Record<string, MCPAgentToolPermission[]>;
-  createdAt: number;
-  updatedAt: number;
-}
-
-// Agent tool definition
-export interface AgentTool {
-  name: string;
-  description: string;
-  inputSchema: any;
 }

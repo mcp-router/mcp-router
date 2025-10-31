@@ -19,20 +19,6 @@ export const testData = {
       description: "Python-based MCP server",
     },
   },
-
-  agent: {
-    basic: {
-      name: "Test Agent",
-      description: "Basic test agent for E2E testing",
-      prompt: "You are a helpful assistant for testing purposes.",
-    },
-    advanced: {
-      name: "Advanced Test Agent",
-      description: "Advanced agent with multiple MCP servers",
-      prompt: "You are an advanced assistant with access to multiple tools.",
-    },
-  },
-
   auth: {
     testUser: {
       email: "test@example.com",

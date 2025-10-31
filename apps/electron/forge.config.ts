@@ -80,14 +80,6 @@ const config: ForgeConfig = {
               js: "./src/preload.ts",
             },
           },
-          {
-            html: "./src/background.html",
-            js: "./src/background.tsx",
-            name: "background_window",
-            preload: {
-              js: "./src/preload.ts",
-            },
-          },
         ],
       },
     }),

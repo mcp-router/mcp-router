@@ -208,19 +208,6 @@ export type AppRouter = typeof appRouter;
 - `delete({ id })` - ログを削除
 - `clear({ serverId? })` - ログをクリア
 
-### Agents API
-
-- `list()` - エージェント一覧を取得
-- `get({ id })` - 特定のエージェントを取得
-- `create(input)` - エージェントを作成
-- `update(input)` - エージェントを更新
-- `delete({ id })` - エージェントを削除
-- `chat(input)` - エージェントとチャット
-- `listMessages({ conversationId })` - チャットメッセージ一覧を取得
-- `use(input)` - エージェントを使用
-- `setup(input)` - エージェントをセットアップ
-- `getDeployedAgents({ agentId })` - デプロイ済みエージェントを取得
-
 ### Auth API
 
 - `getCurrentUser()` - 現在のユーザーを取得

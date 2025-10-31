@@ -180,13 +180,6 @@ export class AggregatorServer {
   }
 
   /**
-   * Initialize Agent Tools virtual server
-   */
-  public initAgentToolsServer(): void {
-    this.requestHandlers.initAgentToolsServer();
-  }
-
-  /**
    * Clean up resources
    */
   public async shutdown(): Promise<void> {

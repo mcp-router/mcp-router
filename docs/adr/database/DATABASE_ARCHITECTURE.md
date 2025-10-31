@@ -28,11 +28,8 @@ apps/electron/src/main/infrastructure/database/
 │   ├── main-database-migration.ts  # 基本マイグレーション
 │   └── workspace-main-database-migration.ts
 ├── repositories/              # リポジトリ実装
-│   ├── agent/                # エージェントリポジトリ
-│   ├── deployed-agent/       # デプロイ済みエージェント
 │   ├── log/                  # ログリポジトリ
 │   ├── server/               # サーバーリポジトリ
-│   ├── session/              # セッションリポジトリ
 │   ├── settings/             # 設定リポジトリ
 │   ├── token/                # トークンリポジトリ
 │   └── workspace/            # ワークスペースリポジトリ
@@ -40,9 +37,6 @@ apps/electron/src/main/infrastructure/database/
 │   ├── database-schema.ts    # 統合スキーマ
 │   ├── schema-utils.ts       # スキーマユーティリティ
 │   └── tables/               # 個別テーブル定義
-│       ├── agents.ts
-│       ├── chat-sessions.ts
-│       ├── deployed-agents.ts
 │       ├── hooks.ts
 │       ├── migrations.ts
 │       ├── request-logs.ts
@@ -76,23 +70,22 @@ export abstract class BaseRepository<T extends { id: string }> {
 ```typescript
 export class RepositoryFactory {
   private static instances: RepositoryInstances = {
-    agent: null,
-    deployedAgent: null,
+    server: null,
     log: null,
     // ...
   };
   
-  public static getAgentRepository(db: SqliteManager): AgentRepository {
+  public static getServerRepository(db: SqliteManager): ServerRepository {
     if (this.isDatabaseChanged(db)) {
       this.resetAllInstances();
       this.currentDb = db;
     }
     
-    if (!this.instances.agent) {
-      this.instances.agent = new AgentRepository(db);
+    if (!this.instances.server) {
+      this.instances.server = new ServerRepository(db);
     }
     
-    return this.instances.agent;
+    return this.instances.server;
   }
 }
 ```

@@ -11,11 +11,6 @@ export class HomePage extends BasePage {
     await this.waitForTestId("servers-page");
   }
 
-  async navigateToAgents() {
-    await this.clickByTestId("nav-agents");
-    await this.waitForTestId("agents-page");
-  }
-
   async navigateToLogs() {
     await this.clickByTestId("nav-logs");
     await this.waitForTestId("logs-page");
