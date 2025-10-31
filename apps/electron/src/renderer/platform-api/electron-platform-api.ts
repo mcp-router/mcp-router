@@ -6,7 +6,6 @@ import type { PlatformAPI } from "@mcp_router/shared";
 import type {
   AuthAPI,
   ServerAPI,
-  AgentAPI,
   AppAPI,
   PackageAPI,
   SettingsAPI,
@@ -20,7 +19,6 @@ import type {
 class ElectronPlatformAPI implements PlatformAPI {
   auth: AuthAPI;
   servers: ServerAPI;
-  agents: AgentAPI;
   apps: AppAPI;
   packages: PackageAPI;
   settings: SettingsAPI;
@@ -71,103 +69,6 @@ class ElectronPlatformAPI implements PlatformAPI {
         return server?.status || { type: "stopped" };
       },
       selectFile: (options) => window.electronAPI.serverSelectFile(options),
-    };
-
-    // Initialize agents domain (with chat functionality)
-    this.agents = {
-      // Agent management
-      list: () => window.electronAPI.listAgents(),
-      get: async (id) => {
-        const agent = await window.electronAPI.getAgent(id);
-        return agent || null;
-      },
-      create: (input) => window.electronAPI.createAgent(input),
-      update: async (id, updates) => {
-        const agent = await window.electronAPI.updateAgent(id, updates);
-        if (!agent) throw new Error("Agent not found");
-        return agent;
-      },
-      delete: (id) => window.electronAPI.deleteAgent(id),
-      share: (id) => window.electronAPI.shareAgent(id),
-      import: (shareCode) => window.electronAPI.importAgent(shareCode),
-
-      // Deployment
-      deploy: async (id) => {
-        const deployedAgent = await window.electronAPI.deployAgent(id);
-        return {
-          success: !!deployedAgent,
-          deployedAgent,
-          error: deployedAgent ? undefined : "Deployment failed",
-        };
-      },
-      getDeployed: async () => {
-        const deployed = await window.electronAPI.getDeployedAgents();
-        return deployed || [];
-      },
-      updateDeployed: (id, config) =>
-        window.electronAPI.updateDeployedAgent(id, config),
-      deleteDeployed: (id) => window.electronAPI.deleteDeployedAgent(id),
-
-      // Tool management
-      tools: {
-        execute: async (agentId, toolName, args) => {
-          const result = await window.electronAPI.executeAgentTool(
-            agentId,
-            toolName,
-            args,
-          );
-          return result;
-        },
-        list: async (agentId, serverId, isDev) => {
-          const result = await window.electronAPI.getAgentMCPServerTools(
-            agentId,
-            serverId,
-            isDev,
-          );
-          return result;
-        },
-      },
-
-      // Session management
-      sessions: {
-        create: (agentId, initialMessages) =>
-          window.electronAPI.createSession(agentId, initialMessages),
-        list: (agentId, options) =>
-          window.electronAPI.getSessions(agentId, options),
-        delete: (sessionId) => window.electronAPI.deleteSession(sessionId),
-        update: async (sessionId, messages) => {
-          await window.electronAPI.updateSessionMessages(sessionId, messages);
-          return {
-            id: sessionId,
-            agentId: "",
-            messages,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          };
-        },
-      },
-
-      // Streaming chat
-      stream: {
-        start: (data) => window.electronAPI.sendChatStreamStart(data),
-        send: (data) => window.electronAPI.sendChatStreamChunk(data),
-        end: (data) => window.electronAPI.sendChatStreamEnd(data),
-        error: (data) => window.electronAPI.sendChatStreamError(data),
-        onStart: (callback) => window.electronAPI.onChatStreamStart(callback),
-        onChunk: (callback) => window.electronAPI.onChatStreamChunk(callback),
-        onEnd: (callback) => window.electronAPI.onChatStreamEnd(callback),
-        onError: (callback) => window.electronAPI.onChatStreamError(callback),
-      },
-
-      // Background chat
-      background: {
-        start: (sessionId, agentId, query) =>
-          window.electronAPI.startBackgroundChat(sessionId, agentId, query),
-        stop: (agentId) => window.electronAPI.stopBackgroundChat(agentId),
-        onStart: (callback) =>
-          window.electronAPI.onBackgroundChatStart(callback),
-        onStop: (callback) => window.electronAPI.onBackgroundChatStop(callback),
-      },
     };
 
     // Initialize apps domain (with token management)

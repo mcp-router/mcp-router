@@ -4,9 +4,6 @@
 
 import { AppSettings } from "@mcp_router/shared";
 import {
-  Agent,
-  AgentConfig,
-  DeployedAgent,
   CreateServerInput,
   WorkflowDefinition,
   HookModule,
@@ -81,27 +78,6 @@ declare global {
       // Command checking
       checkCommandExists: (command: string) => Promise<boolean>;
 
-      // Agent Management
-      listAgents: () => Promise<Agent[]>;
-      getAgent: (id: string) => Promise<Agent | undefined>;
-      createAgent: (agentConfig: Omit<AgentConfig, "id">) => Promise<Agent>;
-      updateAgent: (
-        id: string,
-        config: Partial<AgentConfig>,
-      ) => Promise<Agent | undefined>;
-      deleteAgent: (id: string) => Promise<boolean>;
-      shareAgent: (id: string) => Promise<string>;
-      importAgent: (shareCode: string) => Promise<DeployedAgent | undefined>;
-
-      // Agent Deployment
-      deployAgent: (id: string) => Promise<DeployedAgent | undefined>;
-      getDeployedAgents: () => Promise<DeployedAgent[] | undefined>;
-      updateDeployedAgent: (
-        id: string,
-        config: any,
-      ) => Promise<DeployedAgent | undefined>;
-      deleteDeployedAgent: (id: string) => Promise<boolean>;
-
       // Package Version Resolution
       resolvePackageVersionsInArgs: (
         argsString: string,
@@ -114,63 +90,6 @@ declare global {
         success: boolean;
         updates?: ServerPackageUpdates;
       }>;
-
-      // Agent Tool Management
-      getAgentMCPServerTools: (
-        agentId: string,
-        serverId: string,
-        isDev?: boolean,
-      ) => Promise<{ success: boolean; tools: any[]; error?: string }>;
-      executeAgentTool: (
-        agentId: string,
-        toolName: string,
-        args: Record<string, any>,
-      ) => Promise<{ success: boolean; result?: any; error?: string }>;
-
-      // Background Chat
-      startBackgroundChat: (
-        sessionId: string | undefined,
-        agentId: string,
-        query: string,
-      ) => Promise<{ success: boolean; error?: string }>;
-      stopBackgroundChat: (
-        agentId: string,
-      ) => Promise<{ success: boolean; error?: string }>;
-      onBackgroundChatStart: (callback: (data: any) => void) => () => void;
-      onBackgroundChatStop: (callback: (data: any) => void) => () => void;
-
-      // Session Messages (Local Database)
-      fetchSessionMessages: (sessionId: string) => Promise<any[]>;
-      getSessions: (
-        agentId: string,
-        options?: any,
-      ) => Promise<{ sessions: any[]; hasMore: boolean; nextCursor?: string }>;
-      createSession: (agentId: string, initialMessages?: any[]) => Promise<any>;
-      updateSessionMessages: (
-        sessionId: string,
-        messages: any[],
-      ) => Promise<any>;
-      deleteSession: (sessionId: string) => Promise<boolean>;
-
-      // Chat Stream Communication (Background -> Main)
-      sendChatStreamStart: (
-        streamData: any,
-      ) => Promise<{ success: boolean; error?: string }>;
-      sendChatStreamChunk: (
-        chunkData: any,
-      ) => Promise<{ success: boolean; error?: string }>;
-      sendChatStreamEnd: (
-        endData: any,
-      ) => Promise<{ success: boolean; error?: string }>;
-      sendChatStreamError: (
-        errorData: any,
-      ) => Promise<{ success: boolean; error?: string }>;
-
-      // Chat Stream Listeners (Main -> Background)
-      onChatStreamStart: (callback: (data: any) => void) => () => void;
-      onChatStreamChunk: (callback: (data: any) => void) => () => void;
-      onChatStreamEnd: (callback: (data: any) => void) => () => void;
-      onChatStreamError: (callback: (data: any) => void) => () => void;
 
       // Feedback
       submitFeedback: (feedback: string) => Promise<boolean>;

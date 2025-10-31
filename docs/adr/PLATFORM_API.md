@@ -5,7 +5,7 @@
 
 ## コンテキスト
 
-MCP Routerは、MCPサーバーとエージェントを管理するクロスプラットフォーム（Electron/Web）アプリケーションです。フロントエンドとバックエンドの通信を抽象化し、プラットフォーム固有の実装を隠蔽するためのAPIレイヤーが必要でした。
+MCP Routerは、MCPサーバーを中心に管理するクロスプラットフォーム（Electron/Web）アプリケーションです。フロントエンドとバックエンドの通信を抽象化し、プラットフォーム固有の実装を隠蔽するためのAPIレイヤーが必要でした。
 
 ### 背景
 
@@ -20,19 +20,18 @@ MCP Routerは、MCPサーバーとエージェントを管理するクロスプ�
 
 ### ドメイン駆動設計によるモジュール化
 
-関連する機能を論理的なドメインに再編成し、9つのドメインAPIに整理しました：
+関連する機能を論理的なドメインに再編成し、主要なドメインAPIに整理しました：
 
 ```typescript
 // packages/shared/src/types/platform-api/ipc.ts
 interface PlatformAPI {
-  agent: AgentAPI;      // エージェント管理（チャット機能含む）
-  app: AppAPI;          // アプリケーション管理（トークン管理含む）
-  auth: AuthAPI;        // 認証・認可
-  hooks: HookAPI;       // MCPフック管理
-  log: LogAPI;          // ログ管理
-  package: PackageAPI;  // パッケージ管理（システムユーティリティ含む）
-  server: ServerAPI;    // MCPサーバー管理
-  settings: SettingsAPI; // アプリケーション設定
+  app: AppAPI;             // アプリケーション管理（トークン管理含む）
+  auth: AuthAPI;           // 認証・認可
+  hooks: HookAPI;          // MCPフック管理
+  log: LogAPI;             // ログ管理
+  package: PackageAPI;     // パッケージ管理（システムユーティリティ含む）
+  server: ServerAPI;       // MCPサーバー管理
+  settings: SettingsAPI;   // アプリケーション設定
   workspace: WorkspaceAPI; // ワークスペース管理
 }
 ```
@@ -54,12 +53,6 @@ interface PlatformAPI {
    - `apps/electron/src/main/platform-api-manager.ts`: ワークスペースに応じたAPIの切り替え
 
 ### 各ドメインAPIの責務
-
-#### AgentAPI
-- エージェントのCRUD操作
-- デプロイ管理
-- チャット機能（セッション、ストリーミング、バックグラウンド）
-- ツール実行
 
 #### ServerAPI
 - MCPサーバーのCRUD操作

@@ -4,7 +4,6 @@
 
 import { AuthAPI } from "./domains/auth-api";
 import { ServerAPI } from "./domains/server-api";
-import { AgentAPI } from "./domains/agent-api";
 import { AppAPI } from "./domains/app-api";
 import { PackageAPI } from "./domains/package-api";
 import { SettingsAPI } from "./domains/settings-api";
@@ -22,9 +21,6 @@ export interface PlatformAPI {
 
   // Server management domain
   servers: ServerAPI;
-
-  // Agent management domain (includes chat functionality)
-  agents: AgentAPI;
 
   // Application management domain (includes token management)
   apps: AppAPI;
