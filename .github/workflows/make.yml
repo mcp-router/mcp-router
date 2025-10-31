@@ -40,6 +40,14 @@ jobs:
           node-version: "22"
           cache: pnpm
 
+      - name: Check mac env
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "PUBLIC_IDENTIFIER set? ${PUBLIC_IDENTIFIER:+yes}"
+          echo "APPLE_API_KEY length: ${#APPLE_API_KEY}"
+          echo "APPLE_API_KEY_ID set? ${APPLE_API_KEY_ID:+yes}"
+          echo "APPLE_API_ISSUER set? ${APPLE_API_ISSUER:+yes}"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
