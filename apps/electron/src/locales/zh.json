@@ -32,7 +32,8 @@
     "send": "发送",
     "stop": "停止",
     "approve": "批准",
-    "deny": "拒绝"
+    "deny": "拒绝",
+    "retry": "重试"
   },
   "feedback": {
     "placeholder": "反馈或建议？",
@@ -313,6 +314,11 @@
     "failedToFetchLogs": "获取日志失败",
     "logsRefreshed": "日志已刷新",
     "tools": "工具",
+    "toolsLoading": "正在加载工具...",
+    "toolsEmpty": "该服务器尚未提供可用工具。",
+    "toolEnabled": "已启用",
+    "toolDisabled": "已禁用",
+    "toolsRequireRunning": "请先启动服务器以查看和管理工具。",
     "startWithLogs": "带日志启动",
     "startWithLogsDescription": "启动服务器并显示实时日志",
     "serverStartedWithLogs": "服务器已带日志启动",

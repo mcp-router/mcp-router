@@ -40,7 +40,8 @@
     "send": "送信",
     "stop": "停止",
     "approve": "承認",
-    "deny": "拒否"
+    "deny": "拒否",
+    "retry": "再試行"
   },
   "feedback": {
     "placeholder": "フィードバックやご提案などをお聞かせください",
@@ -322,6 +323,11 @@
     "failedToFetchLogs": "ログの取得に失敗しました",
     "logsRefreshed": "ログを更新しました",
     "tools": "ツール",
+    "toolsLoading": "ツールを読み込み中...",
+    "toolsEmpty": "このサーバーでは利用可能なツールがまだ報告されていません。",
+    "toolEnabled": "有効",
+    "toolDisabled": "無効",
+    "toolsRequireRunning": "ツールを管理するにはサーバーを起動してください。",
     "startWithLogs": "ログ付きで起動",
     "startWithLogsDescription": "サーバを起動して、リアルタイムでログを表示します",
     "serverStartedWithLogs": "サーバをログ表示付きで起動しました",

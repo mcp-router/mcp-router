@@ -32,7 +32,8 @@
     "send": "Send",
     "stop": "Stop",
     "approve": "Approve",
-    "deny": "Deny"
+    "deny": "Deny",
+    "retry": "Retry"
   },
   "feedback": {
     "placeholder": "Feedback or suggestions?",
@@ -313,6 +314,11 @@
     "failedToFetchLogs": "Failed to fetch logs",
     "logsRefreshed": "Logs refreshed",
     "tools": "Tools",
+    "toolsLoading": "Loading tools...",
+    "toolsEmpty": "This server has not reported any tools yet.",
+    "toolEnabled": "Enabled",
+    "toolDisabled": "Disabled",
+    "toolsRequireRunning": "Start the server to view and manage its tools.",
     "startWithLogs": "Start with Logs",
     "startWithLogsDescription": "Start server and show real-time logs",
     "serverStartedWithLogs": "Server started with logs",
