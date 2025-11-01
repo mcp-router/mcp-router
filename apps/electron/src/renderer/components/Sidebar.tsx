@@ -10,7 +10,11 @@ import {
   IconWebhook,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { useWorkspaceStore } from "@/renderer/stores";
+import {
+  useWorkspaceStore,
+  useProjectStore,
+  UNASSIGNED_PROJECT_ID,
+} from "@/renderer/stores";
 import { usePlatformAPI } from "@/renderer/platform-api";
 // @ts-ignore
 import iconImage from "../../../public/images/icon/icon.png";
@@ -41,6 +45,7 @@ const SidebarComponent: React.FC = () => {
   const location = useLocation();
   const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
   const isRemoteWorkspace = currentWorkspace?.type === "remote";
+  const { projects, list: listProjects, selectedProjectId, setSelectedProjectId } = useProjectStore();
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
@@ -65,6 +70,11 @@ const SidebarComponent: React.FC = () => {
       unsubscribe();
     };
   }, []);
+
+  // Load projects for sidebar filters
+  useEffect(() => {
+    listProjects().catch(() => {});
+  }, [listProjects, currentWorkspace?.id]);
 
   const handleInstallUpdate = () => {
     platformAPI.packages.system.installUpdate();
@@ -188,6 +198,85 @@ const SidebarComponent: React.FC = () => {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )}
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+          {/* Projects filter */}
+          <Collapsible defaultOpen className="group/collapsible">
+            <SidebarGroup>
+              <SidebarGroupLabel>
+                <CollapsibleTrigger className="flex flex-row items-center w-full">
+                  {t("projects.sectionTitle", { defaultValue: "Projects" })}
+                  <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  {/* All */}
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={t("projects.all", { defaultValue: "All" })}
+                      isActive={
+                        location.pathname === "/servers" &&
+                        selectedProjectId === null
+                      }
+                    >
+                      <Link
+                        to="/servers"
+                        onClick={() => setSelectedProjectId(null)}
+                        className="flex items-center gap-3 py-2 px-3 w-full"
+                      >
+                        <span className="text-sm">
+                          {t("projects.all", { defaultValue: "All" })}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  {/* Unassigned */}
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={t("projects.unassigned", {
+                        defaultValue: "Unassigned",
+                      })}
+                      isActive={
+                        location.pathname === "/servers" &&
+                        selectedProjectId === UNASSIGNED_PROJECT_ID
+                      }
+                    >
+                      <Link
+                        to="/servers"
+                        onClick={() => setSelectedProjectId(UNASSIGNED_PROJECT_ID)}
+                        className="flex items-center gap-3 py-2 px-3 w-full"
+                      >
+                        <span className="text-sm">
+                          {t("projects.unassigned", {
+                            defaultValue: "Unassigned",
+                          })}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  {/* Each Project */}
+                  {projects.map((p) => (
+                    <SidebarMenuItem key={p.id}>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={p.name}
+                        isActive={location.pathname === "/servers" && selectedProjectId === p.id}
+                      >
+                        <Link
+                          to="/servers"
+                          onClick={() => setSelectedProjectId(p.id)}
+                          className="flex items-center gap-3 py-2 px-3 w-full"
+                        >
+                          <span className="text-sm">{p.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
                 </SidebarGroupContent>
               </CollapsibleContent>
             </SidebarGroup>

@@ -12,7 +12,7 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/renderer/utils/tailwind-utils";
-import { Trash, AlertCircle, Grid3X3, List, Share } from "lucide-react";
+import { AlertCircle, Grid3X3, List, Share, Settings as SettingsIcon, ChevronDown } from "lucide-react";
 import { hasUnsetRequiredParams } from "@/renderer/utils/server-validation-utils";
 import { toast } from "sonner";
 import {
@@ -20,6 +20,8 @@ import {
   useWorkspaceStore,
   useAuthStore,
   useViewPreferencesStore,
+  useProjectStore,
+  UNASSIGNED_PROJECT_ID,
 } from "../stores";
 import { showServerError } from "@/renderer/components/common";
 
@@ -30,6 +32,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@mcp_router/ui";
 import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
 import ServerDetailsAdvancedSheet from "@/renderer/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
+import ServerSettingsModal from "@/renderer/components/mcp/server/ServerSettingsModal";
 import { useServerEditingStore } from "@/renderer/stores";
 
 const Home: React.FC = () => {
@@ -53,6 +56,7 @@ const Home: React.FC = () => {
   const { currentWorkspace } = useWorkspaceStore();
   const { isAuthenticated, login } = useAuthStore();
   const { serverViewMode, setServerViewMode } = useViewPreferencesStore();
+  const { projects, list: listProjects, create: createProject, collapsedByProjectId, setCollapsed, selectedProjectId, setCollapsedMany } = useProjectStore();
 
   // Filter servers based on search query and sort them
   const filteredServers = servers
@@ -79,6 +83,14 @@ const Home: React.FC = () => {
   const { initializeFromServer, setIsAdvancedEditing } =
     useServerEditingStore();
 
+  // Server settings modal state
+  const [settingsServerId, setSettingsServerId] = useState<string | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsServer = React.useMemo(() => {
+    if (!settingsServerId) return null;
+    return servers.find((s) => s.id === settingsServerId) ?? null;
+  }, [servers, settingsServerId]);
+
   // Toggle expanded server details - open settings
   const toggleServerExpand = (serverId: string) => {
     const server = servers.find((s) => s.id === serverId);
@@ -88,6 +100,28 @@ const Home: React.FC = () => {
       setIsAdvancedEditing(true);
     }
   };
+
+  const openServerSettings = (
+    server: MCPServer,
+    event?: React.MouseEvent,
+  ) => {
+    event?.stopPropagation();
+    setSettingsServerId(server.id);
+    setIsSettingsOpen(true);
+  };
+
+  // Load projects on workspace change
+  React.useEffect(() => {
+    listProjects().catch((e) => console.error("Failed to load projects", e));
+  }, [listProjects, currentWorkspace?.id]);
+
+  // Close settings modal if the server is no longer available
+  React.useEffect(() => {
+    if (settingsServerId && !settingsServer) {
+      setIsSettingsOpen(false);
+      setSettingsServerId(null);
+    }
+  }, [settingsServer, settingsServerId]);
 
   // Handle opening remove dialog
   const openRemoveDialog = (server: MCPServer, e: React.MouseEvent) => {
@@ -247,7 +281,47 @@ const Home: React.FC = () => {
         ) : serverViewMode === "list" ? (
           <ScrollArea className="h-full">
             <div className="divide-y divide-border">
-              {filteredServers.map((server) => {
+              {/* Collapse/Expand all controls */}
+              <div className="px-4 py-2 flex items-center justify-end gap-2 bg-muted/10 sticky top-0 z-10">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const map: Record<string, boolean> = {};
+                    projects.forEach((p) => (map[p.id] = true));
+                    setCollapsedMany(map);
+                  }}
+                >
+                  {t("projects.collapseAll", { defaultValue: "Collapse All" })}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const map: Record<string, boolean> = {};
+                    projects.forEach((p) => (map[p.id] = false));
+                    setCollapsedMany(map);
+                  }}
+                >
+                  {t("projects.expandAll", { defaultValue: "Expand All" })}
+                </Button>
+              </div>
+
+              {/* Unassigned Section (always first unless filtering by project) */}
+              {selectedProjectId === null ||
+              selectedProjectId === UNASSIGNED_PROJECT_ID ? (
+                <>
+                  <div className="px-4 py-2 flex items-center justify-between bg-muted/20">
+                    <div className="text-sm font-semibold">
+                      {t("projects.unassigned", { defaultValue: "Unassigned" })}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {filteredServers.filter((s) => !s.projectId).length}
+                    </div>
+                  </div>
+                  {filteredServers
+                    .filter((s) => !s.projectId)
+                    .map((server) => {
                 // console.log("Server:", server);
 
                 const statusConfig = {
@@ -419,15 +493,173 @@ const Home: React.FC = () => {
                             />
                           </div>
                           <button
-                            className="text-red-500 hover:text-red-400 p-1.5 rounded-full hover:bg-red-500/10 transition-colors"
-                            onClick={(e) => openRemoveDialog(server, e)}
-                            title={t("serverDetails.uninstall")}
+                            className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                            onClick={(e) => openServerSettings(server, e)}
+                            title={t("serverDetails.settings", {
+                              defaultValue: "Settings",
+                            })}
                           >
-                            <Trash className="h-4 w-4" />
+                            <SettingsIcon className="h-4 w-4" />
                           </button>
                         </div>
                       </div>
                     </div>
+                  </div>
+                );
+              })}
+                </>
+              ) : null}
+
+              {/* Project Sections */}
+              {(selectedProjectId === null
+                ? projects
+                : projects.filter((p) => p.id === selectedProjectId)
+                ).map((project) => {
+                const sectionServers = filteredServers.filter(
+                  (s) => s.projectId === project.id,
+                );
+                if (sectionServers.length === 0) return null;
+                const collapsed = !!collapsedByProjectId[project.id];
+                return (
+                  <div key={project.id}>
+                    <div className="px-4 py-2 flex items-center justify-between bg-muted/20">
+                      <button
+                        className="flex items-center gap-1 text-sm font-semibold hover:text-primary"
+                        onClick={() => setCollapsed(project.id, !collapsed)}
+                      >
+                        <ChevronDown
+                          className={cn(
+                            "h-4 w-4 transition-transform",
+                            collapsed ? "-rotate-90" : "rotate-0",
+                          )}
+                        />
+                        {project.name}
+                      </button>
+                      <div className="text-xs text-muted-foreground">
+                        {sectionServers.length}
+                      </div>
+                    </div>
+                    {!collapsed &&
+                      sectionServers.map((server) => {
+                        const statusConfig = {
+                          running: {
+                            color: "bg-emerald-500",
+                            pulseEffect: "animate-pulse",
+                          },
+                          starting: {
+                            color: "bg-yellow-500",
+                            pulseEffect: "animate-pulse",
+                          },
+                          stopping: {
+                            color: "bg-orange-500",
+                            pulseEffect: "animate-pulse",
+                          },
+                          stopped: {
+                            color: "bg-muted-foreground",
+                            pulseEffect: "",
+                          },
+                          error: {
+                            color: "bg-red-500",
+                            pulseEffect: "animate-pulse",
+                          },
+                        } as const;
+                        const status =
+                          statusConfig[
+                            server.status as keyof typeof statusConfig
+                          ] || statusConfig.stopped;
+                        return (
+                          <div
+                            key={server.id}
+                            className="p-4 hover:bg-sidebar-hover cursor-pointer"
+                            onClick={() => toggleServerExpand(server.id)}
+                          >
+                            <div className="flex justify-between">
+                              <div className="flex flex-col">
+                                <div className="font-medium text-base mb-1 hover:text-primary">
+                                  {server.name}
+                                </div>
+                                {"description" in server &&
+                                  typeof (server as any).description ===
+                                    "string" && (
+                                    <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
+                                      {(server as any).description}
+                                    </p>
+                                  )}
+                                <div className="flex flex-wrap gap-2 mb-1">
+                                  <Badge variant="secondary" className="w-fit">
+                                    {server.serverType === "local"
+                                      ? "Local"
+                                      : "Remote"}
+                                  </Badge>
+                                  <Badge
+                                    variant="outline"
+                                    className={cn(
+                                      "w-fit flex items-center gap-1",
+                                      status.pulseEffect,
+                                    )}
+                                  >
+                                    <div
+                                      className={cn(
+                                        "h-2 w-2 rounded-full",
+                                        status.color,
+                                      )}
+                                    ></div>
+                                    {t(`serverList.status.${server.status}`)}
+                                  </Badge>
+                                  {hasUnsetRequiredParams(server) && (
+                                    <Badge
+                                      variant="destructive"
+                                      className="w-fit flex items-center gap-1"
+                                      title={t("serverList.requiredParamsNotSet")}
+                                    >
+                                      <AlertCircle className="h-3 w-3" />
+                                      {t("serverList.configRequired")}
+                                    </Badge>
+                                  )}
+                                </div>
+                                {"tags" in server &&
+                                  Array.isArray((server as any).tags) &&
+                                  (server as any).tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {((server as any).tags as string[]).map(
+                                        (tag: string, index: number) => (
+                                          <Badge
+                                            key={index}
+                                            variant="outline"
+                                            className="text-xs px-1 py-0"
+                                          >
+                                            {tag}
+                                          </Badge>
+                                        ),
+                                      )}
+                                    </div>
+                                  )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {server.status === "error" && (
+                                  <button
+                                    className="text-destructive hover:text-destructive/80 p-1.5 rounded-full hover:bg-destructive/10 transition-colors"
+                                    onClick={(e) => openErrorModal(server, e)}
+                                    title={t("serverList.errorDetails")}
+                                  >
+                                    <AlertCircle className="h-4 w-4" />
+                                  </button>
+                                )}
+                                <span className="text-xs text-muted-foreground"></span>
+                                <button
+                                  className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                                  onClick={(e) => openServerSettings(server, e)}
+                                  title={t("serverDetails.settings", {
+                                    defaultValue: "Settings",
+                                  })}
+                                >
+                                  <SettingsIcon className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                   </div>
                 );
               })}
@@ -464,10 +696,7 @@ const Home: React.FC = () => {
                           );
                         }
                       }}
-                      onRemove={() => {
-                        setServerToRemove(server);
-                        setIsRemoveDialogOpen(true);
-                      }}
+                      onOpenSettings={() => openServerSettings(server)}
                       onError={() => {
                         setErrorServer(server);
                         setErrorModalOpen(true);
@@ -503,8 +732,8 @@ const Home: React.FC = () => {
       )}
 
       {/* Advanced Settings Sheet */}
-      {advancedSettingsServer && (
-        <ServerDetailsAdvancedSheet
+  {advancedSettingsServer && (
+    <ServerDetailsAdvancedSheet
           server={advancedSettingsServer}
           handleSave={async (
             updatedInputParams?: any,
@@ -578,7 +807,37 @@ const Home: React.FC = () => {
             }
           }}
         />
-      )}
+  )}
+
+  {/* Server Settings Modal */}
+  {settingsServer && (
+    <ServerSettingsModal
+      open={isSettingsOpen}
+      onOpenChange={(open) => {
+        setIsSettingsOpen(open);
+        if (!open) {
+          setSettingsServerId(null);
+        }
+      }}
+      server={settingsServer}
+      projects={projects}
+      onAssignProject={async (projectId: string | null) => {
+        await updateServerConfig(settingsServer.id, { projectId });
+        await refreshServers();
+      }}
+      onCreateProject={async (input) => {
+        const created = await createProject(input);
+        await listProjects();
+        return created;
+      }}
+      onDelete={() => {
+        setServerToRemove(settingsServer);
+        setIsSettingsOpen(false);
+        setIsRemoveDialogOpen(true);
+        setSettingsServerId(null);
+      }}
+    />
+  )}
     </div>
   );
 };

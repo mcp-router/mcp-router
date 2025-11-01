@@ -13,6 +13,7 @@ import type {
   WorkspaceAPI,
   WorkflowAPI,
   Workspace,
+  ProjectsAPI,
 } from "@mcp_router/shared";
 
 // Electron implementation of the Platform API
@@ -25,6 +26,7 @@ class ElectronPlatformAPI implements PlatformAPI {
   logs: LogAPI;
   workspaces: WorkspaceAPI;
   workflows: WorkflowAPI;
+  projects: ProjectsAPI;
 
   constructor() {
     // Initialize auth domain
@@ -198,6 +200,14 @@ class ElectronPlatformAPI implements PlatformAPI {
         import: (module) => window.electronAPI.importHookModule(module),
         validate: (script) => window.electronAPI.validateHookScript(script),
       },
+    };
+
+    // Initialize projects domain
+    this.projects = {
+      list: () => window.electronAPI.listProjects(),
+      create: (input) => window.electronAPI.createProject(input),
+      update: (id, updates) => window.electronAPI.updateProject(id, updates),
+      delete: (id) => window.electronAPI.deleteProject(id),
     };
   }
 }

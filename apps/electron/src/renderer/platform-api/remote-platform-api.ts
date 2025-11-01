@@ -221,4 +221,8 @@ export class RemotePlatformAPI implements PlatformAPI {
   get workflows() {
     return this.localPlatformAPI.workflows;
   }
+
+  get projects() {
+    return this.localPlatformAPI.projects;
+  }
 }
