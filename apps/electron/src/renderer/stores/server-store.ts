@@ -35,6 +35,10 @@ export interface ServerStoreState extends ServerState {
     id: string,
     config: Partial<MCPServerConfig>,
   ) => Promise<void>;
+  updateServerToolPermissions: (
+    id: string,
+    permissions: Record<string, boolean>,
+  ) => Promise<void>;
   deleteServer: (id: string) => Promise<void>;
 
   // Store management
@@ -220,6 +224,31 @@ export const createServerStore = (
           error instanceof Error ? error.message : "Failed to update server",
         );
         throw error; // Re-throw to let the UI handle the error
+      } finally {
+        setUpdating(id, false);
+      }
+    },
+
+    updateServerToolPermissions: async (id, permissions) => {
+      const { setUpdating, setError, updateServer, refreshServers } = get();
+
+      try {
+        setUpdating(id, true);
+        setError(null);
+
+        const platformAPI = getPlatformAPI();
+        const updatedServer =
+          await platformAPI.servers.updateToolPermissions(id, permissions);
+        updateServer(id, updatedServer);
+
+        await refreshServers();
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Failed to update tool permissions",
+        );
+        throw error;
       } finally {
         setUpdating(id, false);
       }

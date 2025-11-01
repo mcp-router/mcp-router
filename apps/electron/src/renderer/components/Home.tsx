@@ -46,6 +46,7 @@ const Home: React.FC = () => {
     deleteServer,
     refreshServers,
     updateServerConfig,
+    updateServerToolPermissions,
   } = useServerStore();
 
   // Get workspace and auth state
@@ -505,7 +506,11 @@ const Home: React.FC = () => {
       {advancedSettingsServer && (
         <ServerDetailsAdvancedSheet
           server={advancedSettingsServer}
-          handleSave={async (updatedInputParams?: any, editedName?: string) => {
+          handleSave={async (
+            updatedInputParams?: any,
+            editedName?: string,
+            updatedToolPermissions?: Record<string, boolean>,
+          ) => {
             try {
               const {
                 editedCommand,
@@ -558,6 +563,12 @@ const Home: React.FC = () => {
                 advancedSettingsServer.id,
                 updatedConfig,
               );
+              if (updatedToolPermissions) {
+                await updateServerToolPermissions(
+                  advancedSettingsServer.id,
+                  updatedToolPermissions,
+                );
+              }
               setIsAdvancedEditing(false);
               setAdvancedSettingsServer(null);
               toast.success(t("serverDetails.updateSuccess"));

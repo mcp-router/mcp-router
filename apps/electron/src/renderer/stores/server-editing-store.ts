@@ -12,6 +12,7 @@ interface ServerEditingState {
   editedBearerToken: string;
   editedAutoStart: boolean;
   envPairs: { key: string; value: string }[];
+  editedToolPermissions: Record<string, boolean>;
 
   // Actions
   setIsAdvancedEditing: (isEditing: boolean) => void;
@@ -22,6 +23,11 @@ interface ServerEditingState {
   setEditedBearerToken: (token: string) => void;
   setEditedAutoStart: (autoStart: boolean) => void;
   setEnvPairs: (pairs: { key: string; value: string }[]) => void;
+  setEditedToolPermissions: (
+    permissions:
+      | Record<string, boolean>
+      | ((prev: Record<string, boolean>) => Record<string, boolean>),
+  ) => void;
 
   // Array manipulation actions
   updateArg: (index: number, value: string) => void;
@@ -40,6 +46,7 @@ interface ServerEditingState {
     bearerToken?: string;
     autoStart?: boolean;
     env?: Record<string, string | boolean | number>;
+    toolPermissions?: Record<string, boolean>;
   }) => void;
 
   // Reset state
@@ -56,6 +63,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
   editedBearerToken: "",
   editedAutoStart: false,
   envPairs: [],
+  editedToolPermissions: {},
 
   // Basic setters
   setIsAdvancedEditing: (isAdvancedEditing) => set({ isAdvancedEditing }),
@@ -66,6 +74,13 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
   setEditedBearerToken: (editedBearerToken) => set({ editedBearerToken }),
   setEditedAutoStart: (editedAutoStart) => set({ editedAutoStart }),
   setEnvPairs: (envPairs) => set({ envPairs }),
+  setEditedToolPermissions: (permissions) =>
+    set((state) => ({
+      editedToolPermissions:
+        typeof permissions === "function"
+          ? permissions(state.editedToolPermissions)
+          : permissions,
+    })),
 
   // Array manipulation
   updateArg: (index, value) =>
@@ -114,6 +129,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
         key,
         value: String(value),
       })),
+      editedToolPermissions: { ...(server.toolPermissions || {}) },
     });
   },
 
@@ -128,5 +144,6 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
       editedBearerToken: "",
       editedAutoStart: false,
       envPairs: [],
+      editedToolPermissions: {},
     }),
 }));
