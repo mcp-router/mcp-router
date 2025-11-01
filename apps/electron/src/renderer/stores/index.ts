@@ -8,6 +8,7 @@ export * from "./view-preferences-store";
 // Platform-dependent store factories
 export * from "./server-store";
 export * from "./auth-store";
+export * from "./project-store";
 
 // Import platform API type
 import type { PlatformAPI } from "@mcp_router/shared";
