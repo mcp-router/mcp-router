@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
-import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
+import { MCPServer, MCPServerConfig, MCPTool } from "@mcp_router/shared";
 import {
   getServerService,
   ServerService,
@@ -67,6 +67,7 @@ export class MCPServerManager {
         // Initialize all servers as stopped when loading
         server.status = "stopped";
         server.logs = [];
+        server.toolPermissions = server.toolPermissions || {};
         this.servers.set(server.id, server);
 
         // Update server name to ID mapping
@@ -314,6 +315,7 @@ export class MCPServerManager {
       const status = server.status;
       const logs = server.logs || [];
       Object.assign(server, updatedServer, { status, logs });
+      server.toolPermissions = server.toolPermissions || {};
       this.updateServerNameMapping(server);
     }
 
@@ -326,21 +328,61 @@ export class MCPServerManager {
   public updateServerToolPermissions(
     id: string,
     toolPermissions: Record<string, boolean>,
-  ): MCPServer | null {
+  ): MCPServer {
     const server = this.servers.get(id);
     if (!server) {
-      return null;
+      throw new Error(`Server not found: ${id}`);
     }
 
     const updatedConfig: Partial<MCPServerConfig> = { toolPermissions };
     const updatedServer = this.serverService.updateServer(id, updatedConfig);
 
     if (!updatedServer) {
-      return null;
+      throw new Error(
+        `Failed to update tool permissions for server: ${server.name}`,
+      );
     }
 
-    server.toolPermissions = toolPermissions;
+    server.toolPermissions = { ...toolPermissions };
+
+    if (Array.isArray(server.tools)) {
+      server.tools = server.tools.map((tool) => ({
+        ...tool,
+        enabled: toolPermissions[tool.name] !== false,
+      }));
+    }
+
     return server;
+  }
+
+  /**
+   * List tools for a specific server
+   */
+  public async listServerTools(id: string): Promise<MCPTool[]> {
+    const server = this.servers.get(id);
+    if (!server) {
+      throw new Error("Server not found");
+    }
+
+    const client = this.clients.get(id);
+    const isRunning =
+      !!client &&
+      (server.status === "running" || this.serverStatusMap.get(server.name));
+
+    if (!isRunning || !client) {
+      throw new Error("Server must be running to list tools");
+    }
+
+    const response = await client.listTools();
+    const tools = response?.tools ?? [];
+    const permissions = server.toolPermissions || {};
+    const toolsWithStatus = tools.map((tool) => ({
+      ...tool,
+      enabled: permissions[tool.name] !== false,
+    }));
+
+    server.tools = toolsWithStatus;
+    return toolsWithStatus;
   }
 
   /**

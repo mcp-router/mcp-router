@@ -87,6 +87,17 @@ export class RequestHandlers extends RequestHandlerBase {
       );
     }
 
+    const serverInfo = this.servers.get(serverId);
+    if (
+      serverInfo?.toolPermissions &&
+      serverInfo.toolPermissions[originalToolName] === false
+    ) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Tool "${originalToolName}" is disabled on server ${serverName}`,
+      );
+    }
+
     const client = this.clients.get(serverId);
     if (!client) {
       throw new McpError(
@@ -136,12 +147,15 @@ export class RequestHandlers extends RequestHandlerBase {
 
     // Add tools from running servers
     for (const [serverId, client] of this.clients.entries()) {
-      const serverName = this.servers.get(serverId)?.name || serverId;
+      const serverInfo = this.servers.get(serverId);
+      const serverName = serverInfo?.name || serverId;
       const isRunning = this.serverStatusMap.get(serverName);
 
       if (!isRunning || !client) {
         continue;
       }
+
+      const toolPermissions = serverInfo?.toolPermissions || {};
 
       try {
         // First, try to get the list of tools
@@ -152,6 +166,9 @@ export class RequestHandlers extends RequestHandlerBase {
         }
 
         for (const tool of tools.tools) {
+          if (toolPermissions[tool.name] === false) {
+            continue;
+          }
           const aggregatedName = this.buildAggregatedToolName(
             serverName,
             serverId,
@@ -161,6 +178,7 @@ export class RequestHandlers extends RequestHandlerBase {
             ...tool,
             name: aggregatedName,
             sourceServer: serverName,
+            enabled: toolPermissions[tool.name] !== false,
           };
 
           // Store the mapping
