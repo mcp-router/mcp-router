@@ -254,6 +254,7 @@
     "deleteFailed": "应用删除失败"
   },
   "serverDetails": {
+    "settings": "设置",
     "configuration": "配置",
     "serverName": "服务器名称",
     "finalCommand": "执行命令",
@@ -340,6 +341,22 @@
     "commandNotFound": "命令未安装。服务器启动可能失败。",
     "autoStart": "自动启动",
     "autoStartToggleLabel": "启用自动启动"
+  },
+  "projects": {
+    "sectionTitle": "项目",
+    "all": "全部",
+    "unassigned": "未分配",
+    "collapseAll": "全部折叠",
+    "expandAll": "全部展开",
+    "new": "新项目名称",
+    "create": "创建",
+    "creating": "正在创建...",
+    "addNew": "添加新项目..."
+  },
+  "serverSettings": {
+    "title": "服务器设置",
+    "project": "项目",
+    "delete": "删除服务器"
   },
   "server": {
     "status": {

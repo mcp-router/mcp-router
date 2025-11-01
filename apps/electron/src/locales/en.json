@@ -254,6 +254,7 @@
     "deleteFailed": "Failed to delete app"
   },
   "serverDetails": {
+    "settings": "Settings",
     "configuration": "Configuration",
     "serverName": "Server Name",
     "finalCommand": "Execution Command",
@@ -340,6 +341,22 @@
     "commandNotFound": "Command is not installed. Server startup may fail.",
     "autoStart": "Auto Start",
     "autoStartToggleLabel": "Enable auto-start"
+  },
+  "projects": {
+    "sectionTitle": "Projects",
+    "all": "All",
+    "unassigned": "Unassigned",
+    "collapseAll": "Collapse All",
+    "expandAll": "Expand All",
+    "new": "New project name",
+    "create": "Create",
+    "creating": "Creating...",
+    "addNew": "Add new project..."
+  },
+  "serverSettings": {
+    "title": "Server Settings",
+    "project": "Project",
+    "delete": "Delete Server"
   },
   "server": {
     "status": {
