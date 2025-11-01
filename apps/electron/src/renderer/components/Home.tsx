@@ -281,47 +281,41 @@ const Home: React.FC = () => {
         ) : serverViewMode === "list" ? (
           <ScrollArea className="h-full">
             <div className="divide-y divide-border">
-              {/* Collapse/Expand all controls */}
-              <div className="px-4 py-2 flex items-center justify-end gap-2 bg-muted/10 sticky top-0 z-10">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const map: Record<string, boolean> = {};
-                    projects.forEach((p) => (map[p.id] = true));
-                    setCollapsedMany(map);
-                  }}
-                >
-                  {t("projects.collapseAll", { defaultValue: "Collapse All" })}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const map: Record<string, boolean> = {};
-                    projects.forEach((p) => (map[p.id] = false));
-                    setCollapsedMany(map);
-                  }}
-                >
-                  {t("projects.expandAll", { defaultValue: "Expand All" })}
-                </Button>
-              </div>
 
               {/* Unassigned Section (always first unless filtering by project) */}
-              {selectedProjectId === null ||
-              selectedProjectId === UNASSIGNED_PROJECT_ID ? (
-                <>
-                  <div className="px-4 py-2 flex items-center justify-between bg-muted/20">
-                    <div className="text-sm font-semibold">
-                      {t("projects.unassigned", { defaultValue: "Unassigned" })}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {filteredServers.filter((s) => !s.projectId).length}
-                    </div>
-                  </div>
-                  {filteredServers
-                    .filter((s) => !s.projectId)
-                    .map((server) => {
+              {(selectedProjectId === null ||
+                selectedProjectId === UNASSIGNED_PROJECT_ID) &&
+                (() => {
+                  const collapsed =
+                    !!collapsedByProjectId[UNASSIGNED_PROJECT_ID];
+                  const unassignedServers = filteredServers.filter(
+                    (s) => !s.projectId,
+                  );
+                  return (
+                    <div>
+                      <div className="px-4 py-2 flex items-center justify-between bg-muted/20">
+                        <button
+                          className="flex items-center gap-1 text-sm font-semibold hover:text-primary"
+                          onClick={() =>
+                            setCollapsed(UNASSIGNED_PROJECT_ID, !collapsed)
+                          }
+                        >
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 transition-transform",
+                              collapsed ? "-rotate-90" : "rotate-0",
+                            )}
+                          />
+                          {t("projects.unassigned", {
+                            defaultValue: "Unassigned",
+                          })}
+                        </button>
+                        <div className="text-xs text-muted-foreground">
+                          {unassignedServers.length}
+                        </div>
+                      </div>
+                      {!collapsed &&
+                        unassignedServers.map((server) => {
                 // console.log("Server:", server);
 
                 const statusConfig = {
@@ -506,9 +500,10 @@ const Home: React.FC = () => {
                     </div>
                   </div>
                 );
-              })}
-                </>
-              ) : null}
+                        })}
+                    </div>
+                  );
+                })()}
 
               {/* Project Sections */}
               {(selectedProjectId === null
