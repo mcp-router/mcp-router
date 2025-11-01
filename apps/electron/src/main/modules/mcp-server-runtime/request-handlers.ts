@@ -15,14 +15,7 @@ import { RequestHandlerBase } from "./request-handler-base";
  */
 export class RequestHandlers extends RequestHandlerBase {
   private originalProtocols: Map<string, string> = new Map();
-  private toolRoutingMap: Map<
-    string,
-    {
-      serverName: string;
-      originalName: string;
-    }
-  > = new Map();
-  private legacyToolNameToServerMap: Map<string, string> = new Map();
+  private toolNameToServerMap: Map<string, string> = new Map();
   private serverStatusMap: Map<string, boolean>;
   private servers: Map<string, MCPServer>;
   private clients: Map<string, Client>;
@@ -59,17 +52,15 @@ export class RequestHandlers extends RequestHandlerBase {
     const toolName = request.params.name;
 
     // Get server name and original tool name
-    const routingInfo = this.toolRoutingMap.get(toolName);
-    const serverName =
-      routingInfo?.serverName ||
-      this.legacyToolNameToServerMap.get(toolName);
-    if (!serverName) {
+    const mappedServerName = this.getServerNameForTool(toolName);
+    if (!mappedServerName) {
       throw new McpError(
         ErrorCode.InvalidRequest,
-        `Unknown tool: ${toolName}`,
+        `Could not determine server for tool: ${toolName}`,
       );
     }
-    const originalToolName = routingInfo?.originalName || toolName;
+    const serverName = mappedServerName;
+    const originalToolName = toolName;
 
     const token = request.params._meta?.token as string | undefined;
 
@@ -84,17 +75,6 @@ export class RequestHandlers extends RequestHandlerBase {
       throw new McpError(
         ErrorCode.InvalidRequest,
         `Unknown server: ${serverName}`,
-      );
-    }
-
-    const serverInfo = this.servers.get(serverId);
-    if (
-      serverInfo?.toolPermissions &&
-      serverInfo.toolPermissions[originalToolName] === false
-    ) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        `Tool "${originalToolName}" is disabled on server ${serverName}`,
       );
     }
 
@@ -121,17 +101,10 @@ export class RequestHandlers extends RequestHandlerBase {
       "CallTool",
       async () => {
         // Call the tool on the server
-        return await client.callTool(
-          {
-            name: originalToolName,
-            arguments: request.params.arguments || {},
-          },
-          undefined,
-          {
-            timeout: 60 * 60 * 1000, // 60分
-            resetTimeoutOnProgress: true,
-          },
-        );
+        return await client.callTool({
+          name: originalToolName,
+          arguments: request.params.arguments || {},
+        });
       },
       { serverId },
     );
@@ -141,21 +114,16 @@ export class RequestHandlers extends RequestHandlerBase {
    * Get all tools from all servers (internal implementation)
    */
   private async getAllToolsInternal(): Promise<any[]> {
-    this.toolRoutingMap.clear();
-    this.legacyToolNameToServerMap.clear();
     const allTools: any[] = [];
 
     // Add tools from running servers
     for (const [serverId, client] of this.clients.entries()) {
-      const serverInfo = this.servers.get(serverId);
-      const serverName = serverInfo?.name || serverId;
+      const serverName = this.servers.get(serverId)?.name || serverId;
       const isRunning = this.serverStatusMap.get(serverName);
 
       if (!isRunning || !client) {
         continue;
       }
-
-      const toolPermissions = serverInfo?.toolPermissions || {};
 
       try {
         // First, try to get the list of tools
@@ -166,27 +134,14 @@ export class RequestHandlers extends RequestHandlerBase {
         }
 
         for (const tool of tools.tools) {
-          if (toolPermissions[tool.name] === false) {
-            continue;
-          }
-          const aggregatedName = this.buildAggregatedToolName(
-            serverName,
-            serverId,
-            tool.name,
-          );
           const toolWithSource = {
             ...tool,
-            name: aggregatedName,
+            name: tool.name,
             sourceServer: serverName,
-            enabled: toolPermissions[tool.name] !== false,
           };
 
           // Store the mapping
-          this.toolRoutingMap.set(aggregatedName, {
-            serverName,
-            originalName: tool.name,
-          });
-          this.legacyToolNameToServerMap.set(tool.name, serverName);
+          this.toolNameToServerMap.set(tool.name, serverName);
 
           allTools.push(toolWithSource);
         }
@@ -554,48 +509,14 @@ export class RequestHandlers extends RequestHandlerBase {
     );
   }
 
-  private buildAggregatedToolName(
-    serverName: string,
-    serverId: string,
-    toolName: string,
-  ): string {
-    const serverSlug =
-      this.slugify(serverName) || this.slugify(serverId) || "server";
-    const baseName = `mcp-router__${serverSlug}__${toolName}`;
-
-    if (!this.toolRoutingMap.has(baseName)) {
-      return baseName;
-    }
-
-    let counter = 2;
-    let candidate = `${baseName}__${counter}`;
-    while (this.toolRoutingMap.has(candidate)) {
-      counter += 1;
-      candidate = `${baseName}__${counter}`;
-    }
-
-    return candidate;
-  }
-
-  private slugify(value: string): string {
-    return value
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  }
-
   /**
    * Get server name for a given tool
    */
   public getServerNameForTool(toolName: string): string | undefined {
-    return (
-      this.toolRoutingMap.get(toolName)?.serverName ||
-      this.legacyToolNameToServerMap.get(toolName)
-    );
+    return this.toolNameToServerMap.get(toolName) || "Agent Tools";
   }
 
   public getServerIdByName(name: string): string | undefined {
     return this.serverNameToIdMap.get(name);
   }
-
 }
