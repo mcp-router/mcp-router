@@ -22,6 +22,8 @@ export interface MCPServerConfig {
   args?: string[];
   remoteUrl?: string;
   bearerToken?: string;
+  // Project grouping
+  projectId?: string | null;
 
   setupInstructions?: string;
   inputParams?: Record<string, MCPInputParam>;

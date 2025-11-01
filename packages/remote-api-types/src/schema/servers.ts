@@ -15,6 +15,7 @@ export const mcpServerConfigSchema = z.object({
   args: z.array(z.string()).optional(),
   remoteUrl: z.string().optional(),
   bearerToken: z.string().optional(),
+  projectId: z.string().nullable().optional(),
   inputParams: z
     .record(
       z.object({

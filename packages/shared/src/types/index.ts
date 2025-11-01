@@ -8,6 +8,7 @@ export * from "./token-types";
 export * from "./user-types";
 export * from "./workspace";
 export * from "./auth";
+export * from "./project-types";
 
 // Re-export organized domain types
 export * from "./ui";
@@ -33,6 +34,8 @@ export {
   LogAPI,
   LogQueryOptions,
   LogQueryResult,
+  // Projects API
+  ProjectsAPI,
   // Workspace API
   WorkspaceAPI,
   // Workflow API

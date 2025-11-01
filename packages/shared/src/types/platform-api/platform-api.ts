@@ -10,6 +10,7 @@ import { SettingsAPI } from "./domains/settings-api";
 import { LogAPI } from "./domains/log-api";
 import { WorkspaceAPI } from "./domains/workspace-api";
 import { WorkflowAPI } from "./domains/workflow-api";
+import { ProjectsAPI } from "./domains/projects-api";
 
 /**
  * Main Platform API interface with domain-driven structure
@@ -39,4 +40,7 @@ export interface PlatformAPI {
 
   // Workflow and Hook Module management domain
   workflows: WorkflowAPI;
+
+  // Projects management domain
+  projects: ProjectsAPI;
 }
