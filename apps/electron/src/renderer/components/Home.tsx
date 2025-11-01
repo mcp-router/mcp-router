@@ -311,30 +311,43 @@ const Home: React.FC = () => {
                   const unassignedServers = filteredServers.filter(
                     (s) => !s.projectId,
                   );
+                  const isUnassignedCollapsible = selectedProjectId === null;
+                  const effectiveCollapsed = isUnassignedCollapsible && collapsed;
                   return (
                     <div>
-                      <div className="px-4 py-2 flex items-center justify-between bg-muted/20">
-                        <button
-                          className="flex items-center gap-1 text-sm font-semibold hover:text-primary"
-                          onClick={() =>
-                            setCollapsed(UNASSIGNED_PROJECT_ID, !collapsed)
-                          }
-                        >
-                          <ChevronDown
-                            className={cn(
-                              "h-4 w-4 transition-transform",
-                              collapsed ? "-rotate-90" : "rotate-0",
-                            )}
-                          />
+                      <div
+                        className={cn(
+                          "px-4 py-2 flex items-center justify-between bg-muted/20",
+                          isUnassignedCollapsible && "cursor-pointer",
+                        )}
+                        onClick={
+                          isUnassignedCollapsible
+                            ? () =>
+                                setCollapsed(
+                                  UNASSIGNED_PROJECT_ID,
+                                  !collapsed,
+                                )
+                            : undefined
+                        }
+                      >
+                        <div className="flex items-center gap-1 text-sm font-semibold">
+                          {isUnassignedCollapsible && (
+                            <ChevronDown
+                              className={cn(
+                                "h-4 w-4 transition-transform",
+                                collapsed ? "-rotate-90" : "rotate-0",
+                              )}
+                            />
+                          )}
                           {t("projects.unassigned", {
                             defaultValue: "Unassigned",
                           })}
-                        </button>
+                        </div>
                         <div className="text-xs text-muted-foreground">
                           {unassignedServers.length}
                         </div>
                       </div>
-                      {!collapsed &&
+                      {!effectiveCollapsed &&
                         unassignedServers.map((server) => {
                           // console.log("Server:", server);
 
@@ -546,32 +559,43 @@ const Home: React.FC = () => {
               {(selectedProjectId === null
                 ? projects
                 : projects.filter((p) => p.id === selectedProjectId)
-              ).map((project) => {
+                ).map((project) => {
                 const sectionServers = filteredServers.filter(
                   (s) => s.projectId === project.id,
                 );
                 if (sectionServers.length === 0) return null;
                 const collapsed = !!collapsedByProjectId[project.id];
+                const isProjectCollapsible = selectedProjectId === null;
+                const effectiveCollapsed = isProjectCollapsible && collapsed;
                 return (
                   <div key={project.id}>
-                    <div className="px-4 py-2 flex items-center justify-between bg-muted/20">
-                      <button
-                        className="flex items-center gap-1 text-sm font-semibold hover:text-primary"
-                        onClick={() => setCollapsed(project.id, !collapsed)}
-                      >
-                        <ChevronDown
-                          className={cn(
-                            "h-4 w-4 transition-transform",
-                            collapsed ? "-rotate-90" : "rotate-0",
-                          )}
-                        />
+                    <div
+                      className={cn(
+                        "px-4 py-2 flex items-center justify-between bg-muted/20",
+                        isProjectCollapsible && "cursor-pointer",
+                      )}
+                      onClick={
+                        isProjectCollapsible
+                          ? () => setCollapsed(project.id, !collapsed)
+                          : undefined
+                      }
+                    >
+                      <div className="flex items-center gap-1 text-sm font-semibold">
+                        {isProjectCollapsible && (
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 transition-transform",
+                              collapsed ? "-rotate-90" : "rotate-0",
+                            )}
+                          />
+                        )}
                         {project.name}
-                      </button>
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         {sectionServers.length}
                       </div>
                     </div>
-                    {!collapsed &&
+                    {!effectiveCollapsed &&
                       sectionServers.map((server) => {
                         const statusConfig = {
                           running: {
