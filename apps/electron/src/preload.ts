@@ -168,4 +168,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.removeListener("workspace:switched", listener);
     };
   },
+
+  // Projects Management
+  listProjects: () => ipcRenderer.invoke("project:list"),
+  createProject: (input: { name: string; color?: string }) =>
+    ipcRenderer.invoke("project:create", input),
+  updateProject: (id: string, updates: { name?: string; color?: string }) =>
+    ipcRenderer.invoke("project:update", id, updates),
+  deleteProject: (id: string) => ipcRenderer.invoke("project:delete", id),
 });

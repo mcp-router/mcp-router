@@ -2,7 +2,7 @@
  * Augment the global Window interface so TypeScript knows about "window.electronAPI".
  */
 
-import { AppSettings, MCPTool, MCPServer } from "@mcp_router/shared";
+import { AppSettings, MCPTool, MCPServer, Project } from "@mcp_router/shared";
 import {
   CreateServerInput,
   WorkflowDefinition,
@@ -135,6 +135,15 @@ declare global {
       ) => Promise<{ token: string | null }>;
       onWorkspaceSwitched: (callback: (workspace: any) => void) => () => void;
       onWorkspaceConfigChanged: (callback: (config: any) => void) => () => void;
+
+      // Projects Management
+      listProjects: () => Promise<Project[]>;
+      createProject: (input: { name: string; color?: string }) => Promise<Project>;
+      updateProject: (
+        id: string,
+        updates: { name?: string; color?: string },
+      ) => Promise<Project>;
+      deleteProject: (id: string) => Promise<void>;
 
       // Workflow Management
       listWorkflows: () => Promise<WorkflowDefinition[]>;

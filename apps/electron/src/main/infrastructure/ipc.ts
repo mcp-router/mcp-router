@@ -8,6 +8,7 @@ import { setupPackageHandlers } from "../modules/system/package-handlers";
 import { setupWorkspaceHandlers } from "../modules/workspace/workspace.ipc";
 import { setupWorkflowHandlers } from "../modules/workflow/workflow.ipc";
 import { setupHookHandlers } from "../modules/workflow/hook.ipc";
+import { setupProjectHandlers } from "../modules/projects/projects.ipc";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 
 /**
@@ -46,4 +47,7 @@ export function setupIpcHandlers(deps: {
 
   // Hook Module関連
   setupHookHandlers();
+
+  // Projects関連
+  setupProjectHandlers();
 }
