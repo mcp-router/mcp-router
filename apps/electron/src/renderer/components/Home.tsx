@@ -12,7 +12,14 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/renderer/utils/tailwind-utils";
-import { AlertCircle, Grid3X3, List, Share, Settings as SettingsIcon, ChevronDown } from "lucide-react";
+import {
+  AlertCircle,
+  Grid3X3,
+  List,
+  Share,
+  Settings as SettingsIcon,
+  ChevronDown,
+} from "lucide-react";
 import { hasUnsetRequiredParams } from "@/renderer/utils/server-validation-utils";
 import { toast } from "sonner";
 import {
@@ -56,14 +63,31 @@ const Home: React.FC = () => {
   const { currentWorkspace } = useWorkspaceStore();
   const { isAuthenticated, login } = useAuthStore();
   const { serverViewMode, setServerViewMode } = useViewPreferencesStore();
-  const { projects, list: listProjects, create: createProject, collapsedByProjectId, setCollapsed, selectedProjectId, setCollapsedMany } = useProjectStore();
+  const {
+    projects,
+    list: listProjects,
+    create: createProject,
+    collapsedByProjectId,
+    setCollapsed,
+    selectedProjectId,
+  } = useProjectStore();
 
-  // Filter servers based on search query and sort them
-  const filteredServers = servers
-    .filter((server) =>
-      server.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+  // Filter servers based on search query, project selection and sort them
+  const filteredServers = React.useMemo(() => {
+    const base = servers
+      .filter((server) =>
+        server.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (selectedProjectId === UNASSIGNED_PROJECT_ID) {
+      return base.filter((s) => !s.projectId);
+    }
+    if (selectedProjectId) {
+      return base.filter((s) => s.projectId === selectedProjectId);
+    }
+    return base;
+  }, [servers, searchQuery, selectedProjectId]);
 
   // State for server removal dialog (keeping local for now)
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
@@ -101,10 +125,7 @@ const Home: React.FC = () => {
     }
   };
 
-  const openServerSettings = (
-    server: MCPServer,
-    event?: React.MouseEvent,
-  ) => {
+  const openServerSettings = (server: MCPServer, event?: React.MouseEvent) => {
     event?.stopPropagation();
     setSettingsServerId(server.id);
     setIsSettingsOpen(true);
@@ -281,7 +302,6 @@ const Home: React.FC = () => {
         ) : serverViewMode === "list" ? (
           <ScrollArea className="h-full">
             <div className="divide-y divide-border">
-
               {/* Unassigned Section (always first unless filtering by project) */}
               {(selectedProjectId === null ||
                 selectedProjectId === UNASSIGNED_PROJECT_ID) &&
@@ -316,190 +336,207 @@ const Home: React.FC = () => {
                       </div>
                       {!collapsed &&
                         unassignedServers.map((server) => {
-                // console.log("Server:", server);
+                          // console.log("Server:", server);
 
-                const statusConfig = {
-                  running: {
-                    color: "bg-emerald-500",
-                    pulseEffect: "animate-pulse",
-                  },
-                  starting: {
-                    color: "bg-yellow-500",
-                    pulseEffect: "animate-pulse",
-                  },
-                  stopping: {
-                    color: "bg-orange-500",
-                    pulseEffect: "animate-pulse",
-                  },
-                  stopped: {
-                    color: "bg-muted-foreground",
-                    pulseEffect: "",
-                  },
-                  error: {
-                    color: "bg-red-500",
-                    pulseEffect: "animate-pulse",
-                  },
-                };
+                          const statusConfig = {
+                            running: {
+                              color: "bg-emerald-500",
+                              pulseEffect: "animate-pulse",
+                            },
+                            starting: {
+                              color: "bg-yellow-500",
+                              pulseEffect: "animate-pulse",
+                            },
+                            stopping: {
+                              color: "bg-orange-500",
+                              pulseEffect: "animate-pulse",
+                            },
+                            stopped: {
+                              color: "bg-muted-foreground",
+                              pulseEffect: "",
+                            },
+                            error: {
+                              color: "bg-red-500",
+                              pulseEffect: "animate-pulse",
+                            },
+                          };
 
-                // Add safety check to use 'stopped' as default when status is invalid
-                const status =
-                  statusConfig[server.status as keyof typeof statusConfig] ||
-                  statusConfig.stopped;
+                          // Add safety check to use 'stopped' as default when status is invalid
+                          const status =
+                            statusConfig[
+                              server.status as keyof typeof statusConfig
+                            ] || statusConfig.stopped;
 
-                return (
-                  <div key={server.id}>
-                    <div
-                      className="p-4 hover:bg-sidebar-hover cursor-pointer"
-                      onClick={() => toggleServerExpand(server.id)}
-                    >
-                      <div className="flex justify-between">
-                        <div className="flex flex-col">
-                          <div className="font-medium text-base mb-1 hover:text-primary">
-                            {server.name}
-                          </div>
-
-                          {/* Description - if available */}
-                          {"description" in server &&
-                            typeof (server as any).description === "string" && (
-                              <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
-                                {(server as any).description}
-                              </p>
-                            )}
-                          <div className="flex flex-wrap gap-2 mb-1">
-                            {/* Server Type Badge */}
-                            <Badge variant="secondary" className="w-fit">
-                              {server.serverType === "local"
-                                ? "Local"
-                                : "Remote"}
-                            </Badge>
-
-                            {/* Status Badge */}
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "w-fit flex items-center gap-1",
-                                status.pulseEffect,
-                              )}
-                            >
+                          return (
+                            <div key={server.id}>
                               <div
-                                className={cn(
-                                  "h-2 w-2 rounded-full",
-                                  status.color,
-                                )}
-                              ></div>
-                              {t(`serverList.status.${server.status}`)}
-                            </Badge>
-
-                            {/* Warning Badge for unset required params */}
-                            {hasUnsetRequiredParams(server) && (
-                              <Badge
-                                variant="destructive"
-                                className="w-fit flex items-center gap-1"
-                                title={t("serverList.requiredParamsNotSet")}
+                                className="p-4 hover:bg-sidebar-hover cursor-pointer"
+                                onClick={() => toggleServerExpand(server.id)}
                               >
-                                <AlertCircle className="h-3 w-3" />
-                                {t("serverList.configRequired")}
-                              </Badge>
-                            )}
-                          </div>
+                                <div className="flex justify-between">
+                                  <div className="flex flex-col">
+                                    <div className="font-medium text-base mb-1 hover:text-primary">
+                                      {server.name}
+                                    </div>
 
-                          {/* Tags - if available */}
-                          {"tags" in server &&
-                            Array.isArray((server as any).tags) &&
-                            (server as any).tags.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {((server as any).tags as string[]).map(
-                                  (tag: string, index: number) => (
-                                    <Badge
-                                      key={index}
-                                      variant="outline"
-                                      className="text-xs px-1 py-0"
+                                    {/* Description - if available */}
+                                    {"description" in server &&
+                                      typeof (server as any).description ===
+                                        "string" && (
+                                        <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
+                                          {(server as any).description}
+                                        </p>
+                                      )}
+                                    <div className="flex flex-wrap gap-2 mb-1">
+                                      {/* Server Type Badge */}
+                                      <Badge
+                                        variant="secondary"
+                                        className="w-fit"
+                                      >
+                                        {server.serverType === "local"
+                                          ? "Local"
+                                          : "Remote"}
+                                      </Badge>
+
+                                      {/* Status Badge */}
+                                      <Badge
+                                        variant="outline"
+                                        className={cn(
+                                          "w-fit flex items-center gap-1",
+                                          status.pulseEffect,
+                                        )}
+                                      >
+                                        <div
+                                          className={cn(
+                                            "h-2 w-2 rounded-full",
+                                            status.color,
+                                          )}
+                                        ></div>
+                                        {t(
+                                          `serverList.status.${server.status}`,
+                                        )}
+                                      </Badge>
+
+                                      {/* Warning Badge for unset required params */}
+                                      {hasUnsetRequiredParams(server) && (
+                                        <Badge
+                                          variant="destructive"
+                                          className="w-fit flex items-center gap-1"
+                                          title={t(
+                                            "serverList.requiredParamsNotSet",
+                                          )}
+                                        >
+                                          <AlertCircle className="h-3 w-3" />
+                                          {t("serverList.configRequired")}
+                                        </Badge>
+                                      )}
+                                    </div>
+
+                                    {/* Tags - if available */}
+                                    {"tags" in server &&
+                                      Array.isArray((server as any).tags) &&
+                                      (server as any).tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                          {(
+                                            (server as any).tags as string[]
+                                          ).map(
+                                            (tag: string, index: number) => (
+                                              <Badge
+                                                key={index}
+                                                variant="outline"
+                                                className="text-xs px-1 py-0"
+                                              >
+                                                {tag}
+                                              </Badge>
+                                            ),
+                                          )}
+                                        </div>
+                                      )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {server.status === "error" && (
+                                      <button
+                                        className="text-destructive hover:text-destructive/80 p-1.5 rounded-full hover:bg-destructive/10 transition-colors"
+                                        onClick={(e) =>
+                                          openErrorModal(server, e)
+                                        }
+                                        title={t("serverList.errorDetails")}
+                                      >
+                                        <AlertCircle className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                    <span className="text-xs text-muted-foreground">
+                                      {server.status === "running"
+                                        ? t("serverList.status.running")
+                                        : server.status === "starting"
+                                          ? t("serverList.status.starting")
+                                          : server.status === "stopping"
+                                            ? t("serverList.status.stopping")
+                                            : t("serverList.status.stopped")}
+                                    </span>
+                                    <div className="h-6 w-12">
+                                      <Switch
+                                        checked={server.status === "running"}
+                                        disabled={
+                                          server.status === "starting" ||
+                                          server.status === "stopping" ||
+                                          hasUnsetRequiredParams(server)
+                                        }
+                                        title={
+                                          hasUnsetRequiredParams(server)
+                                            ? t(
+                                                "serverList.requiredParamsNotSet",
+                                              )
+                                            : undefined
+                                        }
+                                        onCheckedChange={async (checked) => {
+                                          try {
+                                            if (checked) {
+                                              await startServer(server.id);
+                                              // サーバーが起動完了した場合のメッセージ
+                                              toast.success(
+                                                t("serverList.serverStarted"),
+                                              );
+                                            } else {
+                                              await stopServer(server.id);
+                                              // サーバーが停止完了した場合のメッセージ
+                                              toast.success(
+                                                t("serverList.serverStopped"),
+                                              );
+                                            }
+                                          } catch (error) {
+                                            console.error(
+                                              "Server operation failed:",
+                                              error,
+                                            );
+                                            // Use enhanced error display with server name context
+                                            showServerError(
+                                              error instanceof Error
+                                                ? error
+                                                : new Error(String(error)),
+                                              server.name,
+                                            );
+                                          }
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                      />
+                                    </div>
+                                    <button
+                                      className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                                      onClick={(e) =>
+                                        openServerSettings(server, e)
+                                      }
+                                      title={t("serverDetails.settings", {
+                                        defaultValue: "Settings",
+                                      })}
                                     >
-                                      {tag}
-                                    </Badge>
-                                  ),
-                                )}
+                                      <SettingsIcon className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {server.status === "error" && (
-                            <button
-                              className="text-destructive hover:text-destructive/80 p-1.5 rounded-full hover:bg-destructive/10 transition-colors"
-                              onClick={(e) => openErrorModal(server, e)}
-                              title={t("serverList.errorDetails")}
-                            >
-                              <AlertCircle className="h-4 w-4" />
-                            </button>
-                          )}
-                          <span className="text-xs text-muted-foreground">
-                            {server.status === "running"
-                              ? t("serverList.status.running")
-                              : server.status === "starting"
-                                ? t("serverList.status.starting")
-                                : server.status === "stopping"
-                                  ? t("serverList.status.stopping")
-                                  : t("serverList.status.stopped")}
-                          </span>
-                          <div className="h-6 w-12">
-                            <Switch
-                              checked={server.status === "running"}
-                              disabled={
-                                server.status === "starting" ||
-                                server.status === "stopping" ||
-                                hasUnsetRequiredParams(server)
-                              }
-                              title={
-                                hasUnsetRequiredParams(server)
-                                  ? t("serverList.requiredParamsNotSet")
-                                  : undefined
-                              }
-                              onCheckedChange={async (checked) => {
-                                try {
-                                  if (checked) {
-                                    await startServer(server.id);
-                                    // サーバーが起動完了した場合のメッセージ
-                                    toast.success(
-                                      t("serverList.serverStarted"),
-                                    );
-                                  } else {
-                                    await stopServer(server.id);
-                                    // サーバーが停止完了した場合のメッセージ
-                                    toast.success(
-                                      t("serverList.serverStopped"),
-                                    );
-                                  }
-                                } catch (error) {
-                                  console.error(
-                                    "Server operation failed:",
-                                    error,
-                                  );
-                                  // Use enhanced error display with server name context
-                                  showServerError(
-                                    error instanceof Error
-                                      ? error
-                                      : new Error(String(error)),
-                                    server.name,
-                                  );
-                                }
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </div>
-                          <button
-                            className="p-1.5 rounded-full hover:bg-muted transition-colors"
-                            onClick={(e) => openServerSettings(server, e)}
-                            title={t("serverDetails.settings", {
-                              defaultValue: "Settings",
-                            })}
-                          >
-                            <SettingsIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
+                            </div>
+                          );
                         })}
                     </div>
                   );
@@ -509,7 +546,7 @@ const Home: React.FC = () => {
               {(selectedProjectId === null
                 ? projects
                 : projects.filter((p) => p.id === selectedProjectId)
-                ).map((project) => {
+              ).map((project) => {
                 const sectionServers = filteredServers.filter(
                   (s) => s.projectId === project.id,
                 );
@@ -605,7 +642,9 @@ const Home: React.FC = () => {
                                     <Badge
                                       variant="destructive"
                                       className="w-fit flex items-center gap-1"
-                                      title={t("serverList.requiredParamsNotSet")}
+                                      title={t(
+                                        "serverList.requiredParamsNotSet",
+                                      )}
                                     >
                                       <AlertCircle className="h-3 w-3" />
                                       {t("serverList.configRequired")}
@@ -727,8 +766,8 @@ const Home: React.FC = () => {
       )}
 
       {/* Advanced Settings Sheet */}
-  {advancedSettingsServer && (
-    <ServerDetailsAdvancedSheet
+      {advancedSettingsServer && (
+        <ServerDetailsAdvancedSheet
           server={advancedSettingsServer}
           handleSave={async (
             updatedInputParams?: any,
@@ -802,37 +841,37 @@ const Home: React.FC = () => {
             }
           }}
         />
-  )}
+      )}
 
-  {/* Server Settings Modal */}
-  {settingsServer && (
-    <ServerSettingsModal
-      open={isSettingsOpen}
-      onOpenChange={(open) => {
-        setIsSettingsOpen(open);
-        if (!open) {
-          setSettingsServerId(null);
-        }
-      }}
-      server={settingsServer}
-      projects={projects}
-      onAssignProject={async (projectId: string | null) => {
-        await updateServerConfig(settingsServer.id, { projectId });
-        await refreshServers();
-      }}
-      onCreateProject={async (input) => {
-        const created = await createProject(input);
-        await listProjects();
-        return created;
-      }}
-      onDelete={() => {
-        setServerToRemove(settingsServer);
-        setIsSettingsOpen(false);
-        setIsRemoveDialogOpen(true);
-        setSettingsServerId(null);
-      }}
-    />
-  )}
+      {/* Server Settings Modal */}
+      {settingsServer && (
+        <ServerSettingsModal
+          open={isSettingsOpen}
+          onOpenChange={(open) => {
+            setIsSettingsOpen(open);
+            if (!open) {
+              setSettingsServerId(null);
+            }
+          }}
+          server={settingsServer}
+          projects={projects}
+          onAssignProject={async (projectId: string | null) => {
+            await updateServerConfig(settingsServer.id, { projectId });
+            await refreshServers();
+          }}
+          onCreateProject={async (input) => {
+            const created = await createProject(input);
+            await listProjects();
+            return created;
+          }}
+          onDelete={() => {
+            setServerToRemove(settingsServer);
+            setIsSettingsOpen(false);
+            setIsRemoveDialogOpen(true);
+            setSettingsServerId(null);
+          }}
+        />
+      )}
     </div>
   );
 };
