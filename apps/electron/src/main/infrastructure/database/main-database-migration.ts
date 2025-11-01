@@ -117,6 +117,25 @@ export class MainDatabaseMigration {
       description: "Add hooks table for MCP request/response hooks",
       execute: (db) => this.migrateAddHooksTable(db),
     });
+
+    // Projects feature
+    this.migrations.push({
+      id: "20251101_add_projects_table",
+      description: "Add projects table for grouping servers",
+      execute: (db) => this.migrateAddProjectsTable(db),
+    });
+
+    this.migrations.push({
+      id: "20251101_add_servers_project_id_column",
+      description: "Add project_id column to servers table",
+      execute: (db) => this.migrateAddServerProjectIdColumn(db),
+    });
+
+    this.migrations.push({
+      id: "20251101_add_idx_servers_project_id",
+      description: "Add index on servers(project_id)",
+      execute: (db) => this.migrateAddIndexServersProjectId(db),
+    });
   }
 
   /**
@@ -666,6 +685,78 @@ export class MainDatabaseMigration {
         "hooksテーブルのマイグレーション中にエラーが発生しました:",
         error,
       );
+      throw error;
+    }
+  }
+
+  /**
+   * Create projects table if not exists
+   */
+  private migrateAddProjectsTable(db: SqliteManager): void {
+    try {
+      const tableExists = db.get(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'projects'",
+        {},
+      );
+
+      if (!tableExists) {
+        db.execute(`
+          CREATE TABLE IF NOT EXISTS projects (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            color TEXT,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
+          )
+        `);
+        db.execute(
+          "CREATE INDEX IF NOT EXISTS idx_projects_name ON projects(name)",
+        );
+      }
+    } catch (error) {
+      console.error("projectsテーブルの作成中にエラーが発生しました:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add project_id column to servers table if not exists
+   */
+  private migrateAddServerProjectIdColumn(db: SqliteManager): void {
+    try {
+      const tableExists = db.get(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
+        {},
+      );
+      if (!tableExists) {
+        return;
+      }
+      const tableInfo = db.all("PRAGMA table_info(servers)");
+      const columnNames = tableInfo.map((col: any) => col.name);
+      if (!columnNames.includes("project_id")) {
+        db.execute("ALTER TABLE servers ADD COLUMN project_id TEXT");
+      }
+    } catch (error) {
+      console.error("servers.project_id列の追加中にエラーが発生しました:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add index on servers(project_id)
+   */
+  private migrateAddIndexServersProjectId(db: SqliteManager): void {
+    try {
+      const tableExists = db.get(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
+        {},
+      );
+      if (!tableExists) return;
+      db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_servers_project_id ON servers(project_id)",
+      );
+    } catch (error) {
+      console.error("idx_servers_project_idの作成中にエラーが発生しました:", error);
       throw error;
     }
   }
