@@ -23,7 +23,7 @@ import {
 } from "@mcp_router/ui";
 import HowToUse, { HowToUseHandle } from "./HowToUse";
 import { toast } from "sonner";
-import { ScrollArea } from "@mcp_router/ui";
+import { ScrollArea, ScrollBar } from "@mcp_router/ui";
 
 import { McpApp, McpAppsManagerResult } from "@mcp_router/shared";
 
@@ -394,7 +394,7 @@ const McpAppsManager: React.FC = () => {
         open={isAccessControlDialogOpen}
         onOpenChange={setIsAccessControlDialogOpen}
       >
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md overflow-hidden">
           <DialogHeader>
             <DialogTitle>
               {t("mcpApps.serverAccess")} - {selectedApp?.name}
@@ -406,8 +406,8 @@ const McpAppsManager: React.FC = () => {
             <p className="text-sm text-muted-foreground mb-4">
               {t("mcpApps.selectServers")}
             </p>
-            <ScrollArea className="max-h-[50vh]">
-              <div className="space-y-2">
+            <ScrollArea className="h-[60vh] pr-4">
+              <div className="space-y-2 pr-2">
                 {servers.map((server) => (
                   <div key={server.id} className="flex items-center space-x-3">
                     <Checkbox
@@ -421,6 +421,7 @@ const McpAppsManager: React.FC = () => {
                   </div>
                 ))}
               </div>
+              <ScrollBar orientation="vertical" />
             </ScrollArea>
           </div>
 
