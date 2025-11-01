@@ -17,6 +17,7 @@ import { ServerService } from "@/main/modules/mcp-server-manager/server-service"
 import { McpAppsManagerService } from "../mcp-apps-manager/mcp-apps-manager.service";
 import { McpLoggerService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import { SettingsService } from "../settings/settings.service";
+import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 
 /**
  * Platform API管理クラス
@@ -27,6 +28,7 @@ export class PlatformAPIManager {
   private currentWorkspace: Workspace | null = null;
   private currentDatabase: SqliteManager | null = null;
   private mainWindow: BrowserWindow | null = null;
+  private getServerManager?: () => MCPServerManager;
 
   public static getInstance(): PlatformAPIManager {
     if (!PlatformAPIManager.instance) {
@@ -47,6 +49,13 @@ export class PlatformAPIManager {
    */
   setMainWindow(window: BrowserWindow): void {
     this.mainWindow = window;
+  }
+
+  /**
+   * MCPServerManager プロバイダを設定
+   */
+  setServerManagerProvider(provider: () => MCPServerManager): void {
+    this.getServerManager = provider;
   }
 
   /**
@@ -123,11 +132,9 @@ export class PlatformAPIManager {
     McpAppsManagerService.resetInstance();
     McpLoggerService.resetInstance();
     SettingsService.resetInstance();
-    // MCPServerManagerとAggregatorServerの再初期化をトリガー
-    // グローバル変数からMCPServerManagerを取得して再初期化
-    const getMCPServerManager = (global as any).getMCPServerManager;
-    if (getMCPServerManager && typeof getMCPServerManager === "function") {
-      const serverManager = getMCPServerManager();
+    // MCPServerManagerの再初期化をトリガー
+    if (this.getServerManager) {
+      const serverManager = this.getServerManager();
       if (
         serverManager &&
         typeof serverManager.initializeAsync === "function"
@@ -154,9 +161,8 @@ export class PlatformAPIManager {
    */
   private async handleWorkspaceSwitch(workspace: Workspace): Promise<void> {
     // 先に現在のワークスペースのサーバーを停止
-    const getMCPServerManager = (global as any).getMCPServerManager;
-    if (getMCPServerManager && typeof getMCPServerManager === "function") {
-      const serverManager = getMCPServerManager();
+    if (this.getServerManager) {
+      const serverManager = this.getServerManager();
       // 現在のワークスペースでサーバーを停止（ログは現在のDBに記録される）
       serverManager.clearAllServers();
     }

@@ -95,11 +95,6 @@ let serverManager: MCPServerManager;
 let aggregatorServer: AggregatorServer;
 let mcpHttpServer: MCPHttpServer;
 
-// MCPServerManagerインスタンスを取得する関数をグローバルに公開
-(global as any).getMCPServerManager = () => serverManager;
-// AggregatorServerインスタンスを取得する関数をグローバルに公開
-(global as any).getAggregatorServer = () => aggregatorServer;
-
 type CreateWindowOptions = {
   showOnCreate?: boolean;
 };
@@ -241,6 +236,8 @@ async function initDatabase(): Promise<void> {
  */
 async function initMCPServices(): Promise<void> {
   // Platform APIマネージャーの初期化（ワークスペースDBを設定）
+  // MCPServerManager プロバイダを先に設定（serverManager は後で代入される）
+  getPlatformAPIManager().setServerManagerProvider(() => serverManager);
   await getPlatformAPIManager().initialize();
 
   // MCPServerManagerの初期化
@@ -345,7 +342,7 @@ async function initApplication(): Promise<void> {
   await initMCPServices();
 
   // IPC通信ハンドラの初期化
-  setupIpcHandlers();
+  setupIpcHandlers({ getServerManager: () => serverManager });
 
   const shouldShowMainWindow =
     (!launchedAtLogin || showWindowOnStartup) && !launchedWithHiddenFlag;
