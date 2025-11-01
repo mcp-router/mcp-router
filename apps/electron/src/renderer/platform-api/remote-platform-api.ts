@@ -3,7 +3,7 @@ import {
   createRemoteAPIClient,
   type RemoteAPIClient,
 } from "@mcp_router/remote-api-types";
-import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
+import { MCPServer, MCPServerConfig, MCPTool } from "@mcp_router/shared";
 import type {
   ServerStatus,
   CreateServerInput,
@@ -81,6 +81,11 @@ export class RemotePlatformAPI implements PlatformAPI {
       const servers = this.unwrapResponse<MCPServer[]>(response);
       return servers;
     },
+    listTools: async (id: string): Promise<MCPTool[]> => {
+      throw new Error(
+        "Tool management is not yet supported for remote workspaces.",
+      );
+    },
 
     get: async (id: string): Promise<MCPServer | null> => {
       const response = await this.client.servers.get.query({ id });
@@ -105,6 +110,14 @@ export class RemotePlatformAPI implements PlatformAPI {
         config: updates,
       });
       return this.unwrapResponse<MCPServer>(response);
+    },
+    updateToolPermissions: async (
+      _id: string,
+      _permissions: Record<string, boolean>,
+    ): Promise<MCPServer> => {
+      throw new Error(
+        "Tool management is not yet supported for remote workspaces.",
+      );
     },
 
     delete: async (id: string): Promise<void> => {

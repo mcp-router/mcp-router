@@ -33,6 +33,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   removeMcpServer: (id: string) => ipcRenderer.invoke("mcp:remove", id),
   updateMcpServerConfig: (id: string, config: any) =>
     ipcRenderer.invoke("mcp:update-config", id, config),
+  listMcpServerTools: (id: string) => ipcRenderer.invoke("mcp:list-tools", id),
+  updateToolPermissions: (
+    id: string,
+    permissions: Record<string, boolean>,
+  ) => ipcRenderer.invoke("mcp:update-tool-permissions", id, permissions),
 
   // Package Version Resolution
   resolvePackageVersionsInArgs: (

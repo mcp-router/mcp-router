@@ -53,6 +53,7 @@ class ElectronPlatformAPI implements PlatformAPI {
     // Initialize servers domain
     this.servers = {
       list: () => window.electronAPI.listMcpServers(),
+      listTools: (id) => window.electronAPI.listMcpServerTools(id),
       get: async (id) => {
         const servers = await window.electronAPI.listMcpServers();
         return servers.find((s: any) => s.id === id) || null;
@@ -60,6 +61,8 @@ class ElectronPlatformAPI implements PlatformAPI {
       create: (input) => window.electronAPI.addMcpServer(input),
       update: (id, updates) =>
         window.electronAPI.updateMcpServerConfig(id, updates),
+      updateToolPermissions: (id, permissions) =>
+        window.electronAPI.updateToolPermissions(id, permissions),
       delete: (id) => window.electronAPI.removeMcpServer(id),
       start: (id) => window.electronAPI.startMcpServer(id),
       stop: (id) => window.electronAPI.stopMcpServer(id),

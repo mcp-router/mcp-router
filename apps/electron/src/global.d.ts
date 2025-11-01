@@ -2,7 +2,7 @@
  * Augment the global Window interface so TypeScript knows about "window.electronAPI".
  */
 
-import { AppSettings } from "@mcp_router/shared";
+import { AppSettings, MCPTool, MCPServer } from "@mcp_router/shared";
 import {
   CreateServerInput,
   WorkflowDefinition,
@@ -39,6 +39,11 @@ declare global {
       serverSelectFile: (options: any) => Promise<any>;
       removeMcpServer: (id: string) => Promise<any>;
       updateMcpServerConfig: (id: string, config: any) => Promise<any>;
+      listMcpServerTools: (id: string) => Promise<MCPTool[]>;
+      updateToolPermissions: (
+        id: string,
+        permissions: Record<string, boolean>,
+      ) => Promise<MCPServer>;
 
       getRequestLogs: (options?: {
         clientId?: string;
