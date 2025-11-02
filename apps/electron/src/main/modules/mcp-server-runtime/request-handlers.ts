@@ -144,7 +144,6 @@ export class RequestHandlers extends RequestHandlerBase {
         `Tool "${originalToolName}" is disabled for this server`,
       );
     }
-
     const client = this.clients.get(serverId);
     if (!client) {
       throw new McpError(
@@ -168,17 +167,10 @@ export class RequestHandlers extends RequestHandlerBase {
       "CallTool",
       async () => {
         // Call the tool on the server
-        return await client.callTool(
-          {
-            name: originalToolName,
-            arguments: request.params.arguments || {},
-          },
-          undefined,
-          {
-            timeout: 60 * 60 * 1000, // 60分
-            resetTimeoutOnProgress: true,
-          },
-        );
+        return await client.callTool({
+          name: originalToolName,
+          arguments: request.params.arguments || {},
+        });
       },
       { serverId },
     );
@@ -198,8 +190,8 @@ export class RequestHandlers extends RequestHandlerBase {
 
     // Add tools from running servers
     for (const [serverId, client] of this.clients.entries()) {
-      const server = this.servers.get(serverId);
-      const serverName = server?.name || serverId;
+    const server = this.servers.get(serverId);
+    const serverName = server?.name || serverId;
       const isRunning = this.serverStatusMap.get(serverName);
 
       if (!isRunning || !client) {
@@ -217,7 +209,6 @@ export class RequestHandlers extends RequestHandlerBase {
           continue;
         }
       }
-
       try {
         // First, try to get the list of tools
         const tools = await client.listTools();
