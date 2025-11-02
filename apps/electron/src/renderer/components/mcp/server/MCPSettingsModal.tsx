@@ -86,6 +86,10 @@ export const MCPSettingsModal: React.FC<Props> = ({
   const handleCreateProject = async () => {
     const name = newProjectName.trim();
     if (!name) return;
+    if (/\s/.test(name)) {
+      toast.error("Spaces are not allowed in project name.");
+      return;
+    }
     setCreating(true);
     try {
       await onCreateProject({ name });
@@ -109,6 +113,10 @@ export const MCPSettingsModal: React.FC<Props> = ({
     const name = editingName.trim();
     if (!name) {
       toast.error("Project name cannot be empty.");
+      return;
+    }
+    if (/\s/.test(name)) {
+      toast.error("Spaces are not allowed in project name.");
       return;
     }
     setRenaming(true);
@@ -180,7 +188,9 @@ export const MCPSettingsModal: React.FC<Props> = ({
                 />
                 <Button
                   onClick={handleCreateProject}
-                  disabled={creating || !newProjectName.trim()}
+                  disabled={
+                    creating || !newProjectName.trim() || /\s/.test(newProjectName)
+                  }
                 >
                   {creating
                     ? t("projects.creating", { defaultValue: "Creating…" })
@@ -237,6 +247,7 @@ export const MCPSettingsModal: React.FC<Props> = ({
                                     disabled={
                                       renaming ||
                                       !editingName.trim() ||
+                                      /\s/.test(editingName) ||
                                       editingName.trim() === project.name
                                     }
                                   >
@@ -321,7 +332,8 @@ export const MCPSettingsModal: React.FC<Props> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete project?</AlertDialogTitle>
             <AlertDialogDescription>
-              Deleting this project will unassign any servers that use it.
+              Deleting this project will delete all servers associated with it.
+              This action cannot be undone. Are you sure you want to proceed?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

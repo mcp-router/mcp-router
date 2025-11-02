@@ -346,26 +346,15 @@
     "sectionTitle": "Projects",
     "all": "All",
     "unassigned": "Unassigned",
-    "collapseAll": "Collapse All",
-    "expandAll": "Expand All",
     "new": "New project name",
     "create": "Create",
-    "creating": "Creating...",
-    "addNew": "Add new project..."
+    "creating": "Creating..."
   },
   "serverSettings": {
     "title": "Server Settings",
     "project": "Project",
+    "manageProjects": "Manage Projects",
     "delete": "Delete Server"
-  },
-  "server": {
-    "status": {
-      "running": "Running",
-      "stopped": "Stopped",
-      "starting": "Starting",
-      "stopping": "Stopping",
-      "error": "Error"
-    }
   },
   "importFromJson": {
     "title": "Import from JSON",

@@ -59,15 +59,7 @@
     "error": "エラー",
     "success": "成功"
   },
-  "server": {
-    "status": {
-      "running": "実行中",
-      "stopped": "停止",
-      "starting": "起動中",
-      "stopping": "停止中",
-      "error": "エラー"
-    }
-  },
+  
   "logs": {
     "title": "ログ",
     "filter": "フィルター",
@@ -355,16 +347,14 @@
     "sectionTitle": "プロジェクト",
     "all": "すべて",
     "unassigned": "未割り当て",
-    "collapseAll": "すべて折りたたむ",
-    "expandAll": "すべて展開",
     "new": "新規プロジェクト名",
     "create": "作成",
-    "creating": "作成中...",
-    "addNew": "新しいプロジェクトを追加..."
+    "creating": "作成中..."
   },
   "serverSettings": {
     "title": "サーバー設定",
     "project": "プロジェクト",
+    "manageProjects": "プロジェクトを管理",
     "delete": "サーバーを削除"
   },
   "locale": "ja-JP",

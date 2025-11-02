@@ -59,6 +59,9 @@ export class ProjectService extends SingletonService<
       if (!name) {
         throw new Error("Project name cannot be empty");
       }
+      if (/\s/.test(name)) {
+        throw new Error("Project name cannot contain whitespace");
+      }
 
       const duplicate = repo.findByName(name);
       if (duplicate) {
@@ -87,6 +90,9 @@ export class ProjectService extends SingletonService<
         const trimmed = updates.name.trim();
         if (!trimmed) {
           throw new Error("Project name cannot be empty");
+        }
+        if (/\s/.test(trimmed)) {
+          throw new Error("Project name cannot contain whitespace");
         }
         const duplicate = repo.findByName(trimmed);
         if (duplicate && duplicate.id !== id) {

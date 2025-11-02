@@ -346,26 +346,15 @@
     "sectionTitle": "项目",
     "all": "全部",
     "unassigned": "未分配",
-    "collapseAll": "全部折叠",
-    "expandAll": "全部展开",
     "new": "新项目名称",
     "create": "创建",
-    "creating": "正在创建...",
-    "addNew": "添加新项目..."
+    "creating": "正在创建..."
   },
   "serverSettings": {
     "title": "服务器设置",
     "project": "项目",
+    "manageProjects": "管理项目",
     "delete": "删除服务器"
-  },
-  "server": {
-    "status": {
-      "running": "运行中",
-      "stopped": "已停止",
-      "starting": "启动中",
-      "stopping": "停止中",
-      "error": "错误"
-    }
   },
   "importFromJson": {
     "title": "从 JSON 导入",

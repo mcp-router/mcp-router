@@ -16,6 +16,9 @@ export function setupProjectHandlers(deps: {
     if (!input || !input.name.trim()) {
       throw new Error("Invalid project name");
     }
+    if (/\s/.test(input.name)) {
+      throw new Error("Invalid project name: whitespace not allowed");
+    }
     return service.create({ name: input.name });
   });
 

@@ -70,6 +70,50 @@ npx -y @mcp_router/cli@latest connect`
           </pre>
         </div>
       </div>
+
+      {/* Project Selection */}
+      <div className="mb-6">
+        <h4 className="text-md font-semibold mb-3">
+          3. Specify a project (optional)
+        </h4>
+        <p className="mb-3 text-muted-foreground">
+          Add the project name when you want to scope access to a specific
+          project:
+        </p>
+        <div className="overflow-x-auto w-full">
+          <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
+            {token
+              ? `# After exporting MCPR_TOKEN
+npx -y @mcp_router/cli@latest connect --project "project-name"`
+              : `npx -y @mcp_router/cli@latest connect --project "project-name"`}
+          </pre>
+        </div>
+        <p className="mb-3 text-muted-foreground">
+          Include the same arguments in the MCP server configuration if you
+          launch it from a config file:
+        </p>
+        <div className="overflow-x-auto w-full">
+          <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
+            {`{
+  "mcpServers": {
+    "mcp-router": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcp_router/cli@latest",
+        "connect",
+        "--project",
+        "project-name"
+      ],
+      "env": {
+        "MCPR_TOKEN": "${token}"
+      }
+    }
+  }
+}`}
+          </pre>
+        </div>
+      </div>
     </>
   );
 };
@@ -128,6 +172,48 @@ npx -y @mcp_router/cli@latest connect`}
           </pre>
         </div>
       </div>
+
+      {/* Project Selection */}
+      <div className="mb-6">
+        <h4 className="text-md font-semibold mb-3">
+          3. プロジェクトを指定する（任意）
+        </h4>
+        <p className="mb-3 text-muted-foreground">
+          特定のプロジェクトにアクセスを限定したい場合は、プロジェクト名を指定します：
+        </p>
+        <div className="overflow-x-auto w-full">
+          <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
+            {token
+              ? `# MCPR_TOKENを設定済みの場合
+npx -y @mcp_router/cli@latest connect --project "project-name"`
+              : `npx -y @mcp_router/cli@latest connect --project "project-name"`}
+          </pre>
+        </div>
+        <p className="mb-3 text-muted-foreground">
+          MCPサーバ設定ファイルから起動する際も同様に引数を追加できます：
+        </p>
+        <div className="overflow-x-auto w-full">
+          <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
+            {`{
+  "mcpServers": {
+    "mcp-router": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcp_router/cli@latest",
+        "connect",
+        "--project",
+        "project-name"
+      ],
+      "env": {
+        "MCPR_TOKEN": "${token}"
+      }
+    }
+  }
+}`}
+          </pre>
+        </div>
+      </div>
     </>
   );
 };
@@ -176,6 +262,48 @@ npx -y @mcp_router/cli@latest connect`}
         "-y",
         "@mcp_router/cli@latest",
         "connect"
+      ],
+      "env": {
+        "MCPR_TOKEN": "${token}"
+      }
+    }
+  }
+}`}
+          </pre>
+        </div>
+      </div>
+
+      {/* Project Selection */}
+      <div className="mb-6">
+        <h4 className="text-md font-semibold mb-3">
+          3. 指定项目（可选）
+        </h4>
+        <p className="mb-3 text-muted-foreground">
+          如果需要限制到特定项目，请在连接时加入项目名称：
+        </p>
+        <div className="overflow-x-auto w-full">
+          <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
+            {token
+              ? `# 设置 MCPR_TOKEN 之后
+npx -y @mcp_router/cli@latest connect --project "project-name"`
+              : `npx -y @mcp_router/cli@latest connect --project "project-name"`}
+          </pre>
+        </div>
+        <p className="mb-3 text-muted-foreground">
+          通过配置文件启动时也可以添加相同的参数：
+        </p>
+        <div className="overflow-x-auto w-full">
+          <pre className="bg-muted p-4 rounded-lg text-xs whitespace-pre min-w-min w-max">
+            {`{
+  "mcpServers": {
+    "mcp-router": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcp_router/cli@latest",
+        "connect",
+        "--project",
+        "project-name"
       ],
       "env": {
         "MCPR_TOKEN": "${token}"

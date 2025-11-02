@@ -4,6 +4,13 @@ import { ScrollArea } from "@mcp_router/ui";
 import { Badge } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@mcp_router/ui";
+import {
   IconSearch,
   IconServer,
   IconPlus,
@@ -103,6 +110,7 @@ const Home: React.FC = () => {
     collapsedByProjectId,
     setCollapsed,
     selectedProjectId,
+    setSelectedProjectId,
   } = useProjectStore();
 
   // Filter servers based on search query, project selection and sort them
@@ -251,7 +259,43 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsHomeSettingsOpen(true)}
+          className="gap-1"
+          title={t("common.settings")}
+        >
+          <SettingsIcon className="h-4 w-4" />
+        </Button>
+        <div className="w-36">
+          <Select
+            value={selectedProjectId === null ? "__all__" : selectedProjectId}
+            onValueChange={(value) =>
+              setSelectedProjectId(value === "__all__" ? null : value)
+            }
+          >
+            <SelectTrigger className="h-8">
+              <SelectValue
+                placeholder={t("projects.all", { defaultValue: "All" })}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">
+                {t("projects.all", { defaultValue: "All" })}
+              </SelectItem>
+              <SelectItem value={UNASSIGNED_PROJECT_ID}>
+                {t("projects.unassigned", { defaultValue: "Unassigned" })}
+              </SelectItem>
+              {projects.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="relative flex-1">
           <input
             type="text"
@@ -291,15 +335,6 @@ const Home: React.FC = () => {
           title={"Refresh Servers"}
         >
           <IconRefresh />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsHomeSettingsOpen(true)}
-          className="gap-1"
-          title={t("common.settings")}
-        >
-          <SettingsIcon className="h-4 w-4" />
         </Button>
         <Button asChild variant="outline" size="sm" className="gap-1">
           <Link to="/servers/add">
@@ -764,7 +799,7 @@ const Home: React.FC = () => {
                 selectedProjectId === UNASSIGNED_PROJECT_ID) &&
                 (() => {
                   const collapsed =
-                    !!collapsedByProjectId[UNASSIGNED_PROJECT_ID];
+                    collapsedByProjectId[UNASSIGNED_PROJECT_ID];
                   const unassignedServers = filteredServers.filter(
                     (s) => !s.projectId,
                   );
@@ -1050,11 +1085,7 @@ const Home: React.FC = () => {
             await updateServerConfig(settingsServer.id, { projectId });
             await refreshServers();
           }}
-          onCreateProject={async (input) => {
-            const created = await createProject(input);
-            await listProjects();
-            return created;
-          }}
+          onOpenManageProjects={() => setIsHomeSettingsOpen(true)}
           onDelete={async () => {
             try {
               await deleteServer(settingsServer.id);

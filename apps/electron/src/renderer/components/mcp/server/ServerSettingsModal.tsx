@@ -13,7 +13,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Input,
+  Separator,
 } from "@mcp_router/ui";
 
 type Props = {
@@ -22,8 +22,8 @@ type Props = {
   server: MCPServer;
   projects: Project[];
   onAssignProject: (projectId: string | null) => Promise<void> | void;
-  onCreateProject: (input: { name: string }) => Promise<Project>;
   onDelete: () => void;
+  onOpenManageProjects?: () => void;
 };
 
 export const ServerSettingsModal: React.FC<Props> = ({
@@ -32,21 +32,16 @@ export const ServerSettingsModal: React.FC<Props> = ({
   server,
   projects,
   onAssignProject,
-  onCreateProject,
   onDelete,
+  onOpenManageProjects,
 }) => {
   const { t } = useTranslation();
   const [assigning, setAssigning] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [newProjectName, setNewProjectName] = useState("");
-  const [isCreateMode, setIsCreateMode] = useState(false);
+  // Project creation is now unified in Settings modal
 
   React.useEffect(() => {
     if (!open) {
-      setIsCreateMode(false);
-      setNewProjectName("");
       setAssigning(false);
-      setCreating(false);
     }
   }, [open]);
 
@@ -56,29 +51,11 @@ export const ServerSettingsModal: React.FC<Props> = ({
   }, [projects]);
 
   const handleAssign = async (value: string) => {
-    if (value === "__create__") {
-      setIsCreateMode(true);
-      return;
-    }
     setAssigning(true);
     try {
       await onAssignProject(value === "__none__" ? null : value);
     } finally {
       setAssigning(false);
-    }
-  };
-
-  const handleCreate = async () => {
-    const name = newProjectName.trim();
-    if (!name) return;
-    setCreating(true);
-    try {
-      const created = await onCreateProject({ name });
-      await onAssignProject(created.id);
-      setNewProjectName("");
-      setIsCreateMode(false);
-    } finally {
-      setCreating(false);
     }
   };
 
@@ -92,12 +69,12 @@ export const ServerSettingsModal: React.FC<Props> = ({
           <DialogDescription>{server.name}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
+        <div className="space-y-6 py-2">
+          <section className="space-y-2">
             <div className="text-sm font-medium">
               {t("serverSettings.project", { defaultValue: "Project" })}
             </div>
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-wrap gap-2 items-center">
               <Select
                 value={currentProjectId ?? "__none__"}
                 onValueChange={handleAssign}
@@ -114,9 +91,6 @@ export const ServerSettingsModal: React.FC<Props> = ({
                   <SelectItem value="__none__">
                     {t("projects.unassigned", { defaultValue: "Unassigned" })}
                   </SelectItem>
-                  <SelectItem value="__create__">
-                    {t("projects.addNew", { defaultValue: "Add new project…" })}
-                  </SelectItem>
                   {projectOptions.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
@@ -124,58 +98,21 @@ export const ServerSettingsModal: React.FC<Props> = ({
                   ))}
                 </SelectContent>
               </Select>
+              <Button variant="outline" onClick={onOpenManageProjects}>
+                {t("serverSettings.manageProjects", {
+                  defaultValue: "Manage Projects",
+                })}
+              </Button>
             </div>
-            {isCreateMode && (
-              <div className="flex flex-col gap-2">
-                <Input
-                  className="w-64"
-                  placeholder={t("projects.new", {
-                    defaultValue: "New project name",
-                  })}
-                  value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (
-                      e.key === "Enter" &&
-                      newProjectName.trim() &&
-                      !creating
-                    ) {
-                      e.preventDefault();
-                      handleCreate();
-                    }
-                    if (e.key === "Escape") {
-                      setIsCreateMode(false);
-                      setNewProjectName("");
-                    }
-                  }}
-                  autoFocus
-                />
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={handleCreate}
-                    disabled={creating || !newProjectName.trim()}
-                  >
-                    {creating
-                      ? t("projects.creating", { defaultValue: "Creating…" })
-                      : t("projects.create", { defaultValue: "Create" })}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setIsCreateMode(false);
-                      setNewProjectName("");
-                    }}
-                  >
-                    {t("common.cancel")}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
+          </section>
 
-          <Button variant="destructive" onClick={onDelete} className="mt-4">
-            {t("serverSettings.delete", { defaultValue: "Delete Server" })}
-          </Button>
+          <Separator />
+
+          <section>
+            <Button variant="destructive" onClick={onDelete}>
+              {t("serverSettings.delete", { defaultValue: "Delete Server" })}
+            </Button>
+          </section>
         </div>
       </DialogContent>
     </Dialog>
