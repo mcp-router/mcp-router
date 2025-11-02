@@ -22,7 +22,10 @@ type Props = {
   server: MCPServer;
   projects: Project[];
   onAssignProject: (projectId: string | null) => Promise<void> | void;
-  onCreateProject: (input: { name: string; color?: string }) => Promise<Project>;
+  onCreateProject: (input: {
+    name: string;
+    color?: string;
+  }) => Promise<Project>;
   onDelete: () => void;
 };
 
@@ -89,9 +92,7 @@ export const ServerSettingsModal: React.FC<Props> = ({
           <DialogTitle>
             {t("serverSettings.title", { defaultValue: "Server Settings" })}
           </DialogTitle>
-          <DialogDescription>
-            {server.name}
-          </DialogDescription>
+          <DialogDescription>{server.name}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -106,20 +107,24 @@ export const ServerSettingsModal: React.FC<Props> = ({
                 disabled={assigning}
               >
                 <SelectTrigger className="w-64">
-                  <SelectValue placeholder={t("projects.unassigned", { defaultValue: "Unassigned" })} />
+                  <SelectValue
+                    placeholder={t("projects.unassigned", {
+                      defaultValue: "Unassigned",
+                    })}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">
                     {t("projects.unassigned", { defaultValue: "Unassigned" })}
+                  </SelectItem>
+                  <SelectItem value="__create__">
+                    {t("projects.addNew", { defaultValue: "Add new project…" })}
                   </SelectItem>
                   {projectOptions.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
                     </SelectItem>
                   ))}
-                  <SelectItem value="__create__">
-                    {t("projects.addNew", { defaultValue: "Add new project…" })}
-                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -127,11 +132,17 @@ export const ServerSettingsModal: React.FC<Props> = ({
               <div className="flex flex-col gap-2">
                 <Input
                   className="w-64"
-                  placeholder={t("projects.new", { defaultValue: "New project name" })}
+                  placeholder={t("projects.new", {
+                    defaultValue: "New project name",
+                  })}
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && newProjectName.trim() && !creating) {
+                    if (
+                      e.key === "Enter" &&
+                      newProjectName.trim() &&
+                      !creating
+                    ) {
                       e.preventDefault();
                       handleCreate();
                     }
@@ -143,7 +154,10 @@ export const ServerSettingsModal: React.FC<Props> = ({
                   autoFocus
                 />
                 <div className="flex items-center gap-2">
-                  <Button onClick={handleCreate} disabled={creating || !newProjectName.trim()}>
+                  <Button
+                    onClick={handleCreate}
+                    disabled={creating || !newProjectName.trim()}
+                  >
                     {creating
                       ? t("projects.creating", { defaultValue: "Creating…" })
                       : t("projects.create", { defaultValue: "Create" })}
@@ -162,11 +176,7 @@ export const ServerSettingsModal: React.FC<Props> = ({
             )}
           </div>
 
-          <Button
-            variant="destructive"
-            onClick={onDelete}
-            className="mt-4"
-          >
+          <Button variant="destructive" onClick={onDelete} className="mt-4">
             {t("serverSettings.delete", { defaultValue: "Delete Server" })}
           </Button>
         </div>

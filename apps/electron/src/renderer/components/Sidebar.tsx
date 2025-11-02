@@ -6,8 +6,6 @@ import {
   IconActivity,
   IconDeviceDesktop,
   IconDownload,
-  IconFileText,
-  IconWebhook,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import {

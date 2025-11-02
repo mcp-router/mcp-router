@@ -22,7 +22,6 @@ interface ProjectStoreState {
 
   // UI state actions
   setCollapsed: (projectId: string, collapsed: boolean) => void;
-  setCollapsedMany: (map: CollapsedState) => void;
   setSelectedProjectId: (id: string | null) => void;
 }
 
@@ -124,11 +123,6 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
       saveCollapsed(next);
       return { collapsedByProjectId: next };
     });
-  },
-
-  setCollapsedMany: (map) => {
-    saveCollapsed(map);
-    set({ collapsedByProjectId: map });
   },
 
   setSelectedProjectId: (id) => set({ selectedProjectId: id }),
