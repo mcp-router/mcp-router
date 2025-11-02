@@ -83,19 +83,16 @@ export const ProjectSettingsModal: React.FC<Props> = ({
 
   const handleCreateProject = async () => {
     const name = newProjectName.trim();
-    if (!name) return;
-    if (/\s/.test(name)) {
-      toast.error("Spaces are not allowed in project name.");
-      return;
-    }
+    if (!name) return; // keep light UX guard only for empty
     setCreating(true);
     try {
       await onCreateProject({ name });
       toast.success("Project created.");
       setNewProjectName("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create project:", error);
-      toast.error("Failed to create project.");
+      const message = error?.message ?? "Failed to create project.";
+      toast.error(message);
     } finally {
       setCreating(false);
     }
@@ -113,18 +110,15 @@ export const ProjectSettingsModal: React.FC<Props> = ({
       toast.error("Project name cannot be empty.");
       return;
     }
-    if (/\s/.test(name)) {
-      toast.error("Spaces are not allowed in project name.");
-      return;
-    }
     setRenaming(true);
     try {
       await onRenameProject(editingProjectId, { name });
       toast.success("Project renamed.");
       resetEditingState();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to rename project:", error);
-      toast.error("Failed to rename project.");
+      const message = error?.message ?? "Failed to rename project.";
+      toast.error(message);
     } finally {
       setRenaming(false);
     }
@@ -184,11 +178,7 @@ export const ProjectSettingsModal: React.FC<Props> = ({
                 />
                 <Button
                   onClick={handleCreateProject}
-                  disabled={
-                    creating ||
-                    !newProjectName.trim() ||
-                    /\s/.test(newProjectName)
-                  }
+                  disabled={creating || newProjectName.trim().length === 0}
                 >
                   {creating
                     ? t("projects.creating", { defaultValue: "Creating…" })
@@ -244,8 +234,7 @@ export const ProjectSettingsModal: React.FC<Props> = ({
                                     onClick={handleRenameProject}
                                     disabled={
                                       renaming ||
-                                      !editingName.trim() ||
-                                      /\s/.test(editingName) ||
+                                      editingName.trim().length === 0 ||
                                       editingName.trim() === project.name
                                     }
                                   >

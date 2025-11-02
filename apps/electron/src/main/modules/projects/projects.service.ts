@@ -15,6 +15,15 @@ export class ProjectService extends SingletonService<
     super();
   }
 
+  // Centralized validation: trim, non-empty, no whitespace
+  private validateAndNormalizeName(input: string): string {
+    const name = (input ?? "").trim();
+    if (!name) throw new Error("Project name cannot be empty");
+    if (/\s/.test(name))
+      throw new Error("Project name cannot contain whitespace");
+    return name;
+  }
+
   protected getEntityName(): string {
     return "Project";
   }
@@ -55,13 +64,7 @@ export class ProjectService extends SingletonService<
   create(input: { name: string }): Project {
     try {
       const repo = ProjectRepository.getInstance();
-      const name = input.name.trim();
-      if (!name) {
-        throw new Error("Project name cannot be empty");
-      }
-      if (/\s/.test(name)) {
-        throw new Error("Project name cannot contain whitespace");
-      }
+      const name = this.validateAndNormalizeName(input.name);
 
       const duplicate = repo.findByName(name);
       if (duplicate) {
@@ -87,18 +90,12 @@ export class ProjectService extends SingletonService<
 
       let nextName = existing.name;
       if (updates.name !== undefined) {
-        const trimmed = updates.name.trim();
-        if (!trimmed) {
-          throw new Error("Project name cannot be empty");
-        }
-        if (/\s/.test(trimmed)) {
-          throw new Error("Project name cannot contain whitespace");
-        }
-        const duplicate = repo.findByName(trimmed);
+        const name = this.validateAndNormalizeName(updates.name);
+        const duplicate = repo.findByName(name);
         if (duplicate && duplicate.id !== id) {
-          throw new Error(`Project "${trimmed}" already exists`);
+          throw new Error(`Project "${name}" already exists`);
         }
-        nextName = trimmed;
+        nextName = name;
       }
 
       const merged: Project = {
