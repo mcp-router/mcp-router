@@ -338,6 +338,7 @@ export class McpAppsManagerService extends SingletonService<
       `args    = ["-y", "@mcp_router/cli@latest", "connect"]\n`;
     const blockEnv =
       `\n[mcp_servers.mcp_router.env]\n` + `MCPR_TOKEN = "${tokenId}"\n`;
+    const newBlock = `${blockMain}${blockEnv}`;
 
     let content = "";
     try {
@@ -347,13 +348,31 @@ export class McpAppsManagerService extends SingletonService<
     }
 
     if (content) {
-      content = content.trimEnd();
-      if (content.length > 0 && !content.endsWith("\n")) {
-        content += "\n";
+      const blockPattern =
+        /\[mcp_servers\.mcp_router\][\s\S]*?(?:\n\[mcp_servers\.mcp_router\.env\][\s\S]*?)?(?=\n\[[^\n]+\]|$)/g;
+      let replaced = false;
+      content = content.replace(blockPattern, () => {
+        if (replaced) {
+          return "";
+        }
+        replaced = true;
+        return newBlock;
+      });
+
+      if (!replaced) {
+        content = content.trimEnd();
+        if (content.length > 0 && !content.endsWith("\n")) {
+          content += "\n";
+        }
+        content += `\n${newBlock}`;
+      } else {
+        content = content.replace(/\n{3,}/g, "\n\n").trimEnd();
+        if (!content.endsWith("\n")) {
+          content += "\n";
+        }
       }
-      content += `\n${blockMain}${blockEnv}`;
     } else {
-      content = `${blockMain}${blockEnv}`;
+      content = newBlock;
     }
 
     await fsPromises.writeFile(filePath, content, "utf8");
