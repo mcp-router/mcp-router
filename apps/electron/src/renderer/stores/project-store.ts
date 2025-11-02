@@ -28,20 +28,12 @@ const SELECTED_PROJECT_STORAGE_KEY = "mcpr:projects:selected:v1";
 export const UNASSIGNED_PROJECT_ID = SHARED_UNASSIGNED_PROJECT_ID;
 
 function loadCollapsed(): CollapsedState {
-  try {
-    const raw = localStorage.getItem(COLLAPSE_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as CollapsedState) : {};
-  } catch {
-    return {};
-  }
+  const raw = window.localStorage.getItem(COLLAPSE_STORAGE_KEY);
+  return raw ? (JSON.parse(raw) as CollapsedState) : {};
 }
 
 function saveCollapsed(state: CollapsedState) {
-  try {
-    localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(state));
-  } catch {
-    // ignore
-  }
+  window.localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(state));
 }
 
 function sortProjects(projects: Project[]): Project[] {
@@ -75,12 +67,11 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
         !projects.some((p) => p.id === selectedProjectId)
       ) {
         set({ selectedProjectId: null });
-        try {
-          localStorage.removeItem(SELECTED_PROJECT_STORAGE_KEY);
-        } catch {}
+        window.localStorage.removeItem(SELECTED_PROJECT_STORAGE_KEY);
       }
     } catch (error) {
       set({
+        projects: [],
         error:
           error instanceof Error ? error.message : "Failed to load projects",
         isLoading: false,
@@ -130,21 +121,22 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
   setSelectedProjectId: (id) =>
     set(() => {
       if (id === null) {
-        localStorage.removeItem(SELECTED_PROJECT_STORAGE_KEY);
+        window.localStorage.removeItem(SELECTED_PROJECT_STORAGE_KEY);
       } else {
-        localStorage.setItem(SELECTED_PROJECT_STORAGE_KEY, JSON.stringify(id));
+        window.localStorage.setItem(
+          SELECTED_PROJECT_STORAGE_KEY,
+          JSON.stringify(id),
+        );
       }
       return { selectedProjectId: id };
     }),
 }));
 
 // Initialize selected project from storage on first import
-try {
-  const raw = localStorage.getItem(SELECTED_PROJECT_STORAGE_KEY);
-  if (raw) {
-    const id = JSON.parse(raw) as string | null;
-    if (id === null || typeof id === "string") {
-      useProjectStore.setState({ selectedProjectId: id });
-    }
+const raw = window.localStorage.getItem(SELECTED_PROJECT_STORAGE_KEY);
+if (raw) {
+  const parsed: unknown = JSON.parse(raw);
+  if (parsed === null || typeof parsed === "string") {
+    useProjectStore.setState({ selectedProjectId: parsed as string | null });
   }
-} catch {}
+}
