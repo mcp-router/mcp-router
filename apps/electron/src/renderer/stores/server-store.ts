@@ -237,8 +237,10 @@ export const createServerStore = (
         setError(null);
 
         const platformAPI = getPlatformAPI();
-        const updatedServer =
-          await platformAPI.servers.updateToolPermissions(id, permissions);
+        const updatedServer = await platformAPI.servers.updateToolPermissions(
+          id,
+          permissions,
+        );
         updateServer(id, updatedServer);
 
         await refreshServers();

@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  Routes,
-  Route,
-  Navigate,
-  useNavigate,
-} from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import PageLayout from "./layout/PageLayout";
 import { Sonner } from "@mcp_router/ui";
 import DiscoverWrapper from "@/renderer/components/mcp/server/DiscoverWrapper";

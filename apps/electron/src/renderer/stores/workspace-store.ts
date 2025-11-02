@@ -187,7 +187,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         } catch (error) {
           console.error("Failed to refresh servers:", error);
         }
-
       }
     } catch (error) {
       set({

@@ -24,8 +24,7 @@ const Settings: React.FC = () => {
     useState<boolean>(true);
   const [analyticsEnabled, setAnalyticsEnabled] = useState<boolean>(true);
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState<boolean>(true);
-  const [showWindowOnStartup, setShowWindowOnStartup] =
-    useState<boolean>(true);
+  const [showWindowOnStartup, setShowWindowOnStartup] = useState<boolean>(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Zustand stores

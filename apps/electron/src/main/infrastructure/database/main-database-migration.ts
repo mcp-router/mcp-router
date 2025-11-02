@@ -118,23 +118,12 @@ export class MainDatabaseMigration {
       execute: (db) => this.migrateAddHooksTable(db),
     });
 
-    // Projects feature
+    // Projects feature (single consolidated migration)
     this.migrations.push({
-      id: "20251101_add_projects_table",
-      description: "Add projects table for grouping servers",
-      execute: (db) => this.migrateAddProjectsTable(db),
-    });
-
-    this.migrations.push({
-      id: "20251101_add_servers_project_id_column",
-      description: "Add project_id column to servers table",
-      execute: (db) => this.migrateAddServerProjectIdColumn(db),
-    });
-
-    this.migrations.push({
-      id: "20251101_add_idx_servers_project_id",
-      description: "Add index on servers(project_id)",
-      execute: (db) => this.migrateAddIndexServersProjectId(db),
+      id: "20251101_projects_bootstrap",
+      description:
+        "Initialize projects schema (projects table, servers.project_id, index)",
+      execute: (db) => this.migrateProjectsBootstrap(db),
     });
   }
 
@@ -159,7 +148,7 @@ export class MainDatabaseMigration {
         }
 
         console.log(
-          `マイグレーション ${migration.id} を実行中: ${migration.description}`,
+          `Running migration ${migration.id}: ${migration.description}`,
         );
 
         try {
@@ -193,9 +182,7 @@ export class MainDatabaseMigration {
       );
 
       if (!tableExists) {
-        console.log(
-          "serversテーブルが存在しないため、このマイグレーションをスキップします",
-        );
+        console.log("servers table does not exist, skipping this migration");
         return;
       }
 
@@ -206,16 +193,16 @@ export class MainDatabaseMigration {
 
       // server_type列が存在しない場合は追加
       if (!columnNames.includes("server_type")) {
-        console.log("serversテーブルにserver_type列を追加します");
+        console.log("Adding server_type column to servers");
         db.execute(
           "ALTER TABLE servers ADD COLUMN server_type TEXT NOT NULL DEFAULT 'local'",
         );
-        console.log("server_type列の追加が完了しました");
+        console.log("server_type column added");
       } else {
-        console.log("server_type列は既に存在するため、追加をスキップします");
+        console.log("server_type column already exists, skipping");
       }
     } catch (error) {
-      console.error("server_type列の追加中にエラーが発生しました:", error);
+      console.error("Error while adding server_type column:", error);
       throw error;
     }
   }
@@ -232,9 +219,7 @@ export class MainDatabaseMigration {
       );
 
       if (!tableExists) {
-        console.log(
-          "serversテーブルが存在しないため、このマイグレーションをスキップします",
-        );
+        console.log("servers table does not exist, skipping this migration");
         return;
       }
 
@@ -245,14 +230,14 @@ export class MainDatabaseMigration {
 
       // remote_url列が存在しない場合は追加
       if (!columnNames.includes("remote_url")) {
-        console.log("serversテーブルにremote_url列を追加します");
+        console.log("Adding remote_url column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN remote_url TEXT");
-        console.log("remote_url列の追加が完了しました");
+        console.log("remote_url column added");
       } else {
-        console.log("remote_url列は既に存在するため、追加をスキップします");
+        console.log("remote_url column already exists, skipping");
       }
     } catch (error) {
-      console.error("remote_url列の追加中にエラーが発生しました:", error);
+      console.error("Error while adding remote_url column:", error);
       throw error;
     }
   }
@@ -269,9 +254,7 @@ export class MainDatabaseMigration {
       );
 
       if (!tableExists) {
-        console.log(
-          "serversテーブルが存在しないため、このマイグレーションをスキップします",
-        );
+        console.log("servers table does not exist, skipping this migration");
         return;
       }
 
@@ -282,14 +265,14 @@ export class MainDatabaseMigration {
 
       // bearer_token列が存在しない場合は追加
       if (!columnNames.includes("bearer_token")) {
-        console.log("serversテーブルにbearer_token列を追加します");
+        console.log("Adding bearer_token column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN bearer_token TEXT");
-        console.log("bearer_token列の追加が完了しました");
+        console.log("bearer_token column added");
       } else {
-        console.log("bearer_token列は既に存在するため、追加をスキップします");
+        console.log("bearer_token column already exists, skipping");
       }
     } catch (error) {
-      console.error("bearer_token列の追加中にエラーが発生しました:", error);
+      console.error("Error while adding bearer_token column:", error);
       throw error;
     }
   }
@@ -306,9 +289,7 @@ export class MainDatabaseMigration {
       );
 
       if (!tableExists) {
-        console.log(
-          "serversテーブルが存在しないため、このマイグレーションをスキップします",
-        );
+        console.log("servers table does not exist, skipping this migration");
         return;
       }
 
@@ -319,14 +300,14 @@ export class MainDatabaseMigration {
 
       // input_params列が存在しない場合は追加
       if (!columnNames.includes("input_params")) {
-        console.log("serversテーブルにinput_params列を追加します");
+        console.log("Adding input_params column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN input_params TEXT");
-        console.log("input_params列の追加が完了しました");
+        console.log("input_params column added");
       } else {
-        console.log("input_params列は既に存在するため、追加をスキップします");
+        console.log("input_params column already exists, skipping");
       }
     } catch (error) {
-      console.error("input_params列の追加中にエラーが発生しました:", error);
+      console.error("Error while adding input_params column:", error);
       throw error;
     }
   }
@@ -343,9 +324,7 @@ export class MainDatabaseMigration {
       );
 
       if (!tableExists) {
-        console.log(
-          "serversテーブルが存在しないため、このマイグレーションをスキップします",
-        );
+        console.log("servers table does not exist, skipping this migration");
         return;
       }
 
@@ -356,14 +335,14 @@ export class MainDatabaseMigration {
 
       // description列が存在しない場合は追加
       if (!columnNames.includes("description")) {
-        console.log("serversテーブルにdescription列を追加します");
+        console.log("Adding description column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN description TEXT");
-        console.log("description列の追加が完了しました");
+        console.log("description column added");
       } else {
-        console.log("description列は既に存在するため、追加をスキップします");
+        console.log("description column already exists, skipping");
       }
     } catch (error) {
-      console.error("description列の追加中にエラーが発生しました:", error);
+      console.error("Error while adding description column:", error);
       throw error;
     }
   }
@@ -380,9 +359,7 @@ export class MainDatabaseMigration {
       );
 
       if (!tableExists) {
-        console.log(
-          "serversテーブルが存在しないため、このマイグレーションをスキップします",
-        );
+        console.log("servers table does not exist, skipping this migration");
         return;
       }
 
@@ -393,14 +370,14 @@ export class MainDatabaseMigration {
 
       // version列が存在しない場合は追加
       if (!columnNames.includes("version")) {
-        console.log("serversテーブルにversion列を追加します");
+        console.log("Adding version column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN version TEXT");
-        console.log("version列の追加が完了しました");
+        console.log("version column added");
       } else {
-        console.log("version列は既に存在するため、追加をスキップします");
+        console.log("version column already exists, skipping");
       }
     } catch (error) {
-      console.error("version列の追加中にエラーが発生しました:", error);
+      console.error("Error while adding version column:", error);
       throw error;
     }
   }
@@ -417,9 +394,7 @@ export class MainDatabaseMigration {
       );
 
       if (!tableExists) {
-        console.log(
-          "serversテーブルが存在しないため、このマイグレーションをスキップします",
-        );
+        console.log("servers table does not exist, skipping this migration");
         return;
       }
 
@@ -430,14 +405,14 @@ export class MainDatabaseMigration {
 
       // latest_version列が存在しない場合は追加
       if (!columnNames.includes("latest_version")) {
-        console.log("serversテーブルにlatest_version列を追加します");
+        console.log("Adding latest_version column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN latest_version TEXT");
-        console.log("latest_version列の追加が完了しました");
+        console.log("latest_version column added");
       } else {
-        console.log("latest_version列は既に存在するため、追加をスキップします");
+        console.log("latest_version column already exists, skipping");
       }
     } catch (error) {
-      console.error("latest_version列の追加中にエラーが発生しました:", error);
+      console.error("Error while adding latest_version column:", error);
       throw error;
     }
   }
@@ -454,9 +429,7 @@ export class MainDatabaseMigration {
       );
 
       if (!tableExists) {
-        console.log(
-          "serversテーブルが存在しないため、このマイグレーションをスキップします",
-        );
+        console.log("servers table does not exist, skipping this migration");
         return;
       }
 
@@ -467,19 +440,14 @@ export class MainDatabaseMigration {
 
       // verification_status列が存在しない場合は追加
       if (!columnNames.includes("verification_status")) {
-        console.log("serversテーブルにverification_status列を追加します");
+        console.log("Adding verification_status column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN verification_status TEXT");
-        console.log("verification_status列の追加が完了しました");
+        console.log("verification_status column added");
       } else {
-        console.log(
-          "verification_status列は既に存在するため、追加をスキップします",
-        );
+        console.log("verification_status column already exists, skipping");
       }
     } catch (error) {
-      console.error(
-        "verification_status列の追加中にエラーが発生しました:",
-        error,
-      );
+      console.error("Error while adding verification_status column:", error);
       throw error;
     }
   }
@@ -496,9 +464,7 @@ export class MainDatabaseMigration {
       );
 
       if (!tableExists) {
-        console.log(
-          "serversテーブルが存在しないため、このマイグレーションをスキップします",
-        );
+        console.log("servers table does not exist, skipping this migration");
         return;
       }
 
@@ -509,16 +475,14 @@ export class MainDatabaseMigration {
 
       // required_params列が存在しない場合は追加
       if (!columnNames.includes("required_params")) {
-        console.log("serversテーブルにrequired_params列を追加します");
+        console.log("Adding required_params column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN required_params TEXT");
-        console.log("required_params列の追加が完了しました");
+        console.log("required_params column added");
       } else {
-        console.log(
-          "required_params列は既に存在するため、追加をスキップします",
-        );
+        console.log("required_params column already exists, skipping");
       }
     } catch (error) {
-      console.error("required_params列の追加中にエラーが発生しました:", error);
+      console.error("Error while adding required_params column:", error);
       throw error;
     }
   }
@@ -534,9 +498,7 @@ export class MainDatabaseMigration {
       );
 
       if (!tableExists) {
-        console.log(
-          "serversテーブルが存在しないため、このマイグレーションをスキップします",
-        );
+        console.log("servers table does not exist, skipping this migration");
         return;
       }
 
@@ -544,16 +506,14 @@ export class MainDatabaseMigration {
       const columnNames = tableInfo.map((col: any) => col.name);
 
       if (!columnNames.includes("tool_permissions")) {
-        console.log("serversテーブルにtool_permissions列を追加します");
+        console.log("Adding tool_permissions column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN tool_permissions TEXT");
-        console.log("tool_permissions列の追加が完了しました");
+        console.log("tool_permissions column added");
       } else {
-        console.log(
-          "tool_permissions列は既に存在するため、追加をスキップします",
-        );
+        console.log("tool_permissions column already exists, skipping");
       }
     } catch (error) {
-      console.error("tool_permissions列の追加中にエラーが発生しました:", error);
+      console.error("Error while adding tool_permissions column:", error);
       throw error;
     }
   }
@@ -564,9 +524,12 @@ export class MainDatabaseMigration {
   private migrateEnsureTokensTableInMainDb(db: SqliteManager): void {
     try {
       // tokensテーブルの作成はTokenRepositoryで行うため、ここでは何もしない
-      console.log("tokensテーブルの作成はTokenRepositoryに委譲されます");
+      console.log("Creation of tokens table is delegated to TokenRepository");
     } catch (error) {
-      console.error("tokensテーブルの作成中にエラーが発生しました:", error);
+      console.error(
+        "Error while ensuring tokens table in main database:",
+        error,
+      );
       throw error;
     }
   }
@@ -579,7 +542,7 @@ export class MainDatabaseMigration {
     try {
       if (!safeStorage.isEncryptionAvailable()) {
         console.warn(
-          "セキュア暗号化は現在のシステムで利用できません。データ移行をスキップします。",
+          "Secure encryption is not available on this system. Skipping data migration.",
         );
         return;
       }
@@ -591,9 +554,7 @@ export class MainDatabaseMigration {
       const allServers = serverRepository.getAllServers();
 
       if (allServers.length === 0) {
-        console.log(
-          "サーバーが存在しないため、暗号化マイグレーションをスキップします",
-        );
+        console.log("No servers found; skipping encryption migration");
         return;
       }
 
@@ -608,16 +569,16 @@ export class MainDatabaseMigration {
           migratedCount++;
         } catch (error) {
           console.error(
-            `サーバー "${server.name}" (ID: ${server.id}) の暗号化に失敗しました:`,
+            `Failed to encrypt server "${server.name}" (ID: ${server.id}):`,
             error,
           );
         }
       }
 
-      console.log(`${migratedCount}個のサーバーデータを暗号化しました`);
+      console.log(`Encrypted ${migratedCount} server records`);
     } catch (error) {
       console.error(
-        "サーバーデータの暗号化移行中にエラーが発生しました:",
+        "Error occurred during server data encryption migration:",
         error,
       );
       throw error; // マイグレーションエラーは上位に伝播させる
@@ -679,27 +640,27 @@ export class MainDatabaseMigration {
     try {
       // HookRepositoryが初めて呼ばれた時に
       // テーブルが作成されるため、ここでは何もしない
-      console.log("hooksテーブルの作成はHookRepositoryに委譲されます");
+      console.log("Creation of hooks table is delegated to HookRepository");
     } catch (error) {
-      console.error(
-        "hooksテーブルのマイグレーション中にエラーが発生しました:",
-        error,
-      );
+      console.error("Error occurred during hooks table migration:", error);
       throw error;
     }
   }
 
   /**
-   * Create projects table if not exists
+   * Consolidated migration for Projects feature (single function)
+   * - Create projects table (and name index) if not exists
+   * - Add servers.project_id column if not exists
+   * - Create index on servers(project_id) if not exists
    */
-  private migrateAddProjectsTable(db: SqliteManager): void {
+  private migrateProjectsBootstrap(db: SqliteManager): void {
     try {
-      const tableExists = db.get(
+      // 1) Create projects table (and index) if not exists
+      const projectsTable = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'projects'",
         {},
       );
-
-      if (!tableExists) {
+      if (!projectsTable) {
         db.execute(`
           CREATE TABLE IF NOT EXISTS projects (
             id TEXT PRIMARY KEY,
@@ -712,50 +673,26 @@ export class MainDatabaseMigration {
           "CREATE INDEX IF NOT EXISTS idx_projects_name ON projects(name)",
         );
       }
-    } catch (error) {
-      console.error("projectsテーブルの作成中にエラーが発生しました:", error);
-      throw error;
-    }
-  }
 
-  /**
-   * Add project_id column to servers table if not exists
-   */
-  private migrateAddServerProjectIdColumn(db: SqliteManager): void {
-    try {
-      const tableExists = db.get(
+      // 2) Ensure servers.project_id exists
+      const serversTable = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
       );
-      if (!tableExists) {
-        return;
-      }
-      const tableInfo = db.all("PRAGMA table_info(servers)");
-      const columnNames = tableInfo.map((col: any) => col.name);
-      if (!columnNames.includes("project_id")) {
-        db.execute("ALTER TABLE servers ADD COLUMN project_id TEXT");
-      }
-    } catch (error) {
-      console.error("servers.project_id列の追加中にエラーが発生しました:", error);
-      throw error;
-    }
-  }
+      if (serversTable) {
+        const tableInfo = db.all("PRAGMA table_info(servers)");
+        const columnNames = tableInfo.map((col: any) => col.name);
+        if (!columnNames.includes("project_id")) {
+          db.execute("ALTER TABLE servers ADD COLUMN project_id TEXT");
+        }
 
-  /**
-   * Add index on servers(project_id)
-   */
-  private migrateAddIndexServersProjectId(db: SqliteManager): void {
-    try {
-      const tableExists = db.get(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
-        {},
-      );
-      if (!tableExists) return;
-      db.execute(
-        "CREATE INDEX IF NOT EXISTS idx_servers_project_id ON servers(project_id)",
-      );
+        // 3) Ensure index on servers(project_id)
+        db.execute(
+          "CREATE INDEX IF NOT EXISTS idx_servers_project_id ON servers(project_id)",
+        );
+      }
     } catch (error) {
-      console.error("idx_servers_project_idの作成中にエラーが発生しました:", error);
+      console.error("Error while creating projects table:", error);
       throw error;
     }
   }

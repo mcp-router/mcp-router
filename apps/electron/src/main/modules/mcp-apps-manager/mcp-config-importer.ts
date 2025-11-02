@@ -267,9 +267,7 @@ export async function extractConfigInfo(
           argsArr.some(isMcpRouterCliArg);
 
         if (servers?.["mcp-router"]?.env?.MCPR_TOKEN) {
-          configToken = stripOuterQuotes(
-            servers["mcp-router"].env.MCPR_TOKEN,
-          );
+          configToken = stripOuterQuotes(servers["mcp-router"].env.MCPR_TOKEN);
         }
 
         if (servers) {
@@ -315,9 +313,7 @@ export async function extractConfigInfo(
           argsArr.some(isMcpRouterCliArg);
 
         if (servers?.["mcp-router"]?.env?.MCPR_TOKEN) {
-          configToken = stripOuterQuotes(
-            servers["mcp-router"].env.MCPR_TOKEN,
-          );
+          configToken = stripOuterQuotes(servers["mcp-router"].env.MCPR_TOKEN);
         }
 
         if (servers) {

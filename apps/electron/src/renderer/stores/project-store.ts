@@ -14,10 +14,7 @@ interface ProjectStoreState {
   // Actions
   list: () => Promise<void>;
   create: (input: { name: string }) => Promise<Project>;
-  update: (
-    id: string,
-    updates: { name?: string },
-  ) => Promise<Project>;
+  update: (id: string, updates: { name?: string }) => Promise<Project>;
   delete: (id: string) => Promise<void>;
 
   // UI state actions

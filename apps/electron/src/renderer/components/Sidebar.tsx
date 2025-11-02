@@ -43,7 +43,12 @@ const SidebarComponent: React.FC = () => {
   const location = useLocation();
   const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
   const isRemoteWorkspace = currentWorkspace?.type === "remote";
-  const { projects, list: listProjects, selectedProjectId, setSelectedProjectId } = useProjectStore();
+  const {
+    projects,
+    list: listProjects,
+    selectedProjectId,
+    setSelectedProjectId,
+  } = useProjectStore();
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
@@ -133,6 +138,7 @@ const SidebarComponent: React.FC = () => {
                     >
                       <Link
                         to="/servers"
+                        onClick={() => setSelectedProjectId(null)}
                         className="flex items-center gap-3 py-5 px-3 w-full"
                       >
                         <IconServer className="h-6 w-6" />
@@ -246,7 +252,9 @@ const SidebarComponent: React.FC = () => {
                     >
                       <Link
                         to="/servers"
-                        onClick={() => setSelectedProjectId(UNASSIGNED_PROJECT_ID)}
+                        onClick={() =>
+                          setSelectedProjectId(UNASSIGNED_PROJECT_ID)
+                        }
                         className="flex items-center gap-3 py-2 px-3 w-full"
                       >
                         <span className="text-sm">
@@ -263,7 +271,10 @@ const SidebarComponent: React.FC = () => {
                       <SidebarMenuButton
                         asChild
                         tooltip={p.name}
-                        isActive={location.pathname === "/servers" && selectedProjectId === p.id}
+                        isActive={
+                          location.pathname === "/servers" &&
+                          selectedProjectId === p.id
+                        }
                       >
                         <Link
                           to="/servers"

@@ -2,11 +2,7 @@
  * Server management domain API
  */
 
-import type {
-  MCPServerConfig,
-  MCPServer,
-  MCPTool,
-} from "../../mcp-types";
+import type { MCPServerConfig, MCPServer, MCPTool } from "../../mcp-types";
 
 export interface ServerStatus {
   type: "stopped" | "starting" | "running" | "stopping" | "error";

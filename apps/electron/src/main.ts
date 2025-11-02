@@ -264,7 +264,9 @@ async function initMCPServices(): Promise<void> {
 /**
  * ユーザーインターフェース関連の初期化を行う
  */
-function initUI({ showMainWindow = true }: { showMainWindow?: boolean } = {}): void {
+function initUI({
+  showMainWindow = true,
+}: { showMainWindow?: boolean } = {}): void {
   // メインウィンドウ作成
   createWindow({ showOnCreate: showMainWindow });
 

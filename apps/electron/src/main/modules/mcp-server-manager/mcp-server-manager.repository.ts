@@ -95,22 +95,6 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
       McpServerManagerRepository.INDEXES.forEach((indexSQL) => {
         this.db.execute(indexSQL);
       });
-
-      // Ensure project_id column exists for existing databases
-      try {
-        const tableInfo = this.db.all("PRAGMA table_info(servers)");
-        const columnNames = tableInfo.map((col: any) => col.name);
-        if (!columnNames.includes("project_id")) {
-          this.db.execute("ALTER TABLE servers ADD COLUMN project_id TEXT");
-          this.db.execute(
-            "CREATE INDEX IF NOT EXISTS idx_servers_project_id ON servers(project_id)",
-          );
-        }
-      } catch (e) {
-        console.warn("[ServerRepository] project_id ensure step warning:", e);
-      }
-
-      console.log("[ServerRepository] テーブルの初期化が完了しました");
     } catch (error) {
       console.error("[ServerRepository] テーブルの初期化中にエラー:", error);
       throw error;
@@ -234,8 +218,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         args,
         remoteUrl,
         toolPermissions,
-      } =
-        this.serializeEntityData(entity);
+      } = this.serializeEntityData(entity);
 
       // DB行オブジェクトを構築
       return {
@@ -342,8 +325,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         args,
         remoteUrl,
         toolPermissions,
-      } =
-        this.serializeEntityData(entity);
+      } = this.serializeEntityData(entity);
 
       // DB行オブジェクトを構築
       return {

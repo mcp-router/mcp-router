@@ -6,7 +6,6 @@ import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-ser
 export function setupMcpServerHandlers(
   getMCPServerManager: () => MCPServerManager,
 ): void {
-
   ipcMain.handle("mcp:list", () => {
     const mcpServerManager = getMCPServerManager();
     return mcpServerManager.getServers();

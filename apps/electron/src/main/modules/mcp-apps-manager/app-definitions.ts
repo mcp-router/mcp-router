@@ -88,7 +88,8 @@ export function findStandardAppDefinition(
   const normalized = name.toLowerCase();
   return definitions.find(
     (definition) =>
-      definition.id === normalized || definition.name.toLowerCase() === normalized,
+      definition.id === normalized ||
+      definition.name.toLowerCase() === normalized,
   );
 }
 
