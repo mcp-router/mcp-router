@@ -1,12 +1,16 @@
 import { SingletonService } from "@/main/modules/singleton-service";
 import { ProjectRepository } from "./projects.repository";
 import type { Project } from "@mcp_router/shared";
+import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
+import { McpServerManagerRepository } from "../mcp-server-manager/mcp-server-manager.repository";
 
 export class ProjectService extends SingletonService<
   Project,
   string,
   ProjectService
 > {
+  private static serverManagerProvider: (() => MCPServerManager) | null = null;
+
   protected constructor() {
     super();
   }
@@ -21,6 +25,23 @@ export class ProjectService extends SingletonService<
 
   public static resetInstance(): void {
     this.resetInstanceBase(ProjectService);
+  }
+
+  public static setServerManagerProvider(
+    provider: () => MCPServerManager,
+  ): void {
+    ProjectService.serverManagerProvider = provider;
+  }
+
+  private getServerManager(): MCPServerManager | null {
+    try {
+      return ProjectService.serverManagerProvider
+        ? ProjectService.serverManagerProvider()
+        : null;
+    } catch (error) {
+      console.error("Failed to resolve MCPServerManager:", error);
+      return null;
+    }
   }
 
   list(): Project[] {
@@ -66,19 +87,41 @@ export class ProjectService extends SingletonService<
 
   delete(id: string): void {
     try {
-      const repo = ProjectRepository.getInstance();
-      // Unassign servers from this project (set NULL)
-      const db = (
-        repo as {
-          database: import("@/main/infrastructure/database/sqlite-manager").SqliteManager;
+      const projectRepo = ProjectRepository.getInstance();
+      const serverRepo = McpServerManagerRepository.getInstance();
+      const serverManager = this.getServerManager();
+      const serversForProject = serverRepo
+        .getAll()
+        .filter((server) => server.projectId === id);
+
+      if (serverManager) {
+        for (const server of serversForProject) {
+          const removed = serverManager.removeServer(server.id);
+          if (!removed) {
+            throw new Error(`Failed to remove server "${server.name}"`);
+          }
         }
-      ).database;
-      db.execute(
-        "UPDATE servers SET project_id = NULL WHERE project_id = :id",
-        { id },
-      );
-      // Delete project
-      const ok = repo.delete(id);
+      } else {
+        // Fall back to repository-level deletion if server manager is unavailable
+        for (const server of serversForProject) {
+          const removed = serverRepo.deleteServer(server.id);
+          if (!removed) {
+            throw new Error(`Failed to delete server ${server.id}`);
+          }
+        }
+      }
+
+      const remainingServers = serverRepo
+        .getAll()
+        .filter((server) => server.projectId === id);
+
+      if (remainingServers.length > 0) {
+        throw new Error(
+          `Cannot delete project while ${remainingServers.length} servers still reference it.`,
+        );
+      }
+
+      const ok = projectRepo.delete(id);
       if (!ok) throw new Error("Failed to delete project");
     } catch (error) {
       this.handleError("delete", error);

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import ServerDetailsRemoveDialog from "@/renderer/components/mcp/server/server-details/ServerDetailsRemoveDialog";
 import { MCPServer } from "@mcp_router/shared";
 import { ScrollArea } from "@mcp_router/ui";
 import { Badge } from "@mcp_router/ui";
@@ -16,7 +15,6 @@ import {
   AlertCircle,
   Grid3X3,
   List,
-  Share,
   Settings as SettingsIcon,
   ChevronDown,
 } from "lucide-react";
@@ -41,6 +39,39 @@ import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
 import ServerDetailsAdvancedSheet from "@/renderer/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
 import ServerSettingsModal from "@/renderer/components/mcp/server/ServerSettingsModal";
 import { useServerEditingStore } from "@/renderer/stores";
+import MCPSettingsModal from "@/renderer/components/mcp/server/MCPSettingsModal";
+
+const STATUS_VISUALS = {
+  running: {
+    color: "bg-emerald-500",
+    pulseEffect: "animate-pulse",
+  },
+  starting: {
+    color: "bg-yellow-500",
+    pulseEffect: "animate-pulse",
+  },
+  stopping: {
+    color: "bg-orange-500",
+    pulseEffect: "animate-pulse",
+  },
+  stopped: {
+    color: "bg-muted-foreground",
+    pulseEffect: "",
+  },
+  error: {
+    color: "bg-red-500",
+    pulseEffect: "animate-pulse",
+  },
+} as const;
+
+const getStatusVisual = (
+  status: string,
+): (typeof STATUS_VISUALS)[keyof typeof STATUS_VISUALS] => {
+  return (
+    STATUS_VISUALS[status as keyof typeof STATUS_VISUALS] ||
+    STATUS_VISUALS.stopped
+  );
+};
 
 const Home: React.FC = () => {
   const { t } = useTranslation();
@@ -67,6 +98,8 @@ const Home: React.FC = () => {
     projects,
     list: listProjects,
     create: createProject,
+    update: updateProjectInStore,
+    delete: deleteProjectInStore,
     collapsedByProjectId,
     setCollapsed,
     selectedProjectId,
@@ -89,10 +122,7 @@ const Home: React.FC = () => {
     return base;
   }, [servers, searchQuery, selectedProjectId]);
 
-  // State for server removal dialog (keeping local for now)
-  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
-  const [serverToRemove, setServerToRemove] = useState<MCPServer | null>(null);
-  const [isRemoving, setIsRemoving] = useState(false);
+  const [isHomeSettingsOpen, setIsHomeSettingsOpen] = useState(false);
 
   // State for error modal
   const [errorModalOpen, setErrorModalOpen] = useState(false);
@@ -151,22 +181,6 @@ const Home: React.FC = () => {
     setErrorModalOpen(true);
   };
 
-  // Handle server removal
-  const handleRemoveServer = async () => {
-    if (serverToRemove) {
-      setIsRemoving(true);
-      try {
-        await deleteServer(serverToRemove.id);
-        toast.success(t("serverDetails.removeSuccess"));
-      } catch {
-        toast.error(t("serverDetails.removeFailed"));
-      } finally {
-        setIsRemoveDialogOpen(false);
-        setIsRemoving(false);
-      }
-    }
-  };
-
   // Handle refresh servers
   const handleRefreshServers = async () => {
     setIsRefreshing(true);
@@ -175,9 +189,9 @@ const Home: React.FC = () => {
   };
 
   // Handle export servers
-  const handleExportServers = () => {
+  const exportServersToFile = React.useCallback(() => {
     // Convert servers array to mcpServers object format
-    const mcpServers: Record<string, any> = {};
+    const mcpServers: Record<string, unknown> = {};
 
     servers.forEach((server) => {
       mcpServers[server.name] = {
@@ -201,7 +215,34 @@ const Home: React.FC = () => {
     linkElement.setAttribute("href", dataUri);
     linkElement.setAttribute("download", exportFileDefaultName);
     linkElement.click();
-  };
+  }, [servers]);
+
+  const handleCreateProject = React.useCallback(
+    async (input: { name: string }) => {
+      const created = await createProject(input);
+      await listProjects();
+      return created;
+    },
+    [createProject, listProjects],
+  );
+
+  const handleRenameProject = React.useCallback(
+    async (id: string, updates: { name: string }) => {
+      const updated = await updateProjectInStore(id, updates);
+      await listProjects();
+      return updated;
+    },
+    [listProjects, updateProjectInStore],
+  );
+
+  const handleDeleteProject = React.useCallback(
+    async (id: string) => {
+      await deleteProjectInStore(id);
+      await listProjects();
+      await refreshServers();
+    },
+    [deleteProjectInStore, listProjects, refreshServers],
+  );
 
   // Show login screen for remote workspaces if not authenticated
   if (currentWorkspace?.type === "remote" && !isAuthenticated) {
@@ -254,11 +295,11 @@ const Home: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={handleExportServers}
+          onClick={() => setIsHomeSettingsOpen(true)}
           className="gap-1"
-          title={"Export Servers"}
+          title={t("common.settings")}
         >
-          <Share className="h-4 w-4" />
+          <SettingsIcon className="h-4 w-4" />
         </Button>
         <Button asChild variant="outline" size="sm" className="gap-1">
           <Link to="/servers/add">
@@ -345,34 +386,7 @@ const Home: React.FC = () => {
                         unassignedServers.map((server) => {
                           // console.log("Server:", server);
 
-                          const statusConfig = {
-                            running: {
-                              color: "bg-emerald-500",
-                              pulseEffect: "animate-pulse",
-                            },
-                            starting: {
-                              color: "bg-yellow-500",
-                              pulseEffect: "animate-pulse",
-                            },
-                            stopping: {
-                              color: "bg-orange-500",
-                              pulseEffect: "animate-pulse",
-                            },
-                            stopped: {
-                              color: "bg-muted-foreground",
-                              pulseEffect: "",
-                            },
-                            error: {
-                              color: "bg-red-500",
-                              pulseEffect: "animate-pulse",
-                            },
-                          };
-
-                          // Add safety check to use 'stopped' as default when status is invalid
-                          const status =
-                            statusConfig[
-                              server.status as keyof typeof statusConfig
-                            ] || statusConfig.stopped;
+                          const status = getStatusVisual(server.status);
 
                           return (
                             <div key={server.id}>
@@ -591,32 +605,7 @@ const Home: React.FC = () => {
                     </div>
                     {!effectiveCollapsed &&
                       sectionServers.map((server) => {
-                        const statusConfig = {
-                          running: {
-                            color: "bg-emerald-500",
-                            pulseEffect: "animate-pulse",
-                          },
-                          starting: {
-                            color: "bg-yellow-500",
-                            pulseEffect: "animate-pulse",
-                          },
-                          stopping: {
-                            color: "bg-orange-500",
-                            pulseEffect: "animate-pulse",
-                          },
-                          stopped: {
-                            color: "bg-muted-foreground",
-                            pulseEffect: "",
-                          },
-                          error: {
-                            color: "bg-red-500",
-                            pulseEffect: "animate-pulse",
-                          },
-                        } as const;
-                        const status =
-                          statusConfig[
-                            server.status as keyof typeof statusConfig
-                          ] || statusConfig.stopped;
+                        const status = getStatusVisual(server.status);
                         return (
                           <div
                             key={server.id}
@@ -793,10 +782,7 @@ const Home: React.FC = () => {
                         onClick={
                           isUnassignedCollapsible
                             ? () =>
-                                setCollapsed(
-                                  UNASSIGNED_PROJECT_ID,
-                                  !collapsed,
-                                )
+                                setCollapsed(UNASSIGNED_PROJECT_ID, !collapsed)
                             : undefined
                         }
                       >
@@ -868,7 +854,7 @@ const Home: React.FC = () => {
               {(selectedProjectId === null
                 ? projects
                 : projects.filter((p) => p.id === selectedProjectId)
-                ).map((project) => {
+              ).map((project) => {
                 const sectionServers = filteredServers.filter(
                   (s) => s.projectId === project.id,
                 );
@@ -922,7 +908,10 @@ const Home: React.FC = () => {
                                   toast.success(t("serverList.serverStopped"));
                                 }
                               } catch (error) {
-                                console.error("Server operation failed:", error);
+                                console.error(
+                                  "Server operation failed:",
+                                  error,
+                                );
                                 showServerError(
                                   error instanceof Error
                                     ? error
@@ -947,18 +936,6 @@ const Home: React.FC = () => {
           </ScrollArea>
         )}
       </div>
-
-      {/* Server Remove Confirmation Dialog */}
-      {serverToRemove && (
-        <ServerDetailsRemoveDialog
-          server={serverToRemove}
-          isOpen={isRemoveDialogOpen}
-          isLoading={isRemoving}
-          setIsOpen={setIsRemoveDialogOpen}
-          handleRemove={handleRemoveServer}
-        />
-      )}
-
       {/* Error Details Modal */}
       {errorServer && (
         <ServerErrorModal
@@ -968,6 +945,16 @@ const Home: React.FC = () => {
           errorMessage={errorServer.errorMessage}
         />
       )}
+
+      <MCPSettingsModal
+        open={isHomeSettingsOpen}
+        onOpenChange={setIsHomeSettingsOpen}
+        projects={projects}
+        onCreateProject={handleCreateProject}
+        onRenameProject={handleRenameProject}
+        onDeleteProject={handleDeleteProject}
+        onExportServers={exportServersToFile}
+      />
 
       {/* Advanced Settings Sheet */}
       {advancedSettingsServer && (
@@ -1068,11 +1055,18 @@ const Home: React.FC = () => {
             await listProjects();
             return created;
           }}
-          onDelete={() => {
-            setServerToRemove(settingsServer);
-            setIsSettingsOpen(false);
-            setIsRemoveDialogOpen(true);
-            setSettingsServerId(null);
+          onDelete={async () => {
+            try {
+              await deleteServer(settingsServer.id);
+              toast.success(t("serverDetails.removeSuccess"));
+            } catch (e) {
+              toast.error(t("serverDetails.removeFailed"));
+            } finally {
+              // Ensure UI reflects the deletion
+              setIsSettingsOpen(false);
+              setSettingsServerId(null);
+              await refreshServers();
+            }
           }}
         />
       )}

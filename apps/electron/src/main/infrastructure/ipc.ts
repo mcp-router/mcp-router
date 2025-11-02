@@ -49,5 +49,5 @@ export function setupIpcHandlers(deps: {
   setupHookHandlers();
 
   // Projects関連
-  setupProjectHandlers();
+  setupProjectHandlers({ getServerManager: deps.getServerManager });
 }

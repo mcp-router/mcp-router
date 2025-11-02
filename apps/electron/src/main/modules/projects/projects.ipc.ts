@@ -1,7 +1,11 @@
 import { ipcMain } from "electron";
-import { getProjectService } from "./projects.service";
+import { ProjectService, getProjectService } from "./projects.service";
+import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 
-export function setupProjectHandlers(): void {
+export function setupProjectHandlers(deps: {
+  getServerManager: () => MCPServerManager;
+}): void {
+  ProjectService.setServerManagerProvider(deps.getServerManager);
   const service = getProjectService();
 
   ipcMain.handle("project:list", async () => {
