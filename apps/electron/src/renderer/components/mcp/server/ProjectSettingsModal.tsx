@@ -19,7 +19,7 @@ import {
   Input,
   ScrollArea,
 } from "@mcp_router/ui";
-import { Pencil, Share, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { UNASSIGNED_PROJECT_ID } from "@/renderer/stores";
 
@@ -30,17 +30,15 @@ type Props = {
   onCreateProject: (input: { name: string }) => Promise<Project>;
   onRenameProject: (id: string, updates: { name: string }) => Promise<Project>;
   onDeleteProject: (id: string) => Promise<void>;
-  onExportServers: () => void;
 };
 
-export const MCPSettingsModal: React.FC<Props> = ({
+export const ProjectSettingsModal: React.FC<Props> = ({
   open,
   onOpenChange,
   projects,
   onCreateProject,
   onRenameProject,
   onDeleteProject,
-  onExportServers,
 }) => {
   const { t } = useTranslation();
   const [newProjectName, setNewProjectName] = React.useState("");
@@ -156,21 +154,19 @@ export const MCPSettingsModal: React.FC<Props> = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{t("common.settings")}</DialogTitle>
+            <DialogTitle>
+              {t("projects.projectSettings", {
+                defaultValue: "Project Settings",
+              })}
+            </DialogTitle>
             <DialogDescription>
-              Manage projects and export MCP servers.
+              {t("projects.projectSettingsDescription", {
+                defaultValue: "Organize your servers by managing projects.",
+              })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-2">
             <section className="space-y-3">
-              <div>
-                <h2 className="text-sm font-semibold">
-                  {t("projects.sectionTitle", { defaultValue: "Projects" })}
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Add, rename, or remove projects to organize your servers.
-                </p>
-              </div>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Input
                   value={newProjectName}
@@ -189,7 +185,9 @@ export const MCPSettingsModal: React.FC<Props> = ({
                 <Button
                   onClick={handleCreateProject}
                   disabled={
-                    creating || !newProjectName.trim() || /\s/.test(newProjectName)
+                    creating ||
+                    !newProjectName.trim() ||
+                    /\s/.test(newProjectName)
                   }
                 >
                   {creating
@@ -302,20 +300,6 @@ export const MCPSettingsModal: React.FC<Props> = ({
                 </ScrollArea>
               </div>
             </section>
-
-            <section className="space-y-3">
-              <div>
-                <h2 className="text-sm font-semibold">Export</h2>
-              </div>
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={onExportServers}
-              >
-                <Share className="h-4 w-4" />
-                Export MCP servers
-              </Button>
-            </section>
           </div>
         </DialogContent>
       </Dialog>
@@ -354,4 +338,4 @@ export const MCPSettingsModal: React.FC<Props> = ({
   );
 };
 
-export default MCPSettingsModal;
+export default ProjectSettingsModal;

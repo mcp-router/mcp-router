@@ -14,7 +14,7 @@ import {
   IconSearch,
   IconServer,
   IconPlus,
-  IconRefresh,
+  IconUpload,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/renderer/utils/tailwind-utils";
@@ -46,7 +46,7 @@ import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
 import ServerDetailsAdvancedSheet from "@/renderer/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
 import ServerSettingsModal from "@/renderer/components/mcp/server/ServerSettingsModal";
 import { useServerEditingStore } from "@/renderer/stores";
-import MCPSettingsModal from "@/renderer/components/mcp/server/MCPSettingsModal";
+import ProjectSettingsModal from "@/renderer/components/mcp/server/ProjectSettingsModal";
 
 const STATUS_VISUALS = {
   running: {
@@ -136,9 +136,6 @@ const Home: React.FC = () => {
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorServer, setErrorServer] = useState<MCPServer | null>(null);
 
-  // State for refresh
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
   // State for Advanced Settings
   const [advancedSettingsServer, setAdvancedSettingsServer] =
     useState<MCPServer | null>(null);
@@ -187,13 +184,6 @@ const Home: React.FC = () => {
     e.stopPropagation();
     setErrorServer(server);
     setErrorModalOpen(true);
-  };
-
-  // Handle refresh servers
-  const handleRefreshServers = async () => {
-    setIsRefreshing(true);
-    await refreshServers();
-    setIsRefreshing(false);
   };
 
   // Handle export servers
@@ -265,7 +255,9 @@ const Home: React.FC = () => {
           size="sm"
           onClick={() => setIsHomeSettingsOpen(true)}
           className="gap-1"
-          title={t("common.settings")}
+          title={t("projects.projectSettings", {
+            defaultValue: "Project Settings",
+          })}
         >
           <SettingsIcon className="h-4 w-4" />
         </Button>
@@ -329,12 +321,11 @@ const Home: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={handleRefreshServers}
-          disabled={isRefreshing}
+          onClick={exportServersToFile}
           className="gap-1"
-          title={"Refresh Servers"}
+          title="Export"
         >
-          <IconRefresh />
+          <IconUpload className="h-4 w-4" />
         </Button>
         <Button asChild variant="outline" size="sm" className="gap-1">
           <Link to="/servers/add">
@@ -798,8 +789,7 @@ const Home: React.FC = () => {
               {(selectedProjectId === null ||
                 selectedProjectId === UNASSIGNED_PROJECT_ID) &&
                 (() => {
-                  const collapsed =
-                    collapsedByProjectId[UNASSIGNED_PROJECT_ID];
+                  const collapsed = collapsedByProjectId[UNASSIGNED_PROJECT_ID];
                   const unassignedServers = filteredServers.filter(
                     (s) => !s.projectId,
                   );
@@ -981,14 +971,13 @@ const Home: React.FC = () => {
         />
       )}
 
-      <MCPSettingsModal
+      <ProjectSettingsModal
         open={isHomeSettingsOpen}
         onOpenChange={setIsHomeSettingsOpen}
         projects={projects}
         onCreateProject={handleCreateProject}
         onRenameProject={handleRenameProject}
         onDeleteProject={handleDeleteProject}
-        onExportServers={exportServersToFile}
       />
 
       {/* Advanced Settings Sheet */}

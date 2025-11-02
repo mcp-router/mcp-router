@@ -349,7 +349,9 @@
     "unassigned": "未割り当て",
     "new": "新規プロジェクト名",
     "create": "作成",
-    "creating": "作成中..."
+    "creating": "作成中...",
+    "projectSettings": "プロジェクト設定",
+    "projectSettingsDescription": "プロジェクトを管理してサーバーを整理します。"
   },
   "serverSettings": {
     "title": "サーバー設定",

@@ -348,7 +348,9 @@
     "unassigned": "未分配",
     "new": "新项目名称",
     "create": "创建",
-    "creating": "正在创建..."
+    "creating": "正在创建...",
+    "projectSettings": "项目设置",
+    "projectSettingsDescription": "通过管理项目来组织服务器。"
   },
   "serverSettings": {
     "title": "服务器设置",

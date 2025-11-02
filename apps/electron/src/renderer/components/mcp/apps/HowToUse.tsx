@@ -275,9 +275,7 @@ npx -y @mcp_router/cli@latest connect`}
 
       {/* Project Selection */}
       <div className="mb-6">
-        <h4 className="text-md font-semibold mb-3">
-          3. 指定项目（可选）
-        </h4>
+        <h4 className="text-md font-semibold mb-3">3. 指定项目（可选）</h4>
         <p className="mb-3 text-muted-foreground">
           如果需要限制到特定项目，请在连接时加入项目名称：
         </p>

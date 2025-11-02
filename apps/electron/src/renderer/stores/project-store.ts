@@ -129,13 +129,11 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
 
   setSelectedProjectId: (id) =>
     set(() => {
-      try {
-        if (id === null) {
-          localStorage.removeItem(SELECTED_PROJECT_STORAGE_KEY);
-        } else {
-          localStorage.setItem(SELECTED_PROJECT_STORAGE_KEY, JSON.stringify(id));
-        }
-      } catch {}
+      if (id === null) {
+        localStorage.removeItem(SELECTED_PROJECT_STORAGE_KEY);
+      } else {
+        localStorage.setItem(SELECTED_PROJECT_STORAGE_KEY, JSON.stringify(id));
+      }
       return { selectedProjectId: id };
     }),
 }));

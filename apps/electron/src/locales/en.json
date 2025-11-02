@@ -348,7 +348,9 @@
     "unassigned": "Unassigned",
     "new": "New project name",
     "create": "Create",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "projectSettings": "Project Settings",
+    "projectSettingsDescription": "Organize your servers by managing projects."
   },
   "serverSettings": {
     "title": "Server Settings",
