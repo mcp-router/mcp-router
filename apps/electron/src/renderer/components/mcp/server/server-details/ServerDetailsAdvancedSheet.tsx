@@ -806,67 +806,65 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
           </div>
         )}
 
-        {!needsServerRunning && (
-          <SheetFooter className="flex justify-between sm:justify-between border-t pt-4">
-            <Button
-              variant="ghost"
-              onClick={() => setIsOpen(false)}
-              disabled={isLoading}
-              className="gap-2"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              onClick={async () => {
-                setIsLoading(true);
-                try {
-                  // Prepare input params if they were modified
-                  const updatedInputParams = isParamsDirty
-                    ? prepareInputParamsForSave()
-                    : server.inputParams;
-                  const toolPermissionsToSave = isToolPermissionsDirty
-                    ? { ...editedToolPermissions }
-                    : undefined;
+        <SheetFooter className="flex justify-between sm:justify-between border-t pt-4">
+          <Button
+            variant="ghost"
+            onClick={() => setIsOpen(false)}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            onClick={async () => {
+              setIsLoading(true);
+              try {
+                // Prepare input params if they were modified
+                const updatedInputParams = isParamsDirty
+                  ? prepareInputParamsForSave()
+                  : server.inputParams;
+                const toolPermissionsToSave = isToolPermissionsDirty
+                  ? { ...editedToolPermissions }
+                  : undefined;
 
-                  // Call the parent's handleSave with inputParams and editedName
-                  await handleSave(
-                    updatedInputParams,
-                    editedName,
-                    toolPermissionsToSave,
-                  );
+                // Call the parent's handleSave with inputParams and editedName
+                await handleSave(
+                  updatedInputParams,
+                  editedName,
+                  toolPermissionsToSave,
+                );
 
-                  // Reset dirty state after successful save
-                  if (isParamsDirty) {
-                    setInitialInputParamValues(inputParamValues);
-                    setIsParamsDirty(false);
-                  }
-                  if (isToolPermissionsDirty) {
-                    setInitialToolPermissions(editedToolPermissions);
-                    setIsToolPermissionsDirty(false);
-                  }
-                } catch (error) {
-                  console.error("Failed to save:", error);
-                } finally {
-                  setIsLoading(false);
+                // Reset dirty state after successful save
+                if (isParamsDirty) {
+                  setInitialInputParamValues(inputParamValues);
+                  setIsParamsDirty(false);
                 }
-              }}
-              disabled={isLoading}
-              className="gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  {t("common.saving")}
-                </>
-              ) : (
-                <>
-                  <Check className="h-4 w-4" />
-                  {t("common.save")}
-                </>
-              )}
-            </Button>
-          </SheetFooter>
-        )}
+                if (isToolPermissionsDirty) {
+                  setInitialToolPermissions(editedToolPermissions);
+                  setIsToolPermissionsDirty(false);
+                }
+              } catch (error) {
+                console.error("Failed to save:", error);
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                {t("common.saving")}
+              </>
+            ) : (
+              <>
+                <Check className="h-4 w-4" />
+                {t("common.save")}
+              </>
+            )}
+          </Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
