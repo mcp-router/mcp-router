@@ -46,11 +46,13 @@ export async function executeConnect(args: string[] = []): Promise<void> {
 function parseArgs(args: string[]): {
   host: string;
   port: number;
+  project?: string | null;
 } {
   // Default values
-  const options: { host: string; port: number } = {
+  const options: { host: string; port: number; project?: string | null } = {
     host: "localhost",
     port: 3282,
+    project: undefined,
   };
 
   // Parse arguments
@@ -65,6 +67,12 @@ function parseArgs(args: string[]): {
       }
     } else if (arg === "--host" && i + 1 < args.length) {
       options.host = args[i + 1];
+      i++;
+    } else if (arg === "--project" && i + 1 < args.length) {
+      const projectName = args[i + 1]?.trim();
+      if (projectName) {
+        options.project = projectName;
+      }
       i++;
     }
   }
@@ -82,16 +90,32 @@ class HttpMcpBridgeServer {
   private client: Client;
   private baseUrl: string;
   private token: string | null;
+  private project: string | null;
 
-  constructor(options: { host: string; port: number }) {
+  constructor(options: {
+    host: string;
+    port: number;
+    project?: string | null;
+  }) {
     this.baseUrl = `http://${options.host}:${options.port}/mcp`;
     this.token = process.env.MCPR_TOKEN || null;
+    this.project = options.project ?? null;
+    if (this.project) {
+      this.project = this.project.trim();
+    }
+
+    const headers: Record<string, string> = {};
+    if (this.token) {
+      headers.authorization = `Bearer ${this.token}`;
+    }
+    if (this.project) {
+      headers["x-mcpr-project"] = this.project;
+    }
+
     this.transport = new StreamableHTTPClientTransport(new URL(this.baseUrl), {
       sessionId: undefined,
       requestInit: {
-        headers: {
-          authorization: this.token ? `Bearer ${this.token}` : "",
-        },
+        headers,
       },
     });
     this.client = new Client({
@@ -349,6 +373,9 @@ class HttpMcpBridgeServer {
         const headers: Record<string, string> = {};
         if (this.token) {
           headers["X-MCP-Token"] = this.token;
+        }
+        if (this.project) {
+          headers["X-MCPR-Project"] = this.project;
         }
 
         response = await fetch(`${this.baseUrl}/api/test`, {

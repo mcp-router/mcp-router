@@ -55,8 +55,18 @@ export class ProjectService extends SingletonService<
   create(input: { name: string }): Project {
     try {
       const repo = ProjectRepository.getInstance();
+      const name = input.name.trim();
+      if (!name) {
+        throw new Error("Project name cannot be empty");
+      }
+
+      const duplicate = repo.findByName(name);
+      if (duplicate) {
+        throw new Error(`Project "${name}" already exists`);
+      }
+
       const project = {
-        name: input.name.trim(),
+        name,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       } as Omit<Project, "id">;
@@ -71,10 +81,24 @@ export class ProjectService extends SingletonService<
       const repo = ProjectRepository.getInstance();
       const existing = repo.getById(id);
       if (!existing) throw new Error("Project not found");
+
+      let nextName = existing.name;
+      if (updates.name !== undefined) {
+        const trimmed = updates.name.trim();
+        if (!trimmed) {
+          throw new Error("Project name cannot be empty");
+        }
+        const duplicate = repo.findByName(trimmed);
+        if (duplicate && duplicate.id !== id) {
+          throw new Error(`Project "${trimmed}" already exists`);
+        }
+        nextName = trimmed;
+      }
+
       const merged: Project = {
         ...existing,
         ...updates,
-        name: (updates.name ?? existing.name).trim(),
+        name: nextName,
         updatedAt: Date.now(),
       };
       const result = repo.update(id, merged);

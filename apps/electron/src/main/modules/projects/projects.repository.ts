@@ -58,4 +58,18 @@ export class ProjectRepository extends BaseRepository<Project> {
       updated_at: now,
     };
   }
+
+  public findByName(name: string): Project | null {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const row = this.db.get<any>(
+      "SELECT * FROM projects WHERE LOWER(name) = LOWER(:name)",
+      { name: trimmed },
+    );
+
+    return row ? this.mapRowToEntity(row) : null;
+  }
 }

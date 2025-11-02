@@ -6,11 +6,14 @@ import { AggregatorServer } from "../aggregator-server";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
 import { getPlatformAPIManager } from "../../workspace/platform-api-manager";
 import { TokenValidator } from "../token-validator";
+import { ProjectRepository } from "../../projects/projects.repository";
 
 /**
  * HTTP server that exposes MCP functionality through REST endpoints
  */
 export class MCPHttpServer {
+  private static readonly PROJECT_HEADER = "x-mcpr-project";
+
   private app: express.Application;
   private server: http.Server | null = null;
   private port: number;
@@ -18,6 +21,7 @@ export class MCPHttpServer {
   private tokenValidator: TokenValidator;
   // SSEセッション用のマップ
   private sseSessions: Map<string, SSEServerTransport> = new Map();
+  private sseSessionProjects: Map<string, string | null> = new Map();
 
   constructor(
     serverManager: MCPServerManager,
@@ -104,6 +108,66 @@ export class MCPHttpServer {
     this.configureMcpSseRoute();
   }
 
+  private resolveProjectFilter(
+    req: express.Request,
+    options?: { skipValidation?: boolean },
+  ): { projectId: string | null; provided: boolean } {
+    const headerValue = req.headers[MCPHttpServer.PROJECT_HEADER];
+    if (headerValue === undefined) {
+      return { projectId: null, provided: false };
+    }
+
+    const rawValue = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+    const value = rawValue?.trim();
+
+    if (!value) {
+      return { projectId: null, provided: true };
+    }
+
+    if (value === "__unassigned__" || value.toLowerCase() === "unassigned") {
+      return { projectId: null, provided: true };
+    }
+
+    if (options?.skipValidation) {
+      return { projectId: value, provided: true };
+    }
+
+    const repo = ProjectRepository.getInstance();
+    const byName = repo.findByName(value);
+    if (byName) {
+      return { projectId: byName.id, provided: true };
+    }
+
+    const error = new Error(`Project "${value}" not found`);
+    (error as any).status = 400;
+    throw error;
+  }
+
+  private attachRequestMetadata(
+    payload: any,
+    tokenHeader: string | string[] | undefined,
+    projectId: string | null,
+  ): void {
+    const tokenValue = Array.isArray(tokenHeader)
+      ? tokenHeader[0]
+      : tokenHeader;
+
+    if (payload.params && typeof payload.params === "object") {
+      payload.params._meta = {
+        ...(payload.params._meta || {}),
+        token: tokenValue,
+        projectId,
+      };
+    } else if (payload.params === undefined) {
+      payload.params = {
+        _meta: {
+          token: tokenValue,
+          projectId,
+        },
+      };
+    }
+  }
+
   /**
    * Configure direct MCP route without versioning
    */
@@ -114,8 +178,37 @@ export class MCPHttpServer {
       const modifiedBody = { ...req.body };
 
       try {
-        // Check if current workspace is remote
         const platformManager = getPlatformAPIManager();
+        let projectFilter: string | null;
+        let projectHeaderProvided = false;
+        try {
+          const resolution = this.resolveProjectFilter(req, {
+            skipValidation: platformManager.isRemoteWorkspace(),
+          });
+          projectFilter = resolution.projectId;
+          projectHeaderProvided = resolution.provided;
+        } catch (error: any) {
+          if (!res.headersSent) {
+            res.status(error?.status || 400).json({
+              jsonrpc: "2.0",
+              error: {
+                code: -32602,
+                message:
+                  error instanceof Error
+                    ? error.message
+                    : "Invalid project header",
+              },
+              id: modifiedBody.id || null,
+            });
+          }
+          return;
+        }
+
+        // Append metadata for downstream handlers
+        const token = req.headers["authorization"];
+        this.attachRequestMetadata(modifiedBody, token, projectFilter);
+
+        // Check if current workspace is remote
         if (platformManager.isRemoteWorkspace()) {
           // For remote workspaces, forward to remote aggregator
           const remoteApiUrl = platformManager.getRemoteApiUrl();
@@ -140,6 +233,9 @@ export class MCPHttpServer {
               headers: {
                 "Content-Type": "application/json",
                 ...(authToken && { Authorization: `Bearer ${authToken}` }),
+                ...(projectHeaderProvided && projectFilter !== null
+                  ? { [MCPHttpServer.PROJECT_HEADER]: projectFilter }
+                  : {}),
               },
               body: JSON.stringify(modifiedBody),
             });
@@ -172,21 +268,6 @@ export class MCPHttpServer {
             }
           }
         } else {
-          // トークンをメタデータとして追加（ログに記録されないよう処理）
-          // JSONRPCリクエストの標準形式に従って、paramsにメタデータを追加
-          const token = req.headers["authorization"];
-          if (modifiedBody.params && typeof modifiedBody.params === "object") {
-            // パラメータが既に存在する場合、_metaを追加/上書き
-            modifiedBody.params._meta = {
-              ...(modifiedBody.params._meta || {}),
-              token: token, // トークンは内部処理用に使い、ログには記録しない
-            };
-          } else if (modifiedBody.params === undefined) {
-            // パラメータが存在しない場合は新規作成
-            modifiedBody.params = {
-              _meta: { token: token }, // トークンは内部処理用に使い、ログには記録しない
-            };
-          }
           // For local workspaces, use local aggregator
           await this.aggregatorServer
             .getTransport()
@@ -213,7 +294,7 @@ export class MCPHttpServer {
    */
   private configureMcpSseRoute(): void {
     // GET /mcp/sse - Handle SSE connection setup
-    this.app.get("/mcp/sse", async (_req, res) => {
+    this.app.get("/mcp/sse", async (req, res) => {
       try {
         // ヘッダーを設定
         res.setHeader("Content-Type", "text/event-stream");
@@ -227,16 +308,38 @@ export class MCPHttpServer {
         // ユニークなセッションIDを取得
         const sessionId = transport.sessionId;
 
+        // Check if current workspace is remote
+        const platformManager = getPlatformAPIManager();
+        let projectFilter: string | null;
+        try {
+          const resolution = this.resolveProjectFilter(req, {
+            skipValidation: platformManager.isRemoteWorkspace(),
+          });
+          projectFilter = resolution.projectId;
+        } catch (error: any) {
+          if (!res.headersSent) {
+            res
+              .status(error?.status || 400)
+              .send(
+                error instanceof Error
+                  ? error.message
+                  : "Invalid project header",
+              );
+          }
+          transport.close();
+          return;
+        }
+
         // セッションの保存
         this.sseSessions.set(sessionId, transport);
+        this.sseSessionProjects.set(sessionId, projectFilter);
 
         // クライアントが切断したときのクリーンアップ
         res.on("close", () => {
           this.sseSessions.delete(sessionId);
+          this.sseSessionProjects.delete(sessionId);
         });
 
-        // Check if current workspace is remote
-        const platformManager = getPlatformAPIManager();
         if (platformManager.isRemoteWorkspace()) {
           // For remote workspaces, we need to connect to remote aggregator
           // Note: This requires implementing a remote aggregator SSE endpoint
@@ -297,18 +400,33 @@ export class MCPHttpServer {
         // リクエストボディをコピー
         const modifiedBody = { ...req.body };
 
-        // トークンをメタデータとして追加
-        const token = req.headers["authorization"];
-        if (modifiedBody.params && typeof modifiedBody.params === "object") {
-          modifiedBody.params._meta = {
-            ...(modifiedBody.params._meta || {}),
-            token: token,
-          };
-        } else if (modifiedBody.params === undefined) {
-          modifiedBody.params = {
-            _meta: { token: token },
-          };
+        let projectFilter: string | null;
+        try {
+          const resolution = this.resolveProjectFilter(req);
+          if (resolution.provided) {
+            projectFilter = resolution.projectId;
+          } else {
+            projectFilter = this.sseSessionProjects.get(sessionId) ?? null;
+          }
+        } catch (error: any) {
+          if (!res.headersSent) {
+            res.status(error?.status || 400).json({
+              jsonrpc: "2.0",
+              error: {
+                code: -32602,
+                message:
+                  error instanceof Error
+                    ? error.message
+                    : "Invalid project header",
+              },
+              id: modifiedBody.id || null,
+            });
+          }
+          return;
         }
+
+        const token = req.headers["authorization"];
+        this.attachRequestMetadata(modifiedBody, token, projectFilter);
 
         // トランスポートでメッセージを処理
         await transport.handlePostMessage(req, res, modifiedBody);

@@ -113,7 +113,8 @@ export class AggregatorServer {
       ListToolsRequestSchema,
       async (request) => {
         const token = request.params?._meta?.token as string | undefined;
-        return await this.requestHandlers.handleListTools(token);
+        const projectId = request.params?._meta?.projectId;
+        return await this.requestHandlers.handleListTools(token, projectId);
       },
     );
 
@@ -130,7 +131,8 @@ export class AggregatorServer {
       ListResourcesRequestSchema,
       async (request) => {
         const token = request.params?._meta?.token as string | undefined;
-        return await this.requestHandlers.handleListResources(token);
+        const projectId = request.params?._meta?.projectId;
+        return await this.requestHandlers.handleListResources(token, projectId);
       },
     );
 
@@ -139,7 +141,11 @@ export class AggregatorServer {
       ListResourceTemplatesRequestSchema,
       async (request) => {
         const token = request.params?._meta?.token as string | undefined;
-        return await this.requestHandlers.handleListResourceTemplates(token);
+        const projectId = request.params?._meta?.projectId;
+        return await this.requestHandlers.handleListResourceTemplates(
+          token,
+          projectId,
+        );
       },
     );
 
@@ -149,7 +155,12 @@ export class AggregatorServer {
       async (request) => {
         const uri = request.params.uri;
         const token = request.params?._meta?.token as string | undefined;
-        return await this.requestHandlers.readResourceByUri(uri, token);
+        const projectId = request.params?._meta?.projectId;
+        return await this.requestHandlers.readResourceByUri(
+          uri,
+          token,
+          projectId,
+        );
       },
     );
 
@@ -158,8 +169,11 @@ export class AggregatorServer {
       ListPromptsRequestSchema,
       async (request) => {
         const token = request.params?._meta?.token as string | undefined;
-        const allPrompts =
-          await this.requestHandlers.getAllPromptsInternal(token);
+        const projectId = request.params?._meta?.projectId;
+        const allPrompts = await this.requestHandlers.getAllPromptsInternal(
+          token,
+          projectId,
+        );
         return { prompts: allPrompts };
       },
     );
@@ -170,10 +184,12 @@ export class AggregatorServer {
       async (request) => {
         const promptName = request.params.name;
         const token = request.params?._meta?.token as string | undefined;
+        const projectId = request.params?._meta?.projectId;
         return await this.requestHandlers.getPromptByName(
           promptName,
           request.params.arguments,
           token,
+          projectId,
         );
       },
     );
