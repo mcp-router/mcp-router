@@ -144,13 +144,6 @@ const Home: React.FC = () => {
     }
   }, [settingsServer, settingsServerId]);
 
-  // Handle opening remove dialog
-  const openRemoveDialog = (server: MCPServer, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setServerToRemove(server);
-    setIsRemoveDialogOpen(true);
-  };
-
   // Handle opening error modal
   const openErrorModal = (server: MCPServer, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -274,7 +267,12 @@ const Home: React.FC = () => {
         </Button>
       </div>
 
-      <div className="border rounded-md overflow-hidden flex-1 mb-8">
+      <div
+        className={cn(
+          "flex-1 mb-8",
+          serverViewMode === "list" && "border rounded-md overflow-hidden",
+        )}
+      >
         {filteredServers.length === 0 && searchQuery === "" ? (
           <div className="p-4 flex items-center justify-center">
             <div className="text-center">
@@ -312,7 +310,11 @@ const Home: React.FC = () => {
                     (s) => !s.projectId,
                   );
                   const isUnassignedCollapsible = selectedProjectId === null;
-                  const effectiveCollapsed = isUnassignedCollapsible && collapsed;
+                  const effectiveCollapsed =
+                    isUnassignedCollapsible && collapsed;
+                  const unassignedHeaderOnClick = isUnassignedCollapsible
+                    ? () => setCollapsed(UNASSIGNED_PROJECT_ID, !collapsed)
+                    : undefined;
                   return (
                     <div>
                       <div
@@ -320,15 +322,7 @@ const Home: React.FC = () => {
                           "px-4 py-2 flex items-center justify-between bg-muted/20",
                           isUnassignedCollapsible && "cursor-pointer",
                         )}
-                        onClick={
-                          isUnassignedCollapsible
-                            ? () =>
-                                setCollapsed(
-                                  UNASSIGNED_PROJECT_ID,
-                                  !collapsed,
-                                )
-                            : undefined
-                        }
+                        onClick={unassignedHeaderOnClick}
                       >
                         <div className="flex items-center gap-1 text-sm font-semibold">
                           {isUnassignedCollapsible && (
@@ -559,7 +553,7 @@ const Home: React.FC = () => {
               {(selectedProjectId === null
                 ? projects
                 : projects.filter((p) => p.id === selectedProjectId)
-                ).map((project) => {
+              ).map((project) => {
                 const sectionServers = filteredServers.filter(
                   (s) => s.projectId === project.id,
                 );
@@ -703,7 +697,57 @@ const Home: React.FC = () => {
                                     <AlertCircle className="h-4 w-4" />
                                   </button>
                                 )}
-                                <span className="text-xs text-muted-foreground"></span>
+                                <span className="text-xs text-muted-foreground">
+                                  {server.status === "running"
+                                    ? t("serverList.status.running")
+                                    : server.status === "starting"
+                                      ? t("serverList.status.starting")
+                                      : server.status === "stopping"
+                                        ? t("serverList.status.stopping")
+                                        : t("serverList.status.stopped")}
+                                </span>
+                                <div className="h-6 w-12">
+                                  <Switch
+                                    checked={server.status === "running"}
+                                    disabled={
+                                      server.status === "starting" ||
+                                      server.status === "stopping" ||
+                                      hasUnsetRequiredParams(server)
+                                    }
+                                    title={
+                                      hasUnsetRequiredParams(server)
+                                        ? t("serverList.requiredParamsNotSet")
+                                        : undefined
+                                    }
+                                    onCheckedChange={async (checked) => {
+                                      try {
+                                        if (checked) {
+                                          await startServer(server.id);
+                                          toast.success(
+                                            t("serverList.serverStarted"),
+                                          );
+                                        } else {
+                                          await stopServer(server.id);
+                                          toast.success(
+                                            t("serverList.serverStopped"),
+                                          );
+                                        }
+                                      } catch (error) {
+                                        console.error(
+                                          "Server operation failed:",
+                                          error,
+                                        );
+                                        showServerError(
+                                          error instanceof Error
+                                            ? error
+                                            : new Error(String(error)),
+                                          server.name,
+                                        );
+                                      }
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
                                 <button
                                   className="p-1.5 rounded-full hover:bg-muted transition-colors"
                                   onClick={(e) => openServerSettings(server, e)}
@@ -725,42 +769,178 @@ const Home: React.FC = () => {
           </ScrollArea>
         ) : (
           <ScrollArea className="h-full">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-              {filteredServers.map((server) => {
-                const isExpanded = expandedServerId === server.id;
-
-                return (
-                  <React.Fragment key={server.id}>
-                    <ServerCardCompact
-                      server={server}
-                      isExpanded={isExpanded}
-                      onClick={() => toggleServerExpand(server.id)}
-                      onToggle={async (checked) => {
-                        try {
-                          if (checked) {
-                            await startServer(server.id);
-                            toast.success(t("serverList.serverStarted"));
-                          } else {
-                            await stopServer(server.id);
-                            toast.success(t("serverList.serverStopped"));
-                          }
-                        } catch (error) {
-                          console.error("Server operation failed:", error);
-                          showServerError(
-                            error instanceof Error
-                              ? error
-                              : new Error(String(error)),
-                            server.name,
-                          );
+            <div className="p-4 space-y-4">
+              {/* Unassigned section for Grid view */}
+              {(selectedProjectId === null ||
+                selectedProjectId === UNASSIGNED_PROJECT_ID) &&
+                (() => {
+                  const collapsed =
+                    !!collapsedByProjectId[UNASSIGNED_PROJECT_ID];
+                  const unassignedServers = filteredServers.filter(
+                    (s) => !s.projectId,
+                  );
+                  if (unassignedServers.length === 0) return null;
+                  const isUnassignedCollapsible = selectedProjectId === null;
+                  const effectiveCollapsed =
+                    isUnassignedCollapsible && collapsed;
+                  return (
+                    <div>
+                      <div
+                        className={cn(
+                          "px-2 py-1.5 flex items-center justify-between bg-muted/20 rounded",
+                          isUnassignedCollapsible && "cursor-pointer",
+                        )}
+                        onClick={
+                          isUnassignedCollapsible
+                            ? () =>
+                                setCollapsed(
+                                  UNASSIGNED_PROJECT_ID,
+                                  !collapsed,
+                                )
+                            : undefined
                         }
-                      }}
-                      onOpenSettings={() => openServerSettings(server)}
-                      onError={() => {
-                        setErrorServer(server);
-                        setErrorModalOpen(true);
-                      }}
-                    />
-                  </React.Fragment>
+                      >
+                        <div className="flex items-center gap-1 text-sm font-semibold">
+                          {isUnassignedCollapsible && (
+                            <ChevronDown
+                              className={cn(
+                                "h-4 w-4 transition-transform",
+                                collapsed ? "-rotate-90" : "rotate-0",
+                              )}
+                            />
+                          )}
+                          {t("projects.unassigned", {
+                            defaultValue: "Unassigned",
+                          })}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {unassignedServers.length}
+                        </div>
+                      </div>
+                      {!effectiveCollapsed && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+                          {unassignedServers.map((server) => (
+                            <ServerCardCompact
+                              key={server.id}
+                              server={server}
+                              isExpanded={expandedServerId === server.id}
+                              onClick={() => toggleServerExpand(server.id)}
+                              onToggle={async (checked) => {
+                                try {
+                                  if (checked) {
+                                    await startServer(server.id);
+                                    toast.success(
+                                      t("serverList.serverStarted"),
+                                    );
+                                  } else {
+                                    await stopServer(server.id);
+                                    toast.success(
+                                      t("serverList.serverStopped"),
+                                    );
+                                  }
+                                } catch (error) {
+                                  console.error(
+                                    "Server operation failed:",
+                                    error,
+                                  );
+                                  showServerError(
+                                    error instanceof Error
+                                      ? error
+                                      : new Error(String(error)),
+                                    server.name,
+                                  );
+                                }
+                              }}
+                              onOpenSettings={() => openServerSettings(server)}
+                              onError={() => {
+                                setErrorServer(server);
+                                setErrorModalOpen(true);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+              {/* Project sections for Grid view */}
+              {(selectedProjectId === null
+                ? projects
+                : projects.filter((p) => p.id === selectedProjectId)
+                ).map((project) => {
+                const sectionServers = filteredServers.filter(
+                  (s) => s.projectId === project.id,
+                );
+                if (sectionServers.length === 0) return null;
+                const collapsed = !!collapsedByProjectId[project.id];
+                const isProjectCollapsible = selectedProjectId === null;
+                const effectiveCollapsed = isProjectCollapsible && collapsed;
+                return (
+                  <div key={project.id}>
+                    <div
+                      className={cn(
+                        "px-2 py-1.5 flex items-center justify-between bg-muted/20 rounded",
+                        isProjectCollapsible && "cursor-pointer",
+                      )}
+                      onClick={
+                        isProjectCollapsible
+                          ? () => setCollapsed(project.id, !collapsed)
+                          : undefined
+                      }
+                    >
+                      <div className="flex items-center gap-1 text-sm font-semibold">
+                        {isProjectCollapsible && (
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 transition-transform",
+                              collapsed ? "-rotate-90" : "rotate-0",
+                            )}
+                          />
+                        )}
+                        {project.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {sectionServers.length}
+                      </div>
+                    </div>
+                    {!effectiveCollapsed && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+                        {sectionServers.map((server) => (
+                          <ServerCardCompact
+                            key={server.id}
+                            server={server}
+                            isExpanded={expandedServerId === server.id}
+                            onClick={() => toggleServerExpand(server.id)}
+                            onToggle={async (checked) => {
+                              try {
+                                if (checked) {
+                                  await startServer(server.id);
+                                  toast.success(t("serverList.serverStarted"));
+                                } else {
+                                  await stopServer(server.id);
+                                  toast.success(t("serverList.serverStopped"));
+                                }
+                              } catch (error) {
+                                console.error("Server operation failed:", error);
+                                showServerError(
+                                  error instanceof Error
+                                    ? error
+                                    : new Error(String(error)),
+                                  server.name,
+                                );
+                              }
+                            }}
+                            onOpenSettings={() => openServerSettings(server)}
+                            onError={() => {
+                              setErrorServer(server);
+                              setErrorModalOpen(true);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
