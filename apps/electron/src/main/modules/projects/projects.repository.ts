@@ -66,7 +66,7 @@ export class ProjectRepository extends BaseRepository<Project> {
     }
 
     const row = this.db.get<any>(
-      "SELECT * FROM projects WHERE LOWER(name) = LOWER(:name)",
+      "SELECT * FROM projects WHERE name = :name COLLATE NOCASE",
       { name: trimmed },
     );
 

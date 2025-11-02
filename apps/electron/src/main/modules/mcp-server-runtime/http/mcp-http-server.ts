@@ -7,13 +7,12 @@ import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse";
 import { getPlatformAPIManager } from "../../workspace/platform-api-manager";
 import { TokenValidator } from "../token-validator";
 import { ProjectRepository } from "../../projects/projects.repository";
+import { PROJECT_HEADER, UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
 
 /**
  * HTTP server that exposes MCP functionality through REST endpoints
  */
 export class MCPHttpServer {
-  private static readonly PROJECT_HEADER = "x-mcpr-project";
-
   private app: express.Application;
   private server: http.Server | null = null;
   private port: number;
@@ -112,7 +111,7 @@ export class MCPHttpServer {
     req: express.Request,
     options?: { skipValidation?: boolean },
   ): { projectId: string | null; provided: boolean } {
-    const headerValue = req.headers[MCPHttpServer.PROJECT_HEADER];
+    const headerValue = req.headers[PROJECT_HEADER];
     if (headerValue === undefined) {
       return { projectId: null, provided: false };
     }
@@ -124,7 +123,7 @@ export class MCPHttpServer {
       return { projectId: null, provided: true };
     }
 
-    if (value === "__unassigned__" || value.toLowerCase() === "unassigned") {
+    if (value === UNASSIGNED_PROJECT_ID) {
       return { projectId: null, provided: true };
     }
 
@@ -180,13 +179,11 @@ export class MCPHttpServer {
       try {
         const platformManager = getPlatformAPIManager();
         let projectFilter: string | null;
-        let projectHeaderProvided = false;
         try {
           const resolution = this.resolveProjectFilter(req, {
             skipValidation: platformManager.isRemoteWorkspace(),
           });
           projectFilter = resolution.projectId;
-          projectHeaderProvided = resolution.provided;
         } catch (error: any) {
           if (!res.headersSent) {
             res.status(error?.status || 400).json({
@@ -207,72 +204,10 @@ export class MCPHttpServer {
         // Append metadata for downstream handlers
         const token = req.headers["authorization"];
         this.attachRequestMetadata(modifiedBody, token, projectFilter);
-
-        // Check if current workspace is remote
-        if (platformManager.isRemoteWorkspace()) {
-          // For remote workspaces, forward to remote aggregator
-          const remoteApiUrl = platformManager.getRemoteApiUrl();
-          if (!remoteApiUrl) {
-            throw new Error("Remote workspace has no API URL configured");
-          }
-
-          // Get user auth token instead of workspace token
-          const { getDecryptedAuthToken } = await import(
-            "../../auth/auth.service"
-          );
-          const authToken = await getDecryptedAuthToken();
-
-          // Forward the request to remote aggregator
-          try {
-            // Construct the remote MCP endpoint URL
-            const remoteUrl = new URL(remoteApiUrl + "/mcp");
-
-            // Forward the request to the remote aggregator
-            const response = await fetch(remoteUrl, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...(authToken && { Authorization: `Bearer ${authToken}` }),
-                ...(projectHeaderProvided && projectFilter !== null
-                  ? { [MCPHttpServer.PROJECT_HEADER]: projectFilter }
-                  : {}),
-              },
-              body: JSON.stringify(modifiedBody),
-            });
-
-            // Get the response body
-            const responseData = await response.text();
-
-            // Set the response status and headers
-            res.status(response.status);
-
-            // Forward relevant headers
-            const contentType = response.headers.get("content-type");
-            if (contentType) {
-              res.setHeader("Content-Type", contentType);
-            }
-
-            // Send the response
-            res.send(responseData);
-          } catch (error) {
-            console.error("Error forwarding to remote aggregator:", error);
-            if (!res.headersSent) {
-              res.status(500).json({
-                jsonrpc: "2.0",
-                error: {
-                  code: -32603,
-                  message: "Failed to connect to remote aggregator",
-                },
-                id: modifiedBody.id || null,
-              });
-            }
-          }
-        } else {
-          // For local workspaces, use local aggregator
-          await this.aggregatorServer
-            .getTransport()
-            .handleRequest(req, res, modifiedBody);
-        }
+        // For local workspaces, use local aggregator
+        await this.aggregatorServer
+          .getTransport()
+          .handleRequest(req, res, modifiedBody);
       } catch (error) {
         console.error("Error handling MCP request:", error);
         if (!res.headersSent) {

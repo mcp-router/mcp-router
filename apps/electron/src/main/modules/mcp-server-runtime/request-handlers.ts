@@ -1,6 +1,6 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { MCPServer } from "@mcp_router/shared";
+import { MCPServer, UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
 import {
   parseResourceUri,
   createResourceUri,
@@ -38,7 +38,7 @@ export class RequestHandlers extends RequestHandlerBase {
       projectId === undefined ||
       projectId === null ||
       projectId === "" ||
-      projectId === "__unassigned__"
+      projectId === UNASSIGNED_PROJECT_ID
     ) {
       return null;
     }
@@ -49,7 +49,7 @@ export class RequestHandlers extends RequestHandlerBase {
   }
 
   private getProjectKey(projectId: string | null): string {
-    return projectId ?? "__unassigned__";
+    return projectId ?? UNASSIGNED_PROJECT_ID;
   }
 
   private ensureToolMap(projectId: string | null): Map<string, string> {

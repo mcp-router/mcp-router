@@ -372,7 +372,7 @@ class HttpMcpBridgeServer {
       try {
         const headers: Record<string, string> = {};
         if (this.token) {
-          headers["X-MCP-Token"] = this.token;
+          headers["Authorization"] = `Bearer ${this.token}`;
         }
         if (this.project) {
           headers["X-MCPR-Project"] = this.project;

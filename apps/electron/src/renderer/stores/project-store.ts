@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Project } from "@mcp_router/shared";
+import { UNASSIGNED_PROJECT_ID as SHARED_UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
 import { useWorkspaceStore } from "./workspace-store";
 
 type CollapsedState = Record<string, boolean>; // projectId -> collapsed
@@ -23,7 +24,8 @@ interface ProjectStoreState {
 }
 
 const COLLAPSE_STORAGE_KEY = "mcpr:projects:collapsed:v1";
-export const UNASSIGNED_PROJECT_ID = "__unassigned__";
+const SELECTED_PROJECT_STORAGE_KEY = "mcpr:projects:selected:v1";
+export const UNASSIGNED_PROJECT_ID = SHARED_UNASSIGNED_PROJECT_ID;
 
 function loadCollapsed(): CollapsedState {
   try {
@@ -73,6 +75,9 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
         !projects.some((p) => p.id === selectedProjectId)
       ) {
         set({ selectedProjectId: null });
+        try {
+          localStorage.removeItem(SELECTED_PROJECT_STORAGE_KEY);
+        } catch {}
       }
     } catch (error) {
       set({
@@ -122,5 +127,26 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
     });
   },
 
-  setSelectedProjectId: (id) => set({ selectedProjectId: id }),
+  setSelectedProjectId: (id) =>
+    set(() => {
+      try {
+        if (id === null) {
+          localStorage.removeItem(SELECTED_PROJECT_STORAGE_KEY);
+        } else {
+          localStorage.setItem(SELECTED_PROJECT_STORAGE_KEY, JSON.stringify(id));
+        }
+      } catch {}
+      return { selectedProjectId: id };
+    }),
 }));
+
+// Initialize selected project from storage on first import
+try {
+  const raw = localStorage.getItem(SELECTED_PROJECT_STORAGE_KEY);
+  if (raw) {
+    const id = JSON.parse(raw) as string | null;
+    if (id === null || typeof id === "string") {
+      useProjectStore.setState({ selectedProjectId: id });
+    }
+  }
+} catch {}
