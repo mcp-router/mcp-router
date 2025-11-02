@@ -121,8 +121,7 @@ export class MainDatabaseMigration {
     // Projects feature (single consolidated migration)
     this.migrations.push({
       id: "20251101_projects_bootstrap",
-      description:
-        "Initialize projects schema (projects table, servers.project_id, index)",
+      description: "Ensure servers.project_id column and index",
       execute: (db) => this.migrateProjectsBootstrap(db),
     });
   }
@@ -648,33 +647,15 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * Consolidated migration for Projects feature (single function)
-   * - Create projects table (and name index) if not exists
-   * - Add servers.project_id column if not exists
-   * - Create index on servers(project_id) if not exists
+   * Projects関連のマイグレーション整理:
+   * - servers.project_id 列の追加（存在しなければ）
+   * - servers(project_id) のインデックス作成（存在しなければ）
+   *
+   * 注意: projectsテーブルの作成はProjectRepository.initializeTable()に委譲
    */
   private migrateProjectsBootstrap(db: SqliteManager): void {
     try {
-      // 1) Create projects table (and index) if not exists
-      const projectsTable = db.get(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'projects'",
-        {},
-      );
-      if (!projectsTable) {
-        db.execute(`
-          CREATE TABLE IF NOT EXISTS projects (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            created_at INTEGER NOT NULL,
-            updated_at INTEGER NOT NULL
-          )
-        `);
-        db.execute(
-          "CREATE INDEX IF NOT EXISTS idx_projects_name ON projects(name)",
-        );
-      }
-
-      // 2) Ensure servers.project_id exists
+      // Ensure servers.project_id exists
       const serversTable = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
@@ -686,13 +667,13 @@ export class MainDatabaseMigration {
           db.execute("ALTER TABLE servers ADD COLUMN project_id TEXT");
         }
 
-        // 3) Ensure index on servers(project_id)
+        // Ensure index on servers(project_id)
         db.execute(
           "CREATE INDEX IF NOT EXISTS idx_servers_project_id ON servers(project_id)",
         );
       }
     } catch (error) {
-      console.error("Error while creating projects table:", error);
+      console.error("Error while ensuring servers.project_id:", error);
       throw error;
     }
   }

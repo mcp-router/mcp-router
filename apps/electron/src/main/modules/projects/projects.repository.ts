@@ -36,7 +36,7 @@ export class ProjectRepository extends BaseRepository<Project> {
       )
     `);
     this.db.execute(
-      "CREATE INDEX IF NOT EXISTS idx_projects_name ON projects(name)",
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_name_unique ON projects(name COLLATE NOCASE)",
     );
   }
 
