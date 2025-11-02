@@ -171,9 +171,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Projects Management
   listProjects: () => ipcRenderer.invoke("project:list"),
-  createProject: (input: { name: string; color?: string }) =>
+  createProject: (input: { name: string }) =>
     ipcRenderer.invoke("project:create", input),
-  updateProject: (id: string, updates: { name?: string; color?: string }) =>
+  updateProject: (id: string, updates: { name?: string }) =>
     ipcRenderer.invoke("project:update", id, updates),
   deleteProject: (id: string) => ipcRenderer.invoke("project:delete", id),
 });

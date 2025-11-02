@@ -13,10 +13,10 @@ interface ProjectStoreState {
 
   // Actions
   list: () => Promise<void>;
-  create: (input: { name: string; color?: string }) => Promise<Project>;
+  create: (input: { name: string }) => Promise<Project>;
   update: (
     id: string,
-    updates: { name?: string; color?: string },
+    updates: { name?: string },
   ) => Promise<Project>;
   delete: (id: string) => Promise<void>;
 

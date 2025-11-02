@@ -22,10 +22,7 @@ type Props = {
   server: MCPServer;
   projects: Project[];
   onAssignProject: (projectId: string | null) => Promise<void> | void;
-  onCreateProject: (input: {
-    name: string;
-    color?: string;
-  }) => Promise<Project>;
+  onCreateProject: (input: { name: string }) => Promise<Project>;
   onDelete: () => void;
 };
 

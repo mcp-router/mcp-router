@@ -138,10 +138,10 @@ declare global {
 
       // Projects Management
       listProjects: () => Promise<Project[]>;
-      createProject: (input: { name: string; color?: string }) => Promise<Project>;
+      createProject: (input: { name: string }) => Promise<Project>;
       updateProject: (
         id: string,
-        updates: { name?: string; color?: string },
+        updates: { name?: string },
       ) => Promise<Project>;
       deleteProject: (id: string) => Promise<void>;
 

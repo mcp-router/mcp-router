@@ -8,27 +8,19 @@ export function setupProjectHandlers(): void {
     return service.list();
   });
 
-  ipcMain.handle(
-    "project:create",
-    async (_evt, input: { name: string; color?: string }) => {
-      if (!input || typeof input.name !== "string" || !input.name.trim()) {
-        throw new Error("Invalid project name");
-      }
-      return service.create({ name: input.name, color: input.color });
-    },
-  );
+  ipcMain.handle("project:create", async (_evt, input: { name: string }) => {
+    if (!input || !input.name.trim()) {
+      throw new Error("Invalid project name");
+    }
+    return service.create({ name: input.name });
+  });
 
   ipcMain.handle(
     "project:update",
-    async (
-      _evt,
-      id: string,
-      updates: { name?: string; color?: string },
-    ) => {
+    async (_evt, id: string, updates: { name?: string }) => {
       if (!id) throw new Error("Missing project id");
-      const payload: { name?: string; color?: string } = {};
+      const payload: { name?: string } = {};
       if (updates?.name !== undefined) payload.name = updates.name;
-      if (updates?.color !== undefined) payload.color = updates.color;
       return service.update(id, payload);
     },
   );
@@ -38,4 +30,3 @@ export function setupProjectHandlers(): void {
     service.delete(id);
   });
 }
-

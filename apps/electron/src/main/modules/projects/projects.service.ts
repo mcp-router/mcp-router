@@ -2,7 +2,11 @@ import { SingletonService } from "@/main/modules/singleton-service";
 import { ProjectRepository } from "./projects.repository";
 import type { Project } from "@mcp_router/shared";
 
-export class ProjectService extends SingletonService<Project, string, ProjectService> {
+export class ProjectService extends SingletonService<
+  Project,
+  string,
+  ProjectService
+> {
   protected constructor() {
     super();
   }
@@ -16,7 +20,7 @@ export class ProjectService extends SingletonService<Project, string, ProjectSer
   }
 
   public static resetInstance(): void {
-    (this as any).resetInstanceBase(ProjectService);
+    this.resetInstanceBase(ProjectService);
   }
 
   list(): Project[] {
@@ -27,22 +31,21 @@ export class ProjectService extends SingletonService<Project, string, ProjectSer
     }
   }
 
-  create(input: { name: string; color?: string }): Project {
+  create(input: { name: string }): Project {
     try {
       const repo = ProjectRepository.getInstance();
       const project = {
         name: input.name.trim(),
-        color: input.color,
         createdAt: Date.now(),
         updatedAt: Date.now(),
-      };
+      } as Omit<Project, "id">;
       return repo.add(project);
     } catch (error) {
       return this.handleError("create", error);
     }
   }
 
-  update(id: string, updates: Partial<Pick<Project, "name" | "color">>): Project {
+  update(id: string, updates: Partial<Pick<Project, "name">>): Project {
     try {
       const repo = ProjectRepository.getInstance();
       const existing = repo.getById(id);
@@ -65,8 +68,15 @@ export class ProjectService extends SingletonService<Project, string, ProjectSer
     try {
       const repo = ProjectRepository.getInstance();
       // Unassign servers from this project (set NULL)
-      const db = (repo as any).database as import("@/main/infrastructure/database/sqlite-manager").SqliteManager;
-      db.execute("UPDATE servers SET project_id = NULL WHERE project_id = :id", { id });
+      const db = (
+        repo as {
+          database: import("@/main/infrastructure/database/sqlite-manager").SqliteManager;
+        }
+      ).database;
+      db.execute(
+        "UPDATE servers SET project_id = NULL WHERE project_id = :id",
+        { id },
+      );
       // Delete project
       const ok = repo.delete(id);
       if (!ok) throw new Error("Failed to delete project");

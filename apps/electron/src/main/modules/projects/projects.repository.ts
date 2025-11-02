@@ -31,7 +31,6 @@ export class ProjectRepository extends BaseRepository<Project> {
       CREATE TABLE IF NOT EXISTS projects (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        color TEXT,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
       )
@@ -45,7 +44,6 @@ export class ProjectRepository extends BaseRepository<Project> {
     return {
       id: row.id,
       name: row.name,
-      color: row.color || undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -56,7 +54,6 @@ export class ProjectRepository extends BaseRepository<Project> {
     return {
       id: entity.id,
       name: entity.name,
-      color: entity.color || null,
       created_at: entity.createdAt ?? now,
       updated_at: now,
     };

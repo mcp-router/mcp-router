@@ -21,7 +21,6 @@ Phase 2 (future): allow many-to-many (server can be in multiple projects) via a 
 - Project
   - id: string (uuid)
   - name: string (required)
-  - color?: string (optional, hex)
   - createdAt: number (unix ms)
   - updatedAt: number (unix ms)
 
@@ -36,7 +35,6 @@ Phase 2 (future): allow many-to-many (server can be in multiple projects) via a 
 - Table: `projects`
   - `id TEXT PRIMARY KEY`
   - `name TEXT NOT NULL`
-  - `color TEXT` (nullable)
   - `created_at INTEGER NOT NULL`
   - `updated_at INTEGER NOT NULL`
   - Indexes: `idx_projects_name` (optional), `idx_projects_order` (optional)
@@ -54,12 +52,11 @@ Phase 2 (future): allow many-to-many (server can be in multiple projects) via a 
 
 ## Shared Types (packages/shared)
 
-### New type file (proposed): `packages/shared/src/types/project-types.ts`
+### New type file: `packages/shared/src/types/project-types.ts`
 ```ts
 export interface Project {
   id: string;
   name: string;
-  color?: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -76,8 +73,8 @@ export interface Project {
 ### New router (local-first; remote can come later)
 - `projects`:
   - `list: () => Promise<Project[]>`
-  - `create: (input: { name: string; color?: string }) => Promise<Project>`
-  - `update: (id: string, updates: Partial<Pick<Project, "name" | "color">>) => Promise<Project>`
+  - `create: (input: { name: string }) => Promise<Project>`
+  - `update: (id: string, updates: { name?: string }) => Promise<Project>`
   - `delete: (id: string) => Promise<void>`
   
 Note: Server assignment uses the existing Servers API (`servers.update` with `projectId`).
