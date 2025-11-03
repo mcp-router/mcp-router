@@ -40,6 +40,16 @@
 
 Download from our [releases page](https://github.com/mcp-router/mcp-router/releases).
 
+After setting up MCP Router, you can connect to MCP Router using the CLI:
+```bash
+# Set your MCP Router token (Issued when adding a custom app)
+export MCPR_TOKEN="mcpr_zi4hoFL_E6urQa4z2YW_zdKkOb7KMPan"
+# To connect to MCP Router, run:
+npx -y @mcp_router/cli connect
+
+# If you want to use project, run:
+npx -y @mcp_router/cli connect --project <project-name>
+```
 
 ## 🚀 Features
 
@@ -47,6 +57,13 @@ Download from our [releases page](https://github.com/mcp-router/mcp-router/relea
 Easily toggle MCP servers on/off from a single dashboard
 
 <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/toggle.png" alt="Server Management" width="600">
+
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/tool-toggle" alt="Toggle Tool" width="600">
+
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/project-management" alt="Project Management" width="600">
+
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/workspace" alt="Workspace Management" width="600">
+
 
 ### 🌐 Universal Connectivity
 Add and connect to any MCP server with support for both local and remote servers
