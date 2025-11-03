@@ -43,7 +43,7 @@ Download from our [releases page](https://github.com/mcp-router/mcp-router/relea
 After setting up MCP Router, you can connect to MCP Router using the CLI:
 ```bash
 # Set your MCP Router token (Issued when adding a custom app)
-export MCPR_TOKEN="mcpr_zi4hoFL_E6urQa4z2YW_zdKkOb7KMPan"
+export MCPR_TOKEN="mcpr_your_token"
 # To connect to MCP Router, run:
 npx -y @mcp_router/cli connect
 
