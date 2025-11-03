@@ -167,10 +167,17 @@ export class RequestHandlers extends RequestHandlerBase {
       "CallTool",
       async () => {
         // Call the tool on the server
-        return await client.callTool({
-          name: originalToolName,
-          arguments: request.params.arguments || {},
-        });
+        return await client.callTool(
+          {
+            name: originalToolName,
+            arguments: request.params.arguments || {},
+          },
+          undefined,
+          {
+            timeout: 60 * 60 * 1000, // 60分
+            resetTimeoutOnProgress: true,
+          },
+        );
       },
       { serverId },
     );
@@ -190,8 +197,8 @@ export class RequestHandlers extends RequestHandlerBase {
 
     // Add tools from running servers
     for (const [serverId, client] of this.clients.entries()) {
-    const server = this.servers.get(serverId);
-    const serverName = server?.name || serverId;
+      const server = this.servers.get(serverId);
+      const serverName = server?.name || serverId;
       const isRunning = this.serverStatusMap.get(serverName);
 
       if (!isRunning || !client) {
