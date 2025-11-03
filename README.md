@@ -58,11 +58,11 @@ Easily toggle MCP servers on/off from a single dashboard
 
 <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/toggle.png" alt="Server Management" width="600">
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/tool-toggle" alt="Toggle Tool" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/tool-toggle.png" alt="Toggle Tool" width="600">
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/project-management" alt="Project Management" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/project-management.png" alt="Project Management" width="600">
 
-<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/workspace" alt="Workspace Management" width="600">
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/workspace.png" alt="Workspace Management" width="600">
 
 
 ### 🌐 Universal Connectivity
@@ -88,6 +88,8 @@ Join our community to get help, share ideas, and stay updated:
 - 💬 [Discord Community](https://discord.com/invite/dwG9jPrhxB)
 - 🐦 [Follow us on X (Twitter)](https://x.com/mcp_router)
 - ⭐ [Star us on GitHub](https://github.com/mcp-router/mcp-router)
+
+[![Star History Chart](https://api.star-history.com/svg?repos=mcp-router/mcp-router&type=date&legend=top-left)](https://www.star-history.com/#mcp-router/mcp-router&type=date&legend=top-left)
 
 ## 📝 License
 
