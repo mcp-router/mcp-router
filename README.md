@@ -16,12 +16,15 @@
 **MCP Router** is a desktop application for simplifies the management of Model Context Protocol (MCP) servers.
 
 ### ✨ Key Features
-- 🌐 **Universal** - Connect to any MCP server
+
+- 🌐 **Universal** — Connect to any MCP server
   - Remote or local servers
   - Supports DXT, JSON, Manual
-- 🖥️ **Cross-platform** - Available for Windows and macOS
-- 🔒 **Privacy** - All data is stored locally on your device
-- ⬆️ **Data portability** - Easily export and import your mcp configurations
+- 🖥️ **Cross-platform** — Windows and macOS
+- 🗂 **Context Management** — Keep growing MCP server contexts organized
+  - Group MCP servers into Projects
+  - Manage modes with Workspaces (like browser profiles)
+  - Toggle tools on/off per server
 
 ## 🔒 Privacy & Security
 
@@ -54,7 +57,7 @@ npx -y @mcp_router/cli connect --project <project-name>
 ## 🚀 Features
 
 ### 📊 Centralized Server Management
-Easily toggle MCP servers on/off from a single dashboard
+Easily toggle MCP servers on/off, enable/disable individual tools, and organize servers into Projects and Workspaces — all from a single dashboard
 
 <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/toggle.png" alt="Server Management" width="600">
 

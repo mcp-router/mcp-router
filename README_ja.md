@@ -21,6 +21,10 @@
   - リモートまたはローカルサーバ
   - DXT、JSON、Manualに対応
 - 🖥️ **クロスプラットフォーム** - WindowsとmacOSに対応
+- 🗂 **コンテキスト管理** - 増えすぎるMCPサーバのコンテキストを適切に管理
+  - MCPサーバーをプロジェクトとしてグルーピング可能
+  - ワークスペース機能で（ブラウザのプロファイルのように）モードを管理可能
+  - サーバーごとにツールの有効/無効を切り替え可能
 
 ## 🔒 プライバシーとセキュリティ
 
@@ -43,9 +47,15 @@
 ## 🚀 機能
 
 ### 📊 一元的なサーバ管理
-単一のダッシュボードからMCPサーバのオン/オフを簡単に切り替え
+単一のダッシュボードからMCPサーバのオン/オフ切り替えに加え、各サーバーのツールを有効/無効にしたり、プロジェクト（グループ）やワークスペースで整理して管理できます。
 
 <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/toggle.png" alt="サーバ管理" width="600">
+
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/tool-toggle.png" alt="ツール有効/無効の切り替え" width="600">
+
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/project-management.png" alt="プロジェクト（グループ）管理" width="600">
+
+<img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/workspace.png" alt="ワークスペース管理" width="600">
 
 ### 🌐 ユニバーサル接続
 ローカルおよびリモートサーバに対応し、あらゆるMCPサーバの追加と接続が可能
