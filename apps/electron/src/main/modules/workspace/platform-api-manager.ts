@@ -112,12 +112,9 @@ export class PlatformAPIManager {
     // グローバルなワークスペースデータベース参照を設定
     setWorkspaceDatabase(newDatabase);
 
-    // マイグレーションを実行
-    // メインDBの場合のみマイグレーションを実行
-    if (workspace.localConfig?.databasePath === "mcprouter.db") {
-      const migration = new MainDatabaseMigration(newDatabase);
-      migration.runMigrations();
-    }
+    // マイグレーションを実行（全ワークスペースで実行）
+    const migration = new MainDatabaseMigration(newDatabase);
+    migration.runMigrations();
     // ワークスペースDBの初期化は各リポジトリが自動的に行う
 
     // リポジトリをリセット（新しいデータベースを使用するように）

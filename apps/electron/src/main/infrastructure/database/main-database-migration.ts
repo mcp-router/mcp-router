@@ -1,26 +1,13 @@
-import { getSqliteManager, SqliteManager } from "./sqlite-manager";
-import { McpServerManagerRepository } from "../../modules/mcp-server-manager/mcp-server-manager.repository";
+import { SqliteManager } from "./sqlite-manager";
 import { Migration } from "@mcp_router/shared";
-import { safeStorage } from "electron";
 
 /**
  * データベースマイグレーション管理クラス
  * 全てのマイグレーションを一元管理
  */
 export class MainDatabaseMigration {
-  private static instance: MainDatabaseMigration | null = null;
   // 登録されたマイグレーションリスト（順序付き）
   private migrations: Migration[] = [];
-
-  /**
-   * シングルトンインスタンスを取得
-   */
-  public static getInstance(db: SqliteManager): MainDatabaseMigration {
-    if (!MainDatabaseMigration.instance) {
-      MainDatabaseMigration.instance = new MainDatabaseMigration(db);
-    }
-    return MainDatabaseMigration.instance;
-  }
 
   /**
    * コンストラクタ - マイグレーションを登録
@@ -96,11 +83,11 @@ export class MainDatabaseMigration {
       execute: (db) => this.migrateAddToolPermissionsColumn(db),
     });
 
-    // データ暗号化マイグレーション
+    // Projects feature (servers.project_id 列とインデックス)
     this.migrations.push({
-      id: "20250513_encrypt_server_data",
-      description: "Encrypt server sensitive data",
-      execute: (db) => this.migrateToEncryption(db),
+      id: "20251101_projects_bootstrap",
+      description: "Ensure servers.project_id column and index",
+      execute: (db) => this.migrateProjectsBootstrap(db),
     });
 
     // トークンテーブルをメインDBに確実に作成
@@ -117,13 +104,6 @@ export class MainDatabaseMigration {
       description: "Add hooks table for MCP request/response hooks",
       execute: (db) => this.migrateAddHooksTable(db),
     });
-
-    // Projects feature (single consolidated migration)
-    this.migrations.push({
-      id: "20251101_projects_bootstrap",
-      description: "Ensure servers.project_id column and index",
-      execute: (db) => this.migrateProjectsBootstrap(db),
-    });
   }
 
   /**
@@ -131,7 +111,7 @@ export class MainDatabaseMigration {
    */
   public runMigrations(): void {
     try {
-      const db = getSqliteManager();
+      const db = this.db;
 
       // マイグレーション管理テーブルの初期化
       this.initMigrationTable();
@@ -533,57 +513,6 @@ export class MainDatabaseMigration {
     }
   }
 
-  /**
-   * 既存のプレーンテキストデータを暗号化形式に移行
-   * アプリケーション起動時に呼び出される（同期的に処理）
-   */
-  private migrateToEncryption(db: SqliteManager): void {
-    try {
-      if (!safeStorage.isEncryptionAvailable()) {
-        console.warn(
-          "Secure encryption is not available on this system. Skipping data migration.",
-        );
-        return;
-      }
-
-      // サーバーリポジトリを取得
-      const serverRepository = McpServerManagerRepository.getInstance();
-
-      // すべてのサーバーを取得
-      const allServers = serverRepository.getAllServers();
-
-      if (allServers.length === 0) {
-        console.log("No servers found; skipping encryption migration");
-        return;
-      }
-
-      let migratedCount = 0;
-
-      // 各サーバーを再保存して暗号化を適用
-      for (const server of allServers) {
-        try {
-          // 保存時にmapEntityToRowForUpdateが呼ばれ、データが暗号化される
-          // bearerToken, env, inputParams, args, remote_urlが暗号化対象
-          serverRepository.updateServer(server.id, {});
-          migratedCount++;
-        } catch (error) {
-          console.error(
-            `Failed to encrypt server "${server.name}" (ID: ${server.id}):`,
-            error,
-          );
-        }
-      }
-
-      console.log(`Encrypted ${migratedCount} server records`);
-    } catch (error) {
-      console.error(
-        "Error occurred during server data encryption migration:",
-        error,
-      );
-      throw error; // マイグレーションエラーは上位に伝播させる
-    }
-  }
-
   // ==========================================================================
   // マイグレーション管理ユーティリティ
   // ==========================================================================
@@ -592,7 +521,7 @@ export class MainDatabaseMigration {
    * マイグレーション管理テーブルの初期化
    */
   private initMigrationTable(): void {
-    const db = getSqliteManager();
+    const db = this.db;
 
     // マイグレーション管理テーブルの作成
     db.execute(`
@@ -607,7 +536,7 @@ export class MainDatabaseMigration {
    * 実行済みマイグレーションのリストを取得
    */
   private getCompletedMigrations(): Set<string> {
-    const db = getSqliteManager();
+    const db = this.db;
 
     // 実行済みマイグレーションを取得
     const rows = db.all<{ id: string }>("SELECT id FROM migrations");
@@ -620,7 +549,7 @@ export class MainDatabaseMigration {
    * マイグレーションを記録
    */
   private markMigrationComplete(migrationId: string): void {
-    const db = getSqliteManager();
+    const db = this.db;
 
     // マイグレーションを記録
     db.execute(
