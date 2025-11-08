@@ -5,9 +5,8 @@ import {
   Edge,
   Background,
   BackgroundVariant,
-  useNodesState,
-  useEdgesState,
-  addEdge,
+  applyNodeChanges,
+  applyEdgeChanges,
   Connection,
   ConnectionMode,
   MarkerType,
@@ -184,17 +183,20 @@ export default function WorkflowEditor({
     };
   }, [resetEditorState]);
 
-  const [localNodes, , onNodesChange] = useNodesState(nodes as Node[]);
-  const [localEdges, , onEdgesChange] = useEdgesState(edges as Edge[]);
+  // React Flow change handlers (controlled by Zustand store)
+  const onNodesChange = useCallback(
+    (changes: Parameters<typeof applyNodeChanges>[0]) => {
+      setNodes(applyNodeChanges(changes, nodes as Node[]) as WorkflowNode[]);
+    },
+    [nodes, setNodes],
+  );
 
-  // Sync local React Flow state with Zustand store
-  useEffect(() => {
-    setNodes(localNodes as WorkflowNode[]);
-  }, [localNodes, setNodes]);
-
-  useEffect(() => {
-    setEdges(localEdges as WorkflowEdge[]);
-  }, [localEdges, setEdges]);
+  const onEdgesChange = useCallback(
+    (changes: Parameters<typeof applyEdgeChanges>[0]) => {
+      setEdges(applyEdgeChanges(changes, edges as Edge[]) as WorkflowEdge[]);
+    },
+    [edges, setEdges],
+  );
 
   const validateConnection = useCallback(
     (params: Connection): boolean => {
@@ -377,7 +379,7 @@ export default function WorkflowEditor({
           onConnect={onConnect}
           onNodeClick={onNodeClick}
           nodeTypes={nodeTypes}
-          connectionMode={ConnectionMode.Loose}
+          connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={defaultEdgeOptions}
           proOptions={{ hideAttribution: true }}
           fitView

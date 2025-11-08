@@ -18,6 +18,10 @@ import { McpAppsManagerService } from "../mcp-apps-manager/mcp-apps-manager.serv
 import { McpLoggerService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import { SettingsService } from "../settings/settings.service";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
+import { WorkflowRepository } from "../workflow/workflow.repository";
+import { HookRepository } from "../workflow/hook.repository";
+import { WorkflowService } from "../workflow/workflow.service";
+import { HookService } from "../workflow/hook.service";
 
 /**
  * Platform API管理クラス
@@ -115,7 +119,6 @@ export class PlatformAPIManager {
     // マイグレーションを実行（全ワークスペースで実行）
     const migration = new MainDatabaseMigration(newDatabase);
     migration.runMigrations();
-    // ワークスペースDBの初期化は各リポジトリが自動的に行う
 
     // リポジトリをリセット（新しいデータベースを使用するように）
     McpLoggerRepository.resetInstance();
@@ -123,12 +126,16 @@ export class PlatformAPIManager {
     SettingsRepository.resetInstance();
     McpAppsManagerRepository.resetInstance();
     WorkspaceRepository.resetInstance();
+    WorkflowRepository.resetInstance();
+    HookRepository.resetInstance();
 
     // サービスのシングルトンインスタンスもリセット
     ServerService.resetInstance();
     McpAppsManagerService.resetInstance();
     McpLoggerService.resetInstance();
     SettingsService.resetInstance();
+    WorkflowService.resetInstance();
+    HookService.resetInstance();
     // MCPServerManagerの再初期化をトリガー
     if (this.getServerManager) {
       const serverManager = this.getServerManager();

@@ -6,6 +6,7 @@ import {
   IconActivity,
   IconDeviceDesktop,
   IconDownload,
+  IconWebhook,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/renderer/stores";
@@ -149,23 +150,23 @@ const SidebarComponent: React.FC = () => {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
 
-                  {/*{!isRemoteWorkspace && (*/}
-                  {/*  <SidebarMenuItem>*/}
-                  {/*    <SidebarMenuButton*/}
-                  {/*      asChild*/}
-                  {/*      tooltip={t("hooks.title")}*/}
-                  {/*      isActive={location.pathname === "/hooks"}*/}
-                  {/*    >*/}
-                  {/*      <Link*/}
-                  {/*        to="/hooks"*/}
-                  {/*        className="flex items-center gap-3 py-5 px-3 w-full"*/}
-                  {/*      >*/}
-                  {/*        <IconWebhook className="h-6 w-6" />*/}
-                  {/*        <span className="text-base">{t("hooks.title")}</span>*/}
-                  {/*      </Link>*/}
-                  {/*    </SidebarMenuButton>*/}
-                  {/*  </SidebarMenuItem>*/}
-                  {/*)}*/}
+                  {!isRemoteWorkspace && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={t("hooks.title")}
+                        isActive={location.pathname === "/hooks"}
+                      >
+                        <Link
+                          to="/hooks"
+                          className="flex items-center gap-3 py-5 px-3 w-full"
+                        >
+                          <IconWebhook className="h-6 w-6" />
+                          <span className="text-base">{t("hooks.title")}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
 
                   {!isRemoteWorkspace && (
                     <SidebarMenuItem>
