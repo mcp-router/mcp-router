@@ -273,12 +273,10 @@ export async function status(forceRefresh = false): Promise<{
       userDataCache &&
       Date.now() - userDataCache.lastFetched < USER_DATA_CACHE_TTL
     ) {
-      const token = await getDecryptedAuthToken();
       return {
         authenticated: true,
         userId: settings.userId,
         user: userDataCache.user,
-        token: token || undefined,
       };
     }
 
@@ -315,7 +313,6 @@ export async function status(forceRefresh = false): Promise<{
           authenticated: true,
           userId: settings.userId,
           user: userData,
-          token: token || undefined,
         };
       } else {
         if (userResponse.status === 401) {
