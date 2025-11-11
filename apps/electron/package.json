@@ -1,7 +1,7 @@
 {
   "name": "@mcp_router/electron",
   "productName": "MCP Router",
-  "version": "0.5.9",
+  "version": "0.6.0",
   "private": true,
   "main": ".webpack/main",
   "repository": {
@@ -17,7 +17,7 @@
     "make": "cross-env NODE_ENV=production electron-forge make",
     "make:x64": "cross-env NODE_ENV=production npm_config_target_arch=x64 npm_config_target_platform=darwin npm_config_arch=x64 electron-forge make --arch=x64",
     "make:arm64": "cross-env NODE_ENV=production npm_config_target_arch=arm64 npm_config_target_platform=darwin npm_config_arch=arm64 electron-forge make --arch=arm64",
-    "publish": "cross-env NODE_ENV=production electron-forge publish",
+    "publish": "npx @electron/rebuild -f -w better-sqlite3 && cross-env NODE_ENV=production electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
     "format": "prettier --write .",
