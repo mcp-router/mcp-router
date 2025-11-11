@@ -149,11 +149,18 @@ export class PlatformAPIManager {
     }
 
     // 新しいワークスペースのサーバーIDを取得してトークンを同期
-
-    const serverRows = newDatabase.all<{ id: string }>(
-      "SELECT id FROM servers",
-    );
-    const serverIds = serverRows.map((row) => row.id);
+    // リポジトリ経由で取得し、テーブル初期化を確実化する
+    let serverIds: string[] = [];
+    try {
+      const serverRepo = McpServerManagerRepository.getInstance();
+      serverIds = serverRepo.getAllServers().map((s) => s.id);
+    } catch (e) {
+      console.error(
+        "Failed to load servers via repository for token sync:",
+        e,
+      );
+      serverIds = [];
+    }
 
     if (serverIds.length > 0) {
       getSharedConfigManager().syncTokensWithWorkspaceServers(serverIds);
