@@ -193,11 +193,10 @@ export class MCPServerManager {
       const allTokens = tokenManager.listTokens();
 
       for (const token of allTokens) {
-        if (token.serverIds.includes(serverId)) {
-          const updatedServerIds = token.serverIds.filter(
-            (id: string) => id !== serverId,
-          );
-          tokenManager.updateTokenServerAccess(token.id, updatedServerIds);
+        if (serverId in (token.serverAccess || {})) {
+          const updatedServerAccess = { ...(token.serverAccess || {}) };
+          delete updatedServerAccess[serverId];
+          tokenManager.updateTokenServerAccess(token.id, updatedServerAccess);
         }
       }
     } catch (error) {
