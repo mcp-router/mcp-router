@@ -162,54 +162,44 @@ export class SharedConfigManager implements ISharedConfigManager {
       const db = new SqliteManager(dbPath);
 
       // settingsテーブルからデータを移行
-      try {
-        const settingsRows = db.all<{ key: string; value: string }>(
-          "SELECT key, value FROM settings",
-        );
 
-        const settings: AppSettings = { ...DEFAULT_APP_SETTINGS };
-        settingsRows.forEach((row) => {
-          const key = row.key as keyof AppSettings;
-          if (key in settings) {
-            try {
-              settings[key] = JSON.parse(row.value);
-            } catch (_) {
-              settings[key] = row.value as any;
-            }
+      const settingsRows = db.all<{ key: string; value: string }>(
+        "SELECT key, value FROM settings",
+      );
+
+      const settings: AppSettings = { ...DEFAULT_APP_SETTINGS };
+      settingsRows.forEach((row) => {
+        const key = row.key as keyof AppSettings;
+        if (key in settings) {
+          try {
+            settings[key] = JSON.parse(row.value);
+          } catch {
+            settings[key] = row.value as any;
           }
-        });
-        this.config.settings = settings;
-      } catch (error) {
-        console.error(
-          "[SharedConfigManager] Failed to migrate settings:",
-          error,
-        );
-      }
+        }
+      });
+      this.config.settings = settings;
 
       // tokensテーブルからデータを移行
-      try {
-        const tokenRows = db.all<any>("SELECT * FROM tokens");
 
-        // フィールド名を正しい形式に変換
-        this.config.mcpApps.tokens = tokenRows.map((row) => {
-          const token: Token = {
-            id: row.id,
-            clientId: row.client_id || row.clientId,
-            issuedAt: row.issued_at || row.issuedAt,
-            serverAccess: {},
-          };
+      const tokenRows = db.all<any>("SELECT * FROM tokens");
 
-          // サーバーアクセス情報をマップに変換
-          if (row.serverAccess) {
-            token.serverAccess = { ...(row.serverAccess as TokenServerAccess) };
-          }
+      // フィールド名を正しい形式に変換
+      this.config.mcpApps.tokens = tokenRows.map((row) => {
+        const token: Token = {
+          id: row.id,
+          clientId: row.client_id || row.clientId,
+          issuedAt: row.issued_at || row.issuedAt,
+          serverAccess: {},
+        };
 
-          return token;
-        });
-        console.log(`[SharedConfigManager] Migrated ${tokenRows.length} tokens`);
-      } catch (error) {
-        console.error("[SharedConfigManager] Failed to migrate tokens:", error);
-      }
+        // サーバーアクセス情報をマップに変換
+        if (row.serverAccess) {
+          token.serverAccess = { ...(row.serverAccess as TokenServerAccess) };
+        }
+
+        return token;
+      });
 
       // メタ情報を記録
       this.config._meta = {

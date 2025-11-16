@@ -69,7 +69,10 @@ export interface ISharedConfigManager {
   /**
    * トークンのサーバーアクセスを更新
    */
-  updateTokenServerAccess(tokenId: string, serverAccess: TokenServerAccess): void;
+  updateTokenServerAccess(
+    tokenId: string,
+    serverAccess: TokenServerAccess,
+  ): void;
 
   /**
    * 設定ファイルを初期化

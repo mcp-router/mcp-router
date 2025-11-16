@@ -2,10 +2,7 @@
  * Application management domain API (includes token management)
  */
 
-import type {
-  McpApp,
-  McpAppsManagerResult,
-} from "../../mcp-app-types";
+import type { McpApp, McpAppsManagerResult } from "../../mcp-app-types";
 import type { TokenServerAccess } from "../../token-types";
 
 interface Token {

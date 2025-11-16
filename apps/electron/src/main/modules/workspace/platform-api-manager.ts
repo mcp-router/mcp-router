@@ -155,10 +155,7 @@ export class PlatformAPIManager {
       const serverRepo = McpServerManagerRepository.getInstance();
       serverList = serverRepo.getAllServers().map((s) => s.id);
     } catch (e) {
-      console.error(
-        "Failed to load servers via repository for token sync:",
-        e,
-      );
+      console.error("Failed to load servers via repository for token sync:", e);
       serverList = [];
     }
 

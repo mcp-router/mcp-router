@@ -64,10 +64,7 @@ export class ServerService extends SingletonService<
               ...serverAccess,
               [server.id]: true,
             };
-            tokenManager.updateTokenServerAccess(
-              token.id,
-              updatedServerAccess,
-            );
+            tokenManager.updateTokenServerAccess(token.id, updatedServerAccess);
           }
         });
       } catch (error) {

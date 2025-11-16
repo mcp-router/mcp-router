@@ -697,10 +697,7 @@ export class McpAppsManagerService extends SingletonService<
       }
 
       // トークンのサーバアクセス権限を更新
-      const success = this.updateTokenServerAccess(
-        appToken.id,
-        incomingAccess,
-      );
+      const success = this.updateTokenServerAccess(appToken.id, incomingAccess);
 
       if (!success) {
         return {
