@@ -335,7 +335,7 @@ const McpAppsManager: React.FC = () => {
                   <div>
                     {/* Add How To Use and Delete buttons to the left of the card footer */}
                     <div className="flex gap-2 flex-wrap">
-                      {app.isCustom && app.configured && app.token && (
+                      {app.configured && app.token && (
                         <Button
                           variant="outline"
                           size="sm"
