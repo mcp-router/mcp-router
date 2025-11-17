@@ -31,6 +31,7 @@ import {
   findStandardAppDefinition,
   getStandardAppIds,
 } from "./app-definitions";
+import os from "os";
 
 // SVGアイコンのインポート
 import claudeIcon from "../../../../public/images/apps/claude.svg";
@@ -333,12 +334,24 @@ export class McpAppsManagerService extends SingletonService<
     const dir = path.dirname(filePath);
     await fsPromises.mkdir(dir, { recursive: true });
 
+    const isWindows = process.platform === "win32";
+    const command = isWindows
+      ? "C:\\\\Program Files\\\\nodejs\\\\npx.cmd"
+      : "npx";
+    const localAppData = isWindows
+      ? path.join(os.homedir(), "AppData", "Local")
+      : null;
+
     const blockMain =
       `[mcp_servers.mcp_router]\n` +
-      `command = "npx"\n` +
-      `args    = ["-y", "@mcp_router/cli@latest", "connect"]\n`;
-    const blockEnv =
+      `command = "${command}"\n` +
+      `args    = ["-y", "@mcp_router/cli@latest", "connect"]\n` +
+      `startup_timeout_sec = 120\n`;
+    let blockEnv =
       `\n[mcp_servers.mcp_router.env]\n` + `MCPR_TOKEN = "${tokenId}"\n`;
+    if (localAppData) {
+      blockEnv += `LOCALAPPDATA = "${localAppData}"\n`;
+    }
     const newBlock = `${blockMain}${blockEnv}`;
 
     let content = "";
