@@ -19,7 +19,7 @@ import {
   Input,
   ScrollArea,
 } from "@mcp_router/ui";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { UNASSIGNED_PROJECT_ID } from "@/renderer/stores";
 
@@ -155,10 +155,20 @@ export const ProjectSettingsModal: React.FC<Props> = ({
             </DialogTitle>
             <DialogDescription>
               {t("projects.projectSettingsDescription", {
-                defaultValue: "Organize your servers by managing projects.",
+                defaultValue:
+                  "Projects separate MCP server usage contexts within MCP Router.",
               })}
             </DialogDescription>
           </DialogHeader>
+          <div className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
+            <Info className="h-3 w-3 mt-0.5" />
+            <span>
+              {t("projects.projectSettingsCliHint", {
+                defaultValue:
+                  "To use servers assigned to a project from the CLI, run `npx -y @mcp_router/cli connect --project <project-name>`.",
+              })}
+            </span>
+          </div>
           <div className="space-y-6 py-2">
             <section className="space-y-3">
               <div className="flex flex-col gap-2 sm:flex-row">

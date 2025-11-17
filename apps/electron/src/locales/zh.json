@@ -350,7 +350,8 @@
     "create": "创建",
     "creating": "正在创建...",
     "projectSettings": "项目设置",
-    "projectSettingsDescription": "通过管理项目来组织服务器。"
+    "projectSettingsDescription": "项目可以将使用 MCP 服务器的上下文隔离开来。",
+    "projectSettingsCliHint": "要使用分配给项目的服务器，请像这样执行命令：npx -y @mcp_router/cli connect --project <project-name>。"
   },
   "serverSettings": {
     "title": "服务器设置",
