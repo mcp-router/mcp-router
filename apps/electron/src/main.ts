@@ -12,11 +12,11 @@ import { getPlatformAPIManager } from "@/main/modules/workspace/platform-api-man
 import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
 import { setupIpcHandlers } from "./main/infrastructure/ipc";
+import { resolveAutoUpdateConfig } from "./main/modules/system/app-updator";
 import { getIsAutoUpdateInProgress } from "./main/modules/system/system-handler";
 import {
   initializeEnvironment,
   isDevelopment,
-  isProduction,
 } from "@/main/utils/environment";
 import {
   applyLoginItemSettings,
@@ -68,22 +68,11 @@ export const BASE_URL = "https://mcp-router.net/";
 export const API_BASE_URL = `${BASE_URL}api`;
 
 // Configure auto update (guarded to avoid crash on unsigned macOS builds)
-try {
-  const settingsService = getSettingsService();
-  const settings = settingsService.getSettings();
-  const autoUpdateEnabled = settings.autoUpdateEnabled ?? true;
+const { enabled: enableAutoUpdate, options: autoUpdateOptions } =
+  resolveAutoUpdateConfig();
 
-  const enableAutoUpdate =
-    isProduction() && app.isPackaged && autoUpdateEnabled;
-
-  if (enableAutoUpdate) {
-    updateElectronApp({
-      notifyUser: false,
-      updateInterval: "1 hour",
-    });
-  }
-} catch (err) {
-  console.warn("Auto update initialization skipped:", err);
+if (enableAutoUpdate && autoUpdateOptions) {
+  updateElectronApp(autoUpdateOptions);
 }
 
 // Declare global variables defined by Electron Forge
