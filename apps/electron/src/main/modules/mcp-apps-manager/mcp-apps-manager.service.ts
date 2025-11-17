@@ -341,6 +341,7 @@ export class McpAppsManagerService extends SingletonService<
     const localAppData = isWindows
       ? path.join(os.homedir(), "AppData", "Local")
       : null;
+    const escapedLocalAppData = localAppData?.replace(/\\/g, "\\\\");
 
     const blockMain =
       `[mcp_servers.mcp_router]\n` +
@@ -349,8 +350,8 @@ export class McpAppsManagerService extends SingletonService<
       `startup_timeout_sec = 120\n`;
     let blockEnv =
       `\n[mcp_servers.mcp_router.env]\n` + `MCPR_TOKEN = "${tokenId}"\n`;
-    if (localAppData) {
-      blockEnv += `LOCALAPPDATA = "${localAppData}"\n`;
+    if (escapedLocalAppData) {
+      blockEnv += `LOCALAPPDATA = "${escapedLocalAppData}"\n`;
     }
     const newBlock = `${blockMain}${blockEnv}`;
 
