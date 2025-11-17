@@ -10,7 +10,6 @@ type AutoUpdateConfig = {
 
 const DEFAULT_AUTO_UPDATE_OPTIONS: IUpdateElectronAppOptions = {
   notifyUser: false,
-  updateInterval: "1 hour",
 };
 
 /**
