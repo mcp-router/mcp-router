@@ -257,7 +257,7 @@ export async function extractConfigInfo(
         ? { mcpServers: parseCodexTomlServers(fileContent) }
         : JSON.parse(fileContent);
 
-    let hasMcpConfig = false;
+    let hasMcpConfig;
     let configToken = "";
     let otherServers: MCPServerConfig[] = [];
 

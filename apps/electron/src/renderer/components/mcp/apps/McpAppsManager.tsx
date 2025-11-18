@@ -30,6 +30,10 @@ import {
   McpAppsManagerResult,
   TokenServerAccess,
 } from "@mcp_router/shared";
+import {
+  UNASSIGNED_PROJECT_ID,
+  useProjectStore,
+} from "@/renderer/stores/project-store";
 
 const McpAppsManager: React.FC = () => {
   const { t } = useTranslation();
@@ -45,6 +49,7 @@ const McpAppsManager: React.FC = () => {
     useState<boolean>(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const [appToDelete, setAppToDelete] = useState<McpApp | null>(null);
+  const { projects, list: listProjects } = useProjectStore();
 
   // Add ref for HowToUse component
   const howToUseRef = useRef<HowToUseHandle>(null);
@@ -53,6 +58,10 @@ const McpAppsManager: React.FC = () => {
     loadApps();
     loadServers();
   }, []);
+
+  useEffect(() => {
+    listProjects();
+  }, [listProjects]);
 
   // アクセス制御ダイアログを開く
   const openAccessControlDialog = (app: McpApp) => {
@@ -71,6 +80,30 @@ const McpAppsManager: React.FC = () => {
       ...prev,
       [serverId]: checked,
     }));
+  };
+
+  const handleProjectCheckboxChange = (
+    projectId: string,
+    checked: boolean,
+  ) => {
+    setSelectedServerAccess((prev) => {
+      const next = { ...prev };
+      const targetProjectId = projectId || UNASSIGNED_PROJECT_ID;
+      const value = !!checked;
+
+      servers.forEach((server) => {
+        const serverProjectId =
+          server.projectId === null || server.projectId === undefined
+            ? UNASSIGNED_PROJECT_ID
+            : server.projectId;
+
+        if (serverProjectId === targetProjectId) {
+          next[server.id] = value;
+        }
+      });
+
+      return next;
+    });
   };
 
   // アクセス設定の保存
@@ -257,6 +290,46 @@ const McpAppsManager: React.FC = () => {
     }
   };
 
+  const projectSections = (() => {
+    if (!servers || servers.length === 0) return [];
+
+    const projectMap = new Map<string, { id: string; name: string }>();
+    projects.forEach((p) => projectMap.set(p.id, { id: p.id, name: p.name }));
+
+    const grouped: Record<
+      string,
+      { projectId: string; name: string; servers: any[] }
+    > = {};
+
+    servers.forEach((server) => {
+      const projectId =
+        server.projectId === null || server.projectId === undefined
+          ? UNASSIGNED_PROJECT_ID
+          : server.projectId;
+
+      if (!grouped[projectId]) {
+        const project = projectMap.get(projectId);
+        grouped[projectId] = {
+          projectId,
+          name:
+            project?.name ||
+            (projectId === UNASSIGNED_PROJECT_ID
+              ? t("projects.unassigned")
+              : projectId),
+          servers: [],
+        };
+      }
+
+      grouped[projectId].servers.push(server);
+    });
+
+    return Object.values(grouped).sort((a, b) => {
+      if (a.projectId === UNASSIGNED_PROJECT_ID) return -1;
+      if (b.projectId === UNASSIGNED_PROJECT_ID) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  })();
+
   return (
     <div className="space-y-4">
       <div className="mb-4">
@@ -411,19 +484,65 @@ const McpAppsManager: React.FC = () => {
               {t("mcpApps.selectServers")}
             </p>
             <ScrollArea className="h-[60vh] pr-4">
-              <div className="space-y-2 pr-2">
-                {servers.map((server) => (
-                  <div key={server.id} className="flex items-center space-x-3">
-                    <Checkbox
-                      id={`server-${server.id}`}
-                      checked={selectedServerAccess[server.id] === true}
-                      onCheckedChange={(checked) =>
-                        handleServerCheckboxChange(server.id, !!checked)
-                      }
-                    />
-                    <Label htmlFor={`server-${server.id}`}>{server.name}</Label>
-                  </div>
-                ))}
+              <div className="space-y-4 pr-2">
+                {projectSections.map((section) => {
+                  const totalServers = section.servers.length;
+                  const selectedCount = section.servers.filter(
+                    (server) => selectedServerAccess[server.id] === true,
+                  ).length;
+                  const allSelected =
+                    totalServers > 0 && selectedCount === totalServers;
+
+                  return (
+                    <div
+                      key={section.projectId}
+                      className="space-y-2 border-b last:border-b-0 pb-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`project-${section.projectId}`}
+                            checked={allSelected}
+                            onCheckedChange={(checked) =>
+                              handleProjectCheckboxChange(
+                                section.projectId,
+                                !!checked,
+                              )
+                            }
+                          />
+                          <Label htmlFor={`project-${section.projectId}`}>
+                            {section.name}
+                          </Label>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {selectedCount}/{totalServers}
+                        </span>
+                      </div>
+                      <div className="space-y-1 pl-6">
+                        {section.servers.map((server) => (
+                          <div
+                            key={server.id}
+                            className="flex items-center space-x-3"
+                          >
+                            <Checkbox
+                              id={`server-${server.id}`}
+                              checked={selectedServerAccess[server.id] === true}
+                              onCheckedChange={(checked) =>
+                                handleServerCheckboxChange(
+                                  server.id,
+                                  !!checked,
+                                )
+                              }
+                            />
+                            <Label htmlFor={`server-${server.id}`}>
+                              {server.name}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
               <ScrollBar orientation="vertical" />
             </ScrollArea>
