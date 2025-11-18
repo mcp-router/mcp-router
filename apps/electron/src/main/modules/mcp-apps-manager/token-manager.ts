@@ -4,6 +4,7 @@ import {
   Token,
   TokenGenerateOptions,
   TokenValidationResult,
+  TokenServerAccess,
 } from "@mcp_router/shared";
 
 /**
@@ -36,7 +37,7 @@ export class TokenManager {
       id: "mcpr_" + randomBytes,
       clientId,
       issuedAt: now,
-      serverIds: options.serverIds || [],
+      serverAccess: options.serverAccess || {},
     };
 
     // トークンを永続化
@@ -100,7 +101,7 @@ export class TokenManager {
     if (!token) {
       return false;
     }
-    return token.serverIds.includes(serverId);
+    return !!token.serverAccess?.[serverId];
   }
 
   /**
@@ -108,11 +109,11 @@ export class TokenManager {
    */
   public updateTokenServerAccess(
     tokenId: string,
-    serverIds: string[],
+    serverAccess: TokenServerAccess,
   ): boolean {
-    return McpAppsManagerRepository.getInstance().updateTokenServerIds(
+    return McpAppsManagerRepository.getInstance().updateTokenServerAccess(
       tokenId,
-      serverIds,
+      serverAccess || {},
     );
   }
 }

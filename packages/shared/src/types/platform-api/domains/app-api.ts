@@ -3,6 +3,7 @@
  */
 
 import type { McpApp, McpAppsManagerResult } from "../../mcp-app-types";
+import type { TokenServerAccess } from "../../token-types";
 
 interface Token {
   id: string;
@@ -23,7 +24,7 @@ export interface AppAPI {
   delete(appName: string): Promise<boolean>;
   updateServerAccess(
     appName: string,
-    serverIds: string[],
+    serverAccess: TokenServerAccess,
   ): Promise<McpAppsManagerResult>;
   unifyConfig(appName: string): Promise<McpAppsManagerResult>;
 

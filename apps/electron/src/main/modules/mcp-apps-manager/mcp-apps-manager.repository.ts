@@ -1,4 +1,4 @@
-import { Token } from "@mcp_router/shared";
+import { Token, TokenServerAccess } from "@mcp_router/shared";
 import { getSharedConfigManager } from "../../infrastructure/shared-config-manager";
 
 /**
@@ -89,11 +89,14 @@ export class McpAppsManagerRepository {
   }
 
   /**
-   * トークンのサーバIDsを更新
+   * トークンのサーバアクセスを更新
    */
-  public updateTokenServerIds(id: string, serverIds: string[]): boolean {
+  public updateTokenServerAccess(
+    id: string,
+    serverAccess: TokenServerAccess,
+  ): boolean {
     try {
-      getSharedConfigManager().updateTokenServerIds(id, serverIds);
+      getSharedConfigManager().updateTokenServerAccess(id, serverAccess);
       return true;
     } catch (error) {
       console.error(`トークン${id}の更新中にエラーが発生しました:`, error);

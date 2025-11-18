@@ -279,10 +279,21 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
         <div className="space-y-3">
           {tools.map((tool) => {
             const isEnabled = editedToolPermissions[tool.name] ?? true;
+            const toggleCard = () => handleToolToggle(tool.name, !isEnabled);
             return (
               <div
                 key={tool.name}
-                className="flex items-start justify-between gap-4 rounded-md border border-border p-3"
+                className="flex items-start justify-between gap-4 rounded-md border border-border p-3 cursor-pointer transition-colors hover:border-primary/50"
+                role="switch"
+                aria-checked={isEnabled}
+                tabIndex={0}
+                onClick={toggleCard}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    toggleCard();
+                  }
+                }}
               >
                 <div className="space-y-1">
                   <p className="text-sm font-medium">{tool.name}</p>
@@ -293,6 +304,7 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
                   )}
                 </div>
                 <Switch
+                  onClick={(event) => event.stopPropagation()}
                   checked={isEnabled}
                   onCheckedChange={(checked) =>
                     handleToolToggle(tool.name, checked)

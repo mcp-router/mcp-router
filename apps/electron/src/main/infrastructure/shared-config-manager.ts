@@ -7,6 +7,7 @@ import {
   AppSettings,
   Token,
   DEFAULT_APP_SETTINGS,
+  TokenServerAccess,
 } from "@mcp_router/shared";
 import { SqliteManager } from "./database/sqlite-manager";
 
@@ -23,6 +24,16 @@ export class SharedConfigManager implements ISharedConfigManager {
   private constructor() {
     this.configPath = path.join(app.getPath("userData"), this.configFileName);
     this.config = this.loadConfig();
+  }
+
+  /**
+   * トークンのディープコピーを作成
+   */
+  private cloneToken(token: Token): Token {
+    return {
+      ...token,
+      serverAccess: { ...(token.serverAccess || {}) } as TokenServerAccess,
+    };
   }
 
   /**
@@ -59,21 +70,14 @@ export class SharedConfigManager implements ISharedConfigManager {
               id: token.id,
               clientId: token.clientId || token.client_id,
               issuedAt: token.issuedAt || token.issued_at,
-              serverIds: [],
+              serverAccess: {},
             };
 
-            // serverIdsを配列に変換
-            const serverIdsValue = token.serverIds || token.server_ids;
-            if (serverIdsValue) {
-              try {
-                normalizedToken.serverIds =
-                  typeof serverIdsValue === "string"
-                    ? JSON.parse(serverIdsValue)
-                    : serverIdsValue;
-              } catch (e) {
-                normalizedToken.serverIds = [];
-              }
-            }
+            // サーバーアクセス情報をマップに変換
+            const serverAccessValue = token.serverAccess || {};
+            normalizedToken.serverAccess = {
+              ...(serverAccessValue as TokenServerAccess),
+            };
 
             return normalizedToken;
           });
@@ -158,84 +162,44 @@ export class SharedConfigManager implements ISharedConfigManager {
       const db = new SqliteManager(dbPath);
 
       // settingsテーブルからデータを移行
-      try {
-        const settingsRows = db.all<{ key: string; value: string }>(
-          "SELECT key, value FROM settings",
-        );
 
-        const settings: AppSettings = { ...DEFAULT_APP_SETTINGS };
-        settingsRows.forEach((row) => {
-          const key = row.key as keyof AppSettings;
-          if (key in settings) {
-            try {
-              settings[key] = JSON.parse(row.value);
-            } catch (_) {
-              settings[key] = row.value as any;
-            }
+      const settingsRows = db.all<{ key: string; value: string }>(
+        "SELECT key, value FROM settings",
+      );
+
+      const settings: AppSettings = { ...DEFAULT_APP_SETTINGS };
+      settingsRows.forEach((row) => {
+        const key = row.key as keyof AppSettings;
+        if (key in settings) {
+          try {
+            settings[key] = JSON.parse(row.value);
+          } catch {
+            settings[key] = row.value as any;
           }
-        });
-        this.config.settings = settings;
-      } catch (error) {
-        console.error(
-          "[SharedConfigManager] Failed to migrate settings:",
-          error,
-        );
-      }
-
-      // 現在のワークスペースのすべてのサーバーIDを取得
-      let allServerIds: string[] = [];
-      const serverRows = db.all<{ id: string }>("SELECT id FROM servers");
-      allServerIds = serverRows.map((row) => row.id);
+        }
+      });
+      this.config.settings = settings;
 
       // tokensテーブルからデータを移行
-      try {
-        const tokenRows = db.all<any>("SELECT * FROM tokens");
 
-        // フィールド名を正しい形式に変換
-        this.config.mcpApps.tokens = tokenRows.map((row) => {
-          const token: Token = {
-            id: row.id,
-            clientId: row.client_id || row.clientId,
-            issuedAt: row.issued_at || row.issuedAt,
-            serverIds: [],
-          };
+      const tokenRows = db.all<any>("SELECT * FROM tokens");
 
-          // serverIdsを配列に変換
-          if (row.server_ids || row.serverIds) {
-            const serverIdsValue = row.server_ids || row.serverIds;
-            try {
-              // JSON文字列の場合はパース
-              token.serverIds =
-                typeof serverIdsValue === "string"
-                  ? JSON.parse(serverIdsValue)
-                  : serverIdsValue;
-            } catch (e) {
-              // パースエラーの場合は空配列
-              console.warn(
-                `[SharedConfigManager] Failed to parse serverIds for token ${row.id}:`,
-                e,
-              );
-              token.serverIds = [];
-            }
-          }
+      // フィールド名を正しい形式に変換
+      this.config.mcpApps.tokens = tokenRows.map((row) => {
+        const token: Token = {
+          id: row.id,
+          clientId: row.client_id || row.clientId,
+          issuedAt: row.issued_at || row.issuedAt,
+          serverAccess: {},
+        };
 
-          // マイグレーション時は、現在のワークスペースのすべてのサーバーへのアクセス権を付与
-          // 既存のserverIdsとマージして重複を除去
-          const uniqueServerIds = new Set([
-            ...token.serverIds,
-            ...allServerIds,
-          ]);
-          token.serverIds = Array.from(uniqueServerIds);
+        // サーバーアクセス情報をマップに変換
+        if (row.serverAccess) {
+          token.serverAccess = { ...(row.serverAccess as TokenServerAccess) };
+        }
 
-          return token;
-        });
-
-        console.log(
-          `[SharedConfigManager] Migrated ${tokenRows.length} tokens with access to all servers`,
-        );
-      } catch (error) {
-        console.error("[SharedConfigManager] Failed to migrate tokens:", error);
-      }
+        return token;
+      });
 
       // メタ情報を記録
       this.config._meta = {
@@ -281,27 +245,33 @@ export class SharedConfigManager implements ISharedConfigManager {
    * トークンリストを取得
    */
   getTokens(): Token[] {
-    return [...this.config.mcpApps.tokens];
+    return this.config.mcpApps.tokens.map((token) => this.cloneToken(token));
   }
 
   /**
    * トークンを取得
    */
   getToken(tokenId: string): Token | undefined {
-    return this.config.mcpApps.tokens.find((t) => t.id === tokenId);
+    const token = this.config.mcpApps.tokens.find((t) => t.id === tokenId);
+    return token ? this.cloneToken(token) : undefined;
   }
 
   /**
    * トークンを保存
    */
   saveToken(token: Token): void {
+    const normalizedToken: Token = {
+      ...token,
+      serverAccess: token.serverAccess || {},
+    };
+
     const index = this.config.mcpApps.tokens.findIndex(
       (t) => t.id === token.id,
     );
     if (index >= 0) {
-      this.config.mcpApps.tokens[index] = token;
+      this.config.mcpApps.tokens[index] = normalizedToken;
     } else {
-      this.config.mcpApps.tokens.push(token);
+      this.config.mcpApps.tokens.push(normalizedToken);
     }
     this.saveConfig();
   }
@@ -330,16 +300,21 @@ export class SharedConfigManager implements ISharedConfigManager {
    * クライアントIDでトークンを取得
    */
   getTokensByClientId(clientId: string): Token[] {
-    return this.config.mcpApps.tokens.filter((t) => t.clientId === clientId);
+    return this.config.mcpApps.tokens
+      .filter((t) => t.clientId === clientId)
+      .map((token) => this.cloneToken(token));
   }
 
   /**
    * トークンのサーバーIDリストを更新
    */
-  updateTokenServerIds(tokenId: string, serverIds: string[]): void {
+  updateTokenServerAccess(
+    tokenId: string,
+    serverAccess: TokenServerAccess,
+  ): void {
     const token = this.config.mcpApps.tokens.find((t) => t.id === tokenId);
     if (token) {
-      token.serverIds = serverIds;
+      token.serverAccess = serverAccess || {};
       this.saveConfig();
     }
   }
@@ -348,23 +323,26 @@ export class SharedConfigManager implements ISharedConfigManager {
    * ワークスペースのサーバーリストとトークンを同期
    * 新しいサーバーがあれば自動的にトークンに追加
    */
-  syncTokensWithWorkspaceServers(serverIds: string[]): void {
+  syncTokensWithWorkspaceServers(serverList: string[]): void {
     let updated = false;
 
     this.config.mcpApps.tokens.forEach((token) => {
-      // 既存のserverIdsと新しいserverIdsをマージして重複を除去
-      const currentServerIds = new Set(token.serverIds);
-      const initialSize = currentServerIds.size;
+      const map = token.serverAccess || {};
+      const initialSize = Object.keys(map).length;
+      const nextAccess = { ...map };
+      serverList.forEach((id) => {
+        if (!(id in nextAccess)) {
+          nextAccess[id] = true;
+        }
+      });
+      const nextSize = Object.keys(nextAccess).length;
 
-      // 新しいサーバーIDを追加
-      serverIds.forEach((id) => currentServerIds.add(id));
-
-      // 変更があった場合のみ更新
-      if (currentServerIds.size > initialSize) {
-        token.serverIds = Array.from(currentServerIds);
+      // 新しいサーバーIDが追加された場合のみ更新
+      if (nextSize > initialSize) {
+        token.serverAccess = nextAccess;
         updated = true;
         console.log(
-          `[SharedConfigManager] Updated token ${token.id} with ${currentServerIds.size - initialSize} new server(s)`,
+          `[SharedConfigManager] Updated token ${token.id} with ${nextSize - initialSize} new server(s)`,
         );
       }
     });

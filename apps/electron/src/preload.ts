@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer } from "electron";
-import { CreateServerInput } from "@mcp_router/shared";
+import type { CreateServerInput, TokenServerAccess } from "@mcp_router/shared";
 
 // Consolidate everything into one contextBridge call
 
@@ -73,8 +73,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("mcp-apps:add", appName),
   deleteMcpApp: (appName: string) =>
     ipcRenderer.invoke("mcp-apps:delete", appName),
-  updateAppServerAccess: (appName: string, serverIds: string[]) =>
-    ipcRenderer.invoke("mcp-apps:update-server-access", appName, serverIds),
+  updateAppServerAccess: (appName: string, serverAccess: TokenServerAccess) =>
+    ipcRenderer.invoke("mcp-apps:update-server-access", appName, serverAccess),
   unifyAppConfig: (appName: string) =>
     ipcRenderer.invoke("mcp-apps:unify", appName),
 

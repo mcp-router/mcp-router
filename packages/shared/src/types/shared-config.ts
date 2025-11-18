@@ -4,7 +4,7 @@
  */
 
 import { AppSettings } from "./settings-types";
-import { Token } from "./token-types";
+import { Token, TokenServerAccess } from "./token-types";
 
 /**
  * 共通設定ファイルの構造
@@ -67,9 +67,12 @@ export interface ISharedConfigManager {
   deleteClientTokens(clientId: string): void;
 
   /**
-   * トークンのサーバーIDリストを更新
+   * トークンのサーバーアクセスを更新
    */
-  updateTokenServerIds(tokenId: string, serverIds: string[]): void;
+  updateTokenServerAccess(
+    tokenId: string,
+    serverAccess: TokenServerAccess,
+  ): void;
 
   /**
    * 設定ファイルを初期化
@@ -85,5 +88,5 @@ export interface ISharedConfigManager {
    * ワークスペースのサーバーリストとトークンを同期
    * 新しいサーバーがあれば自動的にトークンに追加
    */
-  syncTokensWithWorkspaceServers(serverIds: string[]): void;
+  syncTokensWithWorkspaceServers(serverList: string[]): void;
 }

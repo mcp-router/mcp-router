@@ -23,19 +23,10 @@ export class MCPClient {
   ): Promise<MCPConnectionResult> {
     try {
       // Create MCP client
-      const client = new Client(
-        {
-          name: clientName,
-          version: "1.0.0",
-        },
-        {
-          capabilities: {
-            prompts: {},
-            resources: {},
-            tools: {},
-          },
-        },
-      );
+      const client = new Client({
+        name: clientName,
+        version: "1.0.0",
+      });
 
       // Choose transport based on server type
       if (server.serverType === "remote-streamable") {

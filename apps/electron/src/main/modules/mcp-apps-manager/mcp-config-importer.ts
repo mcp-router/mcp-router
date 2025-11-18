@@ -18,6 +18,13 @@ function isMcpRouterCliArg(arg: string): boolean {
   );
 }
 
+function isNpxCommand(command: string | undefined): boolean {
+  if (!command) return false;
+  if (command === "npx") return true;
+  // Windows: allow full paths that end with npx.cmd or npx.exe
+  return /[\\/]npx\.(cmd|exe)$/i.test(command.trim());
+}
+
 function stripOuterQuotes(val: any): any {
   if (typeof val !== "string") return val;
   let s = val.trim();
@@ -261,7 +268,7 @@ export async function extractConfigInfo(
         hasMcpConfig =
           !!servers &&
           !!servers["mcp-router"] &&
-          servers["mcp-router"].command === "npx" &&
+          isNpxCommand(servers["mcp-router"].command) &&
           Array.isArray(argsArr) &&
           argsArr.includes("connect") &&
           argsArr.some(isMcpRouterCliArg);
@@ -279,7 +286,7 @@ export async function extractConfigInfo(
         const servers = (config as any).mcpServers || {};
         const mcpr = servers["mcp-router"] || servers["mcp_router"];
         const argsArr = mcpr?.args;
-        const hasCommand = !!mcpr && mcpr.command === "npx";
+        const hasCommand = !!mcpr && isNpxCommand(mcpr.command);
         const hasArgs = Array.isArray(argsArr);
         const hasConnect =
           !!hasArgs && (argsArr as string[]).includes("connect");
@@ -307,7 +314,7 @@ export async function extractConfigInfo(
         hasMcpConfig =
           !!servers &&
           !!srv &&
-          srv.command === "npx" &&
+          isNpxCommand(srv.command) &&
           Array.isArray(argsArr) &&
           argsArr.includes("connect") &&
           argsArr.some(isMcpRouterCliArg);

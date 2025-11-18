@@ -150,20 +150,17 @@ export class PlatformAPIManager {
 
     // 新しいワークスペースのサーバーIDを取得してトークンを同期
     // リポジトリ経由で取得し、テーブル初期化を確実化する
-    let serverIds: string[] = [];
+    let serverList: string[] = [];
     try {
       const serverRepo = McpServerManagerRepository.getInstance();
-      serverIds = serverRepo.getAllServers().map((s) => s.id);
+      serverList = serverRepo.getAllServers().map((s) => s.id);
     } catch (e) {
-      console.error(
-        "Failed to load servers via repository for token sync:",
-        e,
-      );
-      serverIds = [];
+      console.error("Failed to load servers via repository for token sync:", e);
+      serverList = [];
     }
 
-    if (serverIds.length > 0) {
-      getSharedConfigManager().syncTokensWithWorkspaceServers(serverIds);
+    if (serverList.length > 0) {
+      getSharedConfigManager().syncTokensWithWorkspaceServers(serverList);
     }
   }
 

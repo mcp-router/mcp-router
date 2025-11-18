@@ -25,7 +25,11 @@ import HowToUse, { HowToUseHandle } from "./HowToUse";
 import { toast } from "sonner";
 import { ScrollArea, ScrollBar } from "@mcp_router/ui";
 
-import { McpApp, McpAppsManagerResult } from "@mcp_router/shared";
+import {
+  McpApp,
+  McpAppsManagerResult,
+  TokenServerAccess,
+} from "@mcp_router/shared";
 
 const McpAppsManager: React.FC = () => {
   const { t } = useTranslation();
@@ -35,7 +39,8 @@ const McpAppsManager: React.FC = () => {
   const [customAppName, setCustomAppName] = useState<string>("");
   const [servers, setServers] = useState<any[]>([]);
   const [selectedApp, setSelectedApp] = useState<McpApp | null>(null);
-  const [selectedServerIds, setSelectedServerIds] = useState<string[]>([]);
+  const [selectedServerAccess, setSelectedServerAccess] =
+    useState<TokenServerAccess>({});
   const [isAccessControlDialogOpen, setIsAccessControlDialogOpen] =
     useState<boolean>(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
@@ -53,20 +58,19 @@ const McpAppsManager: React.FC = () => {
   const openAccessControlDialog = (app: McpApp) => {
     setSelectedApp(app);
 
-    // アプリのサーバIDsを設定
-    const appServerIds = app.serverIds || [];
-    setSelectedServerIds(appServerIds);
+    // アプリのサーバーアクセスを設定
+    const appServerAccess = app.serverAccess || {};
+    setSelectedServerAccess({ ...appServerAccess });
 
     setIsAccessControlDialogOpen(true);
   };
 
   // サーバーチェックボックスの変更
   const handleServerCheckboxChange = (serverId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedServerIds((prev) => [...prev, serverId]);
-    } else {
-      setSelectedServerIds((prev) => prev.filter((id) => id !== serverId));
-    }
+    setSelectedServerAccess((prev) => ({
+      ...prev,
+      [serverId]: checked,
+    }));
   };
 
   // アクセス設定の保存
@@ -77,7 +81,7 @@ const McpAppsManager: React.FC = () => {
       // サーバーアクセスの更新
       const serverResult = await platformAPI.apps.updateServerAccess(
         selectedApp.name,
-        selectedServerIds,
+        selectedServerAccess,
       );
 
       if (!serverResult.success) {
@@ -331,7 +335,7 @@ const McpAppsManager: React.FC = () => {
                   <div>
                     {/* Add How To Use and Delete buttons to the left of the card footer */}
                     <div className="flex gap-2 flex-wrap">
-                      {app.isCustom && app.configured && app.token && (
+                      {app.configured && app.token && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -412,7 +416,7 @@ const McpAppsManager: React.FC = () => {
                   <div key={server.id} className="flex items-center space-x-3">
                     <Checkbox
                       id={`server-${server.id}`}
-                      checked={selectedServerIds.includes(server.id)}
+                      checked={selectedServerAccess[server.id] === true}
                       onCheckedChange={(checked) =>
                         handleServerCheckboxChange(server.id, !!checked)
                       }

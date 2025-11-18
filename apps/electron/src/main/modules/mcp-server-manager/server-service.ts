@@ -57,11 +57,14 @@ export class ServerService extends SingletonService<
 
         // For each token, add this server's ID to its access list
         allTokens.forEach((token) => {
-          // Check if the server is not already in the token's serverIds
-          if (!token.serverIds.includes(server.id)) {
-            // Add the new server ID to the token's server access list
-            const updatedServerIds = [...token.serverIds, server.id];
-            tokenManager.updateTokenServerAccess(token.id, updatedServerIds);
+          const serverAccess = token.serverAccess || {};
+          // Add the new server when it doesn't exist in the access map
+          if (!(server.id in serverAccess)) {
+            const updatedServerAccess = {
+              ...serverAccess,
+              [server.id]: true,
+            };
+            tokenManager.updateTokenServerAccess(token.id, updatedServerAccess);
           }
         });
       } catch (error) {

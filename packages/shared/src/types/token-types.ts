@@ -3,13 +3,18 @@
  */
 
 /**
+ * サーバーアクセス権限のマップ
+ */
+export type TokenServerAccess = Record<string, boolean>;
+
+/**
  * トークンのインターフェース
  */
 export interface Token {
   id: string; // トークンの一意のID
   clientId: string; // 関連付けられたクライアントID
   issuedAt: number; // トークン発行時のUNIXタイムスタンプ
-  serverIds: string[]; // アクセスを許可するサーバIDのリスト
+  serverAccess: TokenServerAccess; // サーバーごとのアクセス権（true=許可、false=拒否）
 }
 
 /**
@@ -17,7 +22,7 @@ export interface Token {
  */
 export interface TokenGenerateOptions {
   clientId: string; // クライアントID
-  serverIds: string[]; // アクセスを許可するサーバIDのリスト
+  serverAccess: TokenServerAccess; // アクセスを許可するサーバIDマップ
   expiresIn?: number; // トークンの有効期間（秒）、デフォルトは24時間
 }
 
