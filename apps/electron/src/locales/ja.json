@@ -355,7 +355,7 @@
     "projectSettingsCliHint": "プロジェクトに割り当てたサーバーを利用するには、npx -y @mcp_router/cli connect --project <project-name> のように指定します。"
   },
   "serverSettings": {
-    "title": "サーバー設定",
+    "title": "{{serverName}} 設定",
     "project": "プロジェクト",
     "manageProjects": "プロジェクトを管理",
     "delete": "サーバーを削除"

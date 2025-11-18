@@ -354,7 +354,7 @@
     "projectSettingsCliHint": "要使用分配给项目的服务器，请像这样执行命令：npx -y @mcp_router/cli connect --project <project-name>。"
   },
   "serverSettings": {
-    "title": "服务器设置",
+    "title": "{{serverName}} 设置",
     "project": "项目",
     "manageProjects": "管理项目",
     "delete": "删除服务器"
