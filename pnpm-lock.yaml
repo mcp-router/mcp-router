@@ -188,6 +188,9 @@ importers:
       semver:
         specifier: ^7.7.2
         version: 7.7.3
+      smol-toml:
+        specifier: ^1.5.2
+        version: 1.5.2
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
