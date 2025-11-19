@@ -1,4 +1,5 @@
 import { promises as fsPromises } from "fs";
+import { parse as parseToml } from "smol-toml";
 import { getServerService } from "@/main/modules/mcp-server-manager/server-service";
 import { MCPServerConfig, ClientType, ClientConfig } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
@@ -43,33 +44,50 @@ function stripOuterQuotes(val: any): any {
 
 // Fallback: extract MCPR_TOKEN from TOML by scanning env table text
 function extractCodexTokenFromToml(tomlText: string): string | null {
-  const lines = tomlText.replace(/\r\n?/g, "\n").split("\n");
-  let inTargetEnv = false;
+  let root: any;
+  try {
+    root = parseToml(tomlText);
+  } catch (error) {
+    console.error("Failed to parse Codex TOML while extracting token:", error);
+    return null;
+  }
 
-  const envTableNames = new Set([
-    "mcp_servers.mcp_router.env",
-    "mcp_servers.mcp-router.env",
-    "mcp.servers.mcp_router.env",
-    "mcp.servers.mcp-router.env",
-  ]);
+  const serverCandidates: any[] = [];
 
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line) continue;
-
-    if (line.startsWith("[")) {
-      const tableName = line.replace(/^\[\s*/, "").replace(/\s*\]$/, "");
-      const normalized = tableName.replace(/"/g, "");
-      inTargetEnv = envTableNames.has(normalized);
-      continue;
+  const collectFromContainer = (container: any): void => {
+    if (!container) return;
+    if (Array.isArray(container)) {
+      for (const server of container) {
+        if (!server || typeof server !== "object") continue;
+        const name = (server as any).name;
+        if (name === "mcp-router" || name === "mcp_router") {
+          serverCandidates.push(server);
+        }
+      }
+    } else if (typeof container === "object") {
+      const direct =
+        (container as any)["mcp-router"] || (container as any).mcp_router;
+      if (direct && typeof direct === "object") {
+        serverCandidates.push(direct);
+      }
+      for (const [name, server] of Object.entries(container)) {
+        if (name === "mcp-router" || name === "mcp_router") {
+          serverCandidates.push(server);
+        }
+      }
     }
+  };
 
-    if (!inTargetEnv) continue;
+  collectFromContainer(root?.mcp?.servers);
+  collectFromContainer(root?.mcp_servers);
 
-    const m = line.match(/^MCPR_TOKEN\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s#]+))/);
-    if (m) {
-      const token = m[1] || m[2] || m[3] || "";
-      return stripOuterQuotes(token);
+  for (const server of serverCandidates) {
+    const env = (server as any).env;
+    if (env && typeof env === "object" && "MCPR_TOKEN" in env) {
+      const raw = (env as any).MCPR_TOKEN;
+      return stripOuterQuotes(
+        typeof raw === "string" ? raw : String(raw ?? ""),
+      );
     }
   }
 
@@ -427,159 +445,55 @@ function extractServerConfigs(
 
 /**
  * Parse Codex config.toml and extract MCP servers
- * Supports both tables like [mcp.servers."name"] and array-of-tables [[mcp.servers]] with name="..."
+ * Supports:
+ * - Tables like [mcp.servers."name"] or [mcp_servers.name]
+ * - Array-of-tables [[mcp.servers]] / [[mcp_servers]] with name="..."
  */
 function parseCodexTomlServers(tomlText: string): Record<string, any> {
   const servers: Record<string, any> = {};
 
-  // Normalize newlines
-  const text = tomlText.replace(/\r\n?/g, "\n");
+  let root: any;
+  try {
+    root = parseToml(tomlText);
+  } catch (error) {
+    console.error("Failed to parse Codex TOML config:", error);
+    return servers;
+  }
 
-  // Helper to parse key = "value" pairs inside a block
-  const parseKeyValue = (block: string): Record<string, any> => {
-    const result: Record<string, any> = {};
-    const lines = block.split(/\n/);
-    for (const rawLine of lines) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith("#") || line.startsWith("[")) continue;
-      const m = line.match(/^(\w[\w\-]*)\s*=\s*(.*)$/);
-      if (!m) continue;
-      const key = m[1];
-      let value = m[2].trim();
-      // Strip comments at EOL
-      value = value.replace(/\s+#.*$/, "").trim();
+  const addServer = (name: string, server: any): void => {
+    if (!name || !server || typeof server !== "object") return;
+    const command = (server as any).command;
+    if (!command) return;
+    const args = Array.isArray((server as any).args)
+      ? (server as any).args
+      : [];
+    const env =
+      (server as any).env && typeof (server as any).env === "object"
+        ? (server as any).env
+        : {};
 
-      // String
-      if (
-        (value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))
-      ) {
-        result[key] = value.slice(1, -1);
-        continue;
-      }
-      // Array of strings
-      if (value.startsWith("[") && value.endsWith("]")) {
-        const inner = value.slice(1, -1);
-        const arr = inner
-          .split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/)
-          .map((s) => s.trim())
-          .filter(Boolean)
-          .map((s) =>
-            s.startsWith('"') && s.endsWith('"')
-              ? s.slice(1, -1)
-              : s.replace(/^'|'$/g, ""),
-          );
-        result[key] = arr;
-        continue;
-      }
-      // Inline table for env: { KEY = "VALUE", ... }
-      if (value.startsWith("{") && value.endsWith("}")) {
-        const inner = value.slice(1, -1);
-        const env: Record<string, string> = {};
-        inner
-          .split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/)
-          .map((s) => s.trim())
-          .filter(Boolean)
-          .forEach((pair) => {
-            const mm = pair.match(/^(\w[\w\-]*)\s*=\s*(.+)$/);
-            if (!mm) return;
-            const k = mm[1];
-            let v = mm[2].trim();
-            if (
-              (v.startsWith('"') && v.endsWith('"')) ||
-              (v.startsWith("'") && v.endsWith("'"))
-            ) {
-              v = v.slice(1, -1);
-            }
-            env[k] = v;
-          });
-        result[key] = env;
-        continue;
-      }
-      // Bare words
-      result[key] = value;
-    }
-    return result;
+    servers[name] = { command, args, env };
   };
 
-  // Parse [mcp.servers."name"] and [mcp_servers.name] styles
-  const tableRe =
-    /^\s*\[\s*(?:mcp\.servers|mcp_servers)\.(?:"([^"]+)"|([^\]\n#]+))\s*]\s*\n([\s\S]*?)(?=^\s*\[|\Z)/gm;
-  let m: RegExpExecArray | null;
-  while ((m = tableRe.exec(text))) {
-    const name = (m[1] || m[2] || "").trim();
-    // Skip accidental match of nested env table as a server
-    if (name.endsWith(".env")) {
-      continue;
+  const collectFromContainer = (container: any): void => {
+    if (!container) return;
+    if (Array.isArray(container)) {
+      for (const server of container) {
+        if (!server || typeof server !== "object") continue;
+        const name = (server as any).name;
+        if (typeof name === "string") {
+          addServer(name, server);
+        }
+      }
+    } else if (typeof container === "object") {
+      for (const [name, server] of Object.entries(container)) {
+        addServer(name, server);
+      }
     }
-    const body = m[3] || "";
-    const data = parseKeyValue(body);
-    // Look for nested env table [mcp.servers."name".env] or [mcp_servers.name.env]
-    const envTableRe = new RegExp(
-      String.raw`^\s*\[\s*(?:mcp\.servers|mcp_servers)\.(?:"${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"|${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\.env\s*]\s*\n([\s\S]*?)(?=^\s*\[|\Z)`,
-      "gm",
-    );
-    // Prefer the last matching env table for this server name
-    let envMatch: RegExpExecArray | null;
-    let lastEnvBlock: string | null = null;
-    while ((envMatch = envTableRe.exec(text))) {
-      lastEnvBlock = envMatch[1] || "";
-    }
-    if (lastEnvBlock !== null) {
-      const envPairs = parseKeyValue(lastEnvBlock);
-      data.env = Object.fromEntries(
-        Object.entries(envPairs).map(([k, v]) => [
-          k,
-          stripOuterQuotes(typeof v === "string" ? v : String(v)),
-        ]),
-      );
-    }
+  };
 
-    if (name) {
-      servers[name] = {
-        command: data.command,
-        args: Array.isArray(data.args) ? data.args : [],
-        env: (data.env as Record<string, string>) || {},
-      };
-    }
-  }
-
-  // Parse array-of-tables [[mcp.servers]] or [[mcp_servers]] with name="..."
-  const arrRe =
-    /^\s*\[\[\s*(?:mcp\.servers|mcp_servers)\s*]]\s*\n([\s\S]*?)(?=^\s*\[|\Z)/gm;
-  while ((m = arrRe.exec(text))) {
-    const body = m[1] || "";
-    const data = parseKeyValue(body);
-    const name = (data as any).name as string;
-    if (!name) continue;
-
-    // Optional inline or subsequent env table
-    const envTableRe2 = new RegExp(
-      String.raw`^\s*\[\s*(?:mcp\.servers|mcp_servers)\.env\s*]\s*\n([\s\S]*?)(?=^\s*\[|\Z)`,
-      "gm",
-    );
-    // Prefer the last env table appearance
-    let envMatch2: RegExpExecArray | null;
-    let lastEnvBlock2: string | null = null;
-    while ((envMatch2 = envTableRe2.exec(text))) {
-      lastEnvBlock2 = envMatch2[1] || "";
-    }
-    if (lastEnvBlock2 !== null) {
-      const envPairs = parseKeyValue(lastEnvBlock2);
-      data.env = Object.fromEntries(
-        Object.entries(envPairs).map(([k, v]) => [
-          k,
-          stripOuterQuotes(typeof v === "string" ? v : String(v)),
-        ]),
-      );
-    }
-
-    servers[name] = {
-      command: data.command,
-      args: Array.isArray(data.args) ? data.args : [],
-      env: (data.env as Record<string, string>) || {},
-    };
-  }
+  collectFromContainer(root?.mcp?.servers);
+  collectFromContainer(root?.mcp_servers);
 
   return servers;
 }

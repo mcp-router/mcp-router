@@ -66,6 +66,7 @@
     "react-i18next": "^15.7.3",
     "react-router-dom": "^7.9.1",
     "semver": "^7.7.2",
+    "smol-toml": "^1.5.2",
     "sonner": "^2.0.7",
     "strip-ansi": "^7.1.2",
     "tailwind-merge": "^2.6.0",
