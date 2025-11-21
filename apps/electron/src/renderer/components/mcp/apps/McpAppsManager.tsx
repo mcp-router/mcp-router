@@ -82,10 +82,7 @@ const McpAppsManager: React.FC = () => {
     }));
   };
 
-  const handleProjectCheckboxChange = (
-    projectId: string,
-    checked: boolean,
-  ) => {
+  const handleProjectCheckboxChange = (projectId: string, checked: boolean) => {
     setSelectedServerAccess((prev) => {
       const next = { ...prev };
       const targetProjectId = projectId || UNASSIGNED_PROJECT_ID;
@@ -528,10 +525,7 @@ const McpAppsManager: React.FC = () => {
                               id={`server-${server.id}`}
                               checked={selectedServerAccess[server.id] === true}
                               onCheckedChange={(checked) =>
-                                handleServerCheckboxChange(
-                                  server.id,
-                                  !!checked,
-                                )
+                                handleServerCheckboxChange(server.id, !!checked)
                               }
                             />
                             <Label htmlFor={`server-${server.id}`}>
