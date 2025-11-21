@@ -63,6 +63,8 @@ export class MCPServerManager {
         `[MCPServerManager] Found ${servers.length} servers in database`,
       );
 
+      const autoStartServerIds: string[] = [];
+
       for (const server of servers) {
         // Initialize all servers as stopped when loading
         server.status = "stopped";
@@ -75,8 +77,25 @@ export class MCPServerManager {
 
         // Auto start servers if configured
         if (server.autoStart && !server.disabled) {
-          await this.startServer(server.id, undefined, false);
+          autoStartServerIds.push(server.id);
         }
+      }
+
+      if (autoStartServerIds.length > 0) {
+        await Promise.all(
+          autoStartServerIds.map(async (id) => {
+            try {
+              await this.startServer(id, undefined, false);
+            } catch (error) {
+              const server = this.servers.get(id);
+              const identifier = server?.name || id;
+              console.error(
+                `[MCPServerManager] Failed to auto-start server ${identifier}:`,
+                error,
+              );
+            }
+          }),
+        );
       }
 
       console.log(`[MCPServerManager] ${servers.length} servers loaded`);
