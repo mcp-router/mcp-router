@@ -22,12 +22,13 @@ export MCPR_TOKEN=your_access_token
 # Connect to a local MCP Router
 npx @mcp_router/cli connect
 
-# Connect to a custom host/port
-npx @mcp_router/cli connect --host example.com --port 8080
+# Connect to a custom server (supports http/https and custom paths)
+npx @mcp_router/cli connect --url https://example.com:8080/mcp
 
 # Display help
 npx @mcp_router/cli --help
 ```
+The `--url` flag accepts a full URL (including http/https, port, and optional path). If no path is provided, `/mcp` is assumed.
 
 ### Serve Command (HTTP → Stdio)
 
@@ -48,4 +49,3 @@ npx @mcp_router/cli serve -- node my-server.js --config config.json
 ```
 
 This is useful when you have a stdio-based MCP server that you want to expose via HTTP.
-

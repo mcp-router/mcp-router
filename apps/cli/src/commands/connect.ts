@@ -43,41 +43,62 @@ export async function executeConnect(args: string[] = []): Promise<void> {
 /**
  * Parse command line arguments
  */
+const DEFAULT_BASE_URL = "http://localhost:3282/mcp";
+
 function parseArgs(args: string[]): {
-  host: string;
-  port: number;
+  baseUrl: string;
   project?: string | null;
 } {
-  // Default values
-  const options: { host: string; port: number; project?: string | null } = {
-    host: "localhost",
-    port: 3282,
-    project: undefined,
-  };
+  let baseUrl = DEFAULT_BASE_URL;
+  let project: string | null = null;
 
   // Parse arguments
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    if (arg === "--port" && i + 1 < args.length) {
-      const port = parseInt(args[i + 1], 10);
-      if (!isNaN(port)) {
-        options.port = port;
-        i++;
-      }
-    } else if (arg === "--host" && i + 1 < args.length) {
-      options.host = args[i + 1];
+    if ((arg === "--url" || arg === "--base-url") && i + 1 < args.length) {
+      baseUrl = normalizeBaseUrl(args[i + 1]);
       i++;
     } else if (arg === "--project" && i + 1 < args.length) {
       const projectName = args[i + 1]?.trim();
       if (projectName) {
-        options.project = projectName;
+        project = projectName;
       }
       i++;
     }
   }
 
-  return options;
+  return { baseUrl, project };
+}
+
+/**
+ * Normalize the base URL, defaulting to http://.../mcp when no path is provided.
+ */
+function normalizeBaseUrl(rawBaseUrl: string): string {
+  const trimmedUrl = rawBaseUrl.trim();
+
+  if (!trimmedUrl) {
+    return DEFAULT_BASE_URL;
+  }
+
+  const candidate = trimmedUrl.includes("://")
+    ? trimmedUrl
+    : `http://${trimmedUrl}`;
+
+  let url: URL;
+  try {
+    url = new URL(candidate);
+  } catch (error) {
+    throw new Error(`Invalid URL provided: ${rawBaseUrl}`);
+  }
+
+  if (url.pathname === "/" || url.pathname === "") {
+    url.pathname = "/mcp";
+  }
+
+  url.pathname = url.pathname.replace(/\/+$/, "") || "/";
+
+  return url.toString();
 }
 
 /**
@@ -93,11 +114,10 @@ class HttpMcpBridgeServer {
   private project: string | null;
 
   constructor(options: {
-    host: string;
-    port: number;
+    baseUrl: string;
     project?: string | null;
   }) {
-    this.baseUrl = `http://${options.host}:${options.port}/mcp`;
+    this.baseUrl = normalizeBaseUrl(options.baseUrl);
     this.token = process.env.MCPR_TOKEN || null;
     this.project = options.project ?? null;
     if (this.project) {
@@ -378,7 +398,10 @@ class HttpMcpBridgeServer {
           headers["X-MCPR-Project"] = this.project;
         }
 
-        response = await fetch(`${this.baseUrl}/api/test`, {
+        const testUrl = new URL(this.baseUrl);
+        testUrl.pathname = `${testUrl.pathname.replace(/\/+$/, "")}/api/test`;
+
+        response = await fetch(testUrl, {
           signal: controller.signal,
           headers,
         }).finally(() => clearTimeout(timeoutId));
@@ -417,7 +440,9 @@ class HttpMcpBridgeServer {
       }
     } catch (error: any) {
       console.error("Make sure the MCP Router is running");
-      console.error("If the port is different, specify it with --port option");
+      console.error(
+        "If the server URL is different, specify it with the --url option",
+      );
       console.error(
         "If authentication is required, set the MCPR_TOKEN environment variable",
       );
