@@ -54,7 +54,7 @@
     "dayjs": "^1.11.18",
     "electron-squirrel-startup": "^1.0.1",
     "execa": "^9.6.0",
-    "express": "^5.1.0",
+    "express": "^5.2.0",
     "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.2.0",
     "immer": "^10.1.3",
