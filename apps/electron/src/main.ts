@@ -1,3 +1,7 @@
+// Patch console methods FIRST to prevent EPIPE errors during shutdown
+import { patchConsoleForEpipe } from "@/main/utils/logger";
+patchConsoleForEpipe();
+
 import { app, BrowserWindow, session, shell, nativeTheme } from "electron";
 import path from "node:path";
 import { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
