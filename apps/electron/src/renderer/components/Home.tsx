@@ -44,7 +44,6 @@ import { Link } from "react-router-dom";
 import { Button } from "@mcp_router/ui";
 import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
 import ServerDetailsAdvancedSheet from "@/renderer/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
-import ServerSettingsModal from "@/renderer/components/mcp/server/ServerSettingsModal";
 import { useServerEditingStore } from "@/renderer/stores";
 import ProjectSettingsModal from "@/renderer/components/mcp/server/ProjectSettingsModal";
 
@@ -142,42 +141,29 @@ const Home: React.FC = () => {
   const { initializeFromServer, setIsAdvancedEditing } =
     useServerEditingStore();
 
-  // Server settings modal state
-  const [settingsServerId, setSettingsServerId] = useState<string | null>(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const settingsServer = React.useMemo(() => {
-    if (!settingsServerId) return null;
-    return servers.find((s) => s.id === settingsServerId) ?? null;
-  }, [servers, settingsServerId]);
+  const openAdvancedConfiguration = (server: MCPServer) => {
+    initializeFromServer(server);
+    setAdvancedSettingsServer(server);
+    setIsAdvancedEditing(true);
+  };
 
   // Toggle expanded server details - open settings
   const toggleServerExpand = (serverId: string) => {
     const server = servers.find((s) => s.id === serverId);
     if (server) {
-      initializeFromServer(server);
-      setAdvancedSettingsServer(server);
-      setIsAdvancedEditing(true);
+      openAdvancedConfiguration(server);
     }
   };
 
   const openServerSettings = (server: MCPServer, event?: React.MouseEvent) => {
     event?.stopPropagation();
-    setSettingsServerId(server.id);
-    setIsSettingsOpen(true);
+    openAdvancedConfiguration(server);
   };
 
   // Load projects on workspace change
   React.useEffect(() => {
     listProjects().catch((e) => console.error("Failed to load projects", e));
   }, [listProjects, currentWorkspace?.id]);
-
-  // Close settings modal if the server is no longer available
-  React.useEffect(() => {
-    if (settingsServerId && !settingsServer) {
-      setIsSettingsOpen(false);
-      setSettingsServerId(null);
-    }
-  }, [settingsServer, settingsServerId]);
 
   // Handle opening error modal
   const openErrorModal = (server: MCPServer, e: React.MouseEvent) => {
@@ -984,6 +970,7 @@ const Home: React.FC = () => {
       {advancedSettingsServer && (
         <ServerDetailsAdvancedSheet
           server={advancedSettingsServer}
+          projects={projects}
           handleSave={async (
             updatedInputParams?: any,
             editedName?: string,
@@ -1055,37 +1042,29 @@ const Home: React.FC = () => {
               toast.error(t("serverDetails.updateFailed"));
             }
           }}
-        />
-      )}
-
-      {/* Server Settings Modal */}
-      {settingsServer && (
-        <ServerSettingsModal
-          open={isSettingsOpen}
-          onOpenChange={(open) => {
-            setIsSettingsOpen(open);
-            if (!open) {
-              setSettingsServerId(null);
+          onAssignProject={async (projectId: string | null) => {
+            try {
+              await updateServerConfig(advancedSettingsServer.id, {
+                projectId,
+              });
+            } catch (error) {
+              console.error("Failed to update project assignment:", error);
+              toast.error(t("serverDetails.updateFailed"));
+              throw error;
             }
           }}
-          server={settingsServer}
-          projects={projects}
-          onAssignProject={async (projectId: string | null) => {
-            await updateServerConfig(settingsServer.id, { projectId });
-            await refreshServers();
-          }}
           onOpenManageProjects={() => setIsHomeSettingsOpen(true)}
-          onDelete={async () => {
+          onDeleteServer={async () => {
             try {
-              await deleteServer(settingsServer.id);
+              await deleteServer(advancedSettingsServer.id);
               toast.success(t("serverDetails.removeSuccess"));
-            } catch (e) {
+              setIsAdvancedEditing(false);
+              setAdvancedSettingsServer(null);
+              useServerEditingStore.getState().reset();
+            } catch (error) {
+              console.error("Failed to delete server:", error);
               toast.error(t("serverDetails.removeFailed"));
-            } finally {
-              // Ensure UI reflects the deletion
-              setIsSettingsOpen(false);
-              setSettingsServerId(null);
-              await refreshServers();
+              throw error;
             }
           }}
         />
