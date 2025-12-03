@@ -1,10 +1,17 @@
 // Authentication and user types
 
+export type SubscriptionStatus =
+  | "active"
+  | "canceled"
+  | "incomplete"
+  | "trialing"
+  | "past_due";
+
 export interface UserInfo {
   userId: string;
   name: string;
-  creditBalance: number;
-  paidCreditBalance: number;
+  subscriptionStatus: SubscriptionStatus | null;
+  planName?: string | null;
 }
 
 // PKCE flow authentication state

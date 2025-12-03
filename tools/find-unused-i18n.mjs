@@ -56,20 +56,32 @@ const walkFiles = (dir, collector) => {
 };
 
 const collectUsage = () => {
-  const usage = new Set();
+  const usage = new Set(); // exact keys
+  const prefixes = new Set(); // prefixes from template literals
   const add = (key) => usage.add(key);
+  const addPrefix = (p) => p && prefixes.add(p);
 
   const regexes = [
     /t\(\s*["'`]([^"'`]+)["'`]/g,
     /i18n\.t\(\s*["'`]([^"'`]+)["'`]/g,
     /<Trans[^>]*i18nKey=["']([^"']+)["']/g,
+    /t\(\s*`([^`]+?)`/g,
+    /i18n\.t\(\s*`([^`]+?)`/g,
+    /i18nKey=\{`([^`]+?)`/g,
   ];
 
   const scanFile = (file) => {
     const content = fs.readFileSync(file, "utf8");
     for (const regex of regexes) {
       for (const match of content.matchAll(regex)) {
-        add(match[1]);
+        const raw = match[1];
+        if (!raw) continue;
+        if (raw.includes("${")) {
+          const [head] = raw.split("${");
+          addPrefix(head);
+        } else {
+          add(raw);
+        }
       }
     }
   };
@@ -80,7 +92,7 @@ const collectUsage = () => {
     }
   }
 
-  return usage;
+  return { usage, prefixes };
 };
 
 const localeFiles = fs
@@ -88,14 +100,16 @@ const localeFiles = fs
   .filter((f) => f.endsWith(".json"))
   .map((f) => path.join(localeDir, f));
 
-const usage = collectUsage();
+const { usage, prefixes } = collectUsage();
 
 const report = [];
 
 for (const localeFile of localeFiles) {
   const data = readJson(localeFile);
   const keys = flattenKeys(data);
-  const unused = keys.filter((k) => !usage.has(k));
+  const unused = keys.filter(
+    (k) => !usage.has(k) && ![...prefixes].some((p) => k.startsWith(p)),
+  );
   report.push({ localeFile, unused });
 
   if (APPLY && unused.length > 0) {

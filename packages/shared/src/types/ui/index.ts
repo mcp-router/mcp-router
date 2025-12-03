@@ -1,3 +1,5 @@
+import { UserInfo } from "../auth";
+
 // Toast and notification types
 export interface ToastMessage {
   id: string;
@@ -60,14 +62,11 @@ export interface AuthStoreState {
   isAuthenticated: boolean;
   userId: string | null;
   authToken: string | null;
-  userInfo: any | null; // UserInfo from auth.ts
+  userInfo: UserInfo | null;
 
   // Login state
   isLoggingIn: boolean;
 
   // Error states
   loginError: string | null;
-
-  // Credit information (if applicable)
-  credits: number | null;
 }

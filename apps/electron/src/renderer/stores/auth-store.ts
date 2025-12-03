@@ -3,6 +3,7 @@ import {
   AppSettings,
   AuthStoreState,
   UserInfo,
+  SubscriptionStatus,
   PlatformAPI,
 } from "@mcp_router/shared";
 
@@ -13,7 +14,6 @@ export interface AuthStoreInterface extends AuthStoreState {
     userData: Partial<Pick<AuthStoreState, "userId" | "authToken">>,
   ) => void;
   setUserInfo: (userInfo: UserInfo | null) => void;
-  setCredits: (credits: number) => void;
 
   // Loading actions
   setLoggingIn: (loading: boolean) => void;
@@ -26,7 +26,6 @@ export interface AuthStoreInterface extends AuthStoreState {
   login: () => Promise<void>;
   logout: () => Promise<void>;
   checkAuthStatus: (forceRefresh?: boolean) => Promise<void>;
-  refreshCredits: () => Promise<void>;
   subscribeToAuthChanges: () => () => void;
 
   // Initialize from settings
@@ -35,6 +34,22 @@ export interface AuthStoreInterface extends AuthStoreState {
   // Store management
   clearStore: () => void;
 }
+
+const parseSubscriptionStatus = (
+  status?: unknown,
+): SubscriptionStatus | null => {
+  if (
+    status === "active" ||
+    status === "canceled" ||
+    status === "incomplete" ||
+    status === "trialing" ||
+    status === "past_due"
+  ) {
+    return status;
+  }
+
+  return null;
+};
 
 export const createAuthStore = (
   getPlatformAPI: () => PlatformAPI,
@@ -47,7 +62,6 @@ export const createAuthStore = (
     userInfo: null,
     isLoggingIn: false,
     loginError: null,
-    credits: null,
 
     // Basic state setters
     setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
@@ -55,8 +69,6 @@ export const createAuthStore = (
     setUserData: (userData) => set((state) => ({ ...state, ...userData })),
 
     setUserInfo: (userInfo) => set({ userInfo }),
-
-    setCredits: (credits) => set({ credits }),
 
     setLoggingIn: (isLoggingIn) => set({ isLoggingIn }),
 
@@ -110,7 +122,7 @@ export const createAuthStore = (
     },
 
     checkAuthStatus: async (forceRefresh = false) => {
-      const { setAuthenticated, setUserData, setUserInfo, setCredits } = get();
+      const { setAuthenticated, setUserData, setUserInfo } = get();
 
       try {
         // Check auth status with optional force refresh
@@ -124,11 +136,18 @@ export const createAuthStore = (
 
         // Set user info if authenticated
         if (status.authenticated && status.user) {
-          const newUserInfo = {
+          const subscriptionStatus = parseSubscriptionStatus(
+            status.user.subscriptionStatus,
+          );
+          const planName =
+            typeof status.user.planName === "string"
+              ? status.user.planName
+              : null;
+          const newUserInfo: UserInfo = {
             userId: status.userId || "",
             name: status.user.name || "",
-            creditBalance: status.user.creditBalance || 0,
-            paidCreditBalance: status.user.paidCreditBalance || 0,
+            subscriptionStatus,
+            planName,
           };
           setUserInfo(newUserInfo);
         } else {
@@ -145,26 +164,6 @@ export const createAuthStore = (
       }
     },
 
-    refreshCredits: async () => {
-      const { authToken, setCredits } = get();
-
-      if (!authToken) {
-        return;
-      }
-
-      try {
-        // Refresh credits by getting the full auth status
-        const status = await getPlatformAPI().auth.getStatus();
-        // Credits are now part of user info
-        if (status.authenticated && status.user) {
-          setCredits(status.user.creditBalance || 0);
-        }
-      } catch (error) {
-        console.error("Failed to refresh credits:", error);
-        // Don't throw error for credits refresh failure
-      }
-    },
-
     subscribeToAuthChanges: () => {
       const { setAuthenticated, setUserInfo, setUserData } = get();
 
@@ -172,11 +171,18 @@ export const createAuthStore = (
       const unsubscribe = getPlatformAPI().auth.onChange((status) => {
         setAuthenticated(status.authenticated);
         if (status.authenticated && status.user) {
+          const subscriptionStatus = parseSubscriptionStatus(
+            status.user.subscriptionStatus,
+          );
+          const planName =
+            typeof status.user.planName === "string"
+              ? status.user.planName
+              : null;
           setUserInfo({
             userId: status.userId || "",
             name: status.user?.name || "",
-            creditBalance: status.user?.creditBalance || 0,
-            paidCreditBalance: status.user?.paidCreditBalance || 0,
+            subscriptionStatus,
+            planName,
           });
           setUserData({
             userId: status.userId,
@@ -212,7 +218,6 @@ export const createAuthStore = (
         userInfo: null,
         isLoggingIn: false,
         loginError: null,
-        credits: null,
       });
     },
   }));

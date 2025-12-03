@@ -9,7 +9,6 @@ import {
   SelectValue,
 } from "@mcp_router/ui";
 import { Button } from "@mcp_router/ui";
-import { Badge } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
 import { useThemeStore } from "@/renderer/stores";
 import { useAuthStore } from "../../stores";
@@ -19,7 +18,8 @@ import { postHogService } from "../../services/posthog-service";
 
 const Settings: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const [isRefreshingCredits, setIsRefreshingCredits] = useState(false);
+  const [isRefreshingSubscription, setIsRefreshingSubscription] =
+    useState(false);
   const [loadExternalMCPConfigs, setLoadExternalMCPConfigs] =
     useState<boolean>(true);
   const [analyticsEnabled, setAnalyticsEnabled] = useState<boolean>(true);
@@ -83,17 +83,14 @@ const Settings: React.FC = () => {
     loadSettings();
   }, []);
 
-  // Settingsページ表示時にクレジット残高を更新
+  // Settingsページ表示時にサブスクリプション情報を更新
   useEffect(() => {
     if (isAuthenticated) {
-      // ページが表示された時に一回だけクレジット残高を更新
-      const refreshCredits = async () => {
-        try {
-          await checkAuthStatus(true);
-        } catch (error) {}
+      const refreshSubscriptionInfo = async () => {
+        await checkAuthStatus(true);
       };
 
-      refreshCredits();
+      refreshSubscriptionInfo();
     }
   }, [isAuthenticated, checkAuthStatus]);
 
@@ -115,17 +112,17 @@ const Settings: React.FC = () => {
     }
   };
 
-  // クレジット残高の更新処理
-  const handleRefreshCredits = async () => {
-    if (!isAuthenticated || isRefreshingCredits) return;
+  // サブスクリプション情報の更新処理
+  const handleRefreshSubscription = async () => {
+    if (!isAuthenticated || isRefreshingSubscription) return;
 
     try {
-      setIsRefreshingCredits(true);
+      setIsRefreshingSubscription(true);
       await checkAuthStatus(true); // Force refresh
     } catch (error) {
-      console.error("クレジット残高の更新に失敗しました:", error);
+      console.error("サブスクリプション情報の更新に失敗しました:", error);
     } finally {
-      setIsRefreshingCredits(false);
+      setIsRefreshingSubscription(false);
     }
   };
 
@@ -214,6 +211,18 @@ const Settings: React.FC = () => {
       setIsSavingSettings(false);
     }
   };
+
+  const isSubscribed =
+    userInfo?.subscriptionStatus && userInfo.subscriptionStatus !== "canceled";
+
+  const planNameLabel =
+    userInfo?.planName && userInfo.planName.trim().length > 0
+      ? userInfo.planName
+      : t("settings.planNameUnknown");
+
+  const subscriptionDisplay = isSubscribed
+    ? planNameLabel
+    : t("settings.notSubscribed");
 
   return (
     <div className="p-6 flex flex-col gap-6">
@@ -310,76 +319,50 @@ const Settings: React.FC = () => {
                 </div>
               </div>
 
-              {/* Credit Balance Section */}
+              {/* Subscription Section */}
               <div className="rounded-md bg-slate-100 dark:bg-slate-800 p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
                     <p className="text-sm font-medium">
-                      {t("settings.creditBalance")}:
+                      {t("settings.subscription")}
                     </p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRefreshCredits}
-                      disabled={isRefreshingCredits}
-                      className="h-6 px-2 text-xs"
-                    >
-                      {isRefreshingCredits
-                        ? t("settings.refreshingCredits")
-                        : t("settings.refreshCredits")}
-                    </Button>
-                  </div>
-                  <Badge variant="default" className="font-medium text-sm">
-                    {(userInfo?.creditBalance || 0) +
-                      (userInfo?.paidCreditBalance || 0)}{" "}
-                    {t("settings.credits")}
-                  </Badge>
-                </div>
-
-                {/* Free Credits Card */}
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                        {t("settings.freeCredits")}
-                      </p>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="text-sm border-green-300 text-green-700 dark:text-green-300"
-                    >
-                      {userInfo?.creditBalance || 0}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Paid Credits Card */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                        {t("settings.paidCredits")}
-                      </p>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="text-sm border-blue-300 text-blue-700 dark:text-blue-300"
-                    >
-                      {userInfo?.paidCreditBalance || 0}
-                    </Badge>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {t("settings.subscriptionDescription")}
+                    </p>
                   </div>
                   <Button
+                    variant="ghost"
                     size="sm"
-                    className="w-full h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={() => {
-                      window.open("https://mcp-router.net/profile", "_blank");
-                    }}
+                    onClick={handleRefreshSubscription}
+                    disabled={isRefreshingSubscription}
+                    className="h-8 px-3 text-xs shrink-0"
                   >
-                    {t("settings.purchaseCredits")}
+                    {isRefreshingSubscription
+                      ? t("settings.refreshingSubscription")
+                      : t("settings.refreshSubscription")}
                   </Button>
                 </div>
+
+                <div className="flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2">
+                  <p className="text-sm text-muted-foreground">
+                    {t("settings.planName")}
+                  </p>
+                  <p className="text-sm font-medium text-right break-all">
+                    {subscriptionDisplay}
+                  </p>
+                </div>
+
+                {!isSubscribed && (
+                  <Button
+                    size="sm"
+                    className="w-full h-9 text-sm"
+                    onClick={() =>
+                      window.open("https://mcp-router.net/en/profile", "_blank")
+                    }
+                  >
+                    {t("settings.getPro")}
+                  </Button>
+                )}
               </div>
             </div>
           ) : (
