@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { MCPServer, MCPTool, Project } from "@mcp_router/shared";
+import { MCPServer, MCPTool } from "@mcp_router/shared";
 import { useTranslation } from "react-i18next";
 import {
   Settings2,
@@ -23,13 +23,6 @@ import { Button } from "@mcp_router/ui";
 import { Input } from "@mcp_router/ui";
 import { Label } from "@mcp_router/ui";
 import { Badge } from "@mcp_router/ui";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@mcp_router/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
 import FinalCommandDisplay from "./FinalCommandDisplay";
@@ -42,24 +35,16 @@ import { usePlatformAPI } from "@/renderer/platform-api";
 
 interface ServerDetailsAdvancedSheetProps {
   server: MCPServer;
-  projects: Project[];
   handleSave: (
     updatedInputParams?: Record<string, unknown>,
     editedName?: string,
     updatedToolPermissions?: Record<string, boolean>,
   ) => Promise<void>;
-  onAssignProject?: (projectId: string | null) => Promise<void> | void;
-  onOpenManageProjects?: () => void;
-  onDeleteServer?: () => Promise<void> | void;
 }
 
 const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
   server,
-  projects,
   handleSave,
-  onAssignProject,
-  onOpenManageProjects,
-  onDeleteServer,
 }) => {
   const { t } = useTranslation();
   const platformAPI = usePlatformAPI();
@@ -127,12 +112,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
   >(() => deriveInitialToolPermissions(server.tools));
   const [isToolPermissionsDirty, setIsToolPermissionsDirty] = useState(false);
   const [hasAttemptedToolFetch, setHasAttemptedToolFetch] = useState(false);
-  const UNASSIGNED_OPTION_VALUE = "__none__";
-  const [projectSelection, setProjectSelection] = useState<string>(
-    server.projectId ?? UNASSIGNED_OPTION_VALUE,
-  );
-  const [isAssigningProject, setIsAssigningProject] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // Initialize inputParamValues from server inputParams defaults
   useEffect(() => {
@@ -147,10 +126,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
       setIsParamsDirty(false);
     }
   }, [server.id, isOpen, server.inputParams]);
-
-  useEffect(() => {
-    setProjectSelection(server.projectId ?? UNASSIGNED_OPTION_VALUE);
-  }, [server.id, server.projectId, isOpen]);
 
   // Initialize tool permissions when sheet opens or server changes
   useEffect(() => {
@@ -253,27 +228,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     });
   };
 
-  const handleProjectChange = async (value: string) => {
-    const previous = projectSelection;
-    setProjectSelection(value);
-
-    if (!onAssignProject) {
-      return;
-    }
-
-    setIsAssigningProject(true);
-    try {
-      await onAssignProject(
-        value === UNASSIGNED_OPTION_VALUE ? null : value,
-      );
-    } catch (error) {
-      console.error("Failed to update project assignment", error);
-      setProjectSelection(previous);
-    } finally {
-      setIsAssigningProject(false);
-    }
-  };
-
   // This function is now only used internally to update inputParams in handleSave
   const prepareInputParamsForSave = () => {
     const updatedInputParams = { ...(server.inputParams || {}) };
@@ -369,60 +323,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     );
   };
 
-  const renderProjectSection = () => (
-    <div className="space-y-3">
-      <Label className="text-base font-medium flex items-center gap-1.5">
-        <Info className="h-4 w-4 text-muted-foreground" />
-        {t("serverSettings.project", { defaultValue: "Project" })}
-      </Label>
-      <div className="flex flex-wrap items-center gap-2">
-        <Select
-          value={projectSelection}
-          onValueChange={handleProjectChange}
-          disabled={isAssigningProject}
-        >
-          <SelectTrigger className="w-64">
-            <SelectValue
-              placeholder={t("projects.unassigned", {
-                defaultValue: "Unassigned",
-              })}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={UNASSIGNED_OPTION_VALUE}>
-              {t("projects.unassigned", { defaultValue: "Unassigned" })}
-            </SelectItem>
-            {projects.map((project) => (
-              <SelectItem key={project.id} value={project.id}>
-                {project.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {onOpenManageProjects && (
-          <Button
-            variant="outline"
-            size="sm"
-            type="button"
-            className="gap-1.5"
-            onClick={onOpenManageProjects}
-            disabled={isAssigningProject}
-          >
-            {t("serverSettings.manageProjects", {
-              defaultValue: "Manage Projects",
-            })}
-          </Button>
-        )}
-        {isAssigningProject && (
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <RefreshCw className="h-3 w-3 animate-spin" />
-            {t("common.saving")}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-
   const hasInputParams =
     !!server.inputParams && Object.keys(server.inputParams).length > 0;
   const showToolsTab =
@@ -436,21 +336,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     ? "grid-cols-2"
     : "grid-cols-1";
 
-  const handleDeleteClick = async () => {
-    if (!onDeleteServer) {
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      await onDeleteServer();
-    } catch (error) {
-      console.error("Failed to delete server", error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
@@ -463,8 +348,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
             {t("serverDetails.advancedConfigurationDescription")}
           </SheetDescription>
         </SheetHeader>
-
-        <div className="mt-4">{renderProjectSection()}</div>
 
         {hasInputParams ? (
           <Tabs defaultValue="params" className="mt-4">
@@ -935,90 +818,64 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
           </div>
         )}
 
-        <SheetFooter className="flex items-center justify-between border-t pt-4 gap-2">
-          {onDeleteServer ? (
-            <Button
-              variant="destructive"
-              onClick={handleDeleteClick}
-              disabled={isLoading || isDeleting}
-              className="gap-2"
-            >
-              {isDeleting ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  {t("common.removing", { defaultValue: "Removing..." })}
-                </>
-              ) : (
-                <>
-                  <Trash className="h-4 w-4" />
-                  {t("serverSettings.delete", {
-                    defaultValue: "Delete Server",
-                  })}
-                </>
-              )}
-            </Button>
-          ) : (
-            <div />
-          )}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => setIsOpen(false)}
-              disabled={isLoading || isDeleting}
-              className="gap-2"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              onClick={async () => {
-                setIsLoading(true);
-                try {
-                  // Prepare input params if they were modified
-                  const updatedInputParams = isParamsDirty
-                    ? prepareInputParamsForSave()
-                    : server.inputParams;
-                  const toolPermissionsToSave = isToolPermissionsDirty
-                    ? { ...editedToolPermissions }
-                    : undefined;
+        <SheetFooter className="flex justify-between sm:justify-between border-t pt-4">
+          <Button
+            variant="ghost"
+            onClick={() => setIsOpen(false)}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            onClick={async () => {
+              setIsLoading(true);
+              try {
+                // Prepare input params if they were modified
+                const updatedInputParams = isParamsDirty
+                  ? prepareInputParamsForSave()
+                  : server.inputParams;
+                const toolPermissionsToSave = isToolPermissionsDirty
+                  ? { ...editedToolPermissions }
+                  : undefined;
 
-                  // Call the parent's handleSave with inputParams and editedName
-                  await handleSave(
-                    updatedInputParams,
-                    editedName,
-                    toolPermissionsToSave,
-                  );
+                // Call the parent's handleSave with inputParams and editedName
+                await handleSave(
+                  updatedInputParams,
+                  editedName,
+                  toolPermissionsToSave,
+                );
 
-                  // Reset dirty state after successful save
-                  if (isParamsDirty) {
-                    setInitialInputParamValues(inputParamValues);
-                    setIsParamsDirty(false);
-                  }
-                  if (isToolPermissionsDirty) {
-                    setInitialToolPermissions(editedToolPermissions);
-                    setIsToolPermissionsDirty(false);
-                  }
-                } catch (error) {
-                  console.error("Failed to save:", error);
-                } finally {
-                  setIsLoading(false);
+                // Reset dirty state after successful save
+                if (isParamsDirty) {
+                  setInitialInputParamValues(inputParamValues);
+                  setIsParamsDirty(false);
                 }
-              }}
-              disabled={isLoading || isDeleting}
-              className="gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  {t("common.saving")}
-                </>
-              ) : (
-                <>
-                  <Check className="h-4 w-4" />
-                  {t("common.save")}
-                </>
-              )}
-            </Button>
-          </div>
+                if (isToolPermissionsDirty) {
+                  setInitialToolPermissions(editedToolPermissions);
+                  setIsToolPermissionsDirty(false);
+                }
+              } catch (error) {
+                console.error("Failed to save:", error);
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                {t("common.saving")}
+              </>
+            ) : (
+              <>
+                <Check className="h-4 w-4" />
+                {t("common.save")}
+              </>
+            )}
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
