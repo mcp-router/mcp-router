@@ -1,5 +1,5 @@
-import { app } from "electron";
-import { AppSettings } from "@mcp_router/shared";
+import { app, nativeTheme } from "electron";
+import { AppSettings, Theme } from "@mcp_router/shared";
 import { SingletonService } from "../singleton-service";
 import { SettingsRepository } from "./settings.repository";
 
@@ -59,6 +59,7 @@ export class SettingsService extends SingletonService<
       const result = SettingsRepository.getInstance().saveSettings(settings);
       if (result) {
         applyLoginItemSettings(settings.showWindowOnStartup ?? true);
+        applyThemeSettings(settings.theme);
       }
       return result;
     } catch (error) {
@@ -92,5 +93,16 @@ export function applyLoginItemSettings(showWindowOnStartup: boolean): void {
     app.setLoginItemSettings(loginItemOptions);
   } catch (error) {
     console.error("Failed to update login item settings:", error);
+  }
+}
+
+/**
+ * 設定のテーマに基づいてネイティブテーマを更新
+ */
+export function applyThemeSettings(theme?: Theme): void {
+  try {
+    nativeTheme.themeSource = theme ?? "system";
+  } catch (error) {
+    console.error("Failed to update native theme:", error);
   }
 }

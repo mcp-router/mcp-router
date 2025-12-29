@@ -407,7 +407,7 @@ export class McpAppsManagerService extends SingletonService<
     }
 
     // Codex uses TOML and a different structure; write in TOML
-    if (definition.configKind === "codex-toml") {
+    if (definition.configKind === "codex") {
       await this.updateCodexConfigToml(configPath, tokenId);
       return;
     }

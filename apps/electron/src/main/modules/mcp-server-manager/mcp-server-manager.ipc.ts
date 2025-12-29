@@ -46,8 +46,8 @@ export function setupMcpServerHandlers(
 
       // For remote servers, test the connection
       if (serverConfig.serverType !== "local") {
-        await mcpServerManager.startServer(server.id);
-        mcpServerManager.stopServer(server.id);
+        await mcpServerManager.startServer(server.id, undefined, false);
+        mcpServerManager.stopServer(server.id, undefined, false);
       }
 
       return server;

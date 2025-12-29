@@ -1,6 +1,4 @@
-/**
- * アプリケーション設定の型定義
- */
+import type { Theme } from "./ui";
 
 /**
  * アプリケーション設定のインターフェース
@@ -49,6 +47,12 @@ export interface AppSettings {
    * デフォルト: true
    */
   showWindowOnStartup?: boolean;
+
+  /**
+   * アプリケーションのテーマ設定
+   * デフォルト: "system"
+   */
+  theme?: Theme;
 }
 
 /**
@@ -63,4 +67,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   analyticsEnabled: true,
   autoUpdateEnabled: true,
   showWindowOnStartup: true,
+  theme: "system",
 };

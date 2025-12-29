@@ -1,4 +1,4 @@
-import { app, BrowserWindow, session, shell } from "electron";
+import { app, BrowserWindow, session, shell, nativeTheme } from "electron";
 import path from "node:path";
 import { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { AggregatorServer } from "@/main/modules/mcp-server-runtime/aggregator-server";
@@ -14,12 +14,10 @@ import { getSharedConfigManager } from "@/main/infrastructure/shared-config-mana
 import { setupIpcHandlers } from "./main/infrastructure/ipc";
 import { resolveAutoUpdateConfig } from "./main/modules/system/app-updator";
 import { getIsAutoUpdateInProgress } from "./main/modules/system/system-handler";
-import {
-  initializeEnvironment,
-  isDevelopment,
-} from "@/main/utils/environment";
+import { initializeEnvironment, isDevelopment } from "@/main/utils/environment";
 import {
   applyLoginItemSettings,
+  applyThemeSettings,
   getSettingsService,
 } from "@/main/modules/settings/settings.service";
 
@@ -125,6 +123,36 @@ const createWindow = ({ showOnCreate = true }: CreateWindowOptions = {}) => {
 
   // Create the browser window.
   mainWindow = new BrowserWindow(windowOptions);
+
+  // Apply Windows title bar overlay colors based on system theme
+  if (process.platform === "win32") {
+    const applyTitleBarColors = () => {
+      if (!mainWindow) return;
+      const isDark = nativeTheme.shouldUseDarkColors;
+      const isHighContrast = nativeTheme.shouldUseHighContrastColors;
+      const overlayColor = isHighContrast
+        ? "#00000000" // transparent in high contrast, let OS handle
+        : isDark
+          ? "#0a0a0a"
+          : "#ffffff";
+      const symbolColor = isHighContrast
+        ? undefined
+        : isDark
+          ? "#ffffff"
+          : "#000000";
+      mainWindow.setTitleBarOverlay({
+        color: overlayColor,
+        symbolColor,
+        height: 50,
+      });
+    };
+
+    applyTitleBarColors();
+    nativeTheme.on("updated", applyTitleBarColors);
+    mainWindow.on("closed", () => {
+      nativeTheme.removeListener("updated", applyTitleBarColors);
+    });
+  }
 
   mainWindow.once("ready-to-show", () => {
     if (!mainWindow) {
@@ -311,6 +339,7 @@ async function initApplication(): Promise<void> {
   try {
     const currentSettings = settingsService.getSettings();
     showWindowOnStartup = currentSettings.showWindowOnStartup ?? true;
+    applyThemeSettings(currentSettings.theme);
   } catch (error) {
     console.error(
       "Failed to load startup visibility preference, defaulting to true:",

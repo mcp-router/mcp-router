@@ -67,10 +67,7 @@ export class RequestHandlers extends RequestHandlerBase {
     projectId: string | null,
   ): boolean {
     const serverProject = server?.projectId ?? null;
-    if (projectId === null) {
-      return serverProject === null;
-    }
-    return serverProject === projectId;
+    return projectId === null || serverProject === projectId;
   }
 
   /**

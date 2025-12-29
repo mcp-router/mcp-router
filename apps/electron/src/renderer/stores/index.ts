@@ -1,5 +1,4 @@
 // Platform-independent stores (no PlatformAPI dependency)
-export * from "./theme-store";
 export * from "./ui-store";
 export * from "./server-editing-store";
 export * from "./workspace-store";
@@ -9,6 +8,7 @@ export * from "./view-preferences-store";
 export * from "./server-store";
 export * from "./auth-store";
 export * from "./project-store";
+export * from "./theme-store";
 
 // Import platform API type
 import type { PlatformAPI } from "@mcp_router/shared";
@@ -16,6 +16,7 @@ import type { PlatformAPI } from "@mcp_router/shared";
 // Import store factories
 import { createServerStore } from "./server-store";
 import { createAuthStore } from "./auth-store";
+import { createThemeStore, initializeThemeStore } from "./theme-store";
 import { useWorkspaceStore } from "./workspace-store";
 
 // Get the appropriate platform API based on current workspace
@@ -26,6 +27,7 @@ function getPlatformAPI(): PlatformAPI {
 // Create store instances with dynamic platform API getter
 export const useServerStore = createServerStore(getPlatformAPI);
 export const useAuthStore = createAuthStore(getPlatformAPI);
+export const useThemeStore = createThemeStore(getPlatformAPI);
 
 // Store initialization utility
 export const initializeStores = async () => {
@@ -34,6 +36,13 @@ export const initializeStores = async () => {
 
   // Get platform API from workspace store
   const platformAPI = getPlatformAPI();
+
+  // Initialize theme from settings
+  try {
+    await initializeThemeStore(useThemeStore, getPlatformAPI);
+  } catch (error) {
+    console.error("Failed to initialize theme from settings:", error);
+  }
 
   // Initialize auth state from settings
   try {

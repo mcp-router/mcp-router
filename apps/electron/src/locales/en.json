@@ -354,7 +354,7 @@
     "projectSettingsCliHint": "To use the servers assigned to a project, run a command like: npx -y @mcp_router/cli connect --project <project-name>."
   },
   "serverSettings": {
-    "title": "Server Settings",
+    "title": "{{serverName}} Settings",
     "project": "Project",
     "manageProjects": "Manage Projects",
     "delete": "Delete Server"

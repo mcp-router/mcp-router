@@ -63,6 +63,8 @@ export class MCPServerManager {
         `[MCPServerManager] Found ${servers.length} servers in database`,
       );
 
+      const autoStartServerIds: string[] = [];
+
       for (const server of servers) {
         // Initialize all servers as stopped when loading
         server.status = "stopped";
@@ -75,8 +77,25 @@ export class MCPServerManager {
 
         // Auto start servers if configured
         if (server.autoStart && !server.disabled) {
-          await this.startServer(server.id);
+          autoStartServerIds.push(server.id);
         }
+      }
+
+      if (autoStartServerIds.length > 0) {
+        await Promise.all(
+          autoStartServerIds.map(async (id) => {
+            try {
+              await this.startServer(id, undefined, false);
+            } catch (error) {
+              const server = this.servers.get(id);
+              const identifier = server?.name || id;
+              console.error(
+                `[MCPServerManager] Failed to auto-start server ${identifier}:`,
+                error,
+              );
+            }
+          }),
+        );
       }
 
       console.log(`[MCPServerManager] ${servers.length} servers loaded`);
@@ -210,7 +229,11 @@ export class MCPServerManager {
   /**
    * Start an MCP server
    */
-  public async startServer(id: string, clientId?: string): Promise<boolean> {
+  public async startServer(
+    id: string,
+    clientId?: string,
+    persist: boolean = true,
+  ): Promise<boolean> {
     const server = this.servers.get(id);
     if (!server || server.disabled) {
       throw new Error(server ? "Server is disabled" : "Server not found");
@@ -237,6 +260,11 @@ export class MCPServerManager {
     // Register the client
     this.serverStatusMap.set(server.name, true);
 
+    // Update autoStart if persist is true
+    if (persist) {
+      this.updateServer(id, { autoStart: true });
+    }
+
     // Record log
     getLogService().recordMcpRequestLog({
       timestamp: new Date().toISOString(),
@@ -253,7 +281,11 @@ export class MCPServerManager {
   /**
    * Stop an MCP server
    */
-  public stopServer(id: string, clientId?: string): boolean {
+  public stopServer(
+    id: string,
+    clientId?: string,
+    persist: boolean = true,
+  ): boolean {
     const server = this.servers.get(id);
     if (!server) {
       return false;
@@ -270,6 +302,11 @@ export class MCPServerManager {
 
       // Unregister the client
       this.serverStatusMap.set(server.name, false);
+
+      // Update autoStart if persist is true
+      if (persist) {
+        this.updateServer(id, { autoStart: false });
+      }
 
       // Record log
       getLogService().recordMcpRequestLog({
@@ -456,7 +493,8 @@ export class MCPServerManager {
    */
   public async shutdown(): Promise<void> {
     for (const [id] of this.clients) {
-      this.stopServer(id);
+      // Don't persist state changes when shutting down - this is just cleanup
+      this.stopServer(id, undefined, false);
     }
   }
 }

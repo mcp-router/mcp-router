@@ -17,7 +17,7 @@ export type IconKey =
   | "cursor"
   | "vscode";
 
-export type AppConfigKind = "standard-json" | "vscode-json" | "codex-toml";
+export type AppConfigKind = "standard-json" | "vscode-json" | "codex";
 
 export interface StandardAppDefinition {
   id: StandardAppId;
@@ -34,7 +34,7 @@ const definitions: StandardAppDefinition[] = [
     name: "Codex",
     clientType: "codex",
     iconKey: "openai",
-    configKind: "codex-toml",
+    configKind: "codex",
     getConfigPath: (paths) => paths.codexConfig(),
   },
   {

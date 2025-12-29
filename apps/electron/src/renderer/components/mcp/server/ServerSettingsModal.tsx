@@ -54,6 +54,7 @@ export const ServerSettingsModal: React.FC<Props> = ({
     setAssigning(true);
     try {
       await onAssignProject(value === "__none__" ? null : value);
+      onOpenChange(false);
     } finally {
       setAssigning(false);
     }
@@ -64,9 +65,12 @@ export const ServerSettingsModal: React.FC<Props> = ({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {t("serverSettings.title", { defaultValue: "Server Settings" })}
+            {t("serverSettings.title", {
+              defaultValue: `${server.name} Settings`,
+              serverName: server.name,
+            })}
           </DialogTitle>
-          <DialogDescription>{server.name}</DialogDescription>
+          <DialogDescription></DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-2">
