@@ -23,7 +23,7 @@
     "publish:npm": "pnpm publish --access public"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.18.0",
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {

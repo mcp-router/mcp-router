@@ -42,7 +42,7 @@
     "@mcp_router/shared": "workspace:*",
     "@mcp_router/tailwind-config": "workspace:*",
     "@mcp_router/ui": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.23.0",
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "@tabler/icons-react": "^3.35.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
