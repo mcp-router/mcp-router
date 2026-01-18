@@ -9,6 +9,7 @@ import type {
   AppAPI,
   PackageAPI,
   SettingsAPI,
+  CloudSyncAPI,
   LogAPI,
   WorkspaceAPI,
   WorkflowAPI,
@@ -23,6 +24,7 @@ class ElectronPlatformAPI implements PlatformAPI {
   apps: AppAPI;
   packages: PackageAPI;
   settings: SettingsAPI;
+  cloudSync: CloudSyncAPI;
   logs: LogAPI;
   workspaces: WorkspaceAPI;
   workflows: WorkflowAPI;
@@ -129,6 +131,14 @@ class ElectronPlatformAPI implements PlatformAPI {
       incrementOverlayCount: () =>
         window.electronAPI.incrementPackageManagerOverlayCount(),
       submitFeedback: (feedback) => window.electronAPI.submitFeedback(feedback),
+    };
+
+    // Initialize Cloud Sync domain
+    this.cloudSync = {
+      getStatus: () => window.electronAPI.getCloudSyncStatus(),
+      setEnabled: (enabled) => window.electronAPI.setCloudSyncEnabled(enabled),
+      setPassphrase: (passphrase) =>
+        window.electronAPI.setCloudSyncPassphrase(passphrase),
     };
 
     // Initialize logs domain

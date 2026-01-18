@@ -214,6 +214,10 @@ export class RemotePlatformAPI implements PlatformAPI {
     return this.localPlatformAPI.settings;
   }
 
+  get cloudSync() {
+    return this.localPlatformAPI.cloudSync;
+  }
+
   get workspaces() {
     return this.localPlatformAPI.workspaces;
   }

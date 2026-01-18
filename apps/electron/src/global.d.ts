@@ -4,6 +4,7 @@
 
 import type {
   AppSettings,
+  CloudSyncStatus,
   MCPTool,
   MCPServer,
   Project,
@@ -74,6 +75,11 @@ declare global {
         success: boolean;
         count: number;
       }>;
+
+      // Cloud Sync
+      getCloudSyncStatus: () => Promise<CloudSyncStatus>;
+      setCloudSyncEnabled: (enabled: boolean) => Promise<CloudSyncStatus>;
+      setCloudSyncPassphrase: (passphrase: string) => Promise<void>;
 
       // MCP Apps Management
       listMcpApps: () => Promise<McpApp[]>;

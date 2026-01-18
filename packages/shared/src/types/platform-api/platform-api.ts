@@ -7,6 +7,7 @@ import { ServerAPI } from "./domains/server-api";
 import { AppAPI } from "./domains/app-api";
 import { PackageAPI } from "./domains/package-api";
 import { SettingsAPI } from "./domains/settings-api";
+import { CloudSyncAPI } from "./domains/cloud-sync-api";
 import { LogAPI } from "./domains/log-api";
 import { WorkspaceAPI } from "./domains/workspace-api";
 import { WorkflowAPI } from "./domains/workflow-api";
@@ -31,6 +32,9 @@ export interface PlatformAPI {
 
   // Settings management domain
   settings: SettingsAPI;
+
+  // Cloud Sync domain
+  cloudSync: CloudSyncAPI;
 
   // Log management domain
   logs: LogAPI;

@@ -67,6 +67,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
   incrementPackageManagerOverlayCount: () =>
     ipcRenderer.invoke("settings:increment-package-manager-overlay-count"),
 
+  // Cloud Sync
+  getCloudSyncStatus: () => ipcRenderer.invoke("cloud-sync:status"),
+  setCloudSyncEnabled: (enabled: boolean) =>
+    ipcRenderer.invoke("cloud-sync:set-enabled", enabled),
+  setCloudSyncPassphrase: (passphrase: string) =>
+    ipcRenderer.invoke("cloud-sync:set-passphrase", passphrase),
+
   // MCP Apps Management
   listMcpApps: () => ipcRenderer.invoke("mcp-apps:list"),
   addMcpAppConfig: (appName: string) =>
