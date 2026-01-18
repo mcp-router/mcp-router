@@ -77,6 +77,15 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   }
 
   /**
+   * 指定したデータベースでリポジトリを作成
+   */
+  public static createForDatabase(
+    db: SqliteManager,
+  ): McpServerManagerRepository {
+    return new McpServerManagerRepository(db);
+  }
+
+  /**
    * インスタンスをリセット
    */
   public static resetInstance(): void {
