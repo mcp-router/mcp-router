@@ -31,9 +31,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@mcp_router/ui";
-import { Button } from "@mcp_router/ui";
-import { Textarea } from "@mcp_router/ui";
-import { toast } from "sonner";
 
 const SidebarComponent: React.FC = () => {
   const { t } = useTranslation();
@@ -41,8 +38,6 @@ const SidebarComponent: React.FC = () => {
   const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
   const isRemoteWorkspace = currentWorkspace?.type === "remote";
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [feedback, setFeedback] = useState("");
-  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
   const platformAPI = usePlatformAPI();
 
   useEffect(() => {
@@ -67,26 +62,6 @@ const SidebarComponent: React.FC = () => {
 
   const handleInstallUpdate = () => {
     platformAPI.packages.system.installUpdate();
-  };
-
-  const handleSubmitFeedback = async () => {
-    if (!feedback.trim()) return;
-    setIsSendingFeedback(true);
-    try {
-      const success = await platformAPI.settings.submitFeedback(
-        feedback.trim(),
-      );
-      if (success) {
-        setFeedback("");
-        toast.success(t("feedback.sent"));
-      } else {
-        toast.error(t("feedback.failed"));
-      }
-    } catch {
-      toast.error(t("feedback.failed"));
-    } finally {
-      setIsSendingFeedback(false);
-    }
   };
 
   return (
@@ -196,22 +171,6 @@ const SidebarComponent: React.FC = () => {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="p-3 space-y-2 border-t border-border">
-          <Textarea
-            value={feedback}
-            onChange={(e) => setFeedback(e.target.value)}
-            rows={3}
-            placeholder={t("feedback.placeholder")}
-            className="text-sm"
-          />
-          <Button
-            onClick={handleSubmitFeedback}
-            disabled={!feedback.trim() || isSendingFeedback}
-            className="w-full"
-          >
-            {isSendingFeedback ? t("common.loading") : t("common.send")}
-          </Button>
-        </div>
         <SidebarMenu>
           {updateAvailable && (
             <SidebarMenuItem>
