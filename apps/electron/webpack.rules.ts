@@ -16,7 +16,7 @@ export const rules: Required<ModuleOptions>["rules"] = [
     use: "node-loader",
   },
   {
-    test: /[/\\]node_modules[/\\].+\.(m?js|node)$/,
+    test: /[/\\]node_modules[/\\].+\.(c?js|mjs|node)$/,
     parser: { amd: false },
     use: {
       loader: "@vercel/webpack-asset-relocator-loader",

@@ -48,6 +48,7 @@
     "@types/react-dom": "^19.2.3",
     "@uiw/react-codemirror": "^4.25.3",
     "@xyflow/react": "^12.9.3",
+    "argon2": "^0.41.1",
     "better-sqlite3": "^11.10.0",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
