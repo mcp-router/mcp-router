@@ -34,12 +34,10 @@ export abstract class RequestHandlerBase {
     // Workflowの実行を試みる
     try {
       // WorkflowServiceとWorkflowExecutorをインポート
-      const { getWorkflowService } = await import(
-        "../workflow/workflow.service"
-      );
-      const { WorkflowExecutor } = await import(
-        "../workflow/workflow-executor"
-      );
+      const { getWorkflowService } =
+        await import("../workflow/workflow.service");
+      const { WorkflowExecutor } =
+        await import("../workflow/workflow-executor");
       const workflowService = getWorkflowService();
 
       // 該当するWorkflowを取得（tools/list または tools/call）

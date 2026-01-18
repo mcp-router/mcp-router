@@ -113,10 +113,7 @@ class HttpMcpBridgeServer {
   private token: string | null;
   private project: string | null;
 
-  constructor(options: {
-    baseUrl: string;
-    project?: string | null;
-  }) {
+  constructor(options: { baseUrl: string; project?: string | null }) {
     this.baseUrl = normalizeBaseUrl(options.baseUrl);
     this.token = process.env.MCPR_TOKEN || null;
     this.project = options.project ?? null;

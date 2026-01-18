@@ -18,11 +18,23 @@ import url from "url";
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
 const localeDir = path.join(repoRoot, "apps", "electron", "src", "locales");
-const codeRoots = [path.join(repoRoot, "apps"), path.join(repoRoot, "packages")];
+const codeRoots = [
+  path.join(repoRoot, "apps"),
+  path.join(repoRoot, "packages"),
+];
 
 const APPLY = process.argv.includes("--apply");
 
-const FILE_PATTERNS = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".md", ".mdx"];
+const FILE_PATTERNS = [
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".cjs",
+  ".md",
+  ".mdx",
+];
 
 const isCodeFile = (file) => FILE_PATTERNS.some((ext) => file.endsWith(ext));
 
