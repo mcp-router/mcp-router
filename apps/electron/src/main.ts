@@ -15,6 +15,7 @@ import { setupIpcHandlers } from "./main/infrastructure/ipc";
 import { resolveAutoUpdateConfig } from "./main/modules/system/app-updator";
 import { getIsAutoUpdateInProgress } from "./main/modules/system/system-handler";
 import { initializeEnvironment, isDevelopment } from "@/main/utils/environment";
+import { getCloudSyncService } from "@/main/modules/cloud-sync/cloud-sync.service";
 import {
   applyLoginItemSettings,
   applyThemeSettings,
@@ -262,6 +263,9 @@ async function initMCPServices(): Promise<void> {
 
   // データベースからサーバーリストを読み込む
   await serverManager.initializeAsync();
+
+  // Cloud SyncサービスにServerManagerを連携
+  getCloudSyncService().initialize(() => serverManager);
 
   // AggregatorServerの初期化
   aggregatorServer = new AggregatorServer(serverManager);
