@@ -23,6 +23,7 @@ export interface Workspace {
 }
 
 export interface WorkspaceCreateConfig {
+  id?: string;
   name: string;
   type: "local" | "remote";
   remoteConfig?: {

@@ -188,8 +188,9 @@ export class WorkspaceService extends SingletonService<
     try {
       if (!this.metaDb) throw new Error("Meta database not initialized");
 
+      const workspaceId = config.id ?? uuidv4();
       const workspace: Workspace = {
-        id: uuidv4(),
+        id: workspaceId,
         name: config.name,
         type: config.type,
         isActive: false,
@@ -200,7 +201,7 @@ export class WorkspaceService extends SingletonService<
 
       // すべてのワークスペースにデータベースパスを設定（リモートも含む）
       workspace.localConfig = {
-        databasePath: path.join("workspaces", workspace.id, "database.db"),
+        databasePath: path.join("workspaces", workspaceId, "database.db"),
       };
 
       // リモートワークスペースの場合、設定を保存
