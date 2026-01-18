@@ -1,4 +1,5 @@
 import type { Theme } from "./ui";
+import type { CloudSyncState } from "./cloud-sync";
 
 /**
  * アプリケーション設定のインターフェース
@@ -53,6 +54,11 @@ export interface AppSettings {
    * デフォルト: "system"
    */
   theme?: Theme;
+
+  /**
+   * Cloud Syncの状態
+   */
+  cloudSync?: CloudSyncState;
 }
 
 /**
@@ -68,4 +74,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   autoUpdateEnabled: true,
   showWindowOnStartup: true,
   theme: "system",
+  cloudSync: {
+    enabled: false,
+  },
 };

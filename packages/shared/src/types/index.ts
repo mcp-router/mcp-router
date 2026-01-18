@@ -4,6 +4,7 @@ export * from "./log-types";
 export * from "./mcp-app-types";
 export * from "./pagination";
 export * from "./settings-types";
+export * from "./cloud-sync";
 export * from "./token-types";
 export * from "./user-types";
 export * from "./workspace";
@@ -30,6 +31,8 @@ export {
   PackageAPI,
   // Settings API
   SettingsAPI,
+  // Cloud Sync API
+  CloudSyncAPI,
   // Log API
   LogAPI,
   LogQueryOptions,
