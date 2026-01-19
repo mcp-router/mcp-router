@@ -116,6 +116,8 @@
     "proOnly": "仅限 Pro",
     "passphraseSet": "加密密码已设置",
     "setPassphraseDescription": "设置用于加密数据的密码。在其他设备上解密数据时需要此密码。",
+    "passphraseWarning": "请务必牢记此密码！无法恢复。",
+    "passphraseError": "密码不正确。无法解密现有数据。",
     "passphrasePlaceholder": "输入加密密码",
     "enableCloudSync": "启用",
     "lastSynced": "最后同步",

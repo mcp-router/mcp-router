@@ -115,6 +115,8 @@
     "proOnly": "Pro限定",
     "passphraseSet": "暗号化パスフレーズが設定されています",
     "setPassphraseDescription": "データを暗号化するパスフレーズを設定してください。他のデバイスでデータを復号化するために必要です。",
+    "passphraseWarning": "このパスフレーズは絶対に忘れないでください。復旧する方法はありません。",
+    "passphraseError": "パスフレーズが正しくありません。既存のデータを復号化できませんでした。",
     "passphrasePlaceholder": "暗号化パスフレーズを入力",
     "enableCloudSync": "有効化",
     "lastSynced": "最終同期",

@@ -116,6 +116,8 @@
     "proOnly": "Pro only",
     "passphraseSet": "Encryption passphrase is set",
     "setPassphraseDescription": "Set a passphrase to encrypt your data. This passphrase is required to decrypt your data on other devices.",
+    "passphraseWarning": "Remember this passphrase! There is no way to recover it.",
+    "passphraseError": "Incorrect passphrase. Failed to decrypt existing data.",
     "passphrasePlaceholder": "Enter encryption passphrase",
     "enableCloudSync": "Enable",
     "lastSynced": "Last synced",

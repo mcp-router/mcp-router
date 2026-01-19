@@ -252,6 +252,7 @@ const Settings: React.FC = () => {
       setCloudSyncPassphrase("");
     } catch (error) {
       console.error("Failed to set passphrase:", error);
+      toast.error(t("settings.passphraseError"));
     } finally {
       setIsSettingPassphrase(false);
     }
@@ -429,6 +430,9 @@ const Settings: React.FC = () => {
                       <div className="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-3">
                         <p className="text-sm text-muted-foreground">
                           {t("settings.setPassphraseDescription")}
+                        </p>
+                        <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+                          {t("settings.passphraseWarning")}
                         </p>
                         <div className="flex gap-2">
                           <Input

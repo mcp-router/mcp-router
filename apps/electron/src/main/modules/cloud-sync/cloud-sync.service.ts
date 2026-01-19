@@ -109,6 +109,16 @@ export class CloudSyncService {
       throw new Error("Secure storage is not available");
     }
 
+    // Verify passphrase can decrypt existing remote data before saving
+    const token = await getDecryptedAuthToken();
+    if (token) {
+      const remote = await this.getBlob(token);
+      if (remote) {
+        // Attempt to decrypt - throws if passphrase is incorrect
+        await this.decryptBundle(passphrase, remote);
+      }
+    }
+
     const encrypted = safeStorage.encryptString(passphrase);
     this.saveSyncState({
       encryptedPassphrase: encrypted.toString("base64"),
