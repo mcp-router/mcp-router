@@ -58,9 +58,14 @@ export class CloudSyncService {
   public initialize(getServerManager: () => MCPServerManager): void {
     this.serverManagerProvider = getServerManager;
 
-    // Start polling if cloud sync is already enabled
+    // Start polling if cloud sync is already enabled and user has active subscription
     const state = this.getSyncState();
-    if (state.enabled && this.hasPassphrase()) {
+    const settings = getSettingsService().getSettings();
+    const subscriptionStatus = settings.subscriptionStatus;
+    const isSubscribed =
+      subscriptionStatus === "active" || subscriptionStatus === "trialing";
+
+    if (state.enabled && this.hasPassphrase() && isSubscribed) {
       this.startPolling();
     }
   }
@@ -130,6 +135,14 @@ export class CloudSyncService {
     const token = await getDecryptedAuthToken();
     if (!token) {
       this.saveSyncState({ lastError: "Authentication required" });
+      return;
+    }
+
+    // Check subscription status
+    const settings = getSettingsService().getSettings();
+    const subscriptionStatus = settings.subscriptionStatus;
+    if (subscriptionStatus !== "active" && subscriptionStatus !== "trialing") {
+      this.saveSyncState({ lastError: "Pro subscription required" });
       return;
     }
 
