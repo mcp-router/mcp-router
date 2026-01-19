@@ -262,7 +262,9 @@ const Settings: React.FC = () => {
     if (!feedback.trim()) return;
     setIsSendingFeedback(true);
     try {
-      const success = await platformAPI.settings.submitFeedback(feedback.trim());
+      const success = await platformAPI.settings.submitFeedback(
+        feedback.trim(),
+      );
       if (success) {
         setFeedback("");
         toast.success(t("feedback.sent"));
