@@ -4,7 +4,7 @@ import { Card, CardContent } from "@mcp_router/ui";
 import { Badge } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
 import { Button } from "@mcp_router/ui";
-import { AlertCircle, Settings as SettingsIcon } from "lucide-react";
+import { AlertCircle, Trash2 } from "lucide-react";
 import { cn } from "@/renderer/utils/tailwind-utils";
 import { useTranslation } from "react-i18next";
 import { hasUnsetRequiredParams } from "@/renderer/utils/server-validation-utils";
@@ -12,7 +12,7 @@ import { hasUnsetRequiredParams } from "@/renderer/utils/server-validation-utils
 interface ServerCardCompactProps {
   server: MCPServer;
   onToggle: (checked: boolean) => void;
-  onOpenSettings?: () => void;
+  onDelete?: () => void;
   onError: () => void;
   onClick: () => void;
   isExpanded: boolean;
@@ -21,7 +21,7 @@ interface ServerCardCompactProps {
 export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
   server,
   onToggle,
-  onOpenSettings,
+  onDelete,
   onError,
   onClick,
   isExpanded,
@@ -136,16 +136,16 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               onClick={(e) => {
                 e.stopPropagation();
-                if (typeof onOpenSettings === "function") onOpenSettings();
+                if (typeof onDelete === "function") onDelete();
               }}
-              title={t("serverDetails.settings", {
-                defaultValue: "Settings",
+              title={t("serverSettings.delete", {
+                defaultValue: "Delete Server",
               })}
             >
-              <SettingsIcon className="h-4 w-4" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>

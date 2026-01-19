@@ -24,6 +24,7 @@ import {
   List,
   Settings as SettingsIcon,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 import { hasUnsetRequiredParams } from "@/renderer/utils/server-validation-utils";
 import { toast } from "sonner";
@@ -42,9 +43,18 @@ import { ServerErrorModal } from "@/renderer/components/common/ServerErrorModal"
 import { ServerCardCompact } from "@/renderer/components/mcp/server/ServerCardCompact";
 import { Link } from "react-router-dom";
 import { Button } from "@mcp_router/ui";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@mcp_router/ui";
 import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
 import ServerDetailsAdvancedSheet from "@/renderer/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
-import ServerSettingsModal from "@/renderer/components/mcp/server/ServerSettingsModal";
 import { useServerEditingStore } from "@/renderer/stores";
 import ProjectSettingsModal from "@/renderer/components/mcp/server/ProjectSettingsModal";
 
@@ -142,13 +152,9 @@ const Home: React.FC = () => {
   const { initializeFromServer, setIsAdvancedEditing } =
     useServerEditingStore();
 
-  // Server settings modal state
-  const [settingsServerId, setSettingsServerId] = useState<string | null>(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const settingsServer = React.useMemo(() => {
-    if (!settingsServerId) return null;
-    return servers.find((s) => s.id === settingsServerId) ?? null;
-  }, [servers, settingsServerId]);
+  // State for delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [serverToDelete, setServerToDelete] = useState<MCPServer | null>(null);
 
   // Toggle expanded server details - open settings
   const toggleServerExpand = (serverId: string) => {
@@ -160,24 +166,31 @@ const Home: React.FC = () => {
     }
   };
 
-  const openServerSettings = (server: MCPServer, event?: React.MouseEvent) => {
-    event?.stopPropagation();
-    setSettingsServerId(server.id);
-    setIsSettingsOpen(true);
+  // Handle server delete - open confirmation dialog
+  const handleDeleteServer = (server: MCPServer, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setServerToDelete(server);
+    setDeleteDialogOpen(true);
+  };
+
+  // Confirm and execute server deletion
+  const confirmDeleteServer = async () => {
+    if (!serverToDelete) return;
+    try {
+      await deleteServer(serverToDelete.id);
+      toast.success(t("serverDetails.removeSuccess"));
+    } catch (error) {
+      toast.error(t("serverDetails.removeFailed"));
+    } finally {
+      setDeleteDialogOpen(false);
+      setServerToDelete(null);
+    }
   };
 
   // Load projects on workspace change
   React.useEffect(() => {
     listProjects().catch((e) => console.error("Failed to load projects", e));
   }, [listProjects, currentWorkspace?.id]);
-
-  // Close settings modal if the server is no longer available
-  React.useEffect(() => {
-    if (settingsServerId && !settingsServer) {
-      setIsSettingsOpen(false);
-      setSettingsServerId(null);
-    }
-  }, [settingsServer, settingsServerId]);
 
   // Handle opening error modal
   const openErrorModal = (server: MCPServer, e: React.MouseEvent) => {
@@ -569,15 +582,15 @@ const Home: React.FC = () => {
                                       />
                                     </div>
                                     <button
-                                      className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                                      className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                                       onClick={(e) =>
-                                        openServerSettings(server, e)
+                                        handleDeleteServer(server, e)
                                       }
-                                      title={t("serverDetails.settings", {
-                                        defaultValue: "Settings",
+                                      title={t("serverSettings.delete", {
+                                        defaultValue: "Delete Server",
                                       })}
                                     >
-                                      <SettingsIcon className="h-4 w-4" />
+                                      <Trash2 className="h-4 w-4" />
                                     </button>
                                   </div>
                                 </div>
@@ -764,13 +777,13 @@ const Home: React.FC = () => {
                                   />
                                 </div>
                                 <button
-                                  className="p-1.5 rounded-full hover:bg-muted transition-colors"
-                                  onClick={(e) => openServerSettings(server, e)}
-                                  title={t("serverDetails.settings", {
-                                    defaultValue: "Settings",
+                                  className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                                  onClick={(e) => handleDeleteServer(server, e)}
+                                  title={t("serverSettings.delete", {
+                                    defaultValue: "Delete Server",
                                   })}
                                 >
-                                  <SettingsIcon className="h-4 w-4" />
+                                  <Trash2 className="h-4 w-4" />
                                 </button>
                               </div>
                             </div>
@@ -862,7 +875,10 @@ const Home: React.FC = () => {
                                   );
                                 }
                               }}
-                              onOpenSettings={() => openServerSettings(server)}
+                              onDelete={() => {
+                                setServerToDelete(server);
+                                setDeleteDialogOpen(true);
+                              }}
                               onError={() => {
                                 setErrorServer(server);
                                 setErrorModalOpen(true);
@@ -945,7 +961,10 @@ const Home: React.FC = () => {
                                 );
                               }
                             }}
-                            onOpenSettings={() => openServerSettings(server)}
+                            onDelete={() => {
+                              setServerToDelete(server);
+                              setDeleteDialogOpen(true);
+                            }}
                             onError={() => {
                               setErrorServer(server);
                               setErrorModalOpen(true);
@@ -984,6 +1003,12 @@ const Home: React.FC = () => {
       {advancedSettingsServer && (
         <ServerDetailsAdvancedSheet
           server={advancedSettingsServer}
+          projects={projects}
+          onAssignProject={async (projectId: string | null) => {
+            await updateServerConfig(advancedSettingsServer.id, { projectId });
+            await refreshServers();
+          }}
+          onOpenManageProjects={() => setIsHomeSettingsOpen(true)}
           handleSave={async (
             updatedInputParams?: any,
             editedName?: string,
@@ -1058,38 +1083,32 @@ const Home: React.FC = () => {
         />
       )}
 
-      {/* Server Settings Modal */}
-      {settingsServer && (
-        <ServerSettingsModal
-          open={isSettingsOpen}
-          onOpenChange={(open) => {
-            setIsSettingsOpen(open);
-            if (!open) {
-              setSettingsServerId(null);
-            }
-          }}
-          server={settingsServer}
-          projects={projects}
-          onAssignProject={async (projectId: string | null) => {
-            await updateServerConfig(settingsServer.id, { projectId });
-            await refreshServers();
-          }}
-          onOpenManageProjects={() => setIsHomeSettingsOpen(true)}
-          onDelete={async () => {
-            try {
-              await deleteServer(settingsServer.id);
-              toast.success(t("serverDetails.removeSuccess"));
-            } catch (e) {
-              toast.error(t("serverDetails.removeFailed"));
-            } finally {
-              // Ensure UI reflects the deletion
-              setIsSettingsOpen(false);
-              setSettingsServerId(null);
-              await refreshServers();
-            }
-          }}
-        />
-      )}
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("serverSettings.confirmDeleteTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("serverSettings.confirmDeleteDescription", {
+                serverName: serverToDelete?.name ?? "",
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {t("common.cancel", { defaultValue: "Cancel" })}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteServer}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("serverSettings.delete", { defaultValue: "Delete" })}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

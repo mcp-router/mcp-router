@@ -11,7 +11,6 @@
     "loading": "加载中...",
     "close": "关闭",
     "remove": "移除",
-    "removing": "移除中...",
     "search": "搜索",
     "update": "更新",
     "send": "发送"
@@ -99,11 +98,8 @@
   },
   "settings": {
     "accountAndPlan": "账户与套餐",
-    "currentPlan": "当前套餐",
     "proFeatures": "Pro 功能",
     "preferences": "偏好设置",
-    "authentication": "身份验证",
-    "appearance": "外观",
     "theme": "主题",
     "themeLight": "浅色",
     "themeDark": "深色",
@@ -113,22 +109,8 @@
     "loggingIn": "登录中...",
     "logout": "登出",
     "loggingOut": "登出中...",
-    "loggedInAs": "已登录为",
-    "subscription": "订阅",
-    "subscriptionDescription": "查看当前套餐和订阅状态。",
-    "subscriptionStatusValue": {
-      "active": "已激活",
-      "canceled": "已取消",
-      "incomplete": "未完成",
-      "trialing": "试用中",
-      "past_due": "逾期"
-    },
-    "planName": "套餐",
     "planNameUnknown": "未设置",
-    "notSubscribed": "未订阅",
     "getPro": "获取 Pro",
-    "refreshSubscription": "刷新",
-    "refreshingSubscription": "正在刷新...",
     "cloudSync": "云同步",
     "cloudSyncDescription": "通过端到端加密在设备间同步您的工作空间和服务器。",
     "proOnly": "仅限 Pro",
@@ -141,7 +123,6 @@
     "communityDescription": "加入我们的 Discord 社区获取支持、分享反馈并与其他用户交流。",
     "joinDiscord": "加入 Discord 社区",
     "feedbackDescription": "有反馈或建议？请告诉我们！",
-    "advanced": "高级设置",
     "autoUpdate": "启用自动更新",
     "autoUpdateDescription": "自动下载并安装应用更新",
     "showWindowOnStartup": "系统启动时显示主窗口",
@@ -178,7 +159,6 @@
     "deleteFailed": "应用删除失败"
   },
   "serverDetails": {
-    "settings": "设置",
     "serverName": "服务器名称",
     "finalCommand": "执行命令",
     "noInputParams": "无输入参数",
@@ -236,7 +216,9 @@
     "title": "{{serverName}} 设置",
     "project": "项目",
     "manageProjects": "管理项目",
-    "delete": "删除服务器"
+    "delete": "删除服务器",
+    "confirmDeleteTitle": "删除服务器",
+    "confirmDeleteDescription": "您确定要删除「{{serverName}}」吗？此操作无法撤消。"
   },
   "importFromJson": {
     "description": "从 JSON 配置文件导入 MCP 服务器",

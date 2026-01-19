@@ -14,7 +14,6 @@
     "loading": "読み込み中...",
     "close": "閉じる",
     "remove": "削除",
-    "removing": "削除中...",
     "search": "検索",
     "update": "アップデート",
     "send": "送信"
@@ -98,11 +97,8 @@
   },
   "settings": {
     "accountAndPlan": "アカウントとプラン",
-    "currentPlan": "現在のプラン",
     "proFeatures": "Pro機能",
     "preferences": "設定",
-    "authentication": "認証",
-    "appearance": "外観",
     "theme": "テーマ",
     "themeLight": "ライト",
     "themeDark": "ダーク",
@@ -112,22 +108,8 @@
     "loggingIn": "ログイン中...",
     "logout": "ログアウト",
     "loggingOut": "ログアウト中...",
-    "loggedInAs": "ログイン中のアカウント",
-    "subscription": "サブスクリプション",
-    "subscriptionDescription": "現在のプランとステータスを確認できます。",
-    "subscriptionStatusValue": {
-      "active": "有効",
-      "canceled": "解約済み",
-      "incomplete": "未完了",
-      "trialing": "トライアル中",
-      "past_due": "支払い遅延"
-    },
-    "planName": "プラン",
     "planNameUnknown": "未設定",
-    "notSubscribed": "未契約",
     "getPro": "Proを購入",
-    "refreshSubscription": "更新",
-    "refreshingSubscription": "更新中...",
     "cloudSync": "クラウド同期",
     "cloudSyncDescription": "エンドツーエンド暗号化でワークスペースとサーバーをデバイス間で同期します。",
     "proOnly": "Pro限定",
@@ -140,7 +122,6 @@
     "communityDescription": "Discordコミュニティに参加して、サポートを受けたり、フィードバックを共有したり、他のユーザーとつながりましょう。",
     "joinDiscord": "Discordコミュニティに参加",
     "feedbackDescription": "フィードバックやご提案がありましたら、お聞かせください。",
-    "advanced": "高度な設定",
     "loadExternalMCPConfigs": "外部アプリケーションからMCP設定を読み込む",
     "loadExternalMCPConfigsDescription": "Claude for Desktopなどの他のアプリケーションからサーバー設定をインポートできるようにします",
     "analytics": "使用状況の送信",
@@ -177,7 +158,6 @@
     "deleteFailed": "カスタムアプリの削除に失敗しました"
   },
   "serverDetails": {
-    "settings": "設定",
     "serverName": "サーバー名",
     "finalCommand": "実行コマンド",
     "noInputParams": "入力パラメータがありません",
@@ -235,7 +215,9 @@
     "title": "{{serverName}} 設定",
     "project": "プロジェクト",
     "manageProjects": "プロジェクトを管理",
-    "delete": "サーバーを削除"
+    "delete": "サーバーを削除",
+    "confirmDeleteTitle": "サーバーを削除",
+    "confirmDeleteDescription": "「{{serverName}}」を削除してもよろしいですか？この操作は取り消せません。"
   },
   "locale": "ja-JP",
   "importFromJson": {

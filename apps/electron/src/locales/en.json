@@ -11,7 +11,6 @@
     "loading": "Loading...",
     "close": "Close",
     "remove": "Remove",
-    "removing": "Removing...",
     "search": "Search",
     "update": "Update",
     "send": "Send"
@@ -99,11 +98,8 @@
   },
   "settings": {
     "accountAndPlan": "Account & Plan",
-    "currentPlan": "Current Plan",
     "proFeatures": "Pro Features",
     "preferences": "Preferences",
-    "authentication": "Authentication",
-    "appearance": "Appearance",
     "theme": "Theme",
     "themeLight": "Light",
     "themeDark": "Dark",
@@ -113,22 +109,8 @@
     "loggingIn": "Logging in...",
     "logout": "Logout",
     "loggingOut": "Logging out...",
-    "loggedInAs": "Logged in as",
-    "subscription": "Subscription",
-    "subscriptionDescription": "View your current plan and subscription status.",
-    "subscriptionStatusValue": {
-      "active": "Active",
-      "canceled": "Canceled",
-      "incomplete": "Incomplete",
-      "trialing": "Trialing",
-      "past_due": "Past due"
-    },
-    "planName": "Plan",
     "planNameUnknown": "Not set",
-    "notSubscribed": "Not subscribed",
     "getPro": "Get Pro",
-    "refreshSubscription": "Refresh",
-    "refreshingSubscription": "Refreshing...",
     "cloudSync": "Cloud Sync",
     "cloudSyncDescription": "Sync your workspaces and servers across devices with end-to-end encryption.",
     "proOnly": "Pro only",
@@ -141,7 +123,6 @@
     "communityDescription": "Join our Discord community to get support, share feedback, and connect with other users.",
     "joinDiscord": "Join Discord Community",
     "feedbackDescription": "Have feedback or suggestions? Let us know!",
-    "advanced": "Advanced Settings",
     "loadExternalMCPConfigs": "Load MCP configurations from external applications",
     "loadExternalMCPConfigsDescription": "Allow MCP Router to import server configurations from other applications like Claude for Desktop",
     "analytics": "Send usage analytics",
@@ -178,7 +159,6 @@
     "deleteFailed": "Failed to delete app"
   },
   "serverDetails": {
-    "settings": "Settings",
     "serverName": "Server Name",
     "finalCommand": "Execution Command",
     "noInputParams": "No input parameters",
@@ -236,7 +216,9 @@
     "title": "{{serverName}} Settings",
     "project": "Project",
     "manageProjects": "Manage Projects",
-    "delete": "Delete Server"
+    "delete": "Delete Server",
+    "confirmDeleteTitle": "Delete Server",
+    "confirmDeleteDescription": "Are you sure you want to delete \"{{serverName}}\"? This action cannot be undone."
   },
   "importFromJson": {
     "description": "Import MCP servers from a JSON configuration file",
