@@ -1,16 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { MCPServer, MCPTool } from "@mcp_router/shared";
+import { MCPServer, MCPTool, Project } from "@mcp_router/shared";
 import { useTranslation } from "react-i18next";
-import {
-  Settings2,
-  Check,
-  RefreshCw,
-  Info,
-  FileText,
-  Plus,
-  Trash,
-  Terminal,
-} from "lucide-react";
+import { Settings2, Check, RefreshCw, Info } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -20,16 +11,10 @@ import {
   SheetDescription,
 } from "@mcp_router/ui";
 import { Button } from "@mcp_router/ui";
-import { Input } from "@mcp_router/ui";
-import { Label } from "@mcp_router/ui";
-import { Badge } from "@mcp_router/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
-import FinalCommandDisplay from "./FinalCommandDisplay";
-import ServerDetailsRemote from "./ServerDetailsRemote";
-import ServerDetailsEnvironment from "./ServerDetailsEnvironment";
-import ServerDetailsAutoStart from "./ServerDetailsAutoStart";
 import ServerDetailsInputParams from "./ServerDetailsInputParams";
+import ServerDetailsGeneralSettings from "./ServerDetailsGeneralSettings";
 import { useServerEditingStore } from "@/renderer/stores";
 import { usePlatformAPI } from "@/renderer/platform-api";
 
@@ -40,11 +25,17 @@ interface ServerDetailsAdvancedSheetProps {
     editedName?: string,
     updatedToolPermissions?: Record<string, boolean>,
   ) => Promise<void>;
+  projects?: Project[];
+  onAssignProject?: (projectId: string | null) => Promise<void> | void;
+  onOpenManageProjects?: () => void;
 }
 
 const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
   server,
   handleSave,
+  projects = [],
+  onAssignProject,
+  onOpenManageProjects,
 }) => {
   const { t } = useTranslation();
   const platformAPI = usePlatformAPI();
@@ -61,7 +52,6 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     setIsAdvancedEditing: setIsOpen,
     setEditedName,
     setEditedCommand,
-    setEditedArgs,
     setEditedBearerToken,
     setEditedAutoStart,
     setIsLoading,
@@ -73,6 +63,7 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     removeEnvPair,
     addEnvPair,
   } = useServerEditingStore();
+
   const deriveInitialToolPermissions = useCallback(
     (toolList?: MCPTool[] | null): Record<string, boolean> => {
       const serverPermissions = server.toolPermissions || {};
@@ -95,6 +86,20 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     },
     [server.toolPermissions],
   );
+
+  // State for project assignment
+  const [assigning, setAssigning] = useState(false);
+  const currentProjectId = server.projectId ?? null;
+
+  const handleAssignProject = async (value: string) => {
+    if (!onAssignProject) return;
+    setAssigning(true);
+    try {
+      await onAssignProject(value === "__none__" ? null : value);
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   // State for input parameters
   const [inputParamValues, setInputParamValues] = useState<
@@ -331,10 +336,93 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     needsServerRunning ||
     Object.keys(initialToolPermissions).length > 0 ||
     hasAttemptedToolFetch;
-  const tabsListClassWithParams = showToolsTab ? "grid-cols-3" : "grid-cols-2";
-  const tabsListClassWithoutParams = showToolsTab
-    ? "grid-cols-2"
-    : "grid-cols-1";
+
+  const getTabsListClass = () => {
+    if (hasInputParams) {
+      return showToolsTab ? "grid-cols-3" : "grid-cols-2";
+    }
+    return showToolsTab ? "grid-cols-2" : "grid-cols-1";
+  };
+
+  const renderGeneralSettingsContent = () => (
+    <ServerDetailsGeneralSettings
+      server={server}
+      editedName={editedName}
+      setEditedName={setEditedName}
+      editedCommand={editedCommand}
+      setEditedCommand={setEditedCommand}
+      editedArgs={editedArgs}
+      updateArg={updateArg}
+      removeArg={removeArg}
+      addArg={addArg}
+      editedBearerToken={editedBearerToken}
+      setEditedBearerToken={setEditedBearerToken}
+      editedAutoStart={editedAutoStart}
+      setEditedAutoStart={setEditedAutoStart}
+      envPairs={envPairs}
+      updateEnvPair={updateEnvPair}
+      removeEnvPair={removeEnvPair}
+      addEnvPair={addEnvPair}
+      inputParamValues={inputParamValues}
+      projects={projects}
+      currentProjectId={currentProjectId}
+      assigning={assigning}
+      onAssignProject={onAssignProject ? handleAssignProject : undefined}
+      onOpenManageProjects={onOpenManageProjects}
+    />
+  );
+
+  const renderTabsContent = () => {
+    if (hasInputParams || showToolsTab) {
+      return (
+        <Tabs
+          defaultValue={hasInputParams ? "params" : "general"}
+          className="mt-4"
+        >
+          <TabsList className={`grid w-full ${getTabsListClass()}`}>
+            {hasInputParams && (
+              <TabsTrigger value="params">
+                {t("serverDetails.inputParameters")}
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="general">
+              {t("serverDetails.generalSettings")}
+            </TabsTrigger>
+            {showToolsTab && (
+              <TabsTrigger value="tools">
+                {t("serverDetails.tools")}
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          {hasInputParams && (
+            <TabsContent value="params" className="space-y-6 mt-4">
+              <ServerDetailsInputParams
+                server={server}
+                inputParamValues={inputParamValues}
+                updateInputParam={updateInputParam}
+              />
+            </TabsContent>
+          )}
+
+          <TabsContent value="general" className="space-y-6 mt-4">
+            {renderGeneralSettingsContent()}
+          </TabsContent>
+
+          {showToolsTab && (
+            <TabsContent value="tools" className="space-y-6 mt-4">
+              {renderToolsContent()}
+            </TabsContent>
+          )}
+        </Tabs>
+      );
+    }
+
+    // No tabs needed - just show general settings directly
+    return (
+      <div className="space-y-6 mt-4">{renderGeneralSettingsContent()}</div>
+    );
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -349,474 +437,7 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
           </SheetDescription>
         </SheetHeader>
 
-        {hasInputParams ? (
-          <Tabs defaultValue="params" className="mt-4">
-            <TabsList className={`grid w-full ${tabsListClassWithParams}`}>
-              <TabsTrigger value="params">
-                {t("serverDetails.inputParameters")}
-              </TabsTrigger>
-              <TabsTrigger value="general">
-                {t("serverDetails.generalSettings")}
-              </TabsTrigger>
-              {showToolsTab && (
-                <TabsTrigger value="tools">
-                  {t("serverDetails.tools")}
-                </TabsTrigger>
-              )}
-            </TabsList>
-
-            <TabsContent value="general" className="space-y-6 mt-4">
-              {/* Server Name */}
-              <div className="space-y-3">
-                <Label
-                  htmlFor="server-name"
-                  className="text-base font-medium flex items-center gap-1.5"
-                >
-                  <Info className="h-4 w-4 text-muted-foreground" />
-                  {t("serverDetails.serverName")}
-                </Label>
-                <Input
-                  id="server-name"
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.target.value)}
-                  placeholder={t("discoverServers.serverNameRequired")}
-                />
-              </div>
-
-              {/* Edit Forms */}
-              {server.serverType === "local" ? (
-                <>
-                  {/* Command */}
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="server-command"
-                      className="text-base font-medium flex items-center gap-1.5"
-                    >
-                      <Terminal className="h-4 w-4 text-muted-foreground" />
-                      {t("serverDetails.command")}
-                    </Label>
-                    <Input
-                      id="server-command"
-                      value={editedCommand}
-                      onChange={(e) => setEditedCommand(e.target.value)}
-                      placeholder={t("serverDetails.commandPlaceholder")}
-                      className="font-mono"
-                    />
-                  </div>
-
-                  {/* Arguments */}
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <Label className="text-base font-medium flex items-center gap-1.5">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        {t("serverDetails.arguments")}
-                      </Label>
-                      <Badge variant="outline" className="font-mono">
-                        {editedArgs.length} {t("serverDetails.itemsCount")}
-                      </Badge>
-                    </div>
-
-                    <div className="space-y-2 bg-muted/30 p-3 rounded-md">
-                      {editedArgs.length === 0 && (
-                        <div className="text-sm text-muted-foreground italic flex items-center justify-center py-4">
-                          <Info className="h-4 w-4 mr-2 text-muted-foreground" />
-                          {t("serverDetails.noArguments")}
-                        </div>
-                      )}
-
-                      {editedArgs.map((arg, index) => (
-                        <div key={index} className="flex gap-2 group">
-                          <Input
-                            value={arg}
-                            onChange={(e) => updateArg(index, e.target.value)}
-                            placeholder={t("serverDetails.argumentPlaceholder")}
-                            className="font-mono group-hover:border-primary/50 transition-colors"
-                          />
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => removeArg(index)}
-                            type="button"
-                            title={t("serverDetails.remove")}
-                            className="text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={addArg}
-                      type="button"
-                      className="mt-2 border-dashed hover:border-primary/70"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t("serverDetails.addArgument")}
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <ServerDetailsRemote
-                  server={server}
-                  isEditing={true}
-                  editedBearerToken={editedBearerToken}
-                  setEditedBearerToken={setEditedBearerToken}
-                />
-              )}
-
-              {/* Auto Start Configuration (common for both server types) */}
-              <ServerDetailsAutoStart
-                server={server}
-                isEditing={true}
-                editedAutoStart={editedAutoStart}
-                setEditedAutoStart={setEditedAutoStart}
-              />
-
-              {/* Environment Variables (common for both server types) */}
-              <ServerDetailsEnvironment
-                server={server}
-                isEditing={true}
-                envPairs={envPairs}
-                updateEnvPair={updateEnvPair}
-                removeEnvPair={removeEnvPair}
-                addEnvPair={addEnvPair}
-              />
-
-              {/* Final Command Display */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Terminal className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-medium text-primary">
-                    {t("serverDetails.finalCommand")}
-                  </h3>
-                </div>
-                {server.serverType === "local" ? (
-                  <FinalCommandDisplay
-                    server={server}
-                    inputParamValues={inputParamValues}
-                    editedCommand={editedCommand}
-                    editedArgs={editedArgs}
-                  />
-                ) : (
-                  <ServerDetailsRemote server={server} isEditing={false} />
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="params" className="space-y-6 mt-4">
-              <ServerDetailsInputParams
-                server={server}
-                inputParamValues={inputParamValues}
-                updateInputParam={updateInputParam}
-              />
-            </TabsContent>
-            {showToolsTab && (
-              <TabsContent value="tools" className="space-y-6 mt-4">
-                {renderToolsContent()}
-              </TabsContent>
-            )}
-          </Tabs>
-        ) : showToolsTab ? (
-          <Tabs defaultValue="general" className="mt-4">
-            <TabsList className={`grid w-full ${tabsListClassWithoutParams}`}>
-              <TabsTrigger value="general">
-                {t("serverDetails.generalSettings")}
-              </TabsTrigger>
-              {showToolsTab && (
-                <TabsTrigger value="tools">
-                  {t("serverDetails.tools")}
-                </TabsTrigger>
-              )}
-            </TabsList>
-            <TabsContent value="general" className="space-y-6 mt-4">
-              {/* Server Name */}
-              <div className="space-y-3">
-                <Label
-                  htmlFor="server-name"
-                  className="text-base font-medium flex items-center gap-1.5"
-                >
-                  <Info className="h-4 w-4 text-muted-foreground" />
-                  {t("serverDetails.serverName")}
-                </Label>
-                <Input
-                  id="server-name"
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.target.value)}
-                  placeholder={t("discoverServers.serverNameRequired")}
-                />
-              </div>
-
-              {/* Edit Forms */}
-              {server.serverType === "local" ? (
-                <>
-                  {/* Command */}
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="server-command"
-                      className="text-base font-medium flex items-center gap-1.5"
-                    >
-                      <Terminal className="h-4 w-4 text-muted-foreground" />
-                      {t("serverDetails.command")}
-                    </Label>
-                    <Input
-                      id="server-command"
-                      value={editedCommand}
-                      onChange={(e) => setEditedCommand(e.target.value)}
-                      placeholder={t("serverDetails.commandPlaceholder")}
-                      className="font-mono"
-                    />
-                  </div>
-
-                  {/* Arguments */}
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <Label className="text-base font-medium flex items-center gap-1.5">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        {t("serverDetails.arguments")}
-                      </Label>
-                      <Badge variant="outline" className="font-mono">
-                        {editedArgs.length} {t("serverDetails.itemsCount")}
-                      </Badge>
-                    </div>
-
-                    <div className="space-y-2 bg-muted/30 p-3 rounded-md">
-                      {editedArgs.length === 0 && (
-                        <div className="text-sm text-muted-foreground italic flex items-center justify-center py-4">
-                          <Info className="h-4 w-4 mr-2 text-muted-foreground" />
-                          {t("serverDetails.noArguments")}
-                        </div>
-                      )}
-
-                      {editedArgs.map((arg, index) => (
-                        <div key={index} className="flex gap-2 group">
-                          <Input
-                            value={arg}
-                            onChange={(e) => updateArg(index, e.target.value)}
-                            placeholder={t("serverDetails.argumentPlaceholder")}
-                            className="font-mono group-hover:border-primary/50 transition-colors"
-                          />
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => removeArg(index)}
-                            type="button"
-                            title={t("serverDetails.remove")}
-                            className="text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={addArg}
-                      type="button"
-                      className="mt-2 border-dashed hover:border-primary/70"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t("serverDetails.addArgument")}
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <ServerDetailsRemote
-                  server={server}
-                  isEditing={true}
-                  editedBearerToken={editedBearerToken}
-                  setEditedBearerToken={setEditedBearerToken}
-                />
-              )}
-
-              {/* Auto Start Configuration (common for both server types) */}
-              <ServerDetailsAutoStart
-                server={server}
-                isEditing={true}
-                editedAutoStart={editedAutoStart}
-                setEditedAutoStart={setEditedAutoStart}
-              />
-
-              {/* Environment Variables (common for both server types) */}
-              <ServerDetailsEnvironment
-                server={server}
-                isEditing={true}
-                envPairs={envPairs}
-                updateEnvPair={updateEnvPair}
-                removeEnvPair={removeEnvPair}
-                addEnvPair={addEnvPair}
-              />
-
-              {/* Final Command Display */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Terminal className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-medium text-primary">
-                    {t("serverDetails.finalCommand")}
-                  </h3>
-                </div>
-                {server.serverType === "local" ? (
-                  <FinalCommandDisplay
-                    server={server}
-                    inputParamValues={inputParamValues}
-                    editedCommand={editedCommand}
-                    editedArgs={editedArgs}
-                  />
-                ) : (
-                  <ServerDetailsRemote server={server} isEditing={false} />
-                )}
-              </div>
-            </TabsContent>
-            <TabsContent value="tools" className="space-y-6 mt-4">
-              {renderToolsContent()}
-            </TabsContent>
-          </Tabs>
-        ) : (
-          <div className="space-y-6 mt-4">
-            {/* Server Name */}
-            <div className="space-y-3">
-              <Label
-                htmlFor="server-name"
-                className="text-base font-medium flex items-center gap-1.5"
-              >
-                <Info className="h-4 w-4 text-muted-foreground" />
-                {t("serverDetails.serverName")}
-              </Label>
-              <Input
-                id="server-name"
-                value={editedName}
-                onChange={(e) => setEditedName(e.target.value)}
-                placeholder={t("discoverServers.serverNameRequired")}
-              />
-            </div>
-
-            {/* Edit Forms */}
-            {server.serverType === "local" ? (
-              <>
-                {/* Command */}
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="server-command"
-                    className="text-base font-medium flex items-center gap-1.5"
-                  >
-                    <Terminal className="h-4 w-4 text-muted-foreground" />
-                    {t("serverDetails.command")}
-                  </Label>
-                  <Input
-                    id="server-command"
-                    value={editedCommand}
-                    onChange={(e) => setEditedCommand(e.target.value)}
-                    placeholder={t("serverDetails.commandPlaceholder")}
-                    className="font-mono"
-                  />
-                </div>
-
-                {/* Arguments */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-base font-medium flex items-center gap-1.5">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      {t("serverDetails.arguments")}
-                    </Label>
-                    <Badge variant="outline" className="font-mono">
-                      {editedArgs.length} {t("serverDetails.itemsCount")}
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-2 bg-muted/30 p-3 rounded-md">
-                    {editedArgs.length === 0 && (
-                      <div className="text-sm text-muted-foreground italic flex items-center justify-center py-4">
-                        <Info className="h-4 w-4 mr-2 text-muted-foreground" />
-                        {t("serverDetails.noArguments")}
-                      </div>
-                    )}
-
-                    {editedArgs.map((arg, index) => (
-                      <div key={index} className="flex gap-2 group">
-                        <Input
-                          value={arg}
-                          onChange={(e) => updateArg(index, e.target.value)}
-                          placeholder={t("serverDetails.argumentPlaceholder")}
-                          className="font-mono group-hover:border-primary/50 transition-colors"
-                        />
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => removeArg(index)}
-                          type="button"
-                          title={t("serverDetails.remove")}
-                          className="text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={addArg}
-                    type="button"
-                    className="mt-2 border-dashed hover:border-primary/70"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t("serverDetails.addArgument")}
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <ServerDetailsRemote
-                server={server}
-                isEditing={true}
-                editedBearerToken={editedBearerToken}
-                setEditedBearerToken={setEditedBearerToken}
-              />
-            )}
-
-            {/* Auto Start Configuration (common for both server types) */}
-            <ServerDetailsAutoStart
-              server={server}
-              isEditing={true}
-              editedAutoStart={editedAutoStart}
-              setEditedAutoStart={setEditedAutoStart}
-            />
-
-            {/* Environment Variables (common for both server types) */}
-            <ServerDetailsEnvironment
-              server={server}
-              isEditing={true}
-              envPairs={envPairs}
-              updateEnvPair={updateEnvPair}
-              removeEnvPair={removeEnvPair}
-              addEnvPair={addEnvPair}
-            />
-
-            {/* Final Command Display */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Terminal className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-medium text-primary">
-                  {t("serverDetails.finalCommand")}
-                </h3>
-              </div>
-              {server.serverType === "local" ? (
-                <FinalCommandDisplay
-                  server={server}
-                  inputParamValues={inputParamValues}
-                  editedCommand={editedCommand}
-                  editedArgs={editedArgs}
-                />
-              ) : (
-                <ServerDetailsRemote server={server} isEditing={false} />
-              )}
-            </div>
-          </div>
-        )}
+        {renderTabsContent()}
 
         <SheetFooter className="flex justify-between sm:justify-between border-t pt-4">
           <Button
