@@ -1,5 +1,6 @@
 import type { Theme } from "./ui";
 import type { CloudSyncState } from "./cloud-sync";
+import type { SubscriptionStatus } from "./auth";
 
 /**
  * アプリケーション設定のインターフェース
@@ -19,6 +20,16 @@ export interface AppSettings {
    * ログイン日時
    */
   loggedInAt?: string;
+
+  /**
+   * サブスクリプションステータス
+   */
+  subscriptionStatus?: SubscriptionStatus | null;
+
+  /**
+   * プラン名
+   */
+  planName?: string | null;
 
   /**
    * パッケージマネージャーオーバーレイの表示回数
@@ -68,6 +79,8 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   userId: "",
   authToken: "",
   loggedInAt: "",
+  subscriptionStatus: null,
+  planName: null,
   packageManagerOverlayDisplayCount: 0,
   loadExternalMCPConfigs: true,
   analyticsEnabled: true,

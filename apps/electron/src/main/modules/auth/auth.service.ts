@@ -194,6 +194,8 @@ export function logout(): boolean {
     // Clear auth token and related fields
     settings.authToken = "";
     settings.userId = "";
+    settings.subscriptionStatus = null;
+    settings.planName = null;
 
     // Save the updated settings
     const result = settingsService.saveSettings(settings);
@@ -294,12 +296,22 @@ export async function status(forceRefresh = false): Promise<{
       if (userResponse.ok) {
         const userData = await userResponse.json();
 
-        // Update user ID in settings if needed
-        if (
-          (userData.id || userData.userId) &&
-          settings.userId !== (userData.id || userData.userId)
-        ) {
-          settings.userId = userData.id || userData.userId;
+        // Update user info in settings
+        const newUserId = userData.id || userData.userId;
+        const newSubscriptionStatus = userData.subscriptionStatus ?? null;
+        const newPlanName = userData.planName ?? null;
+
+        const needsUpdate =
+          (newUserId && settings.userId !== newUserId) ||
+          settings.subscriptionStatus !== newSubscriptionStatus ||
+          settings.planName !== newPlanName;
+
+        if (needsUpdate) {
+          if (newUserId) {
+            settings.userId = newUserId;
+          }
+          settings.subscriptionStatus = newSubscriptionStatus;
+          settings.planName = newPlanName;
           settingsService.saveSettings(settings);
         }
 
