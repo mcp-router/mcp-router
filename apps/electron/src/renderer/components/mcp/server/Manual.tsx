@@ -271,6 +271,7 @@ const Manual: React.FC = () => {
     setArgs("");
     setEnvVars([]);
     setValidationErrors({});
+    setSelectedProjectId(null);
   };
 
   const resetRemoteForm = () => {
@@ -280,6 +281,7 @@ const Manual: React.FC = () => {
     setRemoteValidationErrors({});
     setRemoteServerType("remote");
     setAutoStart(false);
+    setSelectedProjectId(null);
   };
 
   const handleDxtFileSelect = async (
@@ -357,6 +359,7 @@ const Manual: React.FC = () => {
         autoStart,
         disabled: false,
         serverType: "local",
+        projectId: selectedProjectId,
       };
       await createServer(serverConfig);
       toast.success(t("manual.successCreate", { name: serverName }));
@@ -383,6 +386,7 @@ const Manual: React.FC = () => {
         bearerToken,
         autoStart,
         disabled: false,
+        projectId: selectedProjectId,
       };
       await createServer(config);
       toast.success(
