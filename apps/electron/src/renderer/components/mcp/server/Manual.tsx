@@ -748,6 +748,30 @@ const Manual: React.FC = () => {
               </div>
             </div>
 
+            <Row>
+              <Label>{t("serverSettings.project")}</Label>
+              <Select
+                value={selectedProjectId ?? "__none__"}
+                onValueChange={(v) =>
+                  setSelectedProjectId(v === "__none__" ? null : v)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t("projects.unassigned")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">
+                    {t("projects.unassigned")}
+                  </SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Row>
+
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="auto-start-local"
@@ -888,6 +912,30 @@ const Manual: React.FC = () => {
                   </Label>
                 </div>
               </RadioGroup>
+            </Row>
+
+            <Row>
+              <Label>{t("serverSettings.project")}</Label>
+              <Select
+                value={selectedProjectId ?? "__none__"}
+                onValueChange={(v) =>
+                  setSelectedProjectId(v === "__none__" ? null : v)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t("projects.unassigned")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">
+                    {t("projects.unassigned")}
+                  </SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Row>
 
             <div className="flex items-center space-x-2">
