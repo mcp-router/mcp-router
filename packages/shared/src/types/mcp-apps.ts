@@ -30,7 +30,9 @@ export type ClientType =
   | "cline"
   | "windsurf"
   | "cursor"
-  | "codex";
+  | "codex"
+  | "copilot"
+  | "antigravity";
 
 // Configuration with client type
 export interface ClientConfig {

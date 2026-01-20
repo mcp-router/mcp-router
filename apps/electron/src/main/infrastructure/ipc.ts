@@ -9,6 +9,7 @@ import { setupWorkspaceHandlers } from "../modules/workspace/workspace.ipc";
 import { setupWorkflowHandlers } from "../modules/workflow/workflow.ipc";
 import { setupHookHandlers } from "../modules/workflow/hook.ipc";
 import { setupProjectHandlers } from "../modules/projects/projects.ipc";
+import { setupConsoleHandlers } from "../modules/mcp-server-console/mcp-server-console.ipc";
 import { setupCloudSyncHandlers } from "../modules/cloud-sync/cloud-sync.ipc";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 
@@ -27,6 +28,9 @@ export function setupIpcHandlers(deps: {
 
   // ログ関連
   setupLogHandlers();
+
+  // Console ログ関連
+  setupConsoleHandlers();
 
   // 設定関連
   setupSettingsHandlers();

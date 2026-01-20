@@ -2,6 +2,12 @@
  * Augment the global Window interface so TypeScript knows about "window.electronAPI".
  */
 
+// Declare module for PNG imports
+declare module "*.png" {
+  const value: string;
+  export default value;
+}
+
 import type {
   AppSettings,
   CloudSyncStatus,
@@ -67,6 +73,35 @@ declare global {
         nextCursor?: string;
         hasMore: boolean;
       }>;
+
+      // Console Logging
+      getConsoleLogs: (serverId?: string) => Promise<
+        | Record<string, Array<{
+            serverId: string;
+            serverName: string;
+            timestamp: string;
+            type: "stdout" | "stderr";
+            content: string;
+          }>>
+        | Array<{
+            serverId: string;
+            serverName: string;
+            timestamp: string;
+            type: "stdout" | "stderr";
+            content: string;
+          }>
+      >;
+      clearConsoleLogs: (serverId?: string) => Promise<boolean>;
+      onConsoleLog: (
+        callback: (logEntry: {
+          serverId: string;
+          serverName: string;
+          timestamp: string;
+          type: "stdout" | "stderr";
+          content: string;
+        }) => void,
+        serverId?: string,
+      ) => () => void;
 
       // Settings Management
       getSettings: () => Promise<AppSettings>;

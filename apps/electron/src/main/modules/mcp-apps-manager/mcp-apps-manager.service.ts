@@ -34,21 +34,46 @@ import {
 import os from "os";
 
 // SVGアイコンのインポート
-import claudeIcon from "../../../../public/images/apps/claude.svg";
-import clineIcon from "../../../../public/images/apps/cline.svg";
-import windsurfIcon from "../../../../public/images/apps/windsurf.svg";
-import cursorIcon from "../../../../public/images/apps/cursor.svg";
-import vscodeIcon from "../../../../public/images/apps/vscode.svg";
-import openAiIcon from "../../../../public/images/apps/openai.svg";
+import claudeIcon from "../../../../../../public/images/apps/claude.svg";
+import clineLightIcon from "../../../../../../public/images/apps/cline-light.svg";
+import clineDarkIcon from "../../../../../../public/images/apps/cline-dark.svg";
+import windsurfIcon from "../../../../../../public/images/apps/windsurf.svg";
+import cursorIcon from "../../../../../../public/images/apps/cursor.svg";
+import cursorDarkIcon from "../../../../../../public/images/apps/cursor-dark.svg";
+import vscodeIcon from "../../../../../../public/images/apps/vscode.svg";
+import openAiLightIcon from "../../../../../../public/images/apps/openai-light.svg";
+import openAiDarkIcon from "../../../../../../public/images/apps/openai-dark.svg";
+import copilotLightIcon from "../../../../../../public/images/apps/copilot-light.svg";
+import copilotDarkIcon from "../../../../../../public/images/apps/copilot-dark.svg";
+import antigravityIcon from "../../../../../../public/images/apps/antigravity.svg";
 
-// アイコンのマッピング
-const ICON_MAP: Record<string, string> = {
-  claude: claudeIcon,
-  cline: clineIcon,
-  windsurf: windsurfIcon,
-  cursor: cursorIcon,
-  vscode: vscodeIcon,
-  openai: openAiIcon,
+// アイコンのマッピング（テーマ対応）
+interface IconSet {
+  light: string;
+  dark: string;
+}
+
+const ICON_MAP: Record<string, string | IconSet> = {
+  claude: claudeIcon, // 彩色，不需要切換
+  cline: {
+    light: clineLightIcon,
+    dark: clineDarkIcon,
+  },
+  windsurf: windsurfIcon, // 彩色，不需要切換
+  cursor: {
+    light: cursorIcon,
+    dark: cursorDarkIcon,
+  },
+  vscode: vscodeIcon, // 彩色，不需要切換
+  openai: {
+    light: openAiLightIcon,
+    dark: openAiDarkIcon,
+  },
+  copilot: {
+    light: copilotLightIcon,
+    dark: copilotDarkIcon,
+  },
+  antigravity: antigravityIcon, // 彩色，不需要切換
 };
 
 /**
@@ -238,11 +263,23 @@ export class McpAppsManagerService extends SingletonService<
 
   /**
    * 標準アプリのアイコンを取得
+   * テーマ対応アイコンの場合は light/dark 両方を返す
    */
-  private getStandardAppIcon(name: string): string | undefined {
+  private getStandardAppIcon(
+    name: string,
+  ): string | { light: string; dark: string } | undefined {
     const definition = findStandardAppDefinition(name);
     if (definition?.iconKey) {
-      return ICON_MAP[definition.iconKey];
+      const icon = ICON_MAP[definition.iconKey];
+      if (!icon) return undefined;
+      
+      // テーマ対応アイコンの場合、オブジェクトをそのまま返す
+      if (typeof icon === "object" && "light" in icon && "dark" in icon) {
+        return icon;
+      }
+      
+      // 通常のアイコンの場合
+      return icon as string;
     }
     return undefined;
   }
@@ -578,6 +615,9 @@ export class McpAppsManagerService extends SingletonService<
         }
       }
 
+      // アイコンを取得（テーマ対応）
+      const icon = this.getStandardAppIcon(name);
+      
       return {
         name,
         installed,
@@ -587,15 +627,18 @@ export class McpAppsManagerService extends SingletonService<
         serverAccess,
         isCustom,
         hasOtherServers,
-        icon: this.getStandardAppIcon(name),
+        icon: icon,
       };
     } catch {
+      // アイコンを取得（テーマ対応）
+      const icon = this.getStandardAppIcon(name);
+      
       return {
         name,
         installed: false,
         configPath,
         configured: false,
-        icon: this.getStandardAppIcon(name),
+        icon: icon,
       };
     }
   }

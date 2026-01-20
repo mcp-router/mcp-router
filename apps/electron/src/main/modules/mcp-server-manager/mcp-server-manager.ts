@@ -12,6 +12,7 @@ import {
   substituteArgsParameters,
 } from "../mcp-apps-manager/mcp-apps-manager.service";
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
+import { showServerStatusNotification } from "@/main/utils/notification-service";
 
 /**
  * Core server lifecycle management
@@ -250,6 +251,8 @@ export class MCPServerManager {
     if (result.status === "error") {
       server.status = "error";
       server.errorMessage = result.error;
+      // Show error notification
+      showServerStatusNotification(server.name, "error", result.error);
       throw new Error(result.error);
     }
 
@@ -259,6 +262,9 @@ export class MCPServerManager {
 
     // Register the client
     this.serverStatusMap.set(server.name, true);
+
+    // Show success notification
+    showServerStatusNotification(server.name, "running");
 
     // Update autoStart if persist is true
     if (persist) {
@@ -322,9 +328,19 @@ export class MCPServerManager {
       client.close();
       this.clients.delete(id);
       server.status = "stopped";
+      
+      // Show stopped notification
+      showServerStatusNotification(server.name, "stopped");
+      
       return true;
     } catch (error) {
       server.status = "error";
+      // Show error notification
+      showServerStatusNotification(
+        server.name,
+        "error",
+        error instanceof Error ? error.message : String(error),
+      );
       return false;
     }
   }

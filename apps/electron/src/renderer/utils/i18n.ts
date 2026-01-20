@@ -4,6 +4,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import enTranslation from "../../locales/en.json";
 import jaTranslation from "../../locales/ja.json";
 import zhTranslation from "../../locales/zh.json";
+import zhTWTranslation from "../../locales/zh-TW.json";
 
 // Initialize i18next
 i18n
@@ -22,6 +23,9 @@ i18n
       },
       zh: {
         translation: zhTranslation,
+      },
+      "zh-TW": {
+        translation: zhTWTranslation,
       },
     },
     fallbackLng: "en",

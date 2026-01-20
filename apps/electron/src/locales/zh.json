@@ -79,6 +79,17 @@
     "title": "设置任何 MCP 服务器",
     "serverNameRequired": "请输入服务器名称"
   },
+  "serverConsole": {
+    "title": "服务器控制台",
+    "description": "查看所有运行中的 MCP 服务器的控制台输出",
+    "selectServer": "选择服务器",
+    "allServers": "所有服务器",
+    "loading": "加载中...",
+    "noLogs": "没有可用的控制台输出。启动服务器以查看其输出。",
+    "noLogsForServer": "此服务器没有可用的控制台输出。",
+    "autoScroll": "自动滚动",
+    "export": "导出"
+  },
   "serverList": {
     "title": "MCP 服务器",
     "noServers": "未配置服务器",

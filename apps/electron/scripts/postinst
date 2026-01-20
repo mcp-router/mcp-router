@@ -1,0 +1,15 @@
+#!/bin/bash
+# Post-installation script for MCP Router
+# This script registers the mcpr:// protocol handler
+
+# Update desktop database
+if [ -f /usr/share/applications/mcp-router.desktop ]; then
+    update-desktop-database /usr/share/applications/ 2>/dev/null || true
+fi
+
+# Register protocol handler
+if command -v xdg-mime >/dev/null 2>&1; then
+    xdg-mime default mcp-router.desktop x-scheme-handler/mcpr 2>/dev/null || true
+fi
+
+exit 0

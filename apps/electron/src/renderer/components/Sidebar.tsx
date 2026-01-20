@@ -7,6 +7,7 @@ import {
   IconDeviceDesktop,
   IconDownload,
   IconWebhook,
+  IconTerminal,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/renderer/stores";
@@ -144,23 +145,42 @@ const SidebarComponent: React.FC = () => {
                   {/*)}*/}
 
                   {!isRemoteWorkspace && (
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={t("serverDetails.requestLogs")}
-                        isActive={location.pathname === "/logs"}
-                      >
-                        <Link
-                          to="/logs"
-                          className="flex items-center gap-3 py-5 px-3 w-full"
+                    <>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={t("serverDetails.requestLogs")}
+                          isActive={location.pathname === "/logs"}
                         >
-                          <IconActivity className="h-6 w-6" />
-                          <span className="text-base">
-                            {t("serverDetails.requestLogs")}
-                          </span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                          <Link
+                            to="/logs"
+                            className="flex items-center gap-3 py-5 px-3 w-full"
+                          >
+                            <IconActivity className="h-6 w-6" />
+                            <span className="text-base">
+                              {t("serverDetails.requestLogs")}
+                            </span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={t("serverConsole.title", "Server Console")}
+                          isActive={location.pathname === "/console"}
+                        >
+                          <Link
+                            to="/console"
+                            className="flex items-center gap-3 py-5 px-3 w-full"
+                          >
+                            <IconTerminal className="h-6 w-6" />
+                            <span className="text-base">
+                              {t("serverConsole.title", "Server Console")}
+                            </span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </>
                   )}
                 </SidebarGroupContent>
               </CollapsibleContent>

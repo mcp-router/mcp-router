@@ -25,7 +25,7 @@ async function main() {
         break;
     }
   } catch (error) {
-    console.error("Error executing command:", error);
+    console.error("Error executing command:", error);                                                             
     process.exit(1);
   }
 }

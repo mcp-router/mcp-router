@@ -66,8 +66,10 @@ const Settings: React.FC = () => {
   // Get normalized language code for select
   const getCurrentLanguage = () => {
     const currentLang = i18n.language;
+    // Handle cases like 'en-US' -> 'en', 'ja-JP' -> 'ja', 'zh-CN' -> 'zh', 'zh-TW' -> 'zh-TW'
     if (currentLang.startsWith("en")) return "en";
     if (currentLang.startsWith("ja")) return "ja";
+    if (currentLang === "zh-TW" || currentLang.startsWith("zh-TW")) return "zh-TW";
     if (currentLang.startsWith("zh")) return "zh";
     return "en";
   };
@@ -291,8 +293,64 @@ const Settings: React.FC = () => {
     <div className="p-6 flex flex-col gap-6">
       <h1 className="text-3xl font-bold">{t("common.settings")}</h1>
 
-      {/* Account & Plan Hero Card */}
+      {/* Appearance Card */}
       <Card className="border-2">
+        <CardHeader>
+          <CardTitle className="text-xl">{t("settings.appearance")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              {t("common.language")}
+            </label>
+            <div className="flex flex-1 min-w-[220px]">
+              <Select
+                value={getCurrentLanguage()}
+                onValueChange={handleLanguageChange}
+              >
+                <SelectTrigger id="language" className="w-full">
+                  <SelectValue placeholder={t("common.language")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="zh">简体中文</SelectItem>
+                  <SelectItem value="zh-TW">繁體中文</SelectItem>
+                  <SelectItem value="ja">日本語</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{t("settings.theme")}</label>
+            <div className="flex flex-1 min-w-[220px]">
+              <Select
+                value={theme}
+                onValueChange={(value: "light" | "dark" | "system") =>
+                  setTheme(value)
+                }
+              >
+                <SelectTrigger id="theme" className="w-full">
+                  <SelectValue placeholder={t("settings.theme")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">
+                    {t("settings.themeLight")}
+                  </SelectItem>
+                  <SelectItem value="dark">
+                    {t("settings.themeDark")}
+                  </SelectItem>
+                  <SelectItem value="system">
+                    {t("settings.themeSystem")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Account & Plan Card */}
+      <Card>
         <CardHeader>
           <CardTitle className="text-xl flex items-center gap-2">
             <IconUser className="h-5 w-5" />

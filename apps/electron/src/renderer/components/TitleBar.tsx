@@ -20,6 +20,11 @@ export function TitleBar() {
     platformAPI.packages.system.getPlatform().then(setPlatform);
   }, [platformAPI]);
 
+  // Linux ではシステムのデフォルトタイトルバーを使用するため、カスタムタイトルバーを非表示にする
+  if (platform === "linux") {
+    return null;
+  }
+
   return (
     <div
       className="h-[50px] fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b"

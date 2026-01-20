@@ -20,7 +20,7 @@
 - 🌐 **Universal** — Connect to any MCP server
   - Remote or local servers
   - Supports DXT, JSON, Manual
-- 🖥️ **Cross-platform** — Windows and macOS
+- 🖥️ **Cross-platform** — Windows, macOS, and Linux
 - 🗂 **Context Management** — Keep growing MCP server contexts organized
   - Group MCP servers into Projects
   - Manage modes with Workspaces (like browser profiles)

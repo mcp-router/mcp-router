@@ -7,7 +7,9 @@ export type StandardAppId =
   | "cline"
   | "windsurf"
   | "cursor"
-  | "vscode";
+  | "vscode"
+  | "copilot"
+  | "antigravity";
 
 export type IconKey =
   | "openai"
@@ -15,7 +17,9 @@ export type IconKey =
   | "cline"
   | "windsurf"
   | "cursor"
-  | "vscode";
+  | "vscode"
+  | "copilot"
+  | "antigravity";
 
 export type AppConfigKind = "standard-json" | "vscode-json" | "codex";
 
@@ -76,6 +80,22 @@ const definitions: StandardAppDefinition[] = [
     iconKey: "vscode",
     configKind: "vscode-json",
     getConfigPath: (paths) => paths.vscodeConfig(),
+  },
+  {
+    id: "copilot",
+    name: "GitHub Copilot",
+    clientType: "copilot",
+    iconKey: "copilot",
+    configKind: "standard-json",
+    getConfigPath: (paths) => paths.copilotConfig(),
+  },
+  {
+    id: "antigravity",
+    name: "Antigravity",
+    clientType: "antigravity",
+    iconKey: "antigravity",
+    configKind: "standard-json",
+    getConfigPath: (paths) => paths.antigravityConfig(),
   },
 ];
 

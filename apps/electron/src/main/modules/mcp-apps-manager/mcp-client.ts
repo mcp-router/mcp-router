@@ -9,6 +9,8 @@ import {
   MCPConnectionResult,
   MCPInputParam,
 } from "@mcp_router/shared";
+import { getConsoleService } from "@/main/modules/mcp-server-console/mcp-server-console.service";
+import { spawn, ChildProcess } from "child_process";
 
 /**
  * MCPクライアント接続機能を提供するクラス
@@ -107,12 +109,90 @@ export class MCPClient {
         };
 
         // Use Stdio transport for local servers
+        // For local servers, we need to capture stdout/stderr
+        const consoleService = getConsoleService();
+        const serverId = server.id || `server-${Date.now()}`;
+        const serverName = server.name || "Unknown Server";
+
+        // Log server startup
+        consoleService.addLog(
+          serverId,
+          serverName,
+          "stdout",
+          `Starting server: ${server.command} ${(server.args || []).join(" ")}\n`,
+        );
+
+        // Create transport - StdioClientTransport will spawn the process internally
         const transport = new StdioClientTransport({
           command: server.command,
           args: server.args,
           env: mergedEnv,
         });
+
+        // Try to access the child process from the transport after connection
+        // StdioClientTransport may store it in a private property
         await client.connect(transport);
+
+        // Try to access child process from transport's internal properties
+        // This is a workaround since StdioClientTransport doesn't expose the child process
+        const transportAny = transport as any;
+        if (transportAny._process || transportAny.process) {
+          const childProcess = transportAny._process || transportAny.process;
+          
+          // Capture stdout if available
+          if (childProcess.stdout) {
+            childProcess.stdout.on("data", (data: Buffer) => {
+              const content = data.toString();
+              consoleService.addLog(serverId, serverName, "stdout", content);
+            });
+          }
+
+          // Capture stderr if available
+          if (childProcess.stderr) {
+            childProcess.stderr.on("data", (data: Buffer) => {
+              const content = data.toString();
+              consoleService.addLog(serverId, serverName, "stderr", content);
+            });
+          }
+
+          // Handle process errors
+          childProcess.on("error", (error: Error) => {
+            const errorMessage = error.message || String(error);
+            consoleService.addLog(
+              serverId,
+              serverName,
+              "stderr",
+              `Process error: ${errorMessage}\n`,
+            );
+          });
+
+          // Handle process exit
+          childProcess.on("exit", (code: number | null, signal: string | null) => {
+            if (code !== null) {
+              consoleService.addLog(
+                serverId,
+                serverName,
+                "stderr",
+                `Process exited with code ${code}\n`,
+              );
+            } else if (signal) {
+              consoleService.addLog(
+                serverId,
+                serverName,
+                "stderr",
+                `Process exited with signal ${signal}\n`,
+              );
+            }
+          });
+        } else {
+          // If we can't access the child process, at least log the connection
+          consoleService.addLog(
+            serverId,
+            serverName,
+            "stdout",
+            "Connected to server (console output capture may be limited)\n",
+          );
+        }
       } else {
         throw new Error(
           `Unsupported server type: ${(server as any).serverType}`,

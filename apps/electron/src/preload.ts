@@ -60,6 +60,46 @@ contextBridge.exposeInMainWorld("electronAPI", {
     limit?: number;
   }) => ipcRenderer.invoke("requestLogs:get", options),
 
+  // Console Logging
+  getConsoleLogs: async (serverId?: string) => {
+    try {
+      if (serverId) {
+        const logs = await ipcRenderer.invoke("console:getServerLogs", serverId);
+        return Array.isArray(logs) ? logs : [];
+      } else {
+        const logs = await ipcRenderer.invoke("console:getAllLogs");
+        return logs || {};
+      }
+    } catch (error) {
+      console.error("Error getting console logs:", error);
+      return serverId ? [] : {};
+    }
+  },
+  clearConsoleLogs: (serverId?: string) =>
+    serverId
+      ? ipcRenderer.invoke("console:clearServerLogs", serverId)
+      : ipcRenderer.invoke("console:clearAllLogs"),
+  onConsoleLog: (
+    callback: (logEntry: {
+      serverId: string;
+      serverName: string;
+      timestamp: string;
+      type: "stdout" | "stderr";
+      content: string;
+    }) => void,
+    serverId?: string,
+  ) => {
+    const channel = serverId ? `console:log:${serverId}` : "console:log";
+    const listener = (_: any, logEntry: any) => callback(logEntry);
+    ipcRenderer.on(channel, listener);
+    // Send subscribe message to main process
+    ipcRenderer.send("console:subscribe", serverId);
+    return () => {
+      ipcRenderer.removeListener(channel, listener);
+      ipcRenderer.send("console:unsubscribe", serverId);
+    };
+  },
+
   // Settings Management
   getSettings: () => ipcRenderer.invoke("settings:get"),
   saveSettings: (settings: any) =>

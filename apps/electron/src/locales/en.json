@@ -79,6 +79,17 @@
     "title": "Set Up Any MCP Server",
     "serverNameRequired": "Please enter a server name"
   },
+  "serverConsole": {
+    "title": "Server Console",
+    "description": "View console output from all running MCP servers",
+    "selectServer": "Select Server",
+    "allServers": "All Servers",
+    "loading": "Loading...",
+    "noLogs": "No console output available. Start a server to see its output.",
+    "noLogsForServer": "No console output available for this server.",
+    "autoScroll": "Auto-scroll",
+    "export": "Export"
+  },
   "serverList": {
     "title": "MCP Servers",
     "noServers": "No servers configured",

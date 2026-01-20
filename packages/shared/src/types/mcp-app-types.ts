@@ -9,7 +9,7 @@ export interface McpApp {
   serverAccess?: TokenServerAccess; // サーバーアクセスのオン・オフ状態
   isCustom?: boolean; // カスタムアプリかどうか
   hasOtherServers?: boolean; // McpAppで、他のMCPサーバが設定されているかどうか（例：VSCodeで他のMCPサーバも設定されている）
-  icon?: string; // アプリのアイコン（SVGやBase64など）
+  icon?: string | { light: string; dark: string }; // アプリのアイコン（SVGやBase64など、テーマ対応可）
 }
 
 export interface McpAppsManagerResult {

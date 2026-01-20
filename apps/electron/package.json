@@ -17,6 +17,8 @@
     "make": "cross-env NODE_ENV=production electron-forge make",
     "make:x64": "cross-env NODE_ENV=production npm_config_target_arch=x64 npm_config_target_platform=darwin npm_config_arch=x64 electron-forge make --arch=x64",
     "make:arm64": "cross-env NODE_ENV=production npm_config_target_arch=arm64 npm_config_target_platform=darwin npm_config_arch=arm64 electron-forge make --arch=arm64",
+    "make:linux": "cross-env NODE_ENV=production npm_config_target_platform=linux electron-forge make",
+    "package:linux": "cross-env NODE_ENV=production npm_config_target_platform=linux electron-forge package",
     "publish": "npx @electron/rebuild -f -w better-sqlite3 && cross-env NODE_ENV=production electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
@@ -77,6 +79,7 @@
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.10.2",
+    "@electron-forge/maker-deb": "^7.10.2",
     "@electron-forge/maker-dmg": "^7.10.2",
     "@electron-forge/maker-squirrel": "^7.10.2",
     "@electron-forge/maker-zip": "^7.10.2",

@@ -1,4 +1,7 @@
 import { app, nativeTheme } from "electron";
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
 import { AppSettings, Theme } from "@mcp_router/shared";
 import { SingletonService } from "../singleton-service";
 import { SettingsRepository } from "./settings.repository";
@@ -88,11 +91,71 @@ export function applyLoginItemSettings(showWindowOnStartup: boolean): void {
       loginItemOptions.openAsHidden = !showWindowOnStartup;
     } else if (process.platform === "win32") {
       loginItemOptions.args = showWindowOnStartup ? [] : ["--hidden"];
+    } else if (process.platform === "linux") {
+      // Linux: use args to control window visibility
+      loginItemOptions.args = showWindowOnStartup ? [] : ["--hidden"];
+      // Also create/update autostart desktop file for better Linux compatibility
+      createLinuxAutostartEntry(showWindowOnStartup);
     }
 
     app.setLoginItemSettings(loginItemOptions);
   } catch (error) {
     console.error("Failed to update login item settings:", error);
+  }
+}
+
+/**
+ * Create or update Linux autostart desktop entry
+ */
+function createLinuxAutostartEntry(showWindowOnStartup: boolean): void {
+  if (process.platform !== "linux") return;
+
+  try {
+
+    const autostartDir = path.join(os.homedir(), ".config", "autostart");
+    if (!fs.existsSync(autostartDir)) {
+      fs.mkdirSync(autostartDir, { recursive: true });
+    }
+
+    const desktopFilePath = path.join(autostartDir, "mcp-router.desktop");
+    const execPath = process.execPath;
+    const execArgs = showWindowOnStartup ? "" : "--hidden";
+
+    // Try to find icon path - check multiple possible locations
+    let iconPath = "";
+    const possibleIconPaths = [
+      path.join(app.getAppPath(), "public", "images", "icon", "icon.png"),
+      path.join(__dirname, "../../../../public/images/icon/icon.png"),
+      path.join(process.resourcesPath, "app.asar", "public", "images", "icon", "icon.png"),
+      path.join(process.resourcesPath, "app", "public", "images", "icon", "icon.png"),
+    ];
+
+    for (const iconFile of possibleIconPaths) {
+      try {
+        if (fs.existsSync(iconFile)) {
+          iconPath = iconFile;
+          break;
+        }
+      } catch {
+        // Continue searching
+      }
+    }
+
+    const desktopFileContent = `[Desktop Entry]
+Type=Application
+Name=MCP Router
+Comment=Unified MCP Server Management App
+Exec="${execPath}" ${execArgs}
+${iconPath ? `Icon=${iconPath}` : ""}
+Terminal=false
+Categories=Utility;Development;
+X-GNOME-Autostart-enabled=true
+StartupNotify=false
+`;
+
+    fs.writeFileSync(desktopFilePath, desktopFileContent, { mode: 0o644 });
+  } catch (error) {
+    console.error("Failed to create Linux autostart entry:", error);
   }
 }
 

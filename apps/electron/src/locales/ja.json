@@ -78,6 +78,17 @@
     "title": "どんなMCPサーバでも接続",
     "serverNameRequired": "サーバー名を入力してください"
   },
+  "serverConsole": {
+    "title": "サーバーコンソール",
+    "description": "実行中のすべての MCP サーバーのコンソール出力を表示",
+    "selectServer": "サーバーを選択",
+    "allServers": "すべてのサーバー",
+    "loading": "読み込み中...",
+    "noLogs": "コンソール出力がありません。サーバーを起動して出力を確認してください。",
+    "noLogsForServer": "このサーバーのコンソール出力がありません。",
+    "autoScroll": "自動スクロール",
+    "export": "エクスポート"
+  },
   "serverList": {
     "title": "サーバ管理",
     "noServers": "構成されたサーバはありません",

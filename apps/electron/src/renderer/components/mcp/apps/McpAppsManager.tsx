@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Button } from "@mcp_router/ui";
 import { usePlatformAPI } from "@/renderer/platform-api";
+import { useThemeStore } from "@/renderer/stores";
 import {
   Card,
   CardContent,
@@ -38,6 +39,7 @@ import {
 const McpAppsManager: React.FC = () => {
   const { t } = useTranslation();
   const platformAPI = usePlatformAPI();
+  const { theme } = useThemeStore();
   const [apps, setApps] = useState<McpApp[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [customAppName, setCustomAppName] = useState<string>("");
@@ -51,12 +53,53 @@ const McpAppsManager: React.FC = () => {
   const [appToDelete, setAppToDelete] = useState<McpApp | null>(null);
   const { projects, list: listProjects } = useProjectStore();
 
+  // 現在のテーマを判定（system の場合はシステム設定を確認）
+  const [currentTheme, setCurrentTheme] = React.useState<"light" | "dark">(() => {
+    if (!theme || theme === "system") {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
+    return theme === "dark" ? "dark" : "light";
+  });
+
+  // テーマ変更を監視
+  useEffect(() => {
+    if (!theme || theme === "system") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const updateTheme = () => {
+        setCurrentTheme(mediaQuery.matches ? "dark" : "light");
+      };
+      updateTheme();
+      mediaQuery.addEventListener("change", updateTheme);
+      return () => mediaQuery.removeEventListener("change", updateTheme);
+    } else {
+      setCurrentTheme(theme === "dark" ? "dark" : "light");
+    }
+  }, [theme]);
+
+  // アイコンを取得（テーマ対応）
+  const getAppIcon = (icon: string | { light: string; dark: string } | undefined): string | undefined => {
+    if (!icon) return undefined;
+    if (typeof icon === "string") return icon;
+    if (typeof icon === "object" && icon !== null) {
+      const selectedIcon = currentTheme === "dark" ? icon.dark : icon.light;
+      return selectedIcon || icon.light || icon.dark || undefined;
+    }
+    return undefined;
+  };
+
   // Add ref for HowToUse component
   const howToUseRef = useRef<HowToUseHandle>(null);
 
   useEffect(() => {
-    loadApps();
-    loadServers();
+    try {
+      loadApps();
+      loadServers();
+    } catch (error) {
+      console.error("Failed to initialize MCP Apps Manager:", error);
+      toast.error("Failed to load MCP apps");
+    }
   }, []);
 
   useEffect(() => {
@@ -366,22 +409,62 @@ const McpAppsManager: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                       {/* Display icon if available from backend */}
-                      {app.icon && (
-                        <div
-                          className="w-6 h-6 flex items-center justify-center"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                          dangerouslySetInnerHTML={{
-                            __html: app.icon.replace(
-                              /<svg/g,
-                              '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
-                            ),
-                          }}
-                        />
-                      )}
+                      {(() => {
+                        const iconContent = getAppIcon(app.icon);
+                        if (!iconContent) return null;
+                        
+                        try {
+                          // Check if it's SVG content (starts with <svg) or image URL (PNG, etc.)
+                          if (iconContent.trim().startsWith("<svg")) {
+                            return (
+                              <div
+                                className="w-6 h-6 flex items-center justify-center"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                                dangerouslySetInnerHTML={{
+                                  __html: iconContent.replace(
+                                    /<svg/g,
+                                    '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
+                                  ),
+                                }}
+                              />
+                            );
+                          } else {
+                            // It's an image URL (PNG, etc.)
+                            // Handle both absolute URLs and relative paths
+                            const iconSrc = iconContent.startsWith("http") || iconContent.startsWith("data:") || iconContent.startsWith("/")
+                              ? iconContent
+                              : iconContent.startsWith("file://")
+                              ? iconContent
+                              : `/${iconContent}`;
+                            
+                            return (
+                              <img
+                                src={iconSrc}
+                                alt={`${app.name} icon`}
+                                className="w-6 h-6 object-contain"
+                                style={{
+                                  maxWidth: "24px",
+                                  maxHeight: "24px",
+                                }}
+                                onError={(e) => {
+                                  console.error(`Failed to load icon for ${app.name}:`, iconSrc, "Original:", iconContent);
+                                  e.currentTarget.style.display = "none";
+                                }}
+                                onLoad={() => {
+                                  console.log(`Successfully loaded icon for ${app.name}:`, iconSrc);
+                                }}
+                              />
+                            );
+                          }
+                        } catch (error) {
+                          console.error(`Error rendering icon for ${app.name}:`, error);
+                          return null;
+                        }
+                      })()}
                       <CardTitle className="truncate max-w-[150px]">
                         {app.name}
                       </CardTitle>

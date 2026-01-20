@@ -414,6 +414,8 @@ function extractServerConfigs(
       case "cline":
       case "windsurf":
       case "cursor":
+      case "copilot":
+      case "antigravity":
         // These clients use 'mcpServers' structure
         if (content.mcpServers) {
           extractStandardServerConfigs(

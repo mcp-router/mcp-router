@@ -9,6 +9,7 @@ import SidebarComponent from "./Sidebar";
 import { SidebarProvider } from "@mcp_router/ui";
 import McpAppsManager from "@/renderer/components/mcp/apps/McpAppsManager";
 import LogViewer from "@/renderer/components/mcp/log/LogViewer";
+import ServerConsoleViewer from "@/renderer/components/mcp/console/ServerConsoleViewer";
 import Settings from "./setting/Settings";
 import { useServerStore, useAuthStore, initializeStores } from "../stores";
 import { usePlatformAPI } from "@/renderer/platform-api";
@@ -156,6 +157,7 @@ const App: React.FC = () => {
               <Route path="/servers/add" element={<DiscoverWrapper />} />
               <Route path="/clients" element={<McpAppsManager />} />
               <Route path="/logs" element={<LogViewer />} />
+              <Route path="/console" element={<ServerConsoleViewer />} />
               <Route
                 path="/hooks"
                 element={<Navigate to="/workflows" replace />}

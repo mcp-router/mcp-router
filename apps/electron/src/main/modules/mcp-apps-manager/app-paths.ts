@@ -119,6 +119,22 @@ export class AppPaths {
     return path.join(this.HOME, ".codex", "config.toml");
   }
 
+  /**
+   * GitHub Copilot config path
+   * ~/.copilot/mcp-config.json
+   */
+  public copilotConfig(): string {
+    return path.join(this.HOME, ".copilot", "mcp-config.json");
+  }
+
+  /**
+   * Antigravity config path
+   * ~/.gemini/antigravity/mcp_config.json
+   */
+  public antigravityConfig(): string {
+    return path.join(this.HOME, ".gemini", "antigravity", "mcp_config.json");
+  }
+
   public async exists(filePath: string): Promise<boolean> {
     try {
       await fs.promises.access(filePath, fs.constants.F_OK);

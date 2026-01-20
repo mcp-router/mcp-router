@@ -373,6 +373,18 @@ async function initApplication(): Promise<void> {
 
   // UI初期化
   initUI({ showMainWindow: shouldShowMainWindow });
+
+  // 處理啟動時的命令行參數中的協議 URL（Linux/Windows）
+  // macOS 使用 open-url 事件處理
+  if (process.platform !== "darwin") {
+    const protocolUrl = process.argv.find((arg) => arg.startsWith("mcpr://"));
+    if (protocolUrl) {
+      // 等待窗口創建後再處理協議 URL
+      setTimeout(() => {
+        handleProtocolUrl(protocolUrl);
+      }, 1000);
+    }
+  }
 }
 
 app.on("ready", initApplication);

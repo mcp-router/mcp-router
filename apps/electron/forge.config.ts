@@ -9,7 +9,9 @@ import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { mainConfig } from "./webpack.main.config";
 import { rendererConfig } from "./webpack.renderer.config";
 import { MakerDMG } from "@electron-forge/maker-dmg";
+import { MakerDeb } from "@electron-forge/maker-deb";
 import * as path from "path";
+import { postMake } from "./forge-hooks";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
@@ -29,6 +31,8 @@ const config: ForgeConfig = {
     icon: "./public/images/icon/icon",
     // Support both Intel and Apple Silicon architectures - use target arch from env
     arch: (process.env.npm_config_target_arch as any) || process.arch,
+    // Set executable name for Linux
+    executableName: process.platform === "linux" ? "mcp-router" : undefined,
     // Only sign/notarize on macOS when credentials are available (CI-safe)
     osxSign: isMac && hasSignIdentity
       ? {
@@ -63,6 +67,22 @@ const config: ForgeConfig = {
       },
       ["darwin"],
     ),
+    new MakerDeb({
+      options: {
+        name: "mcp-router",
+        productName: "MCP Router",
+        genericName: "MCP Server Manager",
+        description:
+          "Effortlessly manage your MCP servers with the MCP Router. MCP Router provides a user-friendly interface for managing MCP servers, making it easier than ever to work with the MCP.",
+        productDescription:
+          "A unified MCP server management application for managing Model Context Protocol servers.",
+        maintainer: "fjm2u",
+        homepage: "https://github.com/mcp-router/mcp-router",
+        categories: ["Utility", "Development"],
+        icon: "./public/images/icon/icon.png",
+        bin: "mcp-router",
+      },
+    }),
     new MakerZIP(),
   ],
   plugins: [
@@ -109,6 +129,9 @@ const config: ForgeConfig = {
       },
     },
   ],
+  hooks: {
+    postMake,
+  },
 };
 
 export default config;
