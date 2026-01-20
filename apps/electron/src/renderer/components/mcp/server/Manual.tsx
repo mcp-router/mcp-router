@@ -29,7 +29,14 @@ import { MCPServerConfig } from "@mcp_router/shared";
 import { Checkbox } from "@mcp_router/ui";
 import { RadioGroup, RadioGroupItem } from "@mcp_router/ui";
 import { ScrollArea } from "@mcp_router/ui";
-import { useServerStore } from "@/renderer/stores";
+import { useServerStore, useProjectStore } from "@/renderer/stores";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@mcp_router/ui";
 
 interface EnvVariable {
   key: string;
@@ -62,6 +69,17 @@ const Manual: React.FC = () => {
   const { t } = useTranslation();
   const platformAPI = usePlatformAPI();
   const { createServer, refreshServers } = useServerStore();
+  const { projects, list: listProjects } = useProjectStore();
+
+  // Project Selection State (shared between Local and Remote tabs)
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null,
+  );
+
+  // Load projects on mount
+  React.useEffect(() => {
+    listProjects();
+  }, [listProjects]);
 
   // JSON Import State
   const [jsonInput, setJsonInput] = useState("");
