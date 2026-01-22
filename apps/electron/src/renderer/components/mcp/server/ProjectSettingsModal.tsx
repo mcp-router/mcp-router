@@ -324,11 +324,6 @@ export const ProjectSettingsModal: React.FC<Props> = ({
                                           defaultValue: "BM25",
                                         })}
                                       </SelectItem>
-                                      <SelectItem value="cloud">
-                                        {t("projects.searchStrategyCloud", {
-                                          defaultValue: "Advanced",
-                                        })}
-                                      </SelectItem>
                                     </SelectContent>
                                   </Select>
                                 )}
