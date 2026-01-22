@@ -10,6 +10,7 @@ export * from "./user-types";
 export * from "./workspace";
 export * from "./auth";
 export * from "./project-types";
+export * from "./tool-catalog-types";
 
 // Re-export organized domain types
 export * from "./ui";
