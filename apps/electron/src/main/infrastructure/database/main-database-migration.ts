@@ -104,6 +104,13 @@ export class MainDatabaseMigration {
       description: "Add hooks table for MCP request/response hooks",
       execute: (db) => this.migrateAddHooksTable(db),
     });
+
+    // Projects optimization カラムを追加
+    this.migrations.push({
+      id: "20260120_add_project_optimization_column",
+      description: "Add optimization column to projects table",
+      execute: (db) => this.migrateAddProjectOptimizationColumn(db),
+    });
   }
 
   /**
@@ -603,6 +610,37 @@ export class MainDatabaseMigration {
       }
     } catch (error) {
       console.error("Error while ensuring servers.project_id:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * projects.optimization 列を追加するマイグレーション
+   */
+  private migrateAddProjectOptimizationColumn(db: SqliteManager): void {
+    try {
+      const tableExists = db.get(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'projects'",
+        {},
+      );
+
+      if (!tableExists) {
+        console.log("projects table does not exist, skipping this migration");
+        return;
+      }
+
+      const tableInfo = db.all("PRAGMA table_info(projects)");
+      const columnNames = tableInfo.map((col: any) => col.name);
+
+      if (!columnNames.includes("optimization")) {
+        console.log("Adding optimization column to projects");
+        db.execute("ALTER TABLE projects ADD COLUMN optimization TEXT");
+        console.log("optimization column added");
+      } else {
+        console.log("optimization column already exists, skipping");
+      }
+    } catch (error) {
+      console.error("Error while adding optimization column:", error);
       throw error;
     }
   }

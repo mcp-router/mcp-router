@@ -1,6 +1,11 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import type { Project } from "@mcp_router/shared";
+import {
+  DEFAULT_SEARCH_STRATEGY,
+  type Project,
+  type ProjectOptimization,
+  type ToolCatalogSearchStrategy,
+} from "@mcp_router/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +23,12 @@ import {
   DialogTitle,
   Input,
   ScrollArea,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
 } from "@mcp_router/ui";
 import { Pencil, Trash2, Info } from "lucide-react";
 import { toast } from "sonner";
@@ -30,6 +41,10 @@ type Props = {
   onCreateProject: (input: { name: string }) => Promise<Project>;
   onRenameProject: (id: string, updates: { name: string }) => Promise<Project>;
   onDeleteProject: (id: string) => Promise<void>;
+  onUpdateProjectOptimization: (
+    id: string,
+    optimization: ProjectOptimization,
+  ) => Promise<Project>;
 };
 
 export const ProjectSettingsModal: React.FC<Props> = ({
@@ -39,6 +54,7 @@ export const ProjectSettingsModal: React.FC<Props> = ({
   onCreateProject,
   onRenameProject,
   onDeleteProject,
+  onUpdateProjectOptimization,
 }) => {
   const { t } = useTranslation();
   const [newProjectName, setNewProjectName] = React.useState("");
@@ -83,7 +99,7 @@ export const ProjectSettingsModal: React.FC<Props> = ({
 
   const handleCreateProject = async () => {
     const name = newProjectName.trim();
-    if (!name) return; // keep light UX guard only for empty
+    if (!name) return;
     setCreating(true);
     try {
       await onCreateProject({ name });
@@ -141,6 +157,35 @@ export const ProjectSettingsModal: React.FC<Props> = ({
     } finally {
       setDeletingProjectId(null);
     }
+  };
+
+  const handleUpdateOptimization = (
+    project: Project,
+    optimization: ProjectOptimization,
+  ) => {
+    onUpdateProjectOptimization(project.id, optimization).catch(
+      (error: any) => {
+        console.error("Failed to save project optimization:", error);
+        const message = error?.message ?? "Failed to save settings.";
+        toast.error(message);
+      },
+    );
+  };
+
+  const handleToggleContextOptimization = (
+    project: Project,
+    enabled: boolean,
+  ) => {
+    // When enabling, use default strategy. When disabling, set to null.
+    const optimization = enabled ? DEFAULT_SEARCH_STRATEGY : null;
+    handleUpdateOptimization(project, optimization);
+  };
+
+  const handleChangeSearchStrategy = (
+    project: Project,
+    strategy: ToolCatalogSearchStrategy,
+  ) => {
+    handleUpdateOptimization(project, strategy);
   };
 
   return (
@@ -206,12 +251,18 @@ export const ProjectSettingsModal: React.FC<Props> = ({
                       {managedProjects.map((project) => {
                         const isEditing = editingProjectId === project.id;
                         const isDeleting = deletingProjectId === project.id;
+                        // optimization = null means disabled, otherwise enabled with strategy
+                        const contextOptEnabled = project.optimization !== null;
+                        const searchStrategy =
+                          project.optimization ?? DEFAULT_SEARCH_STRATEGY;
+
                         return (
                           <div
                             key={project.id}
                             className="flex items-center gap-3 px-3 py-2"
                           >
-                            <div className="flex-1">
+                            {/* Project name */}
+                            <div className="flex-1 min-w-0">
                               {isEditing ? (
                                 <Input
                                   value={editingName}
@@ -231,12 +282,56 @@ export const ProjectSettingsModal: React.FC<Props> = ({
                                   autoFocus
                                 />
                               ) : (
-                                <span className="text-sm font-medium">
+                                <span className="text-sm font-medium truncate block">
                                   {project.name}
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-1">
+
+                            {/* Context Optimization settings (inline) */}
+                            {!isEditing && (
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-xs text-muted-foreground">
+                                  {t("projects.contextOptimization", {
+                                    defaultValue: "Context Optimization",
+                                  })}
+                                </span>
+                                <Switch
+                                  checked={contextOptEnabled}
+                                  onCheckedChange={(checked) =>
+                                    handleToggleContextOptimization(
+                                      project,
+                                      checked,
+                                    )
+                                  }
+                                />
+                                {contextOptEnabled && (
+                                  <Select
+                                    value={searchStrategy}
+                                    onValueChange={(value) =>
+                                      handleChangeSearchStrategy(
+                                        project,
+                                        value as ToolCatalogSearchStrategy,
+                                      )
+                                    }
+                                  >
+                                    <SelectTrigger className="h-7 w-24">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="bm25">
+                                        {t("projects.searchStrategyBm25", {
+                                          defaultValue: "BM25",
+                                        })}
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Action buttons */}
+                            <div className="flex items-center gap-1 shrink-0">
                               {isEditing ? (
                                 <>
                                   <Button

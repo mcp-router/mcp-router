@@ -144,6 +144,7 @@ const Settings: React.FC = () => {
   // サブスクリプション情報の更新処理
   const handleRefreshSubscription = async () => {
     if (!isAuthenticated || isRefreshingSubscription) return;
+
     try {
       setIsRefreshingSubscription(true);
       await checkAuthStatus(true);
@@ -286,6 +287,10 @@ const Settings: React.FC = () => {
     userInfo?.planName && userInfo.planName.trim().length > 0
       ? userInfo.planName
       : t("settings.planNameUnknown");
+
+  const subscriptionDisplay = isSubscribed
+    ? planNameLabel
+    : t("settings.notSubscribed");
 
   return (
     <div className="p-6 flex flex-col gap-6">

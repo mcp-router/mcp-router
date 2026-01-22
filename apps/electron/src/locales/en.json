@@ -11,6 +11,7 @@
     "loading": "Loading...",
     "close": "Close",
     "remove": "Remove",
+    "removing": "Removing...",
     "search": "Search",
     "update": "Update",
     "send": "Send"
@@ -100,6 +101,8 @@
     "accountAndPlan": "Account & Plan",
     "proFeatures": "Pro Features",
     "preferences": "Preferences",
+    "authentication": "Authentication",
+    "appearance": "Appearance",
     "theme": "Theme",
     "themeLight": "Light",
     "themeDark": "Dark",
@@ -109,8 +112,22 @@
     "loggingIn": "Logging in...",
     "logout": "Logout",
     "loggingOut": "Logging out...",
+    "loggedInAs": "Logged in as",
+    "subscription": "Subscription",
+    "subscriptionDescription": "View your current plan and subscription status.",
+    "subscriptionStatusValue": {
+      "active": "Active",
+      "canceled": "Canceled",
+      "incomplete": "Incomplete",
+      "trialing": "Trialing",
+      "past_due": "Past due"
+    },
+    "planName": "Plan",
     "planNameUnknown": "Not set",
+    "notSubscribed": "Not subscribed",
     "getPro": "Get Pro",
+    "refreshSubscription": "Refresh",
+    "refreshingSubscription": "Refreshing...",
     "cloudSync": "Cloud Sync",
     "cloudSyncDescription": "Sync your workspaces and servers across devices with end-to-end encryption.",
     "proOnly": "Pro only",
@@ -161,6 +178,7 @@
     "deleteFailed": "Failed to delete app"
   },
   "serverDetails": {
+    "settings": "Settings",
     "serverName": "Server Name",
     "finalCommand": "Execution Command",
     "noInputParams": "No input parameters",
@@ -212,7 +230,10 @@
     "creating": "Creating...",
     "projectSettings": "Project Settings",
     "projectSettingsDescription": "Projects let you isolate the contexts where MCP servers are used.",
-    "projectSettingsCliHint": "To use the servers assigned to a project, run a command like: npx -y @mcp_router/cli connect --project <project-name>."
+    "projectSettingsCliHint": "To use the servers assigned to a project, run a command like: npx -y @mcp_router/cli connect --project <project-name>.",
+    "contextOptimization": "Context Optimization",
+    "searchStrategyBm25": "BM25",
+    "searchStrategyCloud": "Advanced"
   },
   "serverSettings": {
     "title": "{{serverName}} Settings",

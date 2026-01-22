@@ -1,6 +1,7 @@
 import { ipcMain } from "electron";
 import { ProjectService, getProjectService } from "./projects.service";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
+import type { ProjectOptimization } from "@mcp_router/shared";
 
 export function setupProjectHandlers(deps: {
   getServerManager: () => MCPServerManager;
@@ -24,11 +25,16 @@ export function setupProjectHandlers(deps: {
 
   ipcMain.handle(
     "project:update",
-    async (_evt, id: string, updates: { name?: string }) => {
+    async (
+      _evt,
+      id: string,
+      updates: {
+        name?: string;
+        optimization?: ProjectOptimization;
+      },
+    ) => {
       if (!id) throw new Error("Missing project id");
-      const payload: { name?: string } = {};
-      if (updates?.name !== undefined) payload.name = updates.name;
-      return service.update(id, payload);
+      return service.update(id, updates);
     },
   );
 

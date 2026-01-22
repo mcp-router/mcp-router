@@ -1,6 +1,6 @@
 import { SingletonService } from "@/main/modules/singleton-service";
 import { ProjectRepository } from "./projects.repository";
-import type { Project } from "@mcp_router/shared";
+import type { Project, ProjectOptimization } from "@mcp_router/shared";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { McpServerManagerRepository } from "../mcp-server-manager/mcp-server-manager.repository";
 
@@ -53,6 +53,20 @@ export class ProjectService extends SingletonService<
     }
   }
 
+  getOptimization(projectId: string): ProjectOptimization | undefined {
+    try {
+      const repo = ProjectRepository.getInstance();
+      const project = repo.getById(projectId);
+      return project?.optimization;
+    } catch (error) {
+      console.error(
+        "[ProjectService] Failed to get project optimization:",
+        error,
+      );
+      return undefined;
+    }
+  }
+
   list(): Project[] {
     try {
       return ProjectRepository.getInstance().getAll({ orderBy: "name" });
@@ -82,7 +96,10 @@ export class ProjectService extends SingletonService<
     }
   }
 
-  update(id: string, updates: Partial<Pick<Project, "name">>): Project {
+  update(
+    id: string,
+    updates: Partial<Pick<Project, "name" | "optimization">>,
+  ): Project {
     try {
       const repo = ProjectRepository.getInstance();
       const existing = repo.getById(id);

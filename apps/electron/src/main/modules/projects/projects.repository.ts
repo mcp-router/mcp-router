@@ -32,7 +32,8 @@ export class ProjectRepository extends BaseRepository<Project> {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        optimization TEXT
       )
     `);
     this.db.execute(
@@ -46,6 +47,7 @@ export class ProjectRepository extends BaseRepository<Project> {
       name: row.name,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      optimization: row.optimization ?? null,
     };
   }
 
@@ -56,6 +58,7 @@ export class ProjectRepository extends BaseRepository<Project> {
       name: entity.name,
       created_at: entity.createdAt ?? now,
       updated_at: now,
+      optimization: entity.optimization ?? null,
     };
   }
 

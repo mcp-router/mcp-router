@@ -8,6 +8,7 @@ import type {
   MCPTool,
   MCPServer,
   Project,
+  ProjectOptimization,
   TokenServerAccess,
 } from "@mcp_router/shared";
 import {
@@ -153,7 +154,10 @@ declare global {
       createProject: (input: { name: string }) => Promise<Project>;
       updateProject: (
         id: string,
-        updates: { name?: string },
+        updates: {
+          name?: string;
+          optimization?: ProjectOptimization;
+        },
       ) => Promise<Project>;
       deleteProject: (id: string) => Promise<void>;
 

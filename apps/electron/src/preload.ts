@@ -2,7 +2,11 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer } from "electron";
-import type { CreateServerInput, TokenServerAccess } from "@mcp_router/shared";
+import type {
+  CreateServerInput,
+  ProjectOptimization,
+  TokenServerAccess,
+} from "@mcp_router/shared";
 
 // Consolidate everything into one contextBridge call
 
@@ -178,7 +182,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   listProjects: () => ipcRenderer.invoke("project:list"),
   createProject: (input: { name: string }) =>
     ipcRenderer.invoke("project:create", input),
-  updateProject: (id: string, updates: { name?: string }) =>
-    ipcRenderer.invoke("project:update", id, updates),
+  updateProject: (
+    id: string,
+    updates: { name?: string; optimization?: ProjectOptimization },
+  ) => ipcRenderer.invoke("project:update", id, updates),
   deleteProject: (id: string) => ipcRenderer.invoke("project:delete", id),
 });

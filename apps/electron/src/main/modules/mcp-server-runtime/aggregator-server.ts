@@ -12,6 +12,7 @@ import {
 import { RequestHandlers } from "./request-handlers";
 import { MCPServerManager } from "../mcp-server-manager/mcp-server-manager";
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
+import type { ToolCatalogService } from "@/main/modules/tool-catalog/tool-catalog.service";
 
 /**
  * MCP Aggregator Server that combines multiple MCP servers into one
@@ -21,8 +22,14 @@ export class AggregatorServer {
   private transport!: StreamableHTTPServerTransport;
   private requestHandlers: RequestHandlers;
 
-  constructor(serverManager: MCPServerManager) {
-    this.requestHandlers = new RequestHandlers(serverManager);
+  constructor(
+    serverManager: MCPServerManager,
+    toolCatalogService?: ToolCatalogService,
+  ) {
+    this.requestHandlers = new RequestHandlers(
+      serverManager,
+      toolCatalogService,
+    );
     this.initAggregatorServer();
   }
 

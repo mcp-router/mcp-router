@@ -11,6 +11,7 @@
     "loading": "加载中...",
     "close": "关闭",
     "remove": "移除",
+    "removing": "移除中...",
     "search": "搜索",
     "update": "更新",
     "send": "发送"
@@ -100,6 +101,8 @@
     "accountAndPlan": "账户与套餐",
     "proFeatures": "Pro 功能",
     "preferences": "偏好设置",
+    "authentication": "身份验证",
+    "appearance": "外观",
     "theme": "主题",
     "themeLight": "浅色",
     "themeDark": "深色",
@@ -109,8 +112,22 @@
     "loggingIn": "登录中...",
     "logout": "登出",
     "loggingOut": "登出中...",
+    "loggedInAs": "已登录为",
+    "subscription": "订阅",
+    "subscriptionDescription": "查看当前套餐和订阅状态。",
+    "subscriptionStatusValue": {
+      "active": "已激活",
+      "canceled": "已取消",
+      "incomplete": "未完成",
+      "trialing": "试用中",
+      "past_due": "逾期"
+    },
+    "planName": "套餐",
     "planNameUnknown": "未设置",
+    "notSubscribed": "未订阅",
     "getPro": "获取 Pro",
+    "refreshSubscription": "刷新",
+    "refreshingSubscription": "正在刷新...",
     "cloudSync": "云同步",
     "cloudSyncDescription": "通过端到端加密在设备间同步您的工作空间和服务器。",
     "proOnly": "仅限 Pro",
@@ -161,6 +178,7 @@
     "deleteFailed": "应用删除失败"
   },
   "serverDetails": {
+    "settings": "设置",
     "serverName": "服务器名称",
     "finalCommand": "执行命令",
     "noInputParams": "无输入参数",
@@ -212,7 +230,10 @@
     "creating": "正在创建...",
     "projectSettings": "项目设置",
     "projectSettingsDescription": "项目可以将使用 MCP 服务器的上下文隔离开来。",
-    "projectSettingsCliHint": "要使用分配给项目的服务器，请像这样执行命令：npx -y @mcp_router/cli connect --project <project-name>。"
+    "projectSettingsCliHint": "要使用分配给项目的服务器，请像这样执行命令：npx -y @mcp_router/cli connect --project <project-name>。",
+    "contextOptimization": "上下文优化",
+    "searchStrategyBm25": "BM25",
+    "searchStrategyCloud": "Advanced"
   },
   "serverSettings": {
     "title": "{{serverName}} 设置",
