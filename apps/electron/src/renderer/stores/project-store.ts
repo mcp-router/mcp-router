@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Project } from "@mcp_router/shared";
+import type { Project, ProjectOptimization } from "@mcp_router/shared";
 import { UNASSIGNED_PROJECT_ID as SHARED_UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
 import { useWorkspaceStore } from "./workspace-store";
 
@@ -15,7 +15,10 @@ interface ProjectStoreState {
   // Actions
   list: () => Promise<void>;
   create: (input: { name: string }) => Promise<Project>;
-  update: (id: string, updates: { name?: string }) => Promise<Project>;
+  update: (
+    id: string,
+    updates: { name?: string; optimization?: ProjectOptimization },
+  ) => Promise<Project>;
   delete: (id: string) => Promise<void>;
 
   // UI state actions

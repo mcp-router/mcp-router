@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MCPServer } from "@mcp_router/shared";
+import { MCPServer, ProjectOptimization } from "@mcp_router/shared";
 import { ScrollArea } from "@mcp_router/ui";
 import { Badge } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
@@ -230,29 +230,31 @@ const Home: React.FC = () => {
 
   const handleCreateProject = React.useCallback(
     async (input: { name: string }) => {
-      const created = await createProject(input);
-      await listProjects();
-      return created;
+      return await createProject(input);
     },
-    [createProject, listProjects],
+    [createProject],
   );
 
   const handleRenameProject = React.useCallback(
     async (id: string, updates: { name: string }) => {
-      const updated = await updateProjectInStore(id, updates);
-      await listProjects();
-      return updated;
+      return await updateProjectInStore(id, updates);
     },
-    [listProjects, updateProjectInStore],
+    [updateProjectInStore],
   );
 
   const handleDeleteProject = React.useCallback(
     async (id: string) => {
       await deleteProjectInStore(id);
-      await listProjects();
       await refreshServers();
     },
-    [deleteProjectInStore, listProjects, refreshServers],
+    [deleteProjectInStore, refreshServers],
+  );
+
+  const handleUpdateProjectOptimization = React.useCallback(
+    async (id: string, optimization: ProjectOptimization) => {
+      return await updateProjectInStore(id, { optimization });
+    },
+    [updateProjectInStore],
   );
 
   // Show login screen for remote workspaces if not authenticated
@@ -997,6 +999,7 @@ const Home: React.FC = () => {
         onCreateProject={handleCreateProject}
         onRenameProject={handleRenameProject}
         onDeleteProject={handleDeleteProject}
+        onUpdateProjectOptimization={handleUpdateProjectOptimization}
       />
 
       {/* Advanced Settings Sheet */}

@@ -14,6 +14,7 @@
     "loading": "読み込み中...",
     "close": "閉じる",
     "remove": "削除",
+    "removing": "削除中...",
     "search": "検索",
     "update": "アップデート",
     "send": "送信"
@@ -99,6 +100,8 @@
     "accountAndPlan": "アカウントとプラン",
     "proFeatures": "Pro機能",
     "preferences": "設定",
+    "authentication": "認証",
+    "appearance": "外観",
     "theme": "テーマ",
     "themeLight": "ライト",
     "themeDark": "ダーク",
@@ -108,8 +111,22 @@
     "loggingIn": "ログイン中...",
     "logout": "ログアウト",
     "loggingOut": "ログアウト中...",
+    "loggedInAs": "ログイン中のアカウント",
+    "subscription": "サブスクリプション",
+    "subscriptionDescription": "現在のプランとステータスを確認できます。",
+    "subscriptionStatusValue": {
+      "active": "有効",
+      "canceled": "解約済み",
+      "incomplete": "未完了",
+      "trialing": "トライアル中",
+      "past_due": "支払い遅延"
+    },
+    "planName": "プラン",
     "planNameUnknown": "未設定",
+    "notSubscribed": "未契約",
     "getPro": "Proを購入",
+    "refreshSubscription": "更新",
+    "refreshingSubscription": "更新中...",
     "cloudSync": "クラウド同期",
     "cloudSyncDescription": "エンドツーエンド暗号化でワークスペースとサーバーをデバイス間で同期します。",
     "proOnly": "Pro限定",
@@ -160,6 +177,7 @@
     "deleteFailed": "カスタムアプリの削除に失敗しました"
   },
   "serverDetails": {
+    "settings": "設定",
     "serverName": "サーバー名",
     "finalCommand": "実行コマンド",
     "noInputParams": "入力パラメータがありません",
@@ -211,7 +229,10 @@
     "creating": "作成中...",
     "projectSettings": "プロジェクト設定",
     "projectSettingsDescription": "プロジェクトでは、MCPサーバーを利用するコンテキストを分離できます。",
-    "projectSettingsCliHint": "プロジェクトに割り当てたサーバーを利用するには、npx -y @mcp_router/cli connect --project <project-name> のように指定します。"
+    "projectSettingsCliHint": "プロジェクトに割り当てたサーバーを利用するには、npx -y @mcp_router/cli connect --project <project-name> のように指定します。",
+    "contextOptimization": "コンテキスト最適化",
+    "searchStrategyBm25": "BM25",
+    "searchStrategyCloud": "Advanced"
   },
   "serverSettings": {
     "title": "{{serverName}} 設定",
