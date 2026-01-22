@@ -7,8 +7,14 @@ import {
   createUriVariants,
 } from "@/main/utils/uri-utils";
 import { MCPServerManager } from "../mcp-server-manager/mcp-server-manager";
+import { ToolCatalogService } from "@/main/modules/tool-catalog/tool-catalog.service";
 import { TokenValidator } from "./token-validator";
 import { RequestHandlerBase } from "./request-handler-base";
+import { getProjectService } from "@/main/modules/projects/projects.service";
+import {
+  ToolCatalogHandler,
+  META_TOOLS,
+} from "@/main/modules/tool-catalog/tool-catalog-handler";
 
 /**
  * Handles all request processing for the aggregator server
@@ -20,8 +26,13 @@ export class RequestHandlers extends RequestHandlerBase {
   private servers: Map<string, MCPServer>;
   private clients: Map<string, Client>;
   private serverNameToIdMap: Map<string, string>;
+  private toolCatalogService: ToolCatalogService;
+  private toolCatalogHandler: ToolCatalogHandler;
 
-  constructor(serverManager: MCPServerManager) {
+  constructor(
+    serverManager: MCPServerManager,
+    toolCatalogService?: ToolCatalogService,
+  ) {
     const maps = serverManager.getMaps();
     const tokenValidator = new TokenValidator(maps.serverNameToIdMap);
     super(tokenValidator);
@@ -31,6 +42,16 @@ export class RequestHandlers extends RequestHandlerBase {
     this.clients = maps.clients;
     this.serverNameToIdMap = maps.serverNameToIdMap;
     this.serverStatusMap = maps.serverStatusMap;
+    this.toolCatalogService =
+      toolCatalogService || new ToolCatalogService(serverManager);
+
+    // Create ToolCatalogHandler for tool_discovery and tool_execute
+    this.toolCatalogHandler = new ToolCatalogHandler(tokenValidator, {
+      servers: this.servers,
+      clients: this.clients,
+      serverStatusMap: this.serverStatusMap,
+      toolCatalogService: this.toolCatalogService,
+    });
   }
 
   private normalizeProjectId(projectId: unknown): string | null {
@@ -48,6 +69,14 @@ export class RequestHandlers extends RequestHandlerBase {
     return null;
   }
 
+  private matchesProject(
+    server: MCPServer | undefined,
+    projectId: string | null,
+  ): boolean {
+    const serverProject = server?.projectId ?? null;
+    return projectId === null || serverProject === projectId;
+  }
+
   private getProjectKey(projectId: string | null): string {
     return projectId ?? UNASSIGNED_PROJECT_ID;
   }
@@ -62,12 +91,22 @@ export class RequestHandlers extends RequestHandlerBase {
     return map;
   }
 
-  private matchesProject(
-    server: MCPServer | undefined,
-    projectId: string | null,
-  ): boolean {
-    const serverProject = server?.projectId ?? null;
-    return projectId === null || serverProject === projectId;
+  /**
+   * Get project optimization setting.
+   */
+  private getProjectOptimization(projectId: string | null) {
+    if (!projectId) {
+      return undefined;
+    }
+    return getProjectService().getOptimization(projectId);
+  }
+
+  /**
+   * Check if tool catalog is enabled for the given project
+   */
+  private isToolCatalogEnabled(projectId: string | null): boolean {
+    const optimization = this.getProjectOptimization(projectId);
+    return !!optimization;
   }
 
   /**
@@ -81,6 +120,11 @@ export class RequestHandlers extends RequestHandlerBase {
     const projectId = this.normalizeProjectId(projectIdInput);
 
     return this.executeWithHooks("tools/list", {}, clientId, async () => {
+      // If tool catalog is enabled, return META_TOOLS (tool_discovery, tool_execute)
+      if (this.isToolCatalogEnabled(projectId)) {
+        return { tools: META_TOOLS };
+      }
+      // Otherwise, return all tools from all servers (legacy behavior)
       const allTools = await this.getAllToolsInternal(token, projectId);
       return { tools: allTools };
     });
@@ -91,166 +135,24 @@ export class RequestHandlers extends RequestHandlerBase {
    */
   public async handleCallTool(request: any): Promise<any> {
     const toolName = request.params.name;
-
     const projectId = this.normalizeProjectId(request.params._meta?.projectId);
 
-    // Get server name and original tool name
-    const token = request.params._meta?.token as string | undefined;
-    const mappedServerName = await this.getServerNameForTool(
-      toolName,
-      token,
-      projectId,
-    );
-    if (!mappedServerName) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        `Could not determine server for tool: ${toolName}`,
-      );
-    }
-    const serverName = mappedServerName;
-    const originalToolName = toolName;
-
-    // Validate token and get client ID for regular servers
-    const clientId = this.tokenValidator.validateTokenAndAccess(
-      token,
-      serverName,
-    );
-
-    const serverId = this.getServerIdByName(serverName);
-    if (!serverId) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        `Unknown server: ${serverName}`,
-      );
+    // Always handle META_TOOLS (tool_discovery, tool_execute) regardless of catalog mode
+    if (toolName === "tool_discovery") {
+      return await this.toolCatalogHandler.handleToolDiscovery(request);
     }
 
-    const server = this.servers.get(serverId);
-    if (!this.matchesProject(server, projectId)) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        "Tool not available for the selected project",
-      );
+    if (toolName === "tool_execute") {
+      return await this.toolCatalogHandler.handleToolExecute(request);
     }
 
-    if (
-      server?.toolPermissions &&
-      server.toolPermissions[originalToolName] === false
-    ) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        `Tool "${originalToolName}" is disabled for this server`,
-      );
-    }
-    const client = this.clients.get(serverId);
-    if (!client) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        `Server ${serverName} is not connected`,
-      );
+    // If tool catalog is enabled, only META_TOOLS are available
+    if (this.isToolCatalogEnabled(projectId)) {
+      throw new McpError(ErrorCode.InvalidRequest, `Unknown tool: ${toolName}`);
     }
 
-    if (!this.serverStatusMap.get(serverName)) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        `Server ${serverName} is not running`,
-      );
-    }
-
-    return this.executeWithHooksAndLogging(
-      "tools/call",
-      request.params,
-      clientId,
-      serverName,
-      "CallTool",
-      async () => {
-        // Call the tool on the server
-        return await client.callTool(
-          {
-            name: originalToolName,
-            arguments: request.params.arguments || {},
-          },
-          undefined,
-          {
-            timeout: 60 * 60 * 1000, // 60分
-            resetTimeoutOnProgress: true,
-          },
-        );
-      },
-      { serverId },
-    );
-  }
-
-  /**
-   * Get all tools from all servers (internal implementation)
-   */
-  private async getAllToolsInternal(
-    token?: string,
-    projectId?: string | null,
-  ): Promise<any[]> {
-    const normalizedProjectId = this.normalizeProjectId(projectId);
-    const toolMap = this.ensureToolMap(normalizedProjectId);
-    toolMap.clear();
-    const allTools: any[] = [];
-
-    // Add tools from running servers
-    for (const [serverId, client] of this.clients.entries()) {
-      const server = this.servers.get(serverId);
-      const serverName = server?.name || serverId;
-      const isRunning = this.serverStatusMap.get(serverName);
-
-      if (!isRunning || !client) {
-        continue;
-      }
-
-      if (!this.matchesProject(server, normalizedProjectId)) {
-        continue;
-      }
-
-      if (token) {
-        try {
-          this.tokenValidator.validateTokenAndAccess(token, serverName);
-        } catch {
-          continue;
-        }
-      }
-      try {
-        // First, try to get the list of tools
-        const tools = await client.listTools();
-
-        if (!tools.tools || tools.tools.length === 0) {
-          continue;
-        }
-
-        const permissions = (server?.toolPermissions ?? {}) as Record<
-          string,
-          boolean
-        >;
-
-        for (const tool of tools.tools) {
-          if (permissions[tool.name] === false) {
-            continue;
-          }
-
-          const toolWithSource = {
-            ...tool,
-            name: tool.name,
-            sourceServer: serverName,
-          };
-
-          // Store the mapping
-          toolMap.set(tool.name, serverName);
-
-          allTools.push(toolWithSource);
-        }
-      } catch (error: any) {
-        console.error(
-          `[MCPServerManager] Failed to get tools from server ${serverName}:`,
-          error,
-        );
-      }
-    }
-
-    return allTools;
+    // Legacy behavior: route tool call to the appropriate server
+    return await this.handleLegacyToolCall(request, toolName, projectId);
   }
 
   /**
@@ -661,7 +563,77 @@ export class RequestHandlers extends RequestHandlerBase {
   }
 
   /**
-   * Get server name for a given tool within the project scope
+   * Get all tools from all servers (internal implementation for legacy mode)
+   */
+  private async getAllToolsInternal(
+    token?: string,
+    projectId?: string | null,
+  ): Promise<any[]> {
+    const normalizedProjectId = this.normalizeProjectId(projectId);
+    const toolMap = this.ensureToolMap(normalizedProjectId);
+    toolMap.clear();
+    const allTools: any[] = [];
+
+    for (const [serverId, client] of this.clients.entries()) {
+      const server = this.servers.get(serverId);
+      const serverName = server?.name || serverId;
+      const isRunning = this.serverStatusMap.get(serverName);
+
+      if (!isRunning || !client) {
+        continue;
+      }
+
+      if (!this.matchesProject(server, normalizedProjectId)) {
+        continue;
+      }
+
+      if (token) {
+        try {
+          this.tokenValidator.validateTokenAndAccess(token, serverName);
+        } catch {
+          continue;
+        }
+      }
+
+      try {
+        const tools = await client.listTools();
+
+        if (!tools.tools || tools.tools.length === 0) {
+          continue;
+        }
+
+        const permissions = (server?.toolPermissions ?? {}) as Record<
+          string,
+          boolean
+        >;
+
+        for (const tool of tools.tools) {
+          if (permissions[tool.name] === false) {
+            continue;
+          }
+
+          const toolWithSource = {
+            ...tool,
+            name: tool.name,
+            sourceServer: serverName,
+          };
+
+          toolMap.set(tool.name, serverName);
+          allTools.push(toolWithSource);
+        }
+      } catch (error: any) {
+        console.error(
+          `[MCPServerManager] Failed to get tools from server ${serverName}:`,
+          error,
+        );
+      }
+    }
+
+    return allTools;
+  }
+
+  /**
+   * Get server name for a given tool within the project scope (legacy mode)
    */
   private async getServerNameForTool(
     toolName: string,
@@ -678,6 +650,98 @@ export class RequestHandlers extends RequestHandlerBase {
     }
 
     return toolMap?.get(toolName);
+  }
+
+  /**
+   * Handle legacy tool call (when tool catalog is disabled)
+   */
+  private async handleLegacyToolCall(
+    request: any,
+    toolName: string,
+    projectId: string | null,
+  ): Promise<any> {
+    const token = request.params._meta?.token as string | undefined;
+    const mappedServerName = await this.getServerNameForTool(
+      toolName,
+      token,
+      projectId,
+    );
+    if (!mappedServerName) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Could not determine server for tool: ${toolName}`,
+      );
+    }
+    const serverName = mappedServerName;
+    const originalToolName = toolName;
+
+    const clientId = this.tokenValidator.validateTokenAndAccess(
+      token,
+      serverName,
+    );
+
+    const serverId = this.getServerIdByName(serverName);
+    if (!serverId) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Unknown server: ${serverName}`,
+      );
+    }
+
+    const server = this.servers.get(serverId);
+    if (!this.matchesProject(server, projectId)) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        "Tool not available for the selected project",
+      );
+    }
+
+    if (
+      server?.toolPermissions &&
+      server.toolPermissions[originalToolName] === false
+    ) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Tool "${originalToolName}" is disabled for this server`,
+      );
+    }
+
+    const client = this.clients.get(serverId);
+    if (!client) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Server ${serverName} is not connected`,
+      );
+    }
+
+    if (!this.serverStatusMap.get(serverName)) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        `Server ${serverName} is not running`,
+      );
+    }
+
+    return this.executeWithHooksAndLogging(
+      "tools/call",
+      request.params,
+      clientId,
+      serverName,
+      "CallTool",
+      async () => {
+        return await client.callTool(
+          {
+            name: originalToolName,
+            arguments: request.params.arguments || {},
+          },
+          undefined,
+          {
+            timeout: 60 * 60 * 1000, // 60分
+            resetTimeoutOnProgress: true,
+          },
+        );
+      },
+      { serverId },
+    );
   }
 
   public getServerIdByName(name: string): string | undefined {

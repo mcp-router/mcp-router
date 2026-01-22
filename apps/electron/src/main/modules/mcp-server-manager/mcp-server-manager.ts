@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
+import { EventEmitter } from "events";
 import { MCPServer, MCPServerConfig, MCPTool } from "@mcp_router/shared";
 import {
   getServerService,
@@ -23,6 +24,7 @@ export class MCPServerManager {
   private serverStatusMap: Map<string, boolean> = new Map();
   private serversDir: string;
   private serverService!: ServerService;
+  private eventEmitter = new EventEmitter();
 
   constructor() {
     this.serversDir = path.join(app.getPath("userData"), "mcp-servers");
@@ -118,6 +120,30 @@ export class MCPServerManager {
     return this.serverNameToIdMap.get(name);
   }
 
+  public on(
+    event:
+      | "server-added"
+      | "server-updated"
+      | "server-removed"
+      | "server-started"
+      | "server-stopped",
+    handler: (serverId: string) => void,
+  ): void {
+    this.eventEmitter.on(event, handler);
+  }
+
+  public off(
+    event:
+      | "server-added"
+      | "server-updated"
+      | "server-removed"
+      | "server-started"
+      | "server-stopped",
+    handler: (serverId: string) => void,
+  ): void {
+    this.eventEmitter.off(event, handler);
+  }
+
   /**
    * Clear all servers from memory (used when switching workspaces)
    */
@@ -171,6 +197,7 @@ export class MCPServerManager {
     const newServer = this.serverService.addServer(config);
     this.servers.set(newServer.id, newServer);
     this.updateServerNameMapping(newServer);
+    this.eventEmitter.emit("server-added", newServer.id);
     return newServer;
   }
 
@@ -195,6 +222,7 @@ export class MCPServerManager {
     if (removed && server) {
       this.serverNameToIdMap.delete(server.name);
       this.servers.delete(id);
+      this.eventEmitter.emit("server-removed", id);
     }
 
     return removed;
@@ -275,6 +303,8 @@ export class MCPServerManager {
       clientId: clientId || "unknownClient",
     });
 
+    this.eventEmitter.emit("server-started", id);
+
     return true;
   }
 
@@ -322,6 +352,7 @@ export class MCPServerManager {
       client.close();
       this.clients.delete(id);
       server.status = "stopped";
+      this.eventEmitter.emit("server-stopped", id);
       return true;
     } catch (error) {
       server.status = "error";
@@ -355,6 +386,8 @@ export class MCPServerManager {
       this.updateServerNameMapping(server);
     }
 
+    this.eventEmitter.emit("server-updated", id);
+
     return updatedServer;
   }
 
@@ -387,6 +420,8 @@ export class MCPServerManager {
         enabled: toolPermissions[tool.name] !== false,
       }));
     }
+
+    this.eventEmitter.emit("server-updated", id);
 
     return server;
   }

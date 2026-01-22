@@ -3,6 +3,7 @@ import path from "node:path";
 import { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { AggregatorServer } from "@/main/modules/mcp-server-runtime/aggregator-server";
 import { MCPHttpServer } from "@/main/modules/mcp-server-runtime/http/mcp-http-server";
+import { ToolCatalogService } from "@/main/modules/tool-catalog/tool-catalog.service";
 import started from "electron-squirrel-startup";
 import { updateElectronApp } from "update-electron-app";
 import { setApplicationMenu } from "@/main/ui/menu";
@@ -82,6 +83,7 @@ declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 let serverManager: MCPServerManager;
 let aggregatorServer: AggregatorServer;
 let mcpHttpServer: MCPHttpServer;
+let toolCatalogService: ToolCatalogService;
 
 type CreateWindowOptions = {
   showOnCreate?: boolean;
@@ -267,8 +269,11 @@ async function initMCPServices(): Promise<void> {
   // Cloud SyncサービスにServerManagerを連携
   getCloudSyncService().initialize(() => serverManager);
 
+  // Tool catalog service
+  toolCatalogService = new ToolCatalogService(serverManager);
+
   // AggregatorServerの初期化
-  aggregatorServer = new AggregatorServer(serverManager);
+  aggregatorServer = new AggregatorServer(serverManager, toolCatalogService);
 
   // HTTPサーバーの初期化とスタート
   mcpHttpServer = new MCPHttpServer(serverManager, 3282, aggregatorServer);
@@ -366,7 +371,9 @@ async function initApplication(): Promise<void> {
   await initMCPServices();
 
   // IPC通信ハンドラの初期化
-  setupIpcHandlers({ getServerManager: () => serverManager });
+  setupIpcHandlers({
+    getServerManager: () => serverManager,
+  });
 
   const shouldShowMainWindow =
     (!launchedAtLogin || showWindowOnStartup) && !launchedWithHiddenFlag;
