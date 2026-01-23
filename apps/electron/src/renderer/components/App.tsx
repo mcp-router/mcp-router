@@ -16,6 +16,7 @@ import { IconProgress } from "@tabler/icons-react";
 import { postHogService } from "../services/posthog-service";
 import WorkspaceManagement from "./workspace/WorkspaceManagement";
 import WorkflowManager from "./workflow/WorkflowManager";
+import SkillsManager from "./skills/SkillsManager";
 
 // Main App component
 const App: React.FC = () => {
@@ -170,6 +171,7 @@ const App: React.FC = () => {
                 path="/settings/workspaces"
                 element={<WorkspaceManagement />}
               />
+              <Route path="/skills" element={<SkillsManager />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/servers" />} />

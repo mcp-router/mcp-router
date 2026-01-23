@@ -6,7 +6,7 @@ import {
   IconActivity,
   IconDeviceDesktop,
   IconDownload,
-  IconWebhook,
+  IconWand,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/renderer/stores";
@@ -81,12 +81,13 @@ const SidebarComponent: React.FC = () => {
 
       <SidebarContent>
         <SidebarMenu>
-          <Collapsible defaultOpen className="group/collapsible">
+          {/* MCP Group */}
+          <Collapsible defaultOpen className="group/collapsible-mcp">
             <SidebarGroup>
               <SidebarGroupLabel>
                 <CollapsibleTrigger className="flex flex-row items-center w-full">
                   MCP
-                  <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                  <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible-mcp:rotate-180" />
                 </CollapsibleTrigger>
               </SidebarGroupLabel>
               <CollapsibleContent>
@@ -125,24 +126,6 @@ const SidebarComponent: React.FC = () => {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
 
-                  {/*{!isRemoteWorkspace && (*/}
-                  {/*  <SidebarMenuItem>*/}
-                  {/*    <SidebarMenuButton*/}
-                  {/*      asChild*/}
-                  {/*      tooltip={t("hooks.title")}*/}
-                  {/*      isActive={location.pathname === "/hooks"}*/}
-                  {/*    >*/}
-                  {/*      <Link*/}
-                  {/*        to="/hooks"*/}
-                  {/*        className="flex items-center gap-3 py-5 px-3 w-full"*/}
-                  {/*      >*/}
-                  {/*        <IconWebhook className="h-6 w-6" />*/}
-                  {/*        <span className="text-base">{t("hooks.title")}</span>*/}
-                  {/*      </Link>*/}
-                  {/*    </SidebarMenuButton>*/}
-                  {/*  </SidebarMenuItem>*/}
-                  {/*)}*/}
-
                   {!isRemoteWorkspace && (
                     <SidebarMenuItem>
                       <SidebarMenuButton
@@ -166,7 +149,39 @@ const SidebarComponent: React.FC = () => {
               </CollapsibleContent>
             </SidebarGroup>
           </Collapsible>
-          {/* Projects filter removed */}
+
+          {/* Skills Group */}
+          {!isRemoteWorkspace && (
+            <Collapsible defaultOpen className="group/collapsible-skills">
+              <SidebarGroup>
+                <SidebarGroupLabel>
+                  <CollapsibleTrigger className="flex flex-row items-center w-full">
+                    {t("skills.title")}
+                    <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible-skills:rotate-180" />
+                  </CollapsibleTrigger>
+                </SidebarGroupLabel>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={t("skills.title")}
+                        isActive={location.pathname === "/skills"}
+                      >
+                        <Link
+                          to="/skills"
+                          className="flex items-center gap-3 py-5 px-3 w-full"
+                        >
+                          <IconWand className="h-6 w-6" />
+                          <span className="text-base">{t("skills.title")}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+          )}
         </SidebarMenu>
       </SidebarContent>
 

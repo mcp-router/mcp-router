@@ -15,6 +15,7 @@ import type {
   WorkflowAPI,
   Workspace,
   ProjectsAPI,
+  SkillsAPI,
 } from "@mcp_router/shared";
 
 // Electron implementation of the Platform API
@@ -29,6 +30,7 @@ class ElectronPlatformAPI implements PlatformAPI {
   workspaces: WorkspaceAPI;
   workflows: WorkflowAPI;
   projects: ProjectsAPI;
+  skills: SkillsAPI;
 
   constructor() {
     // Initialize auth domain
@@ -218,6 +220,17 @@ class ElectronPlatformAPI implements PlatformAPI {
       create: (input) => window.electronAPI.createProject(input),
       update: (id, updates) => window.electronAPI.updateProject(id, updates),
       delete: (id) => window.electronAPI.deleteProject(id),
+    };
+
+    // Initialize skills domain
+    this.skills = {
+      list: () => window.electronAPI.listSkills(),
+      get: (id) => window.electronAPI.getSkill(id),
+      create: (input) => window.electronAPI.createSkill(input),
+      update: (id, updates) => window.electronAPI.updateSkill(id, updates),
+      delete: (id) => window.electronAPI.deleteSkill(id),
+      openFolder: (id) => window.electronAPI.openSkillFolder(id),
+      import: () => window.electronAPI.importSkill(),
     };
   }
 }
