@@ -10,6 +10,7 @@ import { setupWorkflowHandlers } from "../modules/workflow/workflow.ipc";
 import { setupHookHandlers } from "../modules/workflow/hook.ipc";
 import { setupProjectHandlers } from "../modules/projects/projects.ipc";
 import { setupCloudSyncHandlers } from "../modules/cloud-sync/cloud-sync.ipc";
+import { setupSkillHandlers } from "../modules/skills/skills.ipc";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 
 /**
@@ -54,4 +55,7 @@ export function setupIpcHandlers(deps: {
 
   // Cloud Sync関連
   setupCloudSyncHandlers();
+
+  // Skills関連
+  setupSkillHandlers();
 }

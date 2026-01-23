@@ -6,6 +6,8 @@ import type {
   CreateServerInput,
   ProjectOptimization,
   TokenServerAccess,
+  CreateSkillInput,
+  UpdateSkillInput,
 } from "@mcp_router/shared";
 
 // Consolidate everything into one contextBridge call
@@ -187,4 +189,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
     updates: { name?: string; optimization?: ProjectOptimization },
   ) => ipcRenderer.invoke("project:update", id, updates),
   deleteProject: (id: string) => ipcRenderer.invoke("project:delete", id),
+
+  // Skills Management
+  listSkills: () => ipcRenderer.invoke("skill:list"),
+  getSkill: (id: string) => ipcRenderer.invoke("skill:get", id),
+  createSkill: (input: CreateSkillInput) =>
+    ipcRenderer.invoke("skill:create", input),
+  updateSkill: (id: string, updates: UpdateSkillInput) =>
+    ipcRenderer.invoke("skill:update", id, updates),
+  deleteSkill: (id: string) => ipcRenderer.invoke("skill:delete", id),
+  openSkillFolder: (id?: string) => ipcRenderer.invoke("skill:openFolder", id),
+  importSkill: () => ipcRenderer.invoke("skill:import"),
 });
