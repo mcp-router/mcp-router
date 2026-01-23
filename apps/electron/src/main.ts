@@ -22,6 +22,7 @@ import {
   applyThemeSettings,
   getSettingsService,
 } from "@/main/modules/settings/settings.service";
+import { getSkillService } from "@/main/modules/skills/skills.service";
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -285,6 +286,9 @@ async function initMCPServices(): Promise<void> {
 
   // 既存のMCPサーバー設定をインポート
   await importExistingServerConfigurations();
+
+  // スキルのシンボリックリンクを検証・修復
+  getSkillService().verifyAndRepairSymlinks();
 }
 
 /**

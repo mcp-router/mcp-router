@@ -10,6 +10,10 @@ import type {
   Project,
   ProjectOptimization,
   TokenServerAccess,
+  Skill,
+  SkillWithContent,
+  CreateSkillInput,
+  UpdateSkillInput,
 } from "@mcp_router/shared";
 import {
   CreateServerInput,
@@ -194,6 +198,14 @@ declare global {
       validateHookScript: (
         script: string,
       ) => Promise<{ valid: boolean; error?: string }>;
+
+      // Skills Management
+      listSkills: () => Promise<SkillWithContent[]>;
+      createSkill: (input: CreateSkillInput) => Promise<Skill>;
+      updateSkill: (id: string, updates: UpdateSkillInput) => Promise<Skill>;
+      deleteSkill: (id: string) => Promise<void>;
+      openSkillFolder: (id?: string) => Promise<void>;
+      importSkill: () => Promise<Skill>;
     };
   }
 }

@@ -22,6 +22,8 @@ import { WorkflowRepository } from "../workflow/workflow.repository";
 import { HookRepository } from "../workflow/hook.repository";
 import { WorkflowService } from "../workflow/workflow.service";
 import { HookService } from "../workflow/hook.service";
+import { SkillRepository } from "../skills/skills.repository";
+import { SkillService } from "../skills/skills.service";
 
 /**
  * Platform API管理クラス
@@ -128,6 +130,7 @@ export class PlatformAPIManager {
     WorkspaceRepository.resetInstance();
     WorkflowRepository.resetInstance();
     HookRepository.resetInstance();
+    SkillRepository.resetInstance();
 
     // サービスのシングルトンインスタンスもリセット
     ServerService.resetInstance();
@@ -136,6 +139,7 @@ export class PlatformAPIManager {
     SettingsService.resetInstance();
     WorkflowService.resetInstance();
     HookService.resetInstance();
+    SkillService.resetInstance();
     // MCPServerManagerの再初期化をトリガー
     if (this.getServerManager) {
       const serverManager = this.getServerManager();
