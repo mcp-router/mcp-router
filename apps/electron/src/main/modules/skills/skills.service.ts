@@ -57,29 +57,6 @@ export class SkillService extends SingletonService<
   }
 
   /**
-   * Get a skill by ID with content
-   */
-  get(id: string): SkillWithContent | null {
-    try {
-      const repo = SkillRepository.getInstance();
-      const skill = repo.getById(id);
-
-      if (!skill) {
-        return null;
-      }
-
-      return {
-        ...skill,
-        content: this.fileManager.readSkillMd(
-          this.fileManager.getSkillPath(skill.name),
-        ),
-      };
-    } catch (error) {
-      return this.handleError("get", error, null);
-    }
-  }
-
-  /**
    * Create a new skill with automatic symlink creation
    */
   create(input: CreateSkillInput): Skill {

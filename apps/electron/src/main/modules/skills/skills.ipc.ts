@@ -13,11 +13,6 @@ export function setupSkillHandlers(): void {
     return service.list();
   });
 
-  ipcMain.handle("skill:get", async (_evt, id: string) => {
-    if (!id) throw new Error("Missing skill id");
-    return service.get(id);
-  });
-
   ipcMain.handle("skill:create", async (_evt, input: CreateSkillInput) => {
     if (!input || !input.name?.trim()) {
       throw new Error("Invalid skill name");

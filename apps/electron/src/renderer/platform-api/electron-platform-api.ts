@@ -225,7 +225,6 @@ class ElectronPlatformAPI implements PlatformAPI {
     // Initialize skills domain
     this.skills = {
       list: () => window.electronAPI.listSkills(),
-      get: (id) => window.electronAPI.getSkill(id),
       create: (input) => window.electronAPI.createSkill(input),
       update: (id, updates) => window.electronAPI.updateSkill(id, updates),
       delete: (id) => window.electronAPI.deleteSkill(id),

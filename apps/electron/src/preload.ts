@@ -192,7 +192,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Skills Management
   listSkills: () => ipcRenderer.invoke("skill:list"),
-  getSkill: (id: string) => ipcRenderer.invoke("skill:get", id),
   createSkill: (input: CreateSkillInput) =>
     ipcRenderer.invoke("skill:create", input),
   updateSkill: (id: string, updates: UpdateSkillInput) =>

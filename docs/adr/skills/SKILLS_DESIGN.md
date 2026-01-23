@@ -49,13 +49,12 @@ interface SkillWithContent extends Skill {
 
 ## API Design
 
-シンプルなCRUD + アクションの7つのAPIに統合。
+シンプルなCRUD + アクションの6つのAPIに統合。
 
 ```typescript
 interface SkillsAPI {
   // CRUD operations
   list: () => Promise<SkillWithContent[]>;
-  get: (id: string) => Promise<SkillWithContent | null>;
   create: (input: CreateSkillInput) => Promise<Skill>;
   update: (id: string, updates: UpdateSkillInput) => Promise<Skill>;
   delete: (id: string) => Promise<void>;

@@ -11,7 +11,6 @@ import type {
 export interface SkillsAPI {
   // CRUD operations
   list: () => Promise<SkillWithContent[]>;
-  get: (id: string) => Promise<SkillWithContent | null>;
   create: (input: CreateSkillInput) => Promise<Skill>;
   update: (id: string, updates: UpdateSkillInput) => Promise<Skill>;
   delete: (id: string) => Promise<void>;
