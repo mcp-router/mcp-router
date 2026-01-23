@@ -12,6 +12,7 @@ import { LogAPI } from "./domains/log-api";
 import { WorkspaceAPI } from "./domains/workspace-api";
 import { WorkflowAPI } from "./domains/workflow-api";
 import { ProjectsAPI } from "./domains/projects-api";
+import { SkillsAPI } from "./domains/skills-api";
 
 /**
  * Main Platform API interface with domain-driven structure
@@ -47,4 +48,7 @@ export interface PlatformAPI {
 
   // Projects management domain
   projects: ProjectsAPI;
+
+  // Skills management domain
+  skills: SkillsAPI;
 }

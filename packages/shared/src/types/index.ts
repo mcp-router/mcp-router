@@ -44,6 +44,8 @@ export {
   WorkspaceAPI,
   // Workflow API
   WorkflowAPI,
+  // Skills API
+  SkillsAPI,
   // Main Platform API
   PlatformAPI,
 } from "./platform-api";
@@ -53,3 +55,4 @@ export * from "./utils";
 export * from "./cli";
 export * from "./workflow-types";
 export * from "./shared-config";
+export * from "./skill-types";
