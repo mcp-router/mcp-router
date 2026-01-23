@@ -14,7 +14,6 @@
     "loading": "読み込み中...",
     "close": "閉じる",
     "remove": "削除",
-    "removing": "削除中...",
     "search": "検索",
     "update": "アップデート",
     "send": "送信"
@@ -100,8 +99,6 @@
     "accountAndPlan": "アカウントとプラン",
     "proFeatures": "Pro機能",
     "preferences": "設定",
-    "authentication": "認証",
-    "appearance": "外観",
     "theme": "テーマ",
     "themeLight": "ライト",
     "themeDark": "ダーク",
@@ -111,22 +108,9 @@
     "loggingIn": "ログイン中...",
     "logout": "ログアウト",
     "loggingOut": "ログアウト中...",
-    "loggedInAs": "ログイン中のアカウント",
-    "subscription": "サブスクリプション",
-    "subscriptionDescription": "現在のプランとステータスを確認できます。",
-    "subscriptionStatusValue": {
-      "active": "有効",
-      "canceled": "解約済み",
-      "incomplete": "未完了",
-      "trialing": "トライアル中",
-      "past_due": "支払い遅延"
-    },
-    "planName": "プラン",
     "planNameUnknown": "未設定",
     "notSubscribed": "未契約",
     "getPro": "Proを購入",
-    "refreshSubscription": "更新",
-    "refreshingSubscription": "更新中...",
     "cloudSync": "クラウド同期",
     "cloudSyncDescription": "エンドツーエンド暗号化でワークスペースとサーバーをデバイス間で同期します。",
     "proOnly": "Pro限定",
@@ -177,7 +161,6 @@
     "deleteFailed": "カスタムアプリの削除に失敗しました"
   },
   "serverDetails": {
-    "settings": "設定",
     "serverName": "サーバー名",
     "finalCommand": "実行コマンド",
     "noInputParams": "入力パラメータがありません",
@@ -224,15 +207,14 @@
   "projects": {
     "all": "すべて",
     "unassigned": "未割り当て",
-    "new": "新規プロジェクト名",
+    "new": "新規",
     "create": "作成",
     "creating": "作成中...",
     "projectSettings": "プロジェクト設定",
     "projectSettingsDescription": "プロジェクトでは、MCPサーバーを利用するコンテキストを分離できます。",
     "projectSettingsCliHint": "プロジェクトに割り当てたサーバーを利用するには、npx -y @mcp_router/cli connect --project <project-name> のように指定します。",
     "contextOptimization": "コンテキスト最適化",
-    "searchStrategyBm25": "BM25",
-    "searchStrategyCloud": "Advanced"
+    "searchStrategyBm25": "BM25"
   },
   "serverSettings": {
     "title": "{{serverName}} 設定",
@@ -322,7 +304,30 @@
       "switchFailed": "ワークスペースの切り替えに失敗しました"
     }
   },
-  "hooks": {
-    "title": "フック"
+  "skills": {
+    "title": "スキル",
+    "empty": "スキルがまだ設定されていません",
+    "noResults": "検索条件に一致するスキルがありません",
+    "searchPlaceholder": "スキルを検索...",
+    "loadError": "スキルの読み込みに失敗しました",
+    "createSuccess": "スキルを作成しました",
+    "createError": "スキルの作成に失敗しました",
+    "deleteSuccess": "スキルを削除しました",
+    "deleteError": "スキルの削除に失敗しました",
+    "importSuccess": "スキルをインポートしました",
+    "importError": "スキルのインポートに失敗しました",
+    "nameRequired": "スキル名は必須です",
+    "openFolder": "フォルダを開く",
+    "import": "インポート",
+    "new": "新規",
+    "name": "名前",
+    "namePlaceholder": "スキル名を入力",
+    "nameHint": "英数字、アンダースコア、ハイフンのみ使用可能",
+    "create": "作成",
+    "selectToEdit": "編集するスキルを選択してください",
+    "newDialog": {
+      "title": "新規スキルを作成",
+      "description": "新しいスキルの名前を入力してください"
+    }
   }
 }

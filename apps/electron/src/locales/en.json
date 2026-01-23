@@ -11,7 +11,6 @@
     "loading": "Loading...",
     "close": "Close",
     "remove": "Remove",
-    "removing": "Removing...",
     "search": "Search",
     "update": "Update",
     "send": "Send"
@@ -101,8 +100,6 @@
     "accountAndPlan": "Account & Plan",
     "proFeatures": "Pro Features",
     "preferences": "Preferences",
-    "authentication": "Authentication",
-    "appearance": "Appearance",
     "theme": "Theme",
     "themeLight": "Light",
     "themeDark": "Dark",
@@ -112,22 +109,9 @@
     "loggingIn": "Logging in...",
     "logout": "Logout",
     "loggingOut": "Logging out...",
-    "loggedInAs": "Logged in as",
-    "subscription": "Subscription",
-    "subscriptionDescription": "View your current plan and subscription status.",
-    "subscriptionStatusValue": {
-      "active": "Active",
-      "canceled": "Canceled",
-      "incomplete": "Incomplete",
-      "trialing": "Trialing",
-      "past_due": "Past due"
-    },
-    "planName": "Plan",
     "planNameUnknown": "Not set",
     "notSubscribed": "Not subscribed",
     "getPro": "Get Pro",
-    "refreshSubscription": "Refresh",
-    "refreshingSubscription": "Refreshing...",
     "cloudSync": "Cloud Sync",
     "cloudSyncDescription": "Sync your workspaces and servers across devices with end-to-end encryption.",
     "proOnly": "Pro only",
@@ -178,7 +162,6 @@
     "deleteFailed": "Failed to delete app"
   },
   "serverDetails": {
-    "settings": "Settings",
     "serverName": "Server Name",
     "finalCommand": "Execution Command",
     "noInputParams": "No input parameters",
@@ -225,15 +208,14 @@
   "projects": {
     "all": "All",
     "unassigned": "Unassigned",
-    "new": "New project name",
+    "new": "New",
     "create": "Create",
     "creating": "Creating...",
     "projectSettings": "Project Settings",
     "projectSettingsDescription": "Projects let you isolate the contexts where MCP servers are used.",
     "projectSettingsCliHint": "To use the servers assigned to a project, run a command like: npx -y @mcp_router/cli connect --project <project-name>.",
     "contextOptimization": "Context Optimization",
-    "searchStrategyBm25": "BM25",
-    "searchStrategyCloud": "Advanced"
+    "searchStrategyBm25": "BM25"
   },
   "serverSettings": {
     "title": "{{serverName}} Settings",
@@ -305,9 +287,6 @@
     "title": "Update Available",
     "installNow": "Install Now"
   },
-  "hooks": {
-    "title": "Hooks"
-  },
   "workspace": {
     "title": "Workspace",
     "selectWorkspace": "Select Workspace",
@@ -323,6 +302,32 @@
     "errors": {
       "deleteFailed": "Failed to delete workspace",
       "switchFailed": "Failed to switch workspace"
+    }
+  },
+  "skills": {
+    "title": "Skills",
+    "empty": "No skills configured yet",
+    "noResults": "No skills match your search",
+    "searchPlaceholder": "Search skills...",
+    "loadError": "Failed to load skills",
+    "createSuccess": "Skill created successfully",
+    "createError": "Failed to create skill",
+    "deleteSuccess": "Skill deleted successfully",
+    "deleteError": "Failed to delete skill",
+    "importSuccess": "Skill imported successfully",
+    "importError": "Failed to import skill",
+    "nameRequired": "Skill name is required",
+    "openFolder": "Open Folder",
+    "import": "Import",
+    "new": "New",
+    "name": "Name",
+    "namePlaceholder": "Enter skill name",
+    "nameHint": "Use letters, numbers, underscores, and hyphens only",
+    "create": "Create",
+    "selectToEdit": "Select a skill to edit",
+    "newDialog": {
+      "title": "Create New Skill",
+      "description": "Enter a name for your new skill"
     }
   }
 }

@@ -11,7 +11,6 @@
     "loading": "加载中...",
     "close": "关闭",
     "remove": "移除",
-    "removing": "移除中...",
     "search": "搜索",
     "update": "更新",
     "send": "发送"
@@ -101,8 +100,6 @@
     "accountAndPlan": "账户与套餐",
     "proFeatures": "Pro 功能",
     "preferences": "偏好设置",
-    "authentication": "身份验证",
-    "appearance": "外观",
     "theme": "主题",
     "themeLight": "浅色",
     "themeDark": "深色",
@@ -112,22 +109,9 @@
     "loggingIn": "登录中...",
     "logout": "登出",
     "loggingOut": "登出中...",
-    "loggedInAs": "已登录为",
-    "subscription": "订阅",
-    "subscriptionDescription": "查看当前套餐和订阅状态。",
-    "subscriptionStatusValue": {
-      "active": "已激活",
-      "canceled": "已取消",
-      "incomplete": "未完成",
-      "trialing": "试用中",
-      "past_due": "逾期"
-    },
-    "planName": "套餐",
     "planNameUnknown": "未设置",
     "notSubscribed": "未订阅",
     "getPro": "获取 Pro",
-    "refreshSubscription": "刷新",
-    "refreshingSubscription": "正在刷新...",
     "cloudSync": "云同步",
     "cloudSyncDescription": "通过端到端加密在设备间同步您的工作空间和服务器。",
     "proOnly": "仅限 Pro",
@@ -178,7 +162,6 @@
     "deleteFailed": "应用删除失败"
   },
   "serverDetails": {
-    "settings": "设置",
     "serverName": "服务器名称",
     "finalCommand": "执行命令",
     "noInputParams": "无输入参数",
@@ -232,8 +215,7 @@
     "projectSettingsDescription": "项目可以将使用 MCP 服务器的上下文隔离开来。",
     "projectSettingsCliHint": "要使用分配给项目的服务器，请像这样执行命令：npx -y @mcp_router/cli connect --project <project-name>。",
     "contextOptimization": "上下文优化",
-    "searchStrategyBm25": "BM25",
-    "searchStrategyCloud": "Advanced"
+    "searchStrategyBm25": "BM25"
   },
   "serverSettings": {
     "title": "{{serverName}} 设置",
@@ -305,9 +287,6 @@
     "title": "有可用更新",
     "installNow": "立即安装"
   },
-  "hooks": {
-    "title": "钩子"
-  },
   "workspace": {
     "title": "工作空间",
     "selectWorkspace": "选择工作空间",
@@ -323,6 +302,32 @@
     "errors": {
       "deleteFailed": "工作空间删除失败",
       "switchFailed": "工作空间切换失败"
+    }
+  },
+  "skills": {
+    "title": "技能",
+    "empty": "尚未配置技能",
+    "noResults": "没有匹配的技能",
+    "searchPlaceholder": "搜索技能...",
+    "loadError": "技能加载失败",
+    "createSuccess": "技能创建成功",
+    "createError": "技能创建失败",
+    "deleteSuccess": "技能删除成功",
+    "deleteError": "技能删除失败",
+    "importSuccess": "技能导入成功",
+    "importError": "技能导入失败",
+    "nameRequired": "技能名称为必填项",
+    "openFolder": "打开文件夹",
+    "import": "导入",
+    "new": "新建",
+    "name": "名称",
+    "namePlaceholder": "输入技能名称",
+    "nameHint": "仅使用字母、数字、下划线和连字符",
+    "create": "创建",
+    "selectToEdit": "选择要编辑的技能",
+    "newDialog": {
+      "title": "创建新技能",
+      "description": "输入新技能的名称"
     }
   }
 }
