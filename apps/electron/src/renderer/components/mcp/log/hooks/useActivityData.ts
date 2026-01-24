@@ -23,6 +23,15 @@ interface ActivityDataParams {
 /** セッショングループ化の設定 */
 const SESSION_TIME_WINDOW_MS = 30 * 60 * 1000; // 30分以内のToolExecuteをグループ化
 
+/** アクティビティとして表示するrequestType */
+const ACTIVITY_TYPES: ActivityType[] = [
+  "ToolDiscovery",
+  "ToolExecute",
+  "CallTool",
+  "GetPrompt",
+  "ReadResource",
+];
+
 interface ActivityDataResult {
   /** ヒートマップデータ */
   heatmapData: HeatmapData;
@@ -43,7 +52,7 @@ interface ActivityDataResult {
  */
 const toActivityLogEntry = (log: RequestLogEntry): ActivityLogEntry | null => {
   const type = log.requestType as ActivityType;
-  if (type !== "ToolDiscovery" && type !== "ToolExecute") {
+  if (!ACTIVITY_TYPES.includes(type)) {
     return null;
   }
 
@@ -103,6 +112,47 @@ const toActivityLogEntry = (log: RequestLogEntry): ActivityLogEntry | null => {
     };
   }
 
+  // CallTool: 直接ツール呼び出し
+  if (type === "CallTool") {
+    const params = log.requestParams || {};
+    const toolName = params.name || "";
+
+    return {
+      ...base,
+      toolName,
+      serverName: log.serverName,
+      arguments: params.arguments,
+      responseData: log.responseData,
+    };
+  }
+
+  // GetPrompt: プロンプト取得
+  if (type === "GetPrompt") {
+    const params = log.requestParams || {};
+    const promptName = params.name || "";
+
+    return {
+      ...base,
+      promptName,
+      serverName: log.serverName,
+      arguments: params.arguments,
+      responseData: log.responseData,
+    };
+  }
+
+  // ReadResource: リソース読み取り
+  if (type === "ReadResource") {
+    const params = log.requestParams || {};
+    const resourceUri = params.uri || "";
+
+    return {
+      ...base,
+      resourceUri,
+      serverName: log.serverName,
+      responseData: log.responseData,
+    };
+  }
+
   return null;
 };
 
@@ -144,26 +194,19 @@ export const useActivityData = (
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - heatmapDays);
 
-      // ToolDiscoveryとToolExecuteの両方を取得するため、2回クエリを実行
-      const [discoveryResult, executeResult] = await Promise.all([
-        platformAPI.logs.query({
-          requestType: "ToolDiscovery",
-          startDate,
-          endDate,
-          limit: 1000,
-        }),
-        platformAPI.logs.query({
-          requestType: "ToolExecute",
-          startDate,
-          endDate,
-          limit: 1000,
-        }),
-      ]);
+      // requestTypeフィルターなしで全ログを取得
+      const result = await platformAPI.logs.query({
+        startDate,
+        endDate,
+        limit: 1000,
+      });
 
-      const allLogs = [
-        ...(discoveryResult.logs || []),
-        ...(executeResult.logs || []),
-      ].sort((a, b) => b.timestamp - a.timestamp);
+      // クライアント側でActivityType対象のみをフィルタ
+      const allLogs = (result.logs || [])
+        .filter((log) =>
+          ACTIVITY_TYPES.includes(log.requestType as ActivityType),
+        )
+        .sort((a, b) => b.timestamp - a.timestamp);
 
       setRawLogs(allLogs);
     } catch (err) {
@@ -256,6 +299,13 @@ export const useActivityData = (
     // ToolDiscoveryごとにセッションを構築
     const discoveries = entries.filter((e) => e.type === "ToolDiscovery");
     const executes = entries.filter((e) => e.type === "ToolExecute");
+    // CallTool, GetPrompt, ReadResourceは単独エントリとして表示
+    const standaloneEntries = entries.filter(
+      (e) =>
+        e.type === "CallTool" ||
+        e.type === "GetPrompt" ||
+        e.type === "ReadResource",
+    );
 
     for (const discovery of discoveries) {
       // このDiscoveryに関連するToolExecuteを探す
@@ -300,6 +350,11 @@ export const useActivityData = (
       if (!usedExecuteIds.has(exec.id)) {
         items.push({ type: "standalone", entry: exec });
       }
+    }
+
+    // CallTool, GetPrompt, ReadResourceも単独エントリとして追加
+    for (const entry of standaloneEntries) {
+      items.push({ type: "standalone", entry });
     }
 
     // 最新が上になるようにソート

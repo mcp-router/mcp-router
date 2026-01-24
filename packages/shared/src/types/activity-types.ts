@@ -31,7 +31,12 @@ export interface WordCloudItem {
 /**
  * アクティビティログの種別
  */
-export type ActivityType = "ToolDiscovery" | "ToolExecute";
+export type ActivityType =
+  | "ToolDiscovery"
+  | "ToolExecute"
+  | "CallTool" // 直接ツール呼び出し
+  | "GetPrompt" // プロンプト取得
+  | "ReadResource"; // リソース読み取り
 
 /**
  * アクティビティログエントリ
@@ -62,6 +67,12 @@ export interface ActivityLogEntry {
   errorMessage?: string;
   // レスポンスデータ
   responseData?: unknown;
+
+  // GetPromptの場合
+  promptName?: string;
+
+  // ReadResourceの場合
+  resourceUri?: string;
 }
 
 /**

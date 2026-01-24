@@ -6,6 +6,8 @@ import {
   IconPlayerPlay,
   IconCheck,
   IconX,
+  IconMessage,
+  IconFile,
 } from "@tabler/icons-react";
 import {
   ActivityLogEntry,
@@ -220,16 +222,59 @@ const SessionCard: React.FC<{
 };
 
 /**
- * 単独のToolExecuteカード
+ * タイプに応じたアイコンを返す
  */
-const StandaloneExecuteCard: React.FC<{
-  exec: ActivityLogEntry;
+const getActivityIcon = (
+  type: ActivityLogEntry["type"],
+  hasError: boolean,
+): React.ReactNode => {
+  const iconClass = cn(
+    "shrink-0",
+    hasError ? "text-destructive" : "text-primary",
+  );
+
+  switch (type) {
+    case "ToolExecute":
+    case "CallTool":
+      return <IconPlayerPlay size={14} className={iconClass} />;
+    case "GetPrompt":
+      return <IconMessage size={14} className={iconClass} />;
+    case "ReadResource":
+      return <IconFile size={14} className={iconClass} />;
+    default:
+      return <IconPlayerPlay size={14} className={iconClass} />;
+  }
+};
+
+/**
+ * タイプに応じた表示名を返す
+ */
+const getActivityDisplayName = (entry: ActivityLogEntry): string => {
+  switch (entry.type) {
+    case "ToolExecute":
+    case "CallTool":
+      return entry.toolName || entry.toolKey?.split(":")[1] || "unknown";
+    case "GetPrompt":
+      return entry.promptName || "unknown";
+    case "ReadResource":
+      return entry.resourceUri || "unknown";
+    default:
+      return "unknown";
+  }
+};
+
+/**
+ * 単独のアクティビティカード（ToolExecute、CallTool、GetPrompt、ReadResource）
+ */
+const StandaloneCard: React.FC<{
+  entry: ActivityLogEntry;
   isExpanded: boolean;
   onToggle: () => void;
-}> = ({ exec, isExpanded, onToggle }) => {
+}> = ({ entry, isExpanded, onToggle }) => {
   const { t } = useTranslation();
-  const hasError = exec.status === "error";
-  const toolName = exec.toolName || exec.toolKey?.split(":")[1] || "unknown";
+  const hasError = entry.status === "error";
+  const displayName = getActivityDisplayName(entry);
+  const hasArguments = entry.type !== "ReadResource";
 
   return (
     <div
@@ -253,27 +298,23 @@ const StandaloneExecuteCard: React.FC<{
             isExpanded && "rotate-90",
           )}
         />
-        <IconPlayerPlay
-          size={14}
-          className={cn(
-            "shrink-0",
-            hasError ? "text-destructive" : "text-primary",
-          )}
-        />
+        {getActivityIcon(entry.type, hasError)}
         <span
           className={cn(
             "text-sm font-medium flex-1 truncate",
             hasError ? "text-destructive" : "text-foreground",
           )}
         >
-          {toolName}
+          {displayName}
         </span>
-        <span className="text-xs text-muted-foreground">{exec.serverName}</span>
-        <span className="text-xs text-muted-foreground shrink-0">
-          {exec.duration}ms
+        <span className="text-xs text-muted-foreground">
+          {entry.serverName}
         </span>
         <span className="text-xs text-muted-foreground shrink-0">
-          {formatTime(exec.timestamp)}
+          {entry.duration}ms
+        </span>
+        <span className="text-xs text-muted-foreground shrink-0">
+          {formatTime(entry.timestamp)}
         </span>
         {hasError ? (
           <IconX size={14} className="text-destructive shrink-0" />
@@ -285,24 +326,26 @@ const StandaloneExecuteCard: React.FC<{
       {/* 展開時の詳細 */}
       {isExpanded && (
         <div className="px-3 pb-3 pt-1 border-t border-border/50 bg-muted/10 text-xs space-y-2">
-          {/* Arguments */}
-          <div>
-            <p className="text-muted-foreground font-medium mb-1">
-              {t("logs.activity.log.arguments", "Arguments")}
-            </p>
-            <pre className="bg-background/50 border border-border/50 rounded p-2 overflow-x-auto max-h-32 text-[11px]">
-              {formatJson(exec.arguments)}
-            </pre>
-          </div>
+          {/* Arguments (ReadResource以外) */}
+          {hasArguments && (
+            <div>
+              <p className="text-muted-foreground font-medium mb-1">
+                {t("logs.activity.log.arguments", "Arguments")}
+              </p>
+              <pre className="bg-background/50 border border-border/50 rounded p-2 overflow-x-auto max-h-32 text-[11px]">
+                {formatJson(entry.arguments)}
+              </pre>
+            </div>
+          )}
 
           {/* Error or Result */}
-          {hasError && exec.errorMessage ? (
+          {hasError && entry.errorMessage ? (
             <div>
               <p className="text-destructive font-medium mb-1">
                 {t("logs.activity.log.error", "Error")}
               </p>
               <pre className="bg-destructive/10 border border-destructive/30 rounded p-2 overflow-x-auto max-h-32 text-[11px] text-destructive">
-                {exec.errorMessage}
+                {entry.errorMessage}
               </pre>
             </div>
           ) : (
@@ -311,7 +354,7 @@ const StandaloneExecuteCard: React.FC<{
                 {t("logs.activity.log.result", "Result")}
               </p>
               <pre className="bg-background/50 border border-border/50 rounded p-2 overflow-x-auto max-h-48 text-[11px]">
-                {formatJson(exec.responseData)}
+                {formatJson(entry.responseData)}
               </pre>
             </div>
           )}
@@ -407,9 +450,9 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
             );
           } else {
             return (
-              <StandaloneExecuteCard
+              <StandaloneCard
                 key={item.entry.id}
-                exec={item.entry}
+                entry={item.entry}
                 isExpanded={expandedExecIds.has(item.entry.id)}
                 onToggle={() => toggleExec(item.entry.id)}
               />
