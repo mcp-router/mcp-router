@@ -88,7 +88,7 @@ interface UpdateSkillInput {
 
 ### Custom Agent Paths
 
-ユーザーは「リンク先」ページから任意のエージェントパスを追加できます。追加されたパスは`agent_paths`テーブルに保存され、スキル有効時にシンボリックリンクが作成されます。
+ユーザーは「連携先」ページから任意のエージェントパスを追加できます。追加されたパスは`agent_paths`テーブルに保存され、スキル有効時にシンボリックリンクが作成されます。
 
 ## Key Design Decisions
 

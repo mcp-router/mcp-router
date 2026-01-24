@@ -54,56 +54,17 @@
       "log": {
         "title": "Activity Log",
         "empty": "No activities for selected date",
-        "discovery": "Tool Discovery",
-        "discovered": "Discovered Tools",
-        "execute": "Tool Execute",
         "noContext": "Tool search",
         "sessions": "sessions",
         "executions": "executions",
         "noExecutions": "No tools executed",
         "arguments": "Arguments",
         "result": "Result",
-        "error": "Error",
-        "resultNotStored": "Result data not stored in logs"
+        "error": "Error"
       }
     },
     "viewer": {
       "refresh": "Refresh Data",
-      "lastUpdated": "Last Updated",
-      "toolCallsTitle": "Tool Usage Timeline",
-      "noToolCalls": "No tool calls available",
-      "callCount": "{{count}} calls",
-      "successCount": "Success: {{count}}",
-      "errorCount": "Failed: {{count}}",
-      "detail": {
-        "processingTime": "Processing Time",
-        "client": "Client",
-        "server": "Server",
-        "requestType": "Request Type",
-        "requestParams": "Request Parameters",
-        "responseData": "Response Data",
-        "none": "None",
-        "dataFormat": "Data Format",
-        "includedKeys": "Included Keys",
-        "largeResponseWarning": "Response is too large, content display is limited",
-        "errorMessage": "Error Message"
-      },
-      "table": {
-        "title": "Request Logs",
-        "showing": "Showing {{start}} - {{end}} of {{total}} items",
-        "noLogs": "No logs available",
-        "timestamp": "Timestamp",
-        "client": "Client",
-        "server": "Server",
-        "requestType": "Request Type",
-        "status": "Status",
-        "processingTime": "Processing Time",
-        "success": "Success",
-        "error": "Error",
-        "previous": "Previous",
-        "next": "Next",
-        "itemsPerPage": "{{count}} items"
-      },
       "dateFormat": {
         "long": "{{date, datetime}}",
         "shortDate": "MM-DD",
@@ -367,13 +328,13 @@
       "description": "Enter a name for your new skill"
     },
     "agentPaths": {
-      "title": "Link Targets",
-      "empty": "No link targets configured yet",
-      "loadError": "Failed to load link targets",
-      "createSuccess": "Link target added successfully",
-      "createError": "Failed to add link target",
-      "deleteSuccess": "Link target deleted successfully",
-      "deleteError": "Failed to delete link target",
+      "title": "Integrations",
+      "empty": "No integrations configured yet",
+      "loadError": "Failed to load integrations",
+      "createSuccess": "Integration added successfully",
+      "createError": "Failed to add integration",
+      "deleteSuccess": "Integration deleted successfully",
+      "deleteError": "Failed to delete integration",
       "nameRequired": "Name is required",
       "pathRequired": "Path is required",
       "name": "Name",
@@ -383,8 +344,8 @@
       "pathHint": "~ is expanded to home directory (e.g., ~/.claude/skills)",
       "create": "Add",
       "newDialog": {
-        "title": "Add Link Target",
-        "description": "Add a folder that will be used as a symlink target for skills"
+        "title": "Add Integration",
+        "description": "Add an AI agent's skills folder to sync your skills"
       }
     }
   }

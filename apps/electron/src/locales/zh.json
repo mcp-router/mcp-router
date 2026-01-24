@@ -32,41 +32,6 @@
   "logs": {
     "viewer": {
       "refresh": "刷新数据",
-      "lastUpdated": "最后更新",
-      "toolCallsTitle": "工具使用时间线",
-      "noToolCalls": "无可用工具调用",
-      "callCount": "{{count}} 次调用",
-      "successCount": "成功: {{count}}",
-      "errorCount": "失败: {{count}}",
-      "detail": {
-        "processingTime": "处理时间",
-        "client": "客户端",
-        "server": "服务器",
-        "requestType": "请求类型",
-        "requestParams": "请求参数",
-        "responseData": "响应数据",
-        "none": "无",
-        "dataFormat": "数据格式",
-        "includedKeys": "包含的键",
-        "largeResponseWarning": "响应过大，内容显示受限",
-        "errorMessage": "错误消息"
-      },
-      "table": {
-        "title": "请求日志",
-        "showing": "显示 {{start}} - {{end}} 项，共 {{total}} 项",
-        "noLogs": "无可用日志",
-        "timestamp": "时间戳",
-        "client": "客户端",
-        "server": "服务器",
-        "requestType": "请求类型",
-        "status": "状态",
-        "processingTime": "处理时间",
-        "success": "成功",
-        "error": "错误",
-        "previous": "上一页",
-        "next": "下一页",
-        "itemsPerPage": "{{count}} 项"
-      },
       "dateFormat": {
         "long": "{{date, datetime}}",
         "shortDate": "MM-DD",

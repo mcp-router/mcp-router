@@ -53,56 +53,17 @@
       "log": {
         "title": "アクティビティログ",
         "empty": "選択した日付のアクティビティがありません",
-        "discovery": "ツール発見",
-        "discovered": "発見されたツール",
-        "execute": "ツール実行",
         "noContext": "ツール検索",
         "sessions": "セッション",
         "executions": "実行",
         "noExecutions": "実行されたツールなし",
         "arguments": "引数",
         "result": "結果",
-        "error": "エラー",
-        "resultNotStored": "結果データはログに保存されていません"
+        "error": "エラー"
       }
     },
     "viewer": {
       "refresh": "データを更新",
-      "lastUpdated": "最終更新時刻",
-      "toolCallsTitle": "ツール使用タイムライン",
-      "noToolCalls": "ツール呼び出しがありません",
-      "callCount": "{{count}}回の呼び出し",
-      "successCount": "成功: {{count}}",
-      "errorCount": "失敗: {{count}}",
-      "detail": {
-        "processingTime": "処理時間",
-        "client": "クライアント",
-        "server": "サーバ",
-        "requestType": "リクエスト種類",
-        "requestParams": "リクエストパラメータ",
-        "responseData": "レスポンスデータ",
-        "none": "なし",
-        "dataFormat": "データ形式",
-        "includedKeys": "含まれるキー",
-        "largeResponseWarning": "レスポンスが大きすぎるため、内容の表示が制限されています",
-        "errorMessage": "エラーメッセージ"
-      },
-      "table": {
-        "title": "リクエストログ",
-        "showing": "{{start}} - {{end}} 件目 (全 {{total}} 件)",
-        "noLogs": "ログがありません",
-        "timestamp": "タイムスタンプ",
-        "client": "クライアント",
-        "server": "サーバ",
-        "requestType": "リクエスト種類",
-        "status": "ステータス",
-        "processingTime": "処理時間",
-        "success": "成功",
-        "error": "エラー",
-        "previous": "前へ",
-        "next": "次へ",
-        "itemsPerPage": "{{count}} 件"
-      },
       "dateFormat": {
         "long": "{{date, datetime}}",
         "shortDate": "MM-DD",
@@ -367,13 +328,13 @@
       "description": "新しいスキルの名前を入力してください"
     },
     "agentPaths": {
-      "title": "リンク先",
-      "empty": "リンク先がまだ設定されていません",
-      "loadError": "リンク先の読み込みに失敗しました",
-      "createSuccess": "リンク先を追加しました",
-      "createError": "リンク先の追加に失敗しました",
-      "deleteSuccess": "リンク先を削除しました",
-      "deleteError": "リンク先の削除に失敗しました",
+      "title": "連携先",
+      "empty": "連携先がまだ設定されていません",
+      "loadError": "連携先の読み込みに失敗しました",
+      "createSuccess": "連携先を追加しました",
+      "createError": "連携先の追加に失敗しました",
+      "deleteSuccess": "連携先を削除しました",
+      "deleteError": "連携先の削除に失敗しました",
       "nameRequired": "名前は必須です",
       "pathRequired": "パスは必須です",
       "name": "名前",
@@ -383,7 +344,7 @@
       "pathHint": "~はホームディレクトリに展開されます（例: ~/.claude/skills）",
       "create": "追加",
       "newDialog": {
-        "title": "リンク先を追加",
+        "title": "連携先を追加",
         "description": "スキルのシンボリックリンク先となるフォルダを追加します"
       }
     }
