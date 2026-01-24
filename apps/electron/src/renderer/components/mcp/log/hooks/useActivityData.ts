@@ -91,9 +91,7 @@ const toActivityLogEntry = (log: RequestLogEntry): ActivityLogEntry | null => {
   if (type === "ToolExecute") {
     const params = log.requestParams || {};
     const toolKey = params.toolKey || "";
-    const [, toolName] = toolKey.includes(":")
-      ? toolKey.split(":", 2)
-      : ["", toolKey];
+    const toolName = params.toolName || "";
 
     return {
       ...base,

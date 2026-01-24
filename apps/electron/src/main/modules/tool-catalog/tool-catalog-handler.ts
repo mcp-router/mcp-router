@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
@@ -10,6 +11,14 @@ import { TokenValidator } from "@/main/modules/mcp-server-runtime/token-validato
 import { RequestHandlerBase } from "@/main/modules/mcp-server-runtime/request-handler-base";
 import { getProjectService } from "@/main/modules/projects/projects.service";
 import { ToolCatalogService } from "./tool-catalog.service";
+
+interface ToolKeyEntry {
+  serverId: string;
+  toolName: string;
+  createdAt: number;
+}
+
+const TOOL_KEY_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 export const META_TOOLS: MCPTool[] = [
   {
@@ -76,6 +85,7 @@ export class ToolCatalogHandler extends RequestHandlerBase {
   private clients: Map<string, Client>;
   private serverStatusMap: Map<string, boolean>;
   private toolCatalogService: ToolCatalogService;
+  private toolKeyMap: Map<string, ToolKeyEntry> = new Map();
 
   constructor(tokenValidator: TokenValidator, deps: ToolCatalogHandlerDeps) {
     super(tokenValidator);
@@ -123,6 +133,24 @@ export class ToolCatalogHandler extends RequestHandlerBase {
     serverId: string;
     toolName: string;
   } {
+    // First, try to resolve from the temporary toolKey map
+    const entry = this.toolKeyMap.get(toolKey);
+    if (entry) {
+      // Check TTL
+      if (Date.now() - entry.createdAt > TOOL_KEY_TTL_MS) {
+        this.toolKeyMap.delete(toolKey);
+        throw new McpError(
+          ErrorCode.InvalidRequest,
+          `toolKey has expired: ${toolKey}`,
+        );
+      }
+      return {
+        serverId: entry.serverId,
+        toolName: entry.toolName,
+      };
+    }
+
+    // Fallback: parse as legacy format (serverId:toolName)
     const separatorIndex = toolKey.indexOf(":");
     if (separatorIndex <= 0 || separatorIndex >= toolKey.length - 1) {
       throw new McpError(
@@ -138,7 +166,26 @@ export class ToolCatalogHandler extends RequestHandlerBase {
   }
 
   private buildToolKey(serverId: string, toolName: string): string {
-    return `${serverId}:${toolName}`;
+    // Cleanup expired entries periodically
+    this.cleanupExpiredToolKeys();
+
+    // Generate a temporary UUID-based toolKey
+    const toolKey = randomUUID();
+    this.toolKeyMap.set(toolKey, {
+      serverId,
+      toolName,
+      createdAt: Date.now(),
+    });
+    return toolKey;
+  }
+
+  private cleanupExpiredToolKeys(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.toolKeyMap) {
+      if (now - entry.createdAt > TOOL_KEY_TTL_MS) {
+        this.toolKeyMap.delete(key);
+      }
+    }
   }
 
   private getProjectOptimization(projectId: string | null) {
@@ -279,7 +326,7 @@ export class ToolCatalogHandler extends RequestHandlerBase {
 
     return await this.executeWithHooksAndLogging(
       "tools/call",
-      { toolKey, arguments: toolArguments },
+      { toolKey, toolName, arguments: toolArguments },
       clientId,
       serverName,
       "ToolExecute",

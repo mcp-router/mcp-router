@@ -268,9 +268,7 @@ const StandaloneExecuteCard: React.FC<{
         >
           {toolName}
         </span>
-        <span className="text-xs text-muted-foreground">
-          {exec.serverName}
-        </span>
+        <span className="text-xs text-muted-foreground">{exec.serverName}</span>
         <span className="text-xs text-muted-foreground shrink-0">
           {exec.duration}ms
         </span>
@@ -323,9 +321,14 @@ const StandaloneExecuteCard: React.FC<{
   );
 };
 
-const ActivityLog: React.FC<ActivityLogProps> = ({ items, loading = false }) => {
+const ActivityLog: React.FC<ActivityLogProps> = ({
+  items,
+  loading = false,
+}) => {
   const { t } = useTranslation();
-  const [expandedExecIds, setExpandedExecIds] = useState<Set<string>>(new Set());
+  const [expandedExecIds, setExpandedExecIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const toggleExec = useCallback((id: string) => {
     setExpandedExecIds((prev) => {
