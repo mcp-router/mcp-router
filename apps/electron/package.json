@@ -73,7 +73,10 @@
     "tailwind-merge": "^2.6.0",
     "update-electron-app": "^3.1.1",
     "uuid": "^11.1.0",
-    "zustand": "^5.0.9"
+    "zustand": "^5.0.9",
+    "recharts": "^2.15.3",
+    "react-wordcloud": "^1.2.7",
+    "d3-cloud": "^1.2.7"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.10.2",
@@ -110,6 +113,7 @@
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
+    "@types/d3-cloud": "^1.2.9",
     "webpack": "^5.103.0"
   }
 }

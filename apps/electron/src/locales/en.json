@@ -31,6 +31,43 @@
     "title": "MCP Router"
   },
   "logs": {
+    "activity": {
+      "title": "Activity",
+      "heatmap": {
+        "title": "Activity Heatmap",
+        "sun": "Sun",
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "activities": "activities",
+        "less": "Less",
+        "more": "More"
+      },
+      "wordcloud": {
+        "title": "Query Keywords",
+        "empty": "No queries for selected date",
+        "times": "times",
+        "showing": "Showing {{count}} of {{total}} keywords"
+      },
+      "log": {
+        "title": "Activity Log",
+        "empty": "No activities for selected date",
+        "discovery": "Tool Discovery",
+        "discovered": "Discovered Tools",
+        "execute": "Tool Execute",
+        "noContext": "Tool search",
+        "sessions": "sessions",
+        "executions": "executions",
+        "noExecutions": "No tools executed",
+        "arguments": "Arguments",
+        "result": "Result",
+        "error": "Error",
+        "resultNotStored": "Result data not stored in logs"
+      }
+    },
     "viewer": {
       "refresh": "Refresh Data",
       "lastUpdated": "Last Updated",
