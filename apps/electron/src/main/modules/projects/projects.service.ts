@@ -1,6 +1,10 @@
 import { SingletonService } from "@/main/modules/singleton-service";
 import { ProjectRepository } from "./projects.repository";
-import type { Project, ProjectOptimization } from "@mcp_router/shared";
+import {
+  DEFAULT_SEARCH_STRATEGY,
+  type Project,
+  type ProjectOptimization,
+} from "@mcp_router/shared";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { McpServerManagerRepository } from "../mcp-server-manager/mcp-server-manager.repository";
 
@@ -89,6 +93,7 @@ export class ProjectService extends SingletonService<
         name,
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        optimization: DEFAULT_SEARCH_STRATEGY,
       } as Omit<Project, "id">;
       return repo.add(project);
     } catch (error) {
