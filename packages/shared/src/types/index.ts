@@ -11,6 +11,7 @@ export * from "./workspace";
 export * from "./auth";
 export * from "./project-types";
 export * from "./tool-catalog-types";
+export * from "./activity-types";
 
 // Re-export organized domain types
 export * from "./ui";

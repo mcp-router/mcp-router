@@ -29,6 +29,43 @@
     "loginButton": "ログイン"
   },
   "logs": {
+    "activity": {
+      "title": "アクティビティ",
+      "heatmap": {
+        "title": "アクティビティヒートマップ",
+        "sun": "日",
+        "mon": "月",
+        "tue": "火",
+        "wed": "水",
+        "thu": "木",
+        "fri": "金",
+        "sat": "土",
+        "activities": "件のアクティビティ",
+        "less": "少",
+        "more": "多"
+      },
+      "wordcloud": {
+        "title": "クエリキーワード",
+        "empty": "選択した日付のクエリがありません",
+        "times": "回",
+        "showing": "{{total}}件中{{count}}件のキーワードを表示"
+      },
+      "log": {
+        "title": "アクティビティログ",
+        "empty": "選択した日付のアクティビティがありません",
+        "discovery": "ツール発見",
+        "discovered": "発見されたツール",
+        "execute": "ツール実行",
+        "noContext": "ツール検索",
+        "sessions": "セッション",
+        "executions": "実行",
+        "noExecutions": "実行されたツールなし",
+        "arguments": "引数",
+        "result": "結果",
+        "error": "エラー",
+        "resultNotStored": "結果データはログに保存されていません"
+      }
+    },
     "viewer": {
       "refresh": "データを更新",
       "lastUpdated": "最終更新時刻",
