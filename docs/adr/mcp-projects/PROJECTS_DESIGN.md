@@ -23,6 +23,10 @@
   - name: string (required; unique, case‑insensitive)
   - createdAt: number (unix ms)
   - updatedAt: number (unix ms)
+  - optimization: ProjectOptimization ("bm25" | "cloud" | null)
+    - Context Optimization (Tool Catalog) の設定
+    - null: 無効、"bm25": BM25検索有効、"cloud": クラウド検索有効
+    - 新規プロジェクト作成時のデフォルト: "bm25"
 
 - MCPServer (existing)
   - Add: `projectId?: string | null` (single assignment)
@@ -37,6 +41,7 @@
   - `name TEXT NOT NULL`
   - `created_at INTEGER NOT NULL`
   - `updated_at INTEGER NOT NULL`
+  - `optimization TEXT` (nullable; "bm25" | "cloud" | NULL)
   - Unique index: `idx_projects_name_unique` (`name COLLATE NOCASE`)
 
 - `servers` columns
