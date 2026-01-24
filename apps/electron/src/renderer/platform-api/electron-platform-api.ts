@@ -230,6 +230,12 @@ class ElectronPlatformAPI implements PlatformAPI {
       delete: (id) => window.electronAPI.deleteSkill(id),
       openFolder: (id) => window.electronAPI.openSkillFolder(id),
       import: () => window.electronAPI.importSkill(),
+      agentPaths: {
+        list: () => window.electronAPI.listAgentPaths(),
+        create: (input) => window.electronAPI.createAgentPath(input),
+        delete: (id) => window.electronAPI.deleteAgentPath(id),
+        selectFolder: () => window.electronAPI.selectAgentPathFolder(),
+      },
     };
   }
 }

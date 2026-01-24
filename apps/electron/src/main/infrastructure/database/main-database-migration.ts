@@ -111,6 +111,13 @@ export class MainDatabaseMigration {
       description: "Add optimization column to projects table",
       execute: (db) => this.migrateAddProjectOptimizationColumn(db),
     });
+
+    // Agent paths テーブルを追加
+    this.migrations.push({
+      id: "20260124_add_agent_paths_table",
+      description: "Add agent_paths table for custom symlink targets",
+      execute: (db) => this.migrateAddAgentPathsTable(db),
+    });
   }
 
   /**
@@ -641,6 +648,55 @@ export class MainDatabaseMigration {
       }
     } catch (error) {
       console.error("Error while adding optimization column:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * agent_pathsテーブルを追加するマイグレーション
+   * 標準エージェント5つを初期データとして挿入
+   */
+  private migrateAddAgentPathsTable(db: SqliteManager): void {
+    try {
+      // テーブル作成
+      db.execute(`
+        CREATE TABLE IF NOT EXISTS agent_paths (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL UNIQUE,
+          path TEXT NOT NULL,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      `);
+      console.log("agent_paths table created");
+
+      // 標準エージェントの初期データを挿入
+      const now = Date.now();
+      const defaultAgents = [
+        { name: "claude-code", path: "~/.claude/skills" },
+        { name: "codex", path: "~/.codex/skills" },
+        { name: "copilot", path: "~/.copilot/skills" },
+        { name: "cline", path: "~/.cline/skills" },
+        { name: "opencode", path: "~/.config/opencode/skill" },
+      ];
+
+      for (const agent of defaultAgents) {
+        const id = crypto.randomUUID();
+        db.execute(
+          `INSERT OR IGNORE INTO agent_paths (id, name, path, created_at, updated_at)
+           VALUES (:id, :name, :path, :createdAt, :updatedAt)`,
+          {
+            id,
+            name: agent.name,
+            path: agent.path,
+            createdAt: now,
+            updatedAt: now,
+          },
+        );
+      }
+      console.log("Default agent paths inserted");
+    } catch (error) {
+      console.error("Error while creating agent_paths table:", error);
       throw error;
     }
   }

@@ -365,6 +365,27 @@
     "newDialog": {
       "title": "Create New Skill",
       "description": "Enter a name for your new skill"
+    },
+    "agentPaths": {
+      "title": "Link Targets",
+      "empty": "No link targets configured yet",
+      "loadError": "Failed to load link targets",
+      "createSuccess": "Link target added successfully",
+      "createError": "Failed to add link target",
+      "deleteSuccess": "Link target deleted successfully",
+      "deleteError": "Failed to delete link target",
+      "nameRequired": "Name is required",
+      "pathRequired": "Path is required",
+      "name": "Name",
+      "namePlaceholder": "Enter agent name",
+      "path": "Path",
+      "pathPlaceholder": "Enter skills folder path",
+      "pathHint": "~ is expanded to home directory (e.g., ~/.claude/skills)",
+      "create": "Add",
+      "newDialog": {
+        "title": "Add Link Target",
+        "description": "Add a folder that will be used as a symlink target for skills"
+      }
     }
   }
 }

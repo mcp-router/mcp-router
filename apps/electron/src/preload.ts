@@ -8,6 +8,7 @@ import type {
   TokenServerAccess,
   CreateSkillInput,
   UpdateSkillInput,
+  CreateAgentPathInput,
 } from "@mcp_router/shared";
 
 // Consolidate everything into one contextBridge call
@@ -199,4 +200,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
   deleteSkill: (id: string) => ipcRenderer.invoke("skill:delete", id),
   openSkillFolder: (id?: string) => ipcRenderer.invoke("skill:openFolder", id),
   importSkill: () => ipcRenderer.invoke("skill:import"),
+
+  // Agent Path Management
+  listAgentPaths: () => ipcRenderer.invoke("skill:listAgentPaths"),
+  createAgentPath: (input: CreateAgentPathInput) =>
+    ipcRenderer.invoke("skill:createAgentPath", input),
+  deleteAgentPath: (id: string) =>
+    ipcRenderer.invoke("skill:deleteAgentPath", id),
+  selectAgentPathFolder: () =>
+    ipcRenderer.invoke("skill:selectAgentPathFolder"),
 });

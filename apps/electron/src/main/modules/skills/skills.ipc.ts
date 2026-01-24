@@ -1,6 +1,10 @@
 import { ipcMain } from "electron";
 import { getSkillService } from "./skills.service";
-import type { CreateSkillInput, UpdateSkillInput } from "@mcp_router/shared";
+import type {
+  CreateSkillInput,
+  UpdateSkillInput,
+  CreateAgentPathInput,
+} from "@mcp_router/shared";
 
 /**
  * Setup IPC handlers for skills management
@@ -40,5 +44,32 @@ export function setupSkillHandlers(): void {
 
   ipcMain.handle("skill:import", async () => {
     return service.import();
+  });
+
+  // Agent Path operations
+  ipcMain.handle("skill:listAgentPaths", async () => {
+    return service.listAgentPaths();
+  });
+
+  ipcMain.handle(
+    "skill:createAgentPath",
+    async (_evt, input: CreateAgentPathInput) => {
+      if (!input || !input.name?.trim()) {
+        throw new Error("Invalid agent path name");
+      }
+      if (!input.path?.trim()) {
+        throw new Error("Invalid agent path");
+      }
+      return service.createAgentPath(input);
+    },
+  );
+
+  ipcMain.handle("skill:deleteAgentPath", async (_evt, id: string) => {
+    if (!id) throw new Error("Missing agent path id");
+    service.deleteAgentPath(id);
+  });
+
+  ipcMain.handle("skill:selectAgentPathFolder", async () => {
+    return service.selectAgentPathFolder();
   });
 }

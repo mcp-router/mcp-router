@@ -10,7 +10,8 @@ Agent Skillsは、AIエージェントに専門知識やワークフローを教
 
 ```
 apps/electron/src/main/modules/skills/
-├── skills-agent-paths.ts    # エージェントパス定義
+├── agent-path.repository.ts # エージェントパスDB操作
+├── skills-agent-paths.ts    # エージェントパスユーティリティ
 ├── skills-file-manager.ts   # ファイルシステム操作
 ├── skills.repository.ts     # データベース操作
 ├── skills.service.ts        # ビジネスロジック
@@ -75,6 +76,8 @@ interface UpdateSkillInput {
 
 ## Supported Agents
 
+デフォルトで5つのエージェントがサポートされ、`agent_paths`テーブルに初期データとして登録されます。ユーザーはUI上でカスタムエージェントパスを追加・削除できます。
+
 | Agent | Skills Directory |
 |-------|-----------------|
 | Claude Code | `~/.claude/skills/` |
@@ -82,6 +85,10 @@ interface UpdateSkillInput {
 | GitHub Copilot | `~/.copilot/skills/` |
 | Cline | `~/.cline/skills/` |
 | OpenCode | `~/.config/opencode/skill/` |
+
+### Custom Agent Paths
+
+ユーザーは「リンク先」ページから任意のエージェントパスを追加できます。追加されたパスは`agent_paths`テーブルに保存され、スキル有効時にシンボリックリンクが作成されます。
 
 ## Key Design Decisions
 
@@ -132,6 +139,20 @@ Skills are stored in:
 | enabled | INTEGER | 1=enabled, 0=disabled |
 | created_at | INTEGER | Timestamp |
 | updated_at | INTEGER | Timestamp |
+
+### agent_paths table
+
+シンボリックリンク先として使用されるエージェントパスを管理します。
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | TEXT | Primary key |
+| name | TEXT | Unique agent name (e.g., "claude-code") |
+| path | TEXT | Skills directory path (e.g., "~/.claude/skills") |
+| created_at | INTEGER | Timestamp |
+| updated_at | INTEGER | Timestamp |
+
+初回起動時に5つの標準エージェントが自動登録されます。
 
 ## Future Considerations
 

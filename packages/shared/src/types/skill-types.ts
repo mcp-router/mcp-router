@@ -40,3 +40,23 @@ export interface UpdateSkillInput {
   enabled?: boolean;
   content?: string;
 }
+
+/**
+ * Agent path entity
+ * Represents a symlink target directory for skills
+ */
+export interface AgentPath {
+  id: string;
+  name: string;
+  path: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/**
+ * Input for creating an agent path
+ */
+export interface CreateAgentPathInput {
+  name: string;
+  path: string;
+}

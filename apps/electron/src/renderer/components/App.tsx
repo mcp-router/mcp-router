@@ -17,6 +17,7 @@ import { postHogService } from "../services/posthog-service";
 import WorkspaceManagement from "./workspace/WorkspaceManagement";
 import WorkflowManager from "./workflow/WorkflowManager";
 import SkillsManager from "./skills/SkillsManager";
+import AgentPathManager from "./skills/AgentPathManager";
 
 // Main App component
 const App: React.FC = () => {
@@ -172,6 +173,7 @@ const App: React.FC = () => {
                 element={<WorkspaceManagement />}
               />
               <Route path="/skills" element={<SkillsManager />} />
+              <Route path="/skills/agents" element={<AgentPathManager />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/servers" />} />

@@ -365,6 +365,27 @@
     "newDialog": {
       "title": "新規スキルを作成",
       "description": "新しいスキルの名前を入力してください"
+    },
+    "agentPaths": {
+      "title": "リンク先",
+      "empty": "リンク先がまだ設定されていません",
+      "loadError": "リンク先の読み込みに失敗しました",
+      "createSuccess": "リンク先を追加しました",
+      "createError": "リンク先の追加に失敗しました",
+      "deleteSuccess": "リンク先を削除しました",
+      "deleteError": "リンク先の削除に失敗しました",
+      "nameRequired": "名前は必須です",
+      "pathRequired": "パスは必須です",
+      "name": "名前",
+      "namePlaceholder": "エージェント名を入力",
+      "path": "パス",
+      "pathPlaceholder": "スキルフォルダのパスを入力",
+      "pathHint": "~はホームディレクトリに展開されます（例: ~/.claude/skills）",
+      "create": "追加",
+      "newDialog": {
+        "title": "リンク先を追加",
+        "description": "スキルのシンボリックリンク先となるフォルダを追加します"
+      }
     }
   }
 }

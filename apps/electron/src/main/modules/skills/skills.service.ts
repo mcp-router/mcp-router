@@ -1,13 +1,16 @@
 import { SingletonService } from "@/main/modules/singleton-service";
 import { SkillRepository } from "./skills.repository";
 import { SkillsFileManager } from "./skills-file-manager";
-import { SUPPORTED_AGENTS, getSymlinkTargetPath } from "./skills-agent-paths";
+import { AgentPathRepository } from "./agent-path.repository";
+import { getSymlinkTargetPath } from "./skills-agent-paths";
 import { dialog } from "electron";
 import type {
   Skill,
   SkillWithContent,
   CreateSkillInput,
   UpdateSkillInput,
+  AgentPath,
+  CreateAgentPathInput,
 } from "@mcp_router/shared";
 
 /**
@@ -304,22 +307,28 @@ export class SkillService extends SingletonService<
   }
 
   /**
-   * Create symlinks for all supported agents
+   * Create symlinks for all agent paths from database
    */
   private createSymlinksForAllAgents(skillName: string): void {
     const skillPath = this.fileManager.getSkillPath(skillName);
-    for (const agentType of SUPPORTED_AGENTS) {
-      const targetPath = getSymlinkTargetPath(agentType, skillName);
+    const agentPathRepo = AgentPathRepository.getInstance();
+    const agentPaths = agentPathRepo.getAll();
+
+    for (const agentPath of agentPaths) {
+      const targetPath = getSymlinkTargetPath(agentPath.path, skillName);
       this.fileManager.createSymlink(skillPath, targetPath);
     }
   }
 
   /**
-   * Remove symlinks for all supported agents
+   * Remove symlinks for all agent paths from database
    */
   private removeSymlinksForAllAgents(skillName: string): void {
-    for (const agentType of SUPPORTED_AGENTS) {
-      const targetPath = getSymlinkTargetPath(agentType, skillName);
+    const agentPathRepo = AgentPathRepository.getInstance();
+    const agentPaths = agentPathRepo.getAll();
+
+    for (const agentPath of agentPaths) {
+      const targetPath = getSymlinkTargetPath(agentPath.path, skillName);
       this.fileManager.removeSymlink(targetPath);
     }
   }
@@ -342,6 +351,120 @@ export class SkillService extends SingletonService<
     }
 
     return name;
+  }
+
+  // ==========================================================================
+  // Agent Path Management
+  // ==========================================================================
+
+  /**
+   * List all agent paths
+   */
+  listAgentPaths(): AgentPath[] {
+    try {
+      const repo = AgentPathRepository.getInstance();
+      return repo.getAll({ orderBy: "name" });
+    } catch (error) {
+      return this.handleError("listAgentPaths", error, []);
+    }
+  }
+
+  /**
+   * Create a new agent path
+   */
+  createAgentPath(input: CreateAgentPathInput): AgentPath {
+    try {
+      const repo = AgentPathRepository.getInstance();
+      const name = input.name.trim();
+      const pathValue = input.path.trim();
+
+      if (!name) {
+        throw new Error("Agent path name cannot be empty");
+      }
+
+      if (!pathValue) {
+        throw new Error("Agent path cannot be empty");
+      }
+
+      // Check for duplicate name
+      const duplicate = repo.findByName(name);
+      if (duplicate) {
+        throw new Error(`Agent path "${name}" already exists`);
+      }
+
+      const now = Date.now();
+      const agentPath = repo.add({
+        name,
+        path: pathValue,
+        createdAt: now,
+        updatedAt: now,
+      } as Omit<AgentPath, "id">);
+
+      // Create symlinks for all enabled skills to this new agent path
+      const skillRepo = SkillRepository.getInstance();
+      const skills = skillRepo.getAll();
+      for (const skill of skills) {
+        if (skill.enabled) {
+          const skillPath = this.fileManager.getSkillPath(skill.name);
+          const targetPath = getSymlinkTargetPath(pathValue, skill.name);
+          this.fileManager.createSymlink(skillPath, targetPath);
+        }
+      }
+
+      return agentPath;
+    } catch (error) {
+      return this.handleError("createAgentPath", error);
+    }
+  }
+
+  /**
+   * Delete an agent path
+   */
+  deleteAgentPath(id: string): void {
+    try {
+      const repo = AgentPathRepository.getInstance();
+      const agentPath = repo.getById(id);
+
+      if (!agentPath) {
+        throw new Error("Agent path not found");
+      }
+
+      // Remove symlinks for all skills from this agent path
+      const skillRepo = SkillRepository.getInstance();
+      const skills = skillRepo.getAll();
+      for (const skill of skills) {
+        const targetPath = getSymlinkTargetPath(agentPath.path, skill.name);
+        this.fileManager.removeSymlink(targetPath);
+      }
+
+      // Delete from database
+      const ok = repo.delete(id);
+      if (!ok) {
+        throw new Error("Failed to delete agent path");
+      }
+    } catch (error) {
+      this.handleError("deleteAgentPath", error);
+    }
+  }
+
+  /**
+   * Open folder selection dialog for agent path
+   */
+  async selectAgentPathFolder(): Promise<string> {
+    try {
+      const result = await dialog.showOpenDialog({
+        properties: ["openDirectory"],
+        title: "Select Agent Skills Folder",
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        throw new Error("No folder selected");
+      }
+
+      return result.filePaths[0];
+    } catch (error) {
+      return this.handleError("selectAgentPathFolder", error);
+    }
   }
 }
 

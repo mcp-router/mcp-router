@@ -3,6 +3,8 @@ import type {
   SkillWithContent,
   CreateSkillInput,
   UpdateSkillInput,
+  AgentPath,
+  CreateAgentPathInput,
 } from "../../skill-types";
 
 /**
@@ -18,4 +20,12 @@ export interface SkillsAPI {
   // Actions
   openFolder: (id?: string) => Promise<void>; // id省略でskillsディレクトリ全体
   import: () => Promise<Skill>; // フォルダ選択ダイアログ→インポート
+
+  // Agent Path operations (symlink target directories)
+  agentPaths: {
+    list: () => Promise<AgentPath[]>;
+    create: (input: CreateAgentPathInput) => Promise<AgentPath>;
+    delete: (id: string) => Promise<void>;
+    selectFolder: () => Promise<string>;
+  };
 }

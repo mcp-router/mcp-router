@@ -7,6 +7,7 @@ import {
   IconDeviceDesktop,
   IconDownload,
   IconWand,
+  IconLink,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/renderer/stores";
@@ -174,6 +175,23 @@ const SidebarComponent: React.FC = () => {
                         >
                           <IconWand className="h-6 w-6" />
                           <span className="text-base">{t("skills.title")}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={t("skills.agentPaths.title")}
+                        isActive={location.pathname === "/skills/agents"}
+                      >
+                        <Link
+                          to="/skills/agents"
+                          className="flex items-center gap-3 py-5 px-3 w-full"
+                        >
+                          <IconLink className="h-6 w-6" />
+                          <span className="text-base">
+                            {t("skills.agentPaths.title")}
+                          </span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
