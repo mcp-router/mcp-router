@@ -44,13 +44,13 @@ export const ClientAppCard: React.FC<ClientAppCardProps> = ({
   const isConfigured = clientApp.mcpConfigured || clientApp.skillsConfigured;
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader>
+    <Card className="overflow-hidden rounded-2xl border-border/40 soft-shadow">
+      <CardHeader className="p-6 pb-4">
         <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-3">
             {clientApp.icon && (
               <div
-                className="w-6 h-6 flex items-center justify-center"
+                className="w-8 h-8 flex items-center justify-center p-1.5 bg-muted/30 rounded-xl"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -59,12 +59,12 @@ export const ClientAppCard: React.FC<ClientAppCardProps> = ({
                 dangerouslySetInnerHTML={{
                   __html: clientApp.icon.replace(
                     /<svg/g,
-                    '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
+                    '<svg style="width: 100%; height: 100%;"',
                   ),
                 }}
               />
             )}
-            <CardTitle className="truncate max-w-[150px]">
+            <CardTitle className="truncate max-w-[150px] text-lg">
               {clientApp.name}
             </CardTitle>
           </div>
@@ -72,16 +72,16 @@ export const ClientAppCard: React.FC<ClientAppCardProps> = ({
         </div>
       </CardHeader>
 
-      <CardContent>
-        <div className="space-y-2">
+      <CardContent className="p-6 pt-0">
+        <div className="space-y-3">
           {/* MCP Status */}
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-3 text-sm">
             {clientApp.mcpConfigured ? (
-              <IconCheck size={16} className="text-green-600 shrink-0" />
+              <IconCheck size={18} className="text-emerald-500 shrink-0" />
             ) : (
-              <IconX size={16} className="text-destructive shrink-0" />
+              <IconX size={18} className="text-destructive shrink-0" />
             )}
-            <span>
+            <span className="font-medium">
               {clientApp.mcpConfigured
                 ? t("clientApps.mcpConfigured")
                 : t("clientApps.mcpNotConfigured")}
@@ -89,13 +89,13 @@ export const ClientAppCard: React.FC<ClientAppCardProps> = ({
           </div>
 
           {/* Skills Status */}
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-3 text-sm">
             {clientApp.skillsConfigured ? (
-              <IconCheck size={16} className="text-green-600 shrink-0" />
+              <IconCheck size={18} className="text-emerald-500 shrink-0" />
             ) : (
-              <IconX size={16} className="text-destructive shrink-0" />
+              <IconX size={18} className="text-destructive shrink-0" />
             )}
-            <span>
+            <span className="font-medium">
               {clientApp.skillsConfigured
                 ? t("clientApps.skillsSynced")
                 : t("clientApps.skillsNotSetUp")}
@@ -104,10 +104,10 @@ export const ClientAppCard: React.FC<ClientAppCardProps> = ({
 
           {/* Show paths for custom clients */}
           {clientApp.isCustom && (
-            <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+            <div className="mt-4 p-3 rounded-xl bg-muted/20 border border-border/40 space-y-2 text-xs text-muted-foreground">
               {clientApp.mcpConfigPath && (
                 <div className="truncate" title={clientApp.mcpConfigPath}>
-                  <span className="font-medium">
+                  <span className="font-semibold text-primary/80">
                     {t("clientApps.addCustomClient.mcpConfigPath")}:
                   </span>{" "}
                   {clientApp.mcpConfigPath}
@@ -115,7 +115,7 @@ export const ClientAppCard: React.FC<ClientAppCardProps> = ({
               )}
               {clientApp.skillsPath && (
                 <div className="truncate" title={clientApp.skillsPath}>
-                  <span className="font-medium">
+                  <span className="font-semibold text-primary/80">
                     {t("clientApps.addCustomClient.skillsPath")}:
                   </span>{" "}
                   {clientApp.skillsPath}
@@ -126,15 +126,25 @@ export const ClientAppCard: React.FC<ClientAppCardProps> = ({
         </div>
       </CardContent>
 
-      <CardFooter className="flex gap-2 justify-between flex-wrap">
+      <CardFooter className="p-6 pt-2 flex gap-3 justify-between flex-wrap border-t border-border/40 bg-muted/5">
         <div className="flex gap-2 flex-wrap">
           {isConfigured && clientApp.token && (
-            <Button variant="outline" size="sm" onClick={onHowToUse}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onHowToUse}
+              className="rounded-full px-4"
+            >
               {t("clientApps.howToUse")}
             </Button>
           )}
           {clientApp.isCustom && (
-            <Button variant="destructive" size="sm" onClick={onDelete}>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={onDelete}
+              className="rounded-full px-4"
+            >
               {t("clientApps.delete")}
             </Button>
           )}
@@ -146,17 +156,28 @@ export const ClientAppCard: React.FC<ClientAppCardProps> = ({
               onClick={onConfigure}
               variant="default"
               disabled={!clientApp.installed}
+              className="rounded-full px-6"
             >
               {t("clientApps.configure")}
             </Button>
           ) : (
             <>
               {clientApp.isCustom && (
-                <Button variant="outline" size="sm" onClick={onEdit}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onEdit}
+                  className="rounded-full px-4"
+                >
                   {t("clientApps.edit")}
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={onServerAccess}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onServerAccess}
+                className="rounded-full px-4"
+              >
                 {t("clientApps.serverAccess")}
               </Button>
             </>

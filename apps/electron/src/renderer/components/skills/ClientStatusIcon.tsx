@@ -40,9 +40,14 @@ export const ClientStatusIcon: React.FC<ClientStatusIconProps> = ({
 
   const renderIcon = () => {
     if (clientIcon && clientIcon.includes("<svg")) {
+      // Force currentColor and sanitize SVG content
+      const themedSvg = clientIcon
+        .replace(/fill="[^"]*"/g, 'fill="currentColor"')
+        .replace(/stroke="[^"]*"/g, 'stroke="currentColor"');
+
       // Sanitize SVG content to prevent XSS and inject size styles
       const sanitizedSvg = sanitizeSvgWithStyles(
-        clientIcon,
+        themedSvg,
         `width: ${iconSize}px; height: ${iconSize}px;`,
       );
 
@@ -58,7 +63,7 @@ export const ClientStatusIcon: React.FC<ClientStatusIconProps> = ({
 
       return (
         <div
-          className="flex items-center justify-center [&_svg]:w-full [&_svg]:h-full"
+          className="flex items-center justify-center [&_svg]:w-full [&_svg]:h-full text-foreground [&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_ellipse]:fill-current [&_polygon]:fill-current"
           style={{ width: iconSize, height: iconSize }}
           dangerouslySetInnerHTML={{ __html: sanitizedSvg }}
         />
@@ -88,10 +93,10 @@ export const ClientStatusIcon: React.FC<ClientStatusIconProps> = ({
         {renderIcon()}
       </div>
 
-      {/* Green status dot for enabled state */}
+      {/* Status dot for enabled state */}
       {isEnabled && (
         <div
-          className="absolute bg-green-600 rounded-full border border-background"
+          className="absolute bg-emerald-500 rounded-full border border-background shadow-sm"
           style={{
             width: dotSize,
             height: dotSize,

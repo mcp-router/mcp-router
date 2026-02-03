@@ -344,14 +344,14 @@ export default function WorkflowEditor({
   }, [moduleManagerOpen, platformAPI, setUserModules]);
 
   return (
-    <div className="h-full w-full flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-4">
-          <h2 className="text-xl font-semibold">
+    <div className="h-full w-full flex flex-col bg-muted/20">
+      <div className="flex items-center justify-between p-4 px-6 border-b bg-background/50 backdrop-blur-sm">
+        <div className="flex items-center gap-6">
+          <h2 className="text-xl font-bold">
             {workflow?.name || "New Workflow"}
           </h2>
           <select
-            className="px-3 py-1 border rounded-md dark:bg-gray-800 dark:border-gray-700"
+            className="px-4 py-1.5 border rounded-full text-sm font-medium bg-background border-muted hover:border-primary/30 transition-all outline-none"
             value={workflowType}
             onChange={(e) =>
               setWorkflowType(e.target.value as "tools/list" | "tools/call")
@@ -362,8 +362,13 @@ export default function WorkflowEditor({
           </select>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleSave} variant="default" size="sm">
-            <Save className="w-4 h-4 mr-1" />
+          <Button
+            onClick={handleSave}
+            variant="default"
+            size="sm"
+            className="rounded-full px-6 shadow-sm"
+          >
+            <Save className="w-4 h-4 mr-2" />
             Save
           </Button>
         </div>
@@ -383,17 +388,22 @@ export default function WorkflowEditor({
           proOptions={{ hideAttribution: true }}
           fitView
         >
-          <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={16}
+            size={1}
+            color="#cbd5e1"
+          />
 
           <Panel
             position="top-left"
-            className="flex gap-2 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg"
+            className="flex gap-3 p-3 bg-background/80 backdrop-blur-md rounded-2xl shadow-xl border border-primary/10"
           >
             <Button
               onClick={() => addHookNode(true)}
               variant="outline"
               size="sm"
-              className="flex items-center gap-1"
+              className="flex items-center gap-2 rounded-full border-muted-foreground/20 hover:border-primary/50 transition-all"
             >
               <Plus className="w-4 h-4" />
               Synchronous Hook
@@ -402,7 +412,7 @@ export default function WorkflowEditor({
               onClick={() => addHookNode(false)}
               variant="outline"
               size="sm"
-              className="flex items-center gap-1"
+              className="flex items-center gap-2 rounded-full border-muted-foreground/20 hover:border-primary/50 transition-all"
             >
               <Plus className="w-4 h-4" />
               Fire-and-Forget Hook
@@ -412,19 +422,25 @@ export default function WorkflowEditor({
       </div>
 
       {selectedNode && selectedNode.type === "hook" && (
-        <div className="p-4 border-t bg-gray-50 dark:bg-gray-900">
+        <div className="p-6 border-t bg-background/80 backdrop-blur-xl rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] border-primary/5 z-20">
           {/* ヘッダーとボタン */}
-          <div className="flex justify-between items-center mb-4">
-            <Input
-              value={nodeLabel}
-              onChange={(e) => setNodeLabel(e.target.value)}
-              className="w-64"
-              placeholder="Enter hook name"
-            />
-            <div className="flex gap-2">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                <Plus className="w-6 h-6" />
+              </div>
+              <Input
+                value={nodeLabel}
+                onChange={(e) => setNodeLabel(e.target.value)}
+                className="w-80 rounded-full px-6 border-transparent bg-muted/50 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="Enter hook name"
+              />
+            </div>
+            <div className="flex gap-3">
               <Button
                 size="sm"
-                variant="outline"
+                variant="ghost"
+                className="rounded-full px-6"
                 onClick={() => {
                   // 元の値に戻す
                   if (selectedNode) {
@@ -447,12 +463,13 @@ export default function WorkflowEditor({
                   setSelectedModuleId("");
                 }}
               >
-                <X className="w-3 h-3 mr-1" />
+                <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
               <Button
                 size="sm"
                 variant="default"
+                className="rounded-full px-8 shadow-md shadow-primary/20"
                 onClick={() => {
                   // 現在の編集内容を適用
                   const updatedNodes = nodes.map((node: WorkflowNode) => {
@@ -496,19 +513,22 @@ export default function WorkflowEditor({
                   setSelectedModuleId("");
                 }}
               >
-                <Check className="w-3 h-3 mr-1" />
+                <Check className="w-4 h-4 mr-2" />
                 Apply
               </Button>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             {/* モジュール選択 */}
-            <div>
-              <Label htmlFor="hook-module" className="text-sm font-medium">
-                Hook Module
-              </Label>
-              <div className="flex gap-2">
+            <div className="md:col-span-4 space-y-4">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="hook-module"
+                  className="text-sm font-bold ml-2 text-muted-foreground uppercase tracking-wider"
+                >
+                  Hook Module
+                </Label>
                 <Select
                   value={selectedModuleId}
                   onValueChange={(value) => {
@@ -529,45 +549,60 @@ export default function WorkflowEditor({
                     }
                   }}
                 >
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger className="rounded-full h-12 px-6 bg-muted/30 border-transparent">
                     <SelectValue placeholder="Select a hook module" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="custom">Inline Script</SelectItem>
+                  <SelectContent className="rounded-2xl">
+                    <SelectItem value="custom" className="rounded-lg">
+                      Inline Script
+                    </SelectItem>
                     {userModules.map((module) => (
-                      <SelectItem key={module.id} value={module.id}>
+                      <SelectItem
+                        key={module.id}
+                        value={module.id}
+                        className="rounded-lg"
+                      >
                         <div className="font-medium">{module.name}</div>
                       </SelectItem>
                     ))}
                     <SelectItem
                       value="manage"
-                      className="font-semibold text-blue-600"
+                      className="font-bold text-primary rounded-lg"
                     >
-                      <Plus className="w-3 h-3 inline mr-1" />
-                      Manage Modules...
+                      <Plus className="w-4 h-4 inline mr-2" />
+                      Manage Modules
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Hooks allow you to intercept and modify MCP requests and
+                  responses using custom JavaScript logic.
+                </p>
+              </div>
             </div>
 
-            {/* カスタムスクリプト編集（カスタムが選択された場合のみ表示） */}
-            {selectedModuleId === "custom" && (
-              <div>
-                <Label htmlFor="hook-script" className="text-sm font-medium">
-                  Inline Script
-                </Label>
-                <div className="mt-1">
-                  <HookModuleEditor
-                    value={nodeScript}
-                    onChange={(value) => setNodeScript(value)}
-                    height="200px"
-                    placeholder="// Enter JavaScript code here
-// context object is available with request and response data"
-                  />
-                </div>
+            {/* カスタムスクリプト編集 */}
+            <div className="md:col-span-8 space-y-2">
+              <Label
+                htmlFor="hook-script"
+                className="text-sm font-bold ml-2 text-muted-foreground uppercase tracking-wider"
+              >
+                {selectedModuleId === "custom"
+                  ? "Inline Script"
+                  : "Module Preview"}
+              </Label>
+              <div className="rounded-2xl overflow-hidden border border-muted shadow-inner bg-muted/20">
+                <HookModuleEditor
+                  value={nodeScript}
+                  onChange={(value) => setNodeScript(value)}
+                  height="300px"
+                  placeholder="// Enter JavaScript code here\n// context object is available with request and response data"
+                />
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}

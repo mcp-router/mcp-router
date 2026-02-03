@@ -12,7 +12,11 @@ import {
   SelectValue,
 } from "@mcp_router/ui";
 import { AlertCircle, ChevronLeft, ChevronRight, Search } from "lucide-react";
-import { McpServerCard, RegistryServerWithMeta, GitHubStats } from "./McpServerCard";
+import {
+  McpServerCard,
+  RegistryServerWithMeta,
+  GitHubStats,
+} from "./McpServerCard";
 import { McpServerDetailsModal } from "./McpServerDetailsModal";
 import { cn } from "@/renderer/utils/tailwind-utils";
 import { usePlatformAPI } from "@/renderer/platform-api";
@@ -49,7 +53,9 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
     undefined,
   );
   const [sortOption, setSortOption] = useState<SortOption>("stars");
-  const [githubStats, setGithubStats] = useState<Record<string, GitHubStats | null>>({});
+  const [githubStats, setGithubStats] = useState<
+    Record<string, GitHubStats | null>
+  >({});
 
   // Modal state
   const [selectedServer, setSelectedServer] =
@@ -276,19 +282,29 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="stars">
-              {t("marketplace.servers.sortStars", { defaultValue: "Most Stars" })}
+              {t("marketplace.servers.sortStars", {
+                defaultValue: "Most Stars",
+              })}
             </SelectItem>
             <SelectItem value="recent">
-              {t("marketplace.servers.sortRecent", { defaultValue: "Recently Added" })}
+              {t("marketplace.servers.sortRecent", {
+                defaultValue: "Recently Added",
+              })}
             </SelectItem>
             <SelectItem value="updated">
-              {t("marketplace.servers.sortUpdated", { defaultValue: "Recently Updated" })}
+              {t("marketplace.servers.sortUpdated", {
+                defaultValue: "Recently Updated",
+              })}
             </SelectItem>
             <SelectItem value="verified">
-              {t("marketplace.servers.sortVerified", { defaultValue: "Verified First" })}
+              {t("marketplace.servers.sortVerified", {
+                defaultValue: "Verified First",
+              })}
             </SelectItem>
             <SelectItem value="name">
-              {t("marketplace.servers.sortName", { defaultValue: "Name (A-Z)" })}
+              {t("marketplace.servers.sortName", {
+                defaultValue: "Name (A-Z)",
+              })}
             </SelectItem>
           </SelectContent>
         </Select>

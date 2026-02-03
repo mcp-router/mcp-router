@@ -488,7 +488,7 @@ const ClientApps: React.FC = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-3">
                   {/* Display icon if available */}
-                  <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center soft-shadow border border-white/10 p-2">
+                  <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center soft-shadow border border-white/10 p-2 text-foreground [&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_ellipse]:fill-current [&_polygon]:fill-current">
                     {client.icon ? (
                       <div
                         className="w-full h-full flex items-center justify-center"

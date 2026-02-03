@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { HeatmapData } from "@mcp_router/shared";
 import { Card } from "@mcp_router/ui";
+import { cn } from "@/renderer/utils/tailwind-utils";
 
 interface ActivityHeatmapProps {
   data: HeatmapData;
@@ -16,7 +17,7 @@ interface ActivityHeatmapProps {
  * アクティビティカウントに応じた色を返す
  */
 const getHeatColor = (count: number, maxCount: number): string => {
-  if (count === 0 || maxCount === 0) return "bg-muted/30";
+  if (count === 0 || maxCount === 0) return "bg-muted/20";
 
   const intensity = count / maxCount;
   if (intensity >= 0.75) return "bg-primary";
@@ -26,11 +27,12 @@ const getHeatColor = (count: number, maxCount: number): string => {
 };
 
 /**
- * 過去N日間の日付配列を生成（今日から過去に向かって）
+ * Generate an array of dates for the last N days (from past to today)
  */
 const generateDateRange = (days: number): string[] => {
   const dates: string[] = [];
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   for (let i = 0; i < days; i++) {
     const date = new Date(today);
@@ -39,11 +41,11 @@ const generateDateRange = (days: number): string[] => {
     dates.push(dateStr);
   }
 
-  return dates.reverse(); // 古い日付が先に来るように
+  return dates.reverse();
 };
 
 /**
- * 日付を短い形式でフォーマット
+ * Format date in short format
  */
 const formatDateShort = (dateStr: string, locale: string): string => {
   const date = new Date(dateStr);
@@ -51,7 +53,7 @@ const formatDateShort = (dateStr: string, locale: string): string => {
 };
 
 /**
- * 曜日を取得
+ * Get day of week (0-6)
  */
 const getDayOfWeek = (dateStr: string): number => {
   return new Date(dateStr).getDay();
@@ -62,14 +64,14 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
   selectedDate,
   onDateSelect,
   loading = false,
-  days = 30,
+  days = 180,
 }) => {
   const { t } = useTranslation();
 
-  // 日付範囲を生成
+  // Generate date range
   const dateRange = useMemo(() => generateDateRange(days), [days]);
 
-  // 日付ごとのカウントを集計
+  // Aggregate counts by date
   const dailyCounts = useMemo(() => {
     const counts = new Map<string, number>();
 
@@ -81,7 +83,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
     return counts;
   }, [data.cells]);
 
-  // 最大カウント（日単位）
+  // Max daily count
   const maxDailyCount = useMemo(() => {
     let max = 0;
     for (const count of dailyCounts.values()) {
@@ -90,30 +92,24 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
     return max;
   }, [dailyCounts]);
 
-  // 週ごとにグループ化（GitHub風レイアウト用）
+  // Group by week (GitHub style layout)
   const weeks = useMemo(() => {
     const result: string[][] = [];
-    let currentWeek: string[] = [];
-
-    // 最初の日付の曜日に合わせて空白を追加
-    if (dateRange.length > 0) {
-      const firstDayOfWeek = getDayOfWeek(dateRange[0]);
-      for (let i = 0; i < firstDayOfWeek; i++) {
-        currentWeek.push("");
-      }
-    }
+    let currentWeek: string[] = Array(7).fill("");
 
     for (const date of dateRange) {
-      currentWeek.push(date);
-      if (getDayOfWeek(date) === 6) {
-        // 土曜日で週を区切る
+      const dayIndex = getDayOfWeek(date);
+      currentWeek[dayIndex] = date;
+
+      if (dayIndex === 6) {
+        // End of week (Saturday)
         result.push(currentWeek);
-        currentWeek = [];
+        currentWeek = Array(7).fill("");
       }
     }
 
-    // 残りの日を追加
-    if (currentWeek.length > 0) {
+    // Add last partial week
+    if (currentWeek.some((d) => d !== "")) {
       result.push(currentWeek);
     }
 
@@ -122,7 +118,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
 
   if (loading) {
     return (
-      <Card className="p-4">
+      <Card className="p-8 rounded-[2rem] border-border/40 bg-card/40 backdrop-blur-sm shadow-sm">
         <div className="flex justify-center items-center h-32">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -130,7 +126,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
     );
   }
 
-  // 曜日ラベル
+  // Day labels
   const dayLabels = [
     t("logs.activity.heatmap.sun", "Sun"),
     t("logs.activity.heatmap.mon", "Mon"),
@@ -142,83 +138,84 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
   ];
 
   return (
-    <Card className="p-4">
-      <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-        <span>📊</span>
-        {t("logs.activity.heatmap.title", "Activity Heatmap")}
-      </h3>
+    <Card className="p-10 rounded-[2.5rem] border-border/40 bg-card/40 backdrop-blur-sm soft-shadow">
+      <div className="flex items-center justify-between mb-8">
+        <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+          <span className="text-lg opacity-100">📊</span>
+          {t("logs.activity.heatmap.title", "Activity Heatmap")}
+        </h3>
+        {selectedDate && (
+          <div className="text-xs font-bold text-primary bg-primary/10 px-4 py-1.5 rounded-full">
+            📅{" "}
+            {new Date(selectedDate).toLocaleDateString(t("locale", "en-US"), {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
+            {" • "}
+            {dailyCounts.get(selectedDate) || 0}{" "}
+            {t("logs.activity.heatmap.activities", "activities")}
+          </div>
+        )}
+      </div>
 
-      <div className="overflow-x-auto">
-        <div className="inline-flex gap-[3px]">
-          {/* 曜日ラベル（縦に7行） */}
-          <div className="flex flex-col gap-[3px] pr-2">
+      <div className="overflow-x-auto pb-4 -mb-4">
+        <div className="inline-flex gap-2 pb-2 px-1">
+          {/* Day labels */}
+          <div className="flex flex-col gap-2 pr-4 pt-[2px] sticky left-0 bg-card/40 backdrop-blur-sm z-20">
             {dayLabels.map((label, i) => (
               <div
                 key={i}
-                className="h-[12px] text-[10px] leading-[12px] text-muted-foreground"
+                className="h-[16px] text-[9px] font-black uppercase leading-[16px] text-muted-foreground/40"
               >
-                {i % 2 === 0 ? label : ""}
+                {i % 2 === 0 ? label[0] : ""}
               </div>
             ))}
           </div>
 
-          {/* ヒートマップグリッド（週が列、曜日が行） */}
-          {weeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="flex flex-col gap-[3px]">
-              {Array.from({ length: 7 }).map((_, dayIndex) => {
-                const date = week[dayIndex] || "";
-                const count = date ? dailyCounts.get(date) || 0 : 0;
-                const isSelected = date === selectedDate;
+          {/* Grid */}
+          <div className="flex gap-2">
+            {weeks.map((week, weekIndex) => (
+              <div key={weekIndex} className="flex flex-col gap-2">
+                {week.map((date, dayIndex) => {
+                  const count = date ? dailyCounts.get(date) || 0 : 0;
+                  const isSelected = date === selectedDate;
 
-                if (!date) {
+                  if (!date) {
+                    return (
+                      <div
+                        key={dayIndex}
+                        className="w-[16px] h-[16px] rounded-sm bg-transparent"
+                      />
+                    );
+                  }
+
                   return (
-                    <div
+                    <button
                       key={dayIndex}
-                      className="w-[12px] h-[12px] rounded-sm bg-transparent"
+                      onClick={() => onDateSelect(date)}
+                      className={cn(
+                        "w-[16px] h-[16px] rounded-sm transition-all duration-200",
+                        getHeatColor(count, maxDailyCount),
+                        isSelected
+                          ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-125 z-10"
+                          : "hover:scale-125 hover:z-10",
+                      )}
+                      title={`${formatDateShort(date, t("locale", "en-US"))}: ${count} ${t("logs.activity.heatmap.activities", "activities")}`}
                     />
                   );
-                }
-
-                return (
-                  <button
-                    key={dayIndex}
-                    onClick={() => onDateSelect(date)}
-                    className={`
-                      w-[12px] h-[12px] rounded-sm transition-all
-                      ${getHeatColor(count, maxDailyCount)}
-                      ${isSelected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""}
-                      hover:ring-1 hover:ring-muted-foreground
-                    `}
-                    title={`${formatDateShort(date, t("locale", "en-US"))}: ${count} ${t("logs.activity.heatmap.activities", "activities")}`}
-                  />
-                );
-              })}
-            </div>
-          ))}
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* 選択中の日付表示 */}
-      {selectedDate && (
-        <div className="mt-3 text-sm text-muted-foreground">
-          📅{" "}
-          {new Date(selectedDate).toLocaleDateString(t("locale", "en-US"), {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            weekday: "long",
-          })}
-          {" - "}
-          {dailyCounts.get(selectedDate) || 0}{" "}
-          {t("logs.activity.heatmap.activities", "activities")}
-        </div>
-      )}
-
-      {/* 凡例 */}
-      <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+      {/* Legend */}
+      <div className="mt-10 pt-6 border-t border-border/20 flex items-center justify-end gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">
         <span>{t("logs.activity.heatmap.less", "Less")}</span>
-        <div className="flex gap-[3px]">
-          <div className="w-[12px] h-[12px] rounded-sm bg-muted/30" />
+        <div className="flex gap-1.5">
+          <div className="w-[12px] h-[12px] rounded-sm bg-muted/20" />
           <div className="w-[12px] h-[12px] rounded-sm bg-primary/20" />
           <div className="w-[12px] h-[12px] rounded-sm bg-primary/40" />
           <div className="w-[12px] h-[12px] rounded-sm bg-primary/70" />

@@ -2,6 +2,8 @@ import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { WordCloudItem } from "@mcp_router/shared";
 import { Card } from "@mcp_router/ui";
+import { IconSearch } from "@tabler/icons-react";
+import { cn } from "@/renderer/utils/tailwind-utils";
 
 interface QueryWordCloudProps {
   data: WordCloudItem[];
@@ -45,19 +47,19 @@ const QueryWordCloud: React.FC<QueryWordCloudProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // 表示するデータを制限
+  // Limit display data
   const displayData = useMemo(() => {
     return data.slice(0, maxWords);
   }, [data, maxWords]);
 
-  // 最大値を計算
+  // Calculate max value
   const maxValue = useMemo(() => {
     return displayData.reduce((max, item) => Math.max(max, item.value), 0);
   }, [displayData]);
 
   if (loading) {
     return (
-      <Card className="p-4 h-full">
+      <Card className="p-8 h-full rounded-[2rem] border-border/40 bg-card/40 backdrop-blur-sm shadow-sm">
         <div className="flex justify-center items-center h-32">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -67,34 +69,37 @@ const QueryWordCloud: React.FC<QueryWordCloudProps> = ({
 
   if (displayData.length === 0) {
     return (
-      <Card className="p-4 h-full">
-        <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-          <span>🔍</span>
+      <Card className="p-10 h-full rounded-[2.5rem] border-border/40 bg-card/40 backdrop-blur-sm soft-shadow">
+        <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 mb-8 flex items-center gap-2">
+          <IconSearch size={16} className="text-primary/60" />
           {t("logs.activity.wordcloud.title", "Query Keywords")}
         </h3>
-        <div className="flex items-center justify-center h-24 text-muted-foreground text-sm">
-          {t("logs.activity.wordcloud.empty", "No queries for selected date")}
+        <div className="flex flex-col items-center justify-center h-48 text-muted-foreground/40 text-sm bg-muted/10 rounded-3xl border border-dashed border-border/40">
+          <IconSearch size={32} className="opacity-20 mb-4" />
+          <p className="font-bold tracking-tight">
+            {t("logs.activity.wordcloud.empty", "No queries for selected date")}
+          </p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-4 h-full">
-      <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-        <span>🔍</span>
+    <Card className="p-10 h-full rounded-[2.5rem] border-border/40 bg-card/40 backdrop-blur-sm soft-shadow flex flex-col">
+      <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 mb-8 flex items-center gap-2">
+        <IconSearch size={16} className="text-primary/60" />
         {t("logs.activity.wordcloud.title", "Query Keywords")}
       </h3>
 
-      <div className="flex flex-wrap gap-2 items-center justify-center min-h-24">
+      <div className="flex-1 flex flex-wrap gap-x-4 gap-y-3 items-center justify-center min-h-48 px-4 bg-background/20 rounded-[1.5rem] border border-border/10 p-6 shadow-inner">
         {displayData.map((item, index) => (
           <span
             key={`${item.text}-${index}`}
-            className={`
-              inline-block px-2 py-1 rounded transition-opacity hover:opacity-80
-              ${getFontSize(item.value, maxValue)}
-              ${getWordColor(item.value, maxValue)}
-            `}
+            className={cn(
+              "inline-block px-3 py-1 rounded-full transition-all duration-300 hover:scale-110 cursor-default tracking-tight",
+              getFontSize(item.value, maxValue),
+              getWordColor(item.value, maxValue),
+            )}
             title={`${item.text}: ${item.value} ${t("logs.activity.wordcloud.times", "times")}`}
           >
             {item.text}
@@ -103,7 +108,7 @@ const QueryWordCloud: React.FC<QueryWordCloudProps> = ({
       </div>
 
       {data.length > maxWords && (
-        <div className="mt-2 text-xs text-muted-foreground text-center">
+        <div className="mt-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 text-center">
           {t(
             "logs.activity.wordcloud.showing",
             "Showing {{count}} of {{total}} keywords",

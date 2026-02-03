@@ -178,32 +178,36 @@ const ServerDetailsGeneralSettings: React.FC<
             <FolderKanban className="h-4 w-4 text-muted-foreground" />
             {t("serverSettings.project", { defaultValue: "Project" })}
           </Label>
-          <div className="flex flex-wrap gap-2 items-center">
+          <div className="flex flex-wrap gap-3 items-center">
             <Select
               value={currentProjectId ?? "__none__"}
               onValueChange={onAssignProject}
               disabled={assigning}
             >
-              <SelectTrigger className="w-64">
+              <SelectTrigger className="w-64 h-11 rounded-full px-5 bg-muted/20 border-muted/40 focus:bg-muted/30 transition-all">
                 <SelectValue
                   placeholder={t("projects.unassigned", {
                     defaultValue: "Unassigned",
                   })}
                 />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">
+              <SelectContent className="rounded-2xl">
+                <SelectItem value="__none__" className="rounded-lg">
                   {t("projects.unassigned", { defaultValue: "Unassigned" })}
                 </SelectItem>
                 {projectOptions.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
+                  <SelectItem key={p.id} value={p.id} className="rounded-lg">
                     {p.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {onOpenManageProjects && (
-              <Button variant="outline" onClick={onOpenManageProjects}>
+              <Button
+                variant="outline"
+                onClick={onOpenManageProjects}
+                className="rounded-full h-11 px-6"
+              >
                 {t("serverSettings.manageProjects", {
                   defaultValue: "Manage Projects",
                 })}
@@ -217,9 +221,9 @@ const ServerDetailsGeneralSettings: React.FC<
       <div className="space-y-3">
         <Label
           htmlFor="server-name"
-          className="text-base font-medium flex items-center gap-1.5"
+          className="text-base font-bold flex items-center gap-2 px-1"
         >
-          <Info className="h-4 w-4 text-muted-foreground" />
+          <Info className="h-4 w-4 text-primary" />
           {t("serverDetails.serverName")}
         </Label>
         <Input
@@ -227,6 +231,7 @@ const ServerDetailsGeneralSettings: React.FC<
           value={editedName}
           onChange={(e) => setEditedName(e.target.value)}
           placeholder={t("discoverServers.serverNameRequired")}
+          className="h-11 rounded-full px-5 bg-muted/20 border-muted/40 focus:bg-muted/30 transition-all"
         />
       </div>
 
@@ -237,9 +242,9 @@ const ServerDetailsGeneralSettings: React.FC<
           <div className="space-y-3">
             <Label
               htmlFor="server-command"
-              className="text-base font-medium flex items-center gap-1.5"
+              className="text-base font-bold flex items-center gap-2 px-1"
             >
-              <Terminal className="h-4 w-4 text-muted-foreground" />
+              <Terminal className="h-4 w-4 text-primary" />
               {t("serverDetails.command")}
             </Label>
             <Input
@@ -247,26 +252,26 @@ const ServerDetailsGeneralSettings: React.FC<
               value={editedCommand}
               onChange={(e) => setEditedCommand(e.target.value)}
               placeholder={t("serverDetails.commandPlaceholder")}
-              className="font-mono"
+              className="h-11 rounded-full px-5 bg-muted/20 border-muted/40 focus:bg-muted/30 transition-all font-mono"
             />
           </div>
 
           {/* Arguments */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <Label className="text-base font-medium flex items-center gap-1.5">
-                <FileText className="h-4 w-4 text-muted-foreground" />
+          <div className="space-y-4">
+            <div className="flex justify-between items-center px-1">
+              <Label className="text-base font-bold flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
                 {t("serverDetails.arguments")}
               </Label>
-              <Badge variant="outline" className="font-mono">
+              <Badge variant="outline" className="font-mono rounded-full px-3">
                 {editedArgs.length} {t("serverDetails.itemsCount")}
               </Badge>
             </div>
 
-            <div className="space-y-2 bg-muted/30 p-3 rounded-md">
+            <div className="space-y-4 bg-muted/10 p-6 rounded-2xl border border-muted/40">
               {editedArgs.length === 0 && (
-                <div className="text-sm text-muted-foreground italic flex items-center justify-center py-4">
-                  <Info className="h-4 w-4 mr-2 text-muted-foreground" />
+                <div className="text-sm text-muted-foreground italic flex items-center justify-center py-8">
+                  <Info className="h-4 w-4 mr-2 text-muted-foreground/50" />
                   {t("serverDetails.noArguments")}
                 </div>
               )}
@@ -277,7 +282,7 @@ const ServerDetailsGeneralSettings: React.FC<
                     value={arg}
                     onChange={(e) => updateArg(index, e.target.value)}
                     placeholder={t("serverDetails.argumentPlaceholder")}
-                    className="font-mono group-hover:border-primary/50 transition-colors"
+                    className="h-11 rounded-full px-5 bg-muted/20 border-muted/40 focus:bg-muted/30 transition-all font-mono"
                   />
                   <Button
                     variant="outline"
@@ -285,24 +290,24 @@ const ServerDetailsGeneralSettings: React.FC<
                     onClick={() => removeArg(index)}
                     type="button"
                     title={t("serverDetails.remove")}
-                    className="text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
+                    className="h-11 w-11 rounded-full text-muted-foreground hover:text-destructive hover:border-destructive transition-colors shrink-0"
                   >
                     <Trash className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
-            </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addArg}
-              type="button"
-              className="mt-2 border-dashed hover:border-primary/70"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {t("serverDetails.addArgument")}
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={addArg}
+                type="button"
+                className="w-full h-10 rounded-full border-dashed hover:border-primary/70 bg-transparent"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {t("serverDetails.addArgument")}
+              </Button>
+            </div>
           </div>
         </>
       ) : (
@@ -345,23 +350,27 @@ const ServerDetailsGeneralSettings: React.FC<
       )}
 
       {/* Final Command Display */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Terminal className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium text-primary">
+      <div className="space-y-4 pt-4">
+        <div className="flex items-center gap-2 px-1">
+          <Terminal className="h-4 w-4 text-primary" />
+          <h3 className="text-base font-bold text-primary">
             {t("serverDetails.finalCommand")}
           </h3>
         </div>
-        {server.serverType === "local" ? (
-          <FinalCommandDisplay
-            server={server}
-            inputParamValues={inputParamValues}
-            editedCommand={editedCommand}
-            editedArgs={editedArgs}
-          />
-        ) : (
-          <ServerDetailsRemote server={server} isEditing={false} />
-        )}
+        <div className="rounded-2xl overflow-hidden border border-border/40 soft-shadow">
+          {server.serverType === "local" ? (
+            <FinalCommandDisplay
+              server={server}
+              inputParamValues={inputParamValues}
+              editedCommand={editedCommand}
+              editedArgs={editedArgs}
+            />
+          ) : (
+            <div className="p-4 bg-muted/20">
+              <ServerDetailsRemote server={server} isEditing={false} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

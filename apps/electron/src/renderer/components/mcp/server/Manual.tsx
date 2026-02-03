@@ -30,6 +30,7 @@ import { Checkbox } from "@mcp_router/ui";
 import { RadioGroup, RadioGroupItem } from "@mcp_router/ui";
 import { ScrollArea } from "@mcp_router/ui";
 import { useServerStore, useProjectStore } from "@/renderer/stores";
+import { cn } from "@/renderer/utils/tailwind-utils";
 import {
   Select,
   SelectContent,
@@ -405,46 +406,51 @@ const Manual: React.FC = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-8">
+    <div className="p-0 space-y-0">
       <Tabs defaultValue="json" className="w-full">
         {/* Underline tabs with softer weight and no header vibe */}
-        <TabsList className="relative flex w-full items-center gap-6 border-b border-border/60 bg-transparent p-0">
-          <TabsTrigger
-            value="json"
-            className="h-10 rounded-none border-b border-transparent bg-transparent px-1 text-sm font-medium data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
-          >
-            <span className="inline-flex items-center gap-2">
-              <FileJson className="h-4 w-4" /> {t("manual.importFromJson")}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="dxt"
-            className="h-10 rounded-none border-b border-transparent bg-transparent px-1 text-sm font-medium data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
-          >
-            <span className="inline-flex items-center gap-2">
-              <FileCode2 className="h-4 w-4" /> {t("manual.importFromDxt")}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="local"
-            className="h-10 rounded-none border-b border-transparent bg-transparent px-1 text-sm font-medium data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
-          >
-            <span className="inline-flex items-center gap-2">
-              <HardDrive className="h-4 w-4" /> {t("manual.createManually")}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="remote"
-            className="h-10 rounded-none border-b border-transparent bg-transparent px-1 text-sm font-medium data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
-          >
-            <span className="inline-flex items-center gap-2">
-              <Globe className="h-4 w-4" /> {t("manual.remote.name")}
-            </span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="px-8 pt-6 pb-2">
+          <TabsList className="bg-muted/30 p-1 rounded-full w-fit">
+            <TabsTrigger
+              value="json"
+              className="rounded-full px-6 transition-all"
+            >
+              <span className="inline-flex items-center gap-2">
+                <FileJson className="h-4 w-4" /> {t("manual.importFromJson")}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="dxt"
+              className="rounded-full px-6 transition-all"
+            >
+              <span className="inline-flex items-center gap-2">
+                <FileCode2 className="h-4 w-4" /> {t("manual.importFromDxt")}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="local"
+              className="rounded-full px-6 transition-all"
+            >
+              <span className="inline-flex items-center gap-2">
+                <HardDrive className="h-4 w-4" /> {t("manual.createManually")}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="remote"
+              className="rounded-full px-6 transition-all"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Globe className="h-4 w-4" /> {t("manual.remote.name")}
+              </span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* JSON Import */}
-        <TabsContent value="json" className="space-y-4">
+        <TabsContent
+          value="json"
+          className="space-y-6 p-8 mt-0 focus-visible:outline-none"
+        >
           <TabIntro
             right={
               importedServers ? (
@@ -453,6 +459,7 @@ const Manual: React.FC = () => {
                   size="icon"
                   onClick={clearImportedServers}
                   title={t("common.clear")}
+                  className="rounded-full"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -462,9 +469,9 @@ const Manual: React.FC = () => {
             {t("importFromJson.description")}
           </TabIntro>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {importedServers ? (
-              <ScrollArea className="h-60 rounded-md border bg-muted/30 p-3">
+              <ScrollArea className="h-80 rounded-2xl border bg-muted/30 p-4">
                 <pre className="text-xs text-muted-foreground font-mono whitespace-pre-wrap break-words">
                   {JSON.stringify(importedServers, null, 2)}
                 </pre>
@@ -483,17 +490,17 @@ const Manual: React.FC = () => {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
       "env": {
-        "PUPPETEER_LAUNCH_OPTIONS": "{ \\"headless\\": false }",
+        "PUPPETEER_LAUNCH_OPTIONS": "{ \"headless\": false }",
         "ALLOW_DANGEROUS": "true"
       }
     }
   }
 }`}
-                  className="font-mono h-80 text-sm"
+                  className="font-mono h-80 text-sm rounded-2xl p-4 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all"
                 />
 
                 {jsonError && (
-                  <Alert variant="destructive">
+                  <Alert variant="destructive" className="rounded-2xl">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>{t("importFromJson.errorTitle")}</AlertTitle>
                     <AlertDescription>{jsonError}</AlertDescription>
@@ -503,16 +510,16 @@ const Manual: React.FC = () => {
                 <Button
                   onClick={handleJsonImport}
                   disabled={isLoadingJson || !jsonInput.trim()}
-                  className="flex items-center justify-center gap-2 w-full"
+                  className="flex items-center justify-center gap-2 w-full h-12 rounded-full text-base font-semibold soft-shadow transition-all hover:-translate-y-0.5"
                 >
                   {isLoadingJson ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin" />
                       {t("common.loading")}
                     </>
                   ) : (
                     <>
-                      <Upload className="h-4 w-4" />
+                      <Upload className="h-5 w-5" />
                       {t("importFromJson.import")}
                     </>
                   )}
@@ -523,11 +530,17 @@ const Manual: React.FC = () => {
         </TabsContent>
 
         {/* DXT Import */}
-        <TabsContent value="dxt" className="space-y-4">
+        <TabsContent
+          value="dxt"
+          className="space-y-6 p-8 mt-0 focus-visible:outline-none"
+        >
           <TabIntro>{t("manual.dxt.description")}</TabIntro>
 
-          <div className="space-y-4">
-            <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+          <div className="space-y-6">
+            <div
+              className="border-2 border-dashed border-border/60 rounded-2xl p-12 text-center bg-muted/10 hover:bg-muted/20 transition-all cursor-pointer group"
+              onClick={() => fileInputRef.current?.click()}
+            >
               <input
                 ref={fileInputRef}
                 type="file"
@@ -537,9 +550,11 @@ const Manual: React.FC = () => {
               />
               {dxtFile ? (
                 <div className="space-y-4">
-                  <FileCode2 className="h-12 w-12 mx-auto text-muted-foreground" />
+                  <div className="h-16 w-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                    <FileCode2 className="h-8 w-8 text-primary" />
+                  </div>
                   <div>
-                    <p className="text-sm font-medium">{dxtFile.name}</p>
+                    <p className="text-base font-bold">{dxtFile.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {(dxtFile.size / 1024).toFixed(2)} KB
                     </p>
@@ -548,7 +563,9 @@ const Manual: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
+                      className="rounded-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setDxtFile(null);
                         setDxtError(null);
                         if (fileInputRef.current)
@@ -561,23 +578,24 @@ const Manual: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div
-                  className="cursor-pointer"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-sm text-muted-foreground">
-                    {t("manual.dxt.clickToUpload")}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("manual.dxt.dxtFilesOnly")}
-                  </p>
+                <div className="space-y-4">
+                  <div className="h-16 w-16 mx-auto rounded-full bg-muted/50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Upload className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-base font-bold">
+                      {t("manual.dxt.clickToUpload")}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {t("manual.dxt.dxtFilesOnly")}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
 
             {dxtError && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="rounded-2xl">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>{t("manual.dxt.error")}</AlertTitle>
                 <AlertDescription>{dxtError}</AlertDescription>
@@ -587,16 +605,16 @@ const Manual: React.FC = () => {
             <Button
               onClick={handleDxtImport}
               disabled={isLoadingDxt || !dxtFile}
-              className="flex items-center justify-center gap-2 w-full"
+              className="flex items-center justify-center gap-2 w-full h-12 rounded-full text-base font-semibold soft-shadow transition-all hover:-translate-y-0.5"
             >
               {isLoadingDxt ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                   {t("common.loading")}
                 </>
               ) : (
                 <>
-                  <Upload className="h-4 w-4" />
+                  <Upload className="h-5 w-5" />
                   {t("manual.dxt.importServers")}
                 </>
               )}
@@ -605,13 +623,16 @@ const Manual: React.FC = () => {
         </TabsContent>
 
         {/* Local */}
-        <TabsContent value="local" className="space-y-4">
+        <TabsContent
+          value="local"
+          className="space-y-6 p-8 mt-0 focus-visible:outline-none"
+        >
           <TabIntro>{t("manual.description")}</TabIntro>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <Row>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="serverName" className="text-right">
+              <div className="flex items-center gap-2 px-1">
+                <Label htmlFor="serverName" className="font-bold">
                   {t("manual.remote.serverName")}{" "}
                   <span className="text-destructive">*</span>
                 </Label>
@@ -630,20 +651,21 @@ const Manual: React.FC = () => {
                 }}
                 placeholder="puppeteer"
                 aria-invalid={!!validationErrors.serverName}
-                className={
-                  validationErrors.serverName ? "border-destructive" : ""
-                }
+                className={cn(
+                  "h-12 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all",
+                  validationErrors.serverName ? "border-destructive" : "",
+                )}
               />
               {validationErrors.serverName && (
-                <p className="text-xs text-destructive">
+                <p className="text-xs text-destructive px-1">
                   {validationErrors.serverName}
                 </p>
               )}
             </Row>
 
             <Row>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="command" className="text-right">
+              <div className="flex items-center gap-2 px-1">
+                <Label htmlFor="command" className="font-bold">
                   {t("manual.command")}{" "}
                   <span className="text-destructive">*</span>
                 </Label>
@@ -662,18 +684,21 @@ const Manual: React.FC = () => {
                 }}
                 placeholder="npx"
                 aria-invalid={!!validationErrors.command}
-                className={validationErrors.command ? "border-destructive" : ""}
+                className={cn(
+                  "h-12 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all",
+                  validationErrors.command ? "border-destructive" : "",
+                )}
               />
               {validationErrors.command && (
-                <p className="text-xs text-destructive">
+                <p className="text-xs text-destructive px-1">
                   {validationErrors.command}
                 </p>
               )}
             </Row>
 
             <Row>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="args" className="text-right">
+              <div className="flex items-center gap-2 px-1">
+                <Label htmlFor="args" className="font-bold">
                   {t("manual.args")} <span className="text-destructive">*</span>
                 </Label>
               </div>
@@ -691,38 +716,45 @@ const Manual: React.FC = () => {
                 }}
                 placeholder="-y @modelcontextprotocol/server-puppeteer"
                 aria-invalid={!!validationErrors.args}
-                className={validationErrors.args ? "border-destructive" : ""}
+                className={cn(
+                  "h-12 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all",
+                  validationErrors.args ? "border-destructive" : "",
+                )}
               />
               {validationErrors.args ? (
-                <p className="text-xs text-destructive">
+                <p className="text-xs text-destructive px-1">
                   {validationErrors.args}
                 </p>
               ) : (
-                <FieldNote>{t("manual.argsHelp")}</FieldNote>
+                <div className="px-1">
+                  <FieldNote>{t("manual.argsHelp")}</FieldNote>
+                </div>
               )}
             </Row>
 
-            <div className="mt-4">
-              <div className="flex items-center justify-between mb-2">
+            <div className="mt-2 p-6 rounded-2xl bg-muted/10 border border-muted/50 space-y-4">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Label>{t("serverDetails.environmentVariables")}</Label>
+                  <Label className="font-bold">
+                    {t("serverDetails.environmentVariables")}
+                  </Label>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={addEnvVar}
-                  className="h-8"
+                  className="h-9 rounded-full px-4"
                 >
                   <Plus className="h-3.5 w-3.5 mr-2" />
                   {t("serverDetails.addEnvironmentVariable")}
                 </Button>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {envVars.map((envVar, index) => (
-                  <div key={index} className="flex items-center gap-2">
+                  <div key={index} className="flex items-center gap-3">
                     <Input
-                      className="flex-1"
+                      className="flex-1 h-11 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all"
                       placeholder={t("serverDetails.key")}
                       value={envVar.key}
                       onChange={(e) =>
@@ -730,7 +762,7 @@ const Manual: React.FC = () => {
                       }
                     />
                     <Input
-                      className="flex-1"
+                      className="flex-1 h-11 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all"
                       placeholder={t("serverDetails.value")}
                       value={envVar.value}
                       onChange={(e) =>
@@ -742,33 +774,42 @@ const Manual: React.FC = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() => removeEnvVar(index)}
-                      className="h-9 w-9"
+                      className="h-10 w-10 rounded-full hover:bg-destructive/10 hover:text-destructive"
                       aria-label={t("common.remove")}
                     >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}
+                {envVars.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4 italic">
+                    No environment variables added.
+                  </p>
+                )}
               </div>
             </div>
 
             <Row>
-              <Label>{t("serverSettings.project")}</Label>
+              <div className="px-1">
+                <Label className="font-bold">
+                  {t("serverSettings.project")}
+                </Label>
+              </div>
               <Select
                 value={selectedProjectId ?? "__none__"}
                 onValueChange={(v) =>
                   setSelectedProjectId(v === "__none__" ? null : v)
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-12 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all">
                   <SelectValue placeholder={t("projects.unassigned")} />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">
+                <SelectContent className="rounded-2xl">
+                  <SelectItem value="__none__" className="rounded-lg">
                     {t("projects.unassigned")}
                   </SelectItem>
                   {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
+                    <SelectItem key={p.id} value={p.id} className="rounded-lg">
                       {p.name}
                     </SelectItem>
                   ))}
@@ -776,28 +817,34 @@ const Manual: React.FC = () => {
               </Select>
             </Row>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 px-1">
               <Checkbox
                 id="auto-start-local"
                 checked={autoStart}
                 onCheckedChange={(checked) => setAutoStart(!!checked)}
+                className="h-5 w-5 rounded-md"
               />
-              <Label htmlFor="auto-start-local">{t("manual.autoStart")}</Label>
+              <Label
+                htmlFor="auto-start-local"
+                className="font-medium cursor-pointer"
+              >
+                {t("manual.autoStart")}
+              </Label>
             </div>
 
             <Button
               onClick={handleManualCreate}
               disabled={isLoadingManual}
-              className="flex items-center justify-center gap-2 mt-2 w-full"
+              className="flex items-center justify-center gap-2 w-full h-12 rounded-full text-base font-semibold soft-shadow transition-all hover:-translate-y-0.5 mt-4"
             >
               {isLoadingManual ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                   {t("common.loading")}
                 </>
               ) : (
                 <>
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-5 w-5" />
                   {t("manual.create")}
                 </>
               )}
@@ -806,13 +853,16 @@ const Manual: React.FC = () => {
         </TabsContent>
 
         {/* Remote */}
-        <TabsContent value="remote" className="space-y-4">
+        <TabsContent
+          value="remote"
+          className="space-y-6 p-8 mt-0 focus-visible:outline-none"
+        >
           <TabIntro>{t("manual.remote.description")}</TabIntro>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <Row>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="remote-server-name" className="text-right">
+              <div className="flex items-center gap-2 px-1">
+                <Label htmlFor="remote-server-name" className="font-bold">
                   {t("manual.serverName")}{" "}
                   <span className="text-destructive">*</span>
                 </Label>
@@ -831,20 +881,21 @@ const Manual: React.FC = () => {
                 }}
                 placeholder="remote-mcp"
                 aria-invalid={!!remoteValidationErrors.serverName}
-                className={
-                  remoteValidationErrors.serverName ? "border-destructive" : ""
-                }
+                className={cn(
+                  "h-12 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all",
+                  remoteValidationErrors.serverName ? "border-destructive" : "",
+                )}
               />
               {remoteValidationErrors.serverName && (
-                <p className="text-xs text-destructive">
+                <p className="text-xs text-destructive px-1">
                   {remoteValidationErrors.serverName}
                 </p>
               )}
             </Row>
 
             <Row>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="remote-server-url" className="text-right">
+              <div className="flex items-center gap-2 px-1">
+                <Label htmlFor="remote-server-url" className="font-bold">
                   {t("manual.remote.serverUrl")}{" "}
                   <span className="text-destructive">*</span>
                 </Label>
@@ -863,20 +914,21 @@ const Manual: React.FC = () => {
                 }}
                 placeholder="https://example.com/mcp"
                 aria-invalid={!!remoteValidationErrors.serverUrl}
-                className={
-                  remoteValidationErrors.serverUrl ? "border-destructive" : ""
-                }
+                className={cn(
+                  "h-12 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all",
+                  remoteValidationErrors.serverUrl ? "border-destructive" : "",
+                )}
               />
               {remoteValidationErrors.serverUrl && (
-                <p className="text-xs text-destructive">
+                <p className="text-xs text-destructive px-1">
                   {remoteValidationErrors.serverUrl}
                 </p>
               )}
             </Row>
 
             <Row>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="bearer-token" className="text-right">
+              <div className="flex items-center gap-2 px-1">
+                <Label htmlFor="bearer-token" className="font-bold">
                   {t("manual.remote.bearerToken")}
                 </Label>
               </div>
@@ -886,11 +938,12 @@ const Manual: React.FC = () => {
                 value={bearerToken}
                 onChange={(e) => setBearerToken(e.target.value)}
                 placeholder="sk-xxxxxxxxxxxxxxxx"
+                className="h-12 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all"
               />
             </Row>
 
-            <Row>
-              <Label className="text-right">
+            <div className="mt-2 p-6 rounded-2xl bg-muted/10 border border-muted/50 space-y-4">
+              <Label className="font-bold px-1">
                 {t("manual.remote.transportType")}
               </Label>
               <RadioGroup
@@ -898,43 +951,58 @@ const Manual: React.FC = () => {
                 onValueChange={(value: "remote" | "remote-streamable") =>
                   setRemoteServerType(value)
                 }
-                className="flex flex-col space-y-1"
+                className="flex flex-col space-y-3 px-1"
               >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="remote" id="remote-sse" />
-                  <Label htmlFor="remote-sse" className="cursor-pointer">
+                <div className="flex items-center space-x-3 group cursor-pointer">
+                  <RadioGroupItem
+                    value="remote"
+                    id="remote-sse"
+                    className="h-5 w-5"
+                  />
+                  <Label
+                    htmlFor="remote-sse"
+                    className="cursor-pointer font-medium group-hover:text-primary transition-colors"
+                  >
                     {t("manual.remote.transportSSE")}
                   </Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3 group cursor-pointer">
                   <RadioGroupItem
                     value="remote-streamable"
                     id="remote-streamable"
+                    className="h-5 w-5"
                   />
-                  <Label htmlFor="remote-streamable" className="cursor-pointer">
+                  <Label
+                    htmlFor="remote-streamable"
+                    className="cursor-pointer font-medium group-hover:text-primary transition-colors"
+                  >
                     {t("manual.remote.transportStreamable")}
                   </Label>
                 </div>
               </RadioGroup>
-            </Row>
+            </div>
 
             <Row>
-              <Label>{t("serverSettings.project")}</Label>
+              <div className="px-1">
+                <Label className="font-bold">
+                  {t("serverSettings.project")}
+                </Label>
+              </div>
               <Select
                 value={selectedProjectId ?? "__none__"}
                 onValueChange={(v) =>
                   setSelectedProjectId(v === "__none__" ? null : v)
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-12 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all">
                   <SelectValue placeholder={t("projects.unassigned")} />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">
+                <SelectContent className="rounded-2xl">
+                  <SelectItem value="__none__" className="rounded-lg">
                     {t("projects.unassigned")}
                   </SelectItem>
                   {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
+                    <SelectItem key={p.id} value={p.id} className="rounded-lg">
                       {p.name}
                     </SelectItem>
                   ))}
@@ -942,28 +1010,34 @@ const Manual: React.FC = () => {
               </Select>
             </Row>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 px-1">
               <Checkbox
                 id="auto-start-remote"
                 checked={autoStart}
                 onCheckedChange={(checked) => setAutoStart(!!checked)}
+                className="h-5 w-5 rounded-md"
               />
-              <Label htmlFor="auto-start-remote">{t("manual.autoStart")}</Label>
+              <Label
+                htmlFor="auto-start-remote"
+                className="font-medium cursor-pointer"
+              >
+                {t("manual.autoStart")}
+              </Label>
             </div>
 
             <Button
               onClick={connectToRemoteServer}
               disabled={isLoadingRemote}
-              className="flex items-center justify-center gap-2 mt-2 w-full"
+              className="flex items-center justify-center gap-2 w-full h-12 rounded-full text-base font-semibold soft-shadow transition-all hover:-translate-y-0.5 mt-4"
             >
               {isLoadingRemote ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                   {t("common.loading")}
                 </>
               ) : (
                 <>
-                  <ExternalLink className="h-4 w-4" />
+                  <ExternalLink className="h-5 w-5" />
                   {t("manual.remote.connect")}
                 </>
               )}

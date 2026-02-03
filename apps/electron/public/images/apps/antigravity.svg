@@ -1,0 +1,13 @@
+<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Antigravity - Rainbow gradient A shape (Google Antigravity) -->
+  <defs>
+    <linearGradient id="antigravityGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B35"/>
+      <stop offset="25%" stop-color="#F7B731"/>
+      <stop offset="40%" stop-color="#26DE81"/>
+      <stop offset="60%" stop-color="#45AAF2"/>
+      <stop offset="100%" stop-color="#2196F3"/>
+    </linearGradient>
+  </defs>
+  <path d="M60 2 C72 2 78 30 85 55 C92 80 100 95 115 98 C115 98 108 100 100 95 C88 88 82 70 75 50 C68 30 65 20 60 20 C55 20 52 30 45 50 C38 70 32 88 20 95 C12 100 5 98 5 98 C20 95 28 80 35 55 C42 30 48 2 60 2 Z" fill="url(#antigravityGrad)"/>
+</svg>

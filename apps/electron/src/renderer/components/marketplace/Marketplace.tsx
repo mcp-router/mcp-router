@@ -43,59 +43,57 @@ const Marketplace: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col h-full p-6 bg-background/50">
-      <div className="flex flex-col h-full bg-card rounded-2xl soft-shadow overflow-hidden border">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b bg-card/50 backdrop-blur-sm">
-          <h1 className="text-3xl font-extrabold tracking-tight">
-            {t("marketplace.title")}
-          </h1>
-          <MarketplaceSearch
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder={t("marketplace.searchPlaceholder")}
-          />
+    <div className="flex flex-col h-full bg-card rounded-2xl soft-shadow overflow-hidden border">
+      {/* Header */}
+      <div className="flex justify-between items-center p-6 border-b bg-card/50 backdrop-blur-sm">
+        <h1 className="text-3xl font-extrabold tracking-tight">
+          {t("marketplace.title")}
+        </h1>
+        <MarketplaceSearch
+          value={searchQuery}
+          onChange={handleSearchChange}
+          placeholder={t("marketplace.searchPlaceholder")}
+        />
+      </div>
+
+      {/* Tabs */}
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="flex flex-col flex-1 overflow-hidden"
+      >
+        <div className="px-6 pt-6">
+          <TabsList className="bg-muted/50 p-1 rounded-full">
+            <TabsTrigger
+              value="servers"
+              className="rounded-full px-6 transition-all"
+            >
+              {t("marketplace.tabs.servers")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="skills"
+              className="rounded-full px-6 transition-all"
+            >
+              {t("marketplace.tabs.skills")}
+            </TabsTrigger>
+          </TabsList>
         </div>
 
-        {/* Tabs */}
-        <Tabs
-          value={activeTab}
-          onValueChange={handleTabChange}
-          className="flex flex-col flex-1 overflow-hidden"
+        {/* Content Area */}
+        <TabsContent
+          value="servers"
+          className="flex-1 overflow-auto p-6 focus-visible:outline-none"
         >
-          <div className="px-6 pt-6">
-            <TabsList className="bg-muted/50 p-1 rounded-full">
-              <TabsTrigger
-                value="servers"
-                className="rounded-full px-6 transition-all"
-              >
-                {t("marketplace.tabs.servers")}
-              </TabsTrigger>
-              <TabsTrigger
-                value="skills"
-                className="rounded-full px-6 transition-all"
-              >
-                {t("marketplace.tabs.skills")}
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <McpServerGrid searchQuery={searchQuery} />
+        </TabsContent>
 
-          {/* Content Area */}
-          <TabsContent
-            value="servers"
-            className="flex-1 overflow-auto p-6 focus-visible:outline-none"
-          >
-            <McpServerGrid searchQuery={searchQuery} />
-          </TabsContent>
-
-          <TabsContent
-            value="skills"
-            className="flex-1 overflow-auto p-6 focus-visible:outline-none"
-          >
-            <SkillsGrid searchQuery={searchQuery} />
-          </TabsContent>
-        </Tabs>
-      </div>
+        <TabsContent
+          value="skills"
+          className="flex-1 overflow-auto p-6 focus-visible:outline-none"
+        >
+          <SkillsGrid searchQuery={searchQuery} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

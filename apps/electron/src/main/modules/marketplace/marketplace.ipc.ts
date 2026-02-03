@@ -36,15 +36,26 @@ export function setupMarketplaceHandlers(): void {
     return service.getGitHubStats(repoUrl);
   });
 
-  ipcMain.handle("marketplace:githubStatsBatch", async (_, repoUrls: string[]) => {
-    const results = await service.getGitHubStatsBatch(repoUrls);
-    // Convert Map to object for IPC serialization
-    const obj: Record<string, { stars: number; forks: number; openIssues: number; watchers: number } | null> = {};
-    results.forEach((value, key) => {
-      obj[key] = value;
-    });
-    return obj;
-  });
+  ipcMain.handle(
+    "marketplace:githubStatsBatch",
+    async (_, repoUrls: string[]) => {
+      const results = await service.getGitHubStatsBatch(repoUrls);
+      // Convert Map to object for IPC serialization
+      const obj: Record<
+        string,
+        {
+          stars: number;
+          forks: number;
+          openIssues: number;
+          watchers: number;
+        } | null
+      > = {};
+      results.forEach((value, key) => {
+        obj[key] = value;
+      });
+      return obj;
+    },
+  );
 
   // Skills Registry Handlers
   const skillsRegistryService = getSkillsRegistryService();

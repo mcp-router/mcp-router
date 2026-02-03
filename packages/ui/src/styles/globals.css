@@ -1,2 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap");
+
 /* Import centralized CSS variables from tailwind-config package */
 @import "@mcp-router/tailwind-config/base.css";
+
+@layer base {
+  body {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .soft-shadow {
+    box-shadow: 0 4px 20px -2px oklch(0 0 0 / 0.05);
+  }
+}

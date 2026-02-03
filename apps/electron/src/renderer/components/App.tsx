@@ -142,45 +142,50 @@ const App: React.FC = () => {
   // Login is now optional - user can access app without authentication
 
   return (
-    <SidebarProvider defaultOpen={true} className="h-full">
-      <Sonner />
+    <div className="flex h-full w-full overflow-hidden">
+      <Sonner position="bottom-right" />
 
       <SidebarComponent />
-      <main className="flex flex-col flex-1 w-full min-w-0 overflow-auto">
-        <div className="flex flex-col flex-1 pt-8">
-          {/*<SidebarTrigger />*/}
+      <main className="flex flex-col flex-1 w-full min-w-0">
+        <div className="flex flex-col flex-1 pt-[50px] pb-4 pr-4 pl-0 h-screen">
+          <div className="flex-1 w-full overflow-auto bg-card/40 backdrop-blur-sm border border-border/40 rounded-[2.5rem] soft-shadow relative">
+            <div className="max-w-[1600px] mx-auto w-full min-h-full">
+              <Routes>
+                {/* Public routes - no authentication required */}
+                <Route element={<PageLayout />}>
+                  <Route
+                    path="/"
+                    element={<Navigate to="/servers" replace />}
+                  />
+                  <Route path="/servers" element={<Home />} />
+                  <Route path="/servers/add" element={<DiscoverWrapper />} />
+                  <Route path="/clients" element={<ClientApps />} />
+                  <Route path="/logs" element={<LogViewer />} />
+                  <Route path="/marketplace" element={<Marketplace />} />
+                  <Route
+                    path="/hooks"
+                    element={<Navigate to="/workflows" replace />}
+                  />
+                  <Route path="/workflows" element={<WorkflowManager />} />
+                  <Route
+                    path="/workflows/:workflowId"
+                    element={<WorkflowManager />}
+                  />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route
+                    path="/settings/workspaces"
+                    element={<WorkspaceManagement />}
+                  />
+                  <Route path="/skills" element={<SkillsManager />} />
+                </Route>
 
-          <Routes>
-            {/* Public routes - no authentication required */}
-            <Route element={<PageLayout />}>
-              <Route path="/" element={<Navigate to="/servers" replace />} />
-              <Route path="/servers" element={<Home />} />
-              <Route path="/servers/add" element={<DiscoverWrapper />} />
-              <Route path="/clients" element={<ClientApps />} />
-              <Route path="/logs" element={<LogViewer />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route
-                path="/hooks"
-                element={<Navigate to="/workflows" replace />}
-              />
-              <Route path="/workflows" element={<WorkflowManager />} />
-              <Route
-                path="/workflows/:workflowId"
-                element={<WorkflowManager />}
-              />
-              <Route path="/settings" element={<Settings />} />
-              <Route
-                path="/settings/workspaces"
-                element={<WorkspaceManagement />}
-              />
-              <Route path="/skills" element={<SkillsManager />} />
-            </Route>
-
-            <Route path="*" element={<Navigate to="/servers" />} />
-          </Routes>
+                <Route path="*" element={<Navigate to="/servers" />} />
+              </Routes>
+            </div>
+          </div>
         </div>
       </main>
-    </SidebarProvider>
+    </div>
   );
 };
 

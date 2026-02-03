@@ -264,31 +264,31 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-6 flex items-center gap-3">
         <Button
           variant="outline"
           size="sm"
           onClick={() => setIsHomeSettingsOpen(true)}
-          className="gap-1"
+          className="gap-1 rounded-full px-4 h-9"
           title={t("projects.projectSettings", {
             defaultValue: "Project Settings",
           })}
         >
           <SettingsIcon className="h-4 w-4" />
         </Button>
-        <div className="w-36">
+        <div className="w-40">
           <Select
             value={selectedProjectId === null ? "__all__" : selectedProjectId}
             onValueChange={(value) =>
               setSelectedProjectId(value === "__all__" ? null : value)
             }
           >
-            <SelectTrigger className="h-8">
+            <SelectTrigger className="h-9 rounded-full px-4">
               <SelectValue
                 placeholder={t("projects.all", { defaultValue: "All" })}
               />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl">
               <SelectItem value="__all__">
                 {t("projects.all", { defaultValue: "All" })}
               </SelectItem>
@@ -309,25 +309,25 @@ const Home: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("common.search")}
-            className="w-full bg-background border border-border rounded-md py-1.5 px-3 pl-8 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full bg-background border border-border rounded-full py-2 px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
-          <IconSearch className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <IconSearch className="absolute left-3.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         </div>
-        <div className="flex gap-1">
+        <div className="flex bg-muted/30 p-1 rounded-full gap-1 border border-border/40">
           <Button
-            variant={serverViewMode === "list" ? "default" : "outline"}
+            variant={serverViewMode === "list" ? "default" : "ghost"}
             size="sm"
             onClick={() => setServerViewMode("list")}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 rounded-full"
             title="List View"
           >
             <List className="h-4 w-4" />
           </Button>
           <Button
-            variant={serverViewMode === "grid" ? "default" : "outline"}
+            variant={serverViewMode === "grid" ? "default" : "ghost"}
             size="sm"
             onClick={() => setServerViewMode("grid")}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 rounded-full"
             title="Grid View"
           >
             <Grid3X3 className="h-4 w-4" />
@@ -337,14 +337,20 @@ const Home: React.FC = () => {
           variant="outline"
           size="sm"
           onClick={exportServersToFile}
-          className="gap-1"
+          className="gap-1 rounded-full h-9 w-9 p-0"
           title="Export"
         >
           <IconUpload className="h-4 w-4" />
         </Button>
-        <Button asChild variant="outline" size="sm" className="gap-1">
+        <Button
+          asChild
+          variant="default"
+          size="sm"
+          className="gap-1 rounded-full h-9 px-4"
+        >
           <Link to="/servers/add">
             <IconPlus className="h-4 w-4" />
+            <span className="font-semibold text-xs">Add Server</span>
           </Link>
         </Button>
       </div>
@@ -352,7 +358,8 @@ const Home: React.FC = () => {
       <div
         className={cn(
           "flex-1 mb-8",
-          serverViewMode === "list" && "border rounded-md overflow-hidden",
+          serverViewMode === "list" &&
+            "border border-border/50 rounded-2xl overflow-hidden bg-card/30 backdrop-blur-sm shadow-sm",
         )}
       >
         {filteredServers.length === 0 && searchQuery === "" ? (
@@ -382,7 +389,7 @@ const Home: React.FC = () => {
         ) : serverViewMode === "list" ? (
           <ScrollArea className="h-full">
             <div className="divide-y divide-border">
-              {/* Unassigned Section (always first unless filtering by project) */}
+              {/* Unassigned Section */}
               {(selectedProjectId === null ||
                 selectedProjectId === UNASSIGNED_PROJECT_ID) &&
                 (() => {
@@ -401,16 +408,16 @@ const Home: React.FC = () => {
                     <div>
                       <div
                         className={cn(
-                          "px-4 py-2 flex items-center justify-between bg-muted/20",
+                          "px-4 py-2.5 flex items-center justify-between bg-muted/40 backdrop-blur-sm sticky top-0 z-10 border-b border-border/10",
                           isUnassignedCollapsible && "cursor-pointer",
                         )}
                         onClick={unassignedHeaderOnClick}
                       >
-                        <div className="flex items-center gap-1 text-sm font-semibold">
+                        <div className="flex items-center gap-2 text-sm font-bold text-primary/80">
                           {isUnassignedCollapsible && (
                             <ChevronDown
                               className={cn(
-                                "h-4 w-4 transition-transform",
+                                "h-4 w-4 transition-transform duration-300",
                                 collapsed ? "-rotate-90" : "rotate-0",
                               )}
                             />
@@ -419,29 +426,24 @@ const Home: React.FC = () => {
                             defaultValue: "Unassigned",
                           })}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                           {unassignedServers.length}
                         </div>
                       </div>
                       {!effectiveCollapsed &&
                         unassignedServers.map((server) => {
-                          // console.log("Server:", server);
-
                           const status = getStatusVisual(server.status);
-
                           return (
-                            <div key={server.id}>
+                            <div key={server.id} className="px-2">
                               <div
-                                className="p-4 hover:bg-sidebar-hover cursor-pointer"
+                                className="p-4 my-1 hover:bg-primary/5 cursor-pointer rounded-xl transition-all duration-200 group"
                                 onClick={() => toggleServerExpand(server.id)}
                               >
                                 <div className="flex justify-between">
                                   <div className="flex flex-col">
-                                    <div className="font-medium text-base mb-1 hover:text-primary">
+                                    <div className="font-bold text-sm mb-1 group-hover:text-primary transition-colors">
                                       {server.name}
                                     </div>
-
-                                    {/* Description - if available */}
                                     {"description" in server &&
                                       typeof (server as any).description ===
                                         "string" && (
@@ -450,27 +452,24 @@ const Home: React.FC = () => {
                                         </p>
                                       )}
                                     <div className="flex flex-wrap gap-2 mb-1">
-                                      {/* Server Type Badge */}
                                       <Badge
                                         variant="secondary"
-                                        className="w-fit"
+                                        className="h-5 text-[10px] rounded-full px-2"
                                       >
                                         {server.serverType === "local"
                                           ? "Local"
                                           : "Remote"}
                                       </Badge>
-
-                                      {/* Status Badge */}
                                       <Badge
                                         variant="outline"
                                         className={cn(
-                                          "w-fit flex items-center gap-1",
+                                          "h-5 text-[10px] rounded-full px-2 font-bold tracking-tight border-border/40",
                                           status.pulseEffect,
                                         )}
                                       >
                                         <div
                                           className={cn(
-                                            "h-2 w-2 rounded-full",
+                                            "h-1.5 w-1.5 rounded-full mr-1.5",
                                             status.color,
                                           )}
                                         ></div>
@@ -478,65 +477,22 @@ const Home: React.FC = () => {
                                           `serverList.status.${server.status}`,
                                         )}
                                       </Badge>
-
-                                      {/* Warning Badge for unset required params */}
                                       {hasUnsetRequiredParams(server) && (
                                         <Badge
                                           variant="destructive"
-                                          className="w-fit flex items-center gap-1"
+                                          className="h-5 text-[10px] rounded-full px-2 flex items-center font-bold tracking-tight"
                                           title={t(
                                             "serverList.requiredParamsNotSet",
                                           )}
                                         >
-                                          <AlertCircle className="h-3 w-3" />
+                                          <AlertCircle className="h-3 w-3 mr-1" />
                                           {t("serverList.configRequired")}
                                         </Badge>
                                       )}
                                     </div>
-
-                                    {/* Tags - if available */}
-                                    {"tags" in server &&
-                                      Array.isArray((server as any).tags) &&
-                                      (server as any).tags.length > 0 && (
-                                        <div className="flex flex-wrap gap-1 mt-1">
-                                          {(
-                                            (server as any).tags as string[]
-                                          ).map(
-                                            (tag: string, index: number) => (
-                                              <Badge
-                                                key={index}
-                                                variant="outline"
-                                                className="text-xs px-1 py-0"
-                                              >
-                                                {tag}
-                                              </Badge>
-                                            ),
-                                          )}
-                                        </div>
-                                      )}
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    {server.status === "error" && (
-                                      <button
-                                        className="text-destructive hover:text-destructive/80 p-1.5 rounded-full hover:bg-destructive/10 transition-colors"
-                                        onClick={(e) =>
-                                          openErrorModal(server, e)
-                                        }
-                                        title={t("serverList.errorDetails")}
-                                      >
-                                        <AlertCircle className="h-4 w-4" />
-                                      </button>
-                                    )}
-                                    <span className="text-xs text-muted-foreground">
-                                      {server.status === "running"
-                                        ? t("serverList.status.running")
-                                        : server.status === "starting"
-                                          ? t("serverList.status.starting")
-                                          : server.status === "stopping"
-                                            ? t("serverList.status.stopping")
-                                            : t("serverList.status.stopped")}
-                                    </span>
-                                    <div className="h-6 w-12">
+                                  <div className="flex items-center gap-3">
+                                    <div className="h-6 w-12 scale-90">
                                       <Switch
                                         checked={server.status === "running"}
                                         disabled={
@@ -544,34 +500,20 @@ const Home: React.FC = () => {
                                           server.status === "stopping" ||
                                           hasUnsetRequiredParams(server)
                                         }
-                                        title={
-                                          hasUnsetRequiredParams(server)
-                                            ? t(
-                                                "serverList.requiredParamsNotSet",
-                                              )
-                                            : undefined
-                                        }
                                         onCheckedChange={async (checked) => {
                                           try {
                                             if (checked) {
                                               await startServer(server.id);
-                                              // サーバーが起動完了した場合のメッセージ
                                               toast.success(
                                                 t("serverList.serverStarted"),
                                               );
                                             } else {
                                               await stopServer(server.id);
-                                              // サーバーが停止完了した場合のメッセージ
                                               toast.success(
                                                 t("serverList.serverStopped"),
                                               );
                                             }
                                           } catch (error) {
-                                            console.error(
-                                              "Server operation failed:",
-                                              error,
-                                            );
-                                            // Use enhanced error display with server name context
                                             showServerError(
                                               error instanceof Error
                                                 ? error
@@ -581,16 +523,14 @@ const Home: React.FC = () => {
                                           }
                                         }}
                                         onClick={(e) => e.stopPropagation()}
+                                        className="data-[state=checked]:bg-emerald-500"
                                       />
                                     </div>
                                     <button
-                                      className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                                      className="p-2 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all duration-200"
                                       onClick={(e) =>
                                         handleDeleteServer(server, e)
                                       }
-                                      title={t("serverSettings.delete", {
-                                        defaultValue: "Delete Server",
-                                      })}
                                     >
                                       <Trash2 className="h-4 w-4" />
                                     </button>
@@ -620,7 +560,7 @@ const Home: React.FC = () => {
                   <div key={project.id}>
                     <div
                       className={cn(
-                        "px-4 py-2 flex items-center justify-between bg-muted/20",
+                        "px-4 py-2.5 flex items-center justify-between bg-muted/40 backdrop-blur-sm sticky top-0 z-10 border-b border-border/10",
                         isProjectCollapsible && "cursor-pointer",
                       )}
                       onClick={
@@ -629,18 +569,18 @@ const Home: React.FC = () => {
                           : undefined
                       }
                     >
-                      <div className="flex items-center gap-1 text-sm font-semibold">
+                      <div className="flex items-center gap-2 text-sm font-bold text-primary/80">
                         {isProjectCollapsible && (
                           <ChevronDown
                             className={cn(
-                              "h-4 w-4 transition-transform",
+                              "h-4 w-4 transition-transform duration-300",
                               collapsed ? "-rotate-90" : "rotate-0",
                             )}
                           />
                         )}
                         {project.name}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                         {sectionServers.length}
                       </div>
                     </div>
@@ -648,145 +588,81 @@ const Home: React.FC = () => {
                       sectionServers.map((server) => {
                         const status = getStatusVisual(server.status);
                         return (
-                          <div
-                            key={server.id}
-                            className="p-4 hover:bg-sidebar-hover cursor-pointer"
-                            onClick={() => toggleServerExpand(server.id)}
-                          >
-                            <div className="flex justify-between">
-                              <div className="flex flex-col">
-                                <div className="font-medium text-base mb-1 hover:text-primary">
-                                  {server.name}
-                                </div>
-                                {"description" in server &&
-                                  typeof (server as any).description ===
-                                    "string" && (
-                                    <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
-                                      {(server as any).description}
-                                    </p>
-                                  )}
-                                <div className="flex flex-wrap gap-2 mb-1">
-                                  <Badge variant="secondary" className="w-fit">
-                                    {server.serverType === "local"
-                                      ? "Local"
-                                      : "Remote"}
-                                  </Badge>
-                                  <Badge
-                                    variant="outline"
-                                    className={cn(
-                                      "w-fit flex items-center gap-1",
-                                      status.pulseEffect,
-                                    )}
-                                  >
-                                    <div
-                                      className={cn(
-                                        "h-2 w-2 rounded-full",
-                                        status.color,
-                                      )}
-                                    ></div>
-                                    {t(`serverList.status.${server.status}`)}
-                                  </Badge>
-                                  {hasUnsetRequiredParams(server) && (
+                          <div key={server.id} className="px-2">
+                            <div
+                              className="p-4 my-1 hover:bg-primary/5 cursor-pointer rounded-xl transition-all duration-200 group"
+                              onClick={() => toggleServerExpand(server.id)}
+                            >
+                              <div className="flex justify-between">
+                                <div className="flex flex-col">
+                                  <div className="font-bold text-sm mb-1 group-hover:text-primary transition-colors">
+                                    {server.name}
+                                  </div>
+                                  <div className="flex flex-wrap gap-2 mb-1">
                                     <Badge
-                                      variant="destructive"
-                                      className="w-fit flex items-center gap-1"
-                                      title={t(
-                                        "serverList.requiredParamsNotSet",
+                                      variant="secondary"
+                                      className="h-5 text-[10px] rounded-full px-2"
+                                    >
+                                      {server.serverType === "local"
+                                        ? "Local"
+                                        : "Remote"}
+                                    </Badge>
+                                    <Badge
+                                      variant="outline"
+                                      className={cn(
+                                        "h-5 text-[10px] rounded-full px-2 font-bold tracking-tight border-border/40",
+                                        status.pulseEffect,
                                       )}
                                     >
-                                      <AlertCircle className="h-3 w-3" />
-                                      {t("serverList.configRequired")}
+                                      <div
+                                        className={cn(
+                                          "h-1.5 w-1.5 rounded-full mr-1.5",
+                                          status.color,
+                                        )}
+                                      />
+                                      {t(`serverList.status.${server.status}`)}
                                     </Badge>
-                                  )}
+                                  </div>
                                 </div>
-                                {"tags" in server &&
-                                  Array.isArray((server as any).tags) &&
-                                  (server as any).tags.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-1">
-                                      {((server as any).tags as string[]).map(
-                                        (tag: string, index: number) => (
-                                          <Badge
-                                            key={index}
-                                            variant="outline"
-                                            className="text-xs px-1 py-0"
-                                          >
-                                            {tag}
-                                          </Badge>
-                                        ),
-                                      )}
-                                    </div>
-                                  )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {server.status === "error" && (
-                                  <button
-                                    className="text-destructive hover:text-destructive/80 p-1.5 rounded-full hover:bg-destructive/10 transition-colors"
-                                    onClick={(e) => openErrorModal(server, e)}
-                                    title={t("serverList.errorDetails")}
-                                  >
-                                    <AlertCircle className="h-4 w-4" />
-                                  </button>
-                                )}
-                                <span className="text-xs text-muted-foreground">
-                                  {server.status === "running"
-                                    ? t("serverList.status.running")
-                                    : server.status === "starting"
-                                      ? t("serverList.status.starting")
-                                      : server.status === "stopping"
-                                        ? t("serverList.status.stopping")
-                                        : t("serverList.status.stopped")}
-                                </span>
-                                <div className="h-6 w-12">
-                                  <Switch
-                                    checked={server.status === "running"}
-                                    disabled={
-                                      server.status === "starting" ||
-                                      server.status === "stopping" ||
-                                      hasUnsetRequiredParams(server)
-                                    }
-                                    title={
-                                      hasUnsetRequiredParams(server)
-                                        ? t("serverList.requiredParamsNotSet")
-                                        : undefined
-                                    }
-                                    onCheckedChange={async (checked) => {
-                                      try {
-                                        if (checked) {
-                                          await startServer(server.id);
-                                          toast.success(
-                                            t("serverList.serverStarted"),
-                                          );
-                                        } else {
-                                          await stopServer(server.id);
-                                          toast.success(
-                                            t("serverList.serverStopped"),
+                                <div className="flex items-center gap-3">
+                                  <div className="h-6 w-12 scale-90">
+                                    <Switch
+                                      checked={server.status === "running"}
+                                      onCheckedChange={async (checked) => {
+                                        try {
+                                          if (checked) {
+                                            await startServer(server.id);
+                                            toast.success(
+                                              t("serverList.serverStarted"),
+                                            );
+                                          } else {
+                                            await stopServer(server.id);
+                                            toast.success(
+                                              t("serverList.serverStopped"),
+                                            );
+                                          }
+                                        } catch (error) {
+                                          showServerError(
+                                            error instanceof Error
+                                              ? error
+                                              : new Error(String(error)),
+                                            server.name,
                                           );
                                         }
-                                      } catch (error) {
-                                        console.error(
-                                          "Server operation failed:",
-                                          error,
-                                        );
-                                        showServerError(
-                                          error instanceof Error
-                                            ? error
-                                            : new Error(String(error)),
-                                          server.name,
-                                        );
-                                      }
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="data-[state=checked]:bg-emerald-500"
+                                    />
+                                  </div>
+                                  <button
+                                    className="p-2 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all duration-200"
+                                    onClick={(e) =>
+                                      handleDeleteServer(server, e)
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
                                 </div>
-                                <button
-                                  className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                                  onClick={(e) => handleDeleteServer(server, e)}
-                                  title={t("serverSettings.delete", {
-                                    defaultValue: "Delete Server",
-                                  })}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
                               </div>
                             </div>
                           </div>
@@ -800,7 +676,7 @@ const Home: React.FC = () => {
         ) : (
           <ScrollArea className="h-full">
             <div className="p-4 space-y-4">
-              {/* Unassigned section for Grid view */}
+              {/* Unassigned section Grid */}
               {(selectedProjectId === null ||
                 selectedProjectId === UNASSIGNED_PROJECT_ID) &&
                 (() => {
@@ -816,7 +692,7 @@ const Home: React.FC = () => {
                     <div>
                       <div
                         className={cn(
-                          "px-2 py-1.5 flex items-center justify-between bg-muted/20 rounded",
+                          "px-3 py-2 flex items-center justify-between bg-muted/30 rounded-full mb-3 border border-border/10",
                           isUnassignedCollapsible && "cursor-pointer",
                         )}
                         onClick={
@@ -826,11 +702,11 @@ const Home: React.FC = () => {
                             : undefined
                         }
                       >
-                        <div className="flex items-center gap-1 text-sm font-semibold">
+                        <div className="flex items-center gap-2 text-xs font-bold text-primary/70 uppercase tracking-widest ml-1">
                           {isUnassignedCollapsible && (
                             <ChevronDown
                               className={cn(
-                                "h-4 w-4 transition-transform",
+                                "h-3.5 w-3.5 transition-transform duration-300",
                                 collapsed ? "-rotate-90" : "rotate-0",
                               )}
                             />
@@ -839,12 +715,12 @@ const Home: React.FC = () => {
                             defaultValue: "Unassigned",
                           })}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full mr-1">
                           {unassignedServers.length}
                         </div>
                       </div>
                       {!effectiveCollapsed && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                           {unassignedServers.map((server) => (
                             <ServerCardCompact
                               key={server.id}
@@ -865,10 +741,6 @@ const Home: React.FC = () => {
                                     );
                                   }
                                 } catch (error) {
-                                  console.error(
-                                    "Server operation failed:",
-                                    error,
-                                  );
                                   showServerError(
                                     error instanceof Error
                                       ? error
@@ -881,10 +753,7 @@ const Home: React.FC = () => {
                                 setServerToDelete(server);
                                 setDeleteDialogOpen(true);
                               }}
-                              onError={() => {
-                                setErrorServer(server);
-                                setErrorModalOpen(true);
-                              }}
+                              onError={(e) => openErrorModal(server, e)}
                             />
                           ))}
                         </div>
@@ -893,7 +762,7 @@ const Home: React.FC = () => {
                   );
                 })()}
 
-              {/* Project sections for Grid view */}
+              {/* Project sections Grid */}
               {(selectedProjectId === null
                 ? projects
                 : projects.filter((p) => p.id === selectedProjectId)
@@ -906,10 +775,10 @@ const Home: React.FC = () => {
                 const isProjectCollapsible = selectedProjectId === null;
                 const effectiveCollapsed = isProjectCollapsible && collapsed;
                 return (
-                  <div key={project.id}>
+                  <div key={project.id} className="pt-2">
                     <div
                       className={cn(
-                        "px-2 py-1.5 flex items-center justify-between bg-muted/20 rounded",
+                        "px-3 py-2 flex items-center justify-between bg-muted/30 rounded-full mb-3 border border-border/10",
                         isProjectCollapsible && "cursor-pointer",
                       )}
                       onClick={
@@ -918,23 +787,23 @@ const Home: React.FC = () => {
                           : undefined
                       }
                     >
-                      <div className="flex items-center gap-1 text-sm font-semibold">
+                      <div className="flex items-center gap-2 text-xs font-bold text-primary/70 uppercase tracking-widest ml-1">
                         {isProjectCollapsible && (
                           <ChevronDown
                             className={cn(
-                              "h-4 w-4 transition-transform",
+                              "h-3.5 w-3.5 transition-transform duration-300",
                               collapsed ? "-rotate-90" : "rotate-0",
                             )}
                           />
                         )}
                         {project.name}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full mr-1">
                         {sectionServers.length}
                       </div>
                     </div>
                     {!effectiveCollapsed && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {sectionServers.map((server) => (
                           <ServerCardCompact
                             key={server.id}
@@ -951,10 +820,6 @@ const Home: React.FC = () => {
                                   toast.success(t("serverList.serverStopped"));
                                 }
                               } catch (error) {
-                                console.error(
-                                  "Server operation failed:",
-                                  error,
-                                );
                                 showServerError(
                                   error instanceof Error
                                     ? error
@@ -967,10 +832,7 @@ const Home: React.FC = () => {
                               setServerToDelete(server);
                               setDeleteDialogOpen(true);
                             }}
-                            onError={() => {
-                              setErrorServer(server);
-                              setErrorModalOpen(true);
-                            }}
+                            onError={(e) => openErrorModal(server, e)}
                           />
                         ))}
                       </div>
@@ -982,7 +844,8 @@ const Home: React.FC = () => {
           </ScrollArea>
         )}
       </div>
-      {/* Error Details Modal */}
+
+      {/* Modals and Sheets */}
       {errorServer && (
         <ServerErrorModal
           isOpen={errorModalOpen}
@@ -1002,7 +865,6 @@ const Home: React.FC = () => {
         onUpdateProjectOptimization={handleUpdateProjectOptimization}
       />
 
-      {/* Advanced Settings Sheet */}
       {advancedSettingsServer && (
         <ServerDetailsAdvancedSheet
           server={advancedSettingsServer}
@@ -1013,9 +875,9 @@ const Home: React.FC = () => {
           }}
           onOpenManageProjects={() => setIsHomeSettingsOpen(true)}
           handleSave={async (
-            updatedInputParams?: any,
-            editedName?: string,
-            updatedToolPermissions?: Record<string, boolean>,
+            updatedInputParams,
+            editedName,
+            updatedToolPermissions,
           ) => {
             try {
               const {
@@ -1027,21 +889,15 @@ const Home: React.FC = () => {
                 editedDevEnabled,
                 editedWatchPatterns,
               } = useServerEditingStore.getState();
-
               const envObj: Record<string, string> = {};
               envPairs.forEach((pair) => {
-                if (pair.key.trim()) {
-                  envObj[pair.key.trim()] = pair.value;
-                }
+                if (pair.key.trim()) envObj[pair.key.trim()] = pair.value;
               });
-
-              // inputParamsのdefault値をenvに反映
               const finalInputParams =
                 updatedInputParams || advancedSettingsServer.inputParams;
               if (finalInputParams) {
                 Object.entries(finalInputParams).forEach(
                   ([key, param]: [string, any]) => {
-                    // envに値が設定されていない場合、default値を設定
                     if (
                       !envObj[key] &&
                       param.default !== undefined &&
@@ -1053,7 +909,6 @@ const Home: React.FC = () => {
                   },
                 );
               }
-
               const updatedConfig: any = {
                 name: editedName || advancedSettingsServer.name,
                 command: editedCommand,
@@ -1062,9 +917,7 @@ const Home: React.FC = () => {
                 autoStart: editedAutoStart,
                 inputParams: finalInputParams,
               };
-
               if (advancedSettingsServer.serverType === "local") {
-                // Add dev mode configuration for local servers
                 updatedConfig.dev = {
                   enabled: editedDevEnabled,
                   watch: editedWatchPatterns
@@ -1075,31 +928,27 @@ const Home: React.FC = () => {
               } else {
                 updatedConfig.bearerToken = editedBearerToken;
               }
-
               await updateServerConfig(
                 advancedSettingsServer.id,
                 updatedConfig,
               );
-              if (updatedToolPermissions) {
+              if (updatedToolPermissions)
                 await updateServerToolPermissions(
                   advancedSettingsServer.id,
                   updatedToolPermissions,
                 );
-              }
               setIsAdvancedEditing(false);
               setAdvancedSettingsServer(null);
               toast.success(t("serverDetails.updateSuccess"));
-            } catch (error) {
-              console.error("Failed to update server:", error);
+            } catch (_error) {
               toast.error(t("serverDetails.updateFailed"));
             }
           }}
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t("serverSettings.confirmDeleteTitle")}
@@ -1111,14 +960,14 @@ const Home: React.FC = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>
-              {t("common.cancel", { defaultValue: "Cancel" })}
+            <AlertDialogCancel className="rounded-full">
+              {t("common.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDeleteServer}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full"
             >
-              {t("serverSettings.delete", { defaultValue: "Delete" })}
+              {t("serverSettings.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -7,7 +7,16 @@ export type StandardAppId =
   | "cline"
   | "windsurf"
   | "cursor"
-  | "vscode";
+  | "vscode"
+  | "antigravity"
+  | "github-copilot"
+  | "opencode"
+  | "gemini"
+  | "factory"
+  | "continue"
+  | "goose"
+  | "roo"
+  | "trae";
 
 export type IconKey =
   | "openai"
@@ -15,9 +24,22 @@ export type IconKey =
   | "cline"
   | "windsurf"
   | "cursor"
-  | "vscode";
+  | "vscode"
+  | "antigravity"
+  | "github"
+  | "roocode"
+  | "gemini"
+  | "factory"
+  | "continue"
+  | "goose"
+  | "trae";
 
-export type AppConfigKind = "standard-json" | "vscode-json" | "codex";
+export type AppConfigKind =
+  | "standard-json"
+  | "vscode-json"
+  | "codex"
+  | "antigravity"
+  | "env-only";
 
 export interface StandardAppDefinition {
   id: StandardAppId;
@@ -29,6 +51,14 @@ export interface StandardAppDefinition {
 }
 
 const definitions: StandardAppDefinition[] = [
+  {
+    id: "antigravity",
+    name: "Antigravity",
+    clientType: "antigravity",
+    iconKey: "antigravity",
+    configKind: "antigravity",
+    getConfigPath: (paths) => paths.antigravityConfig(),
+  },
   {
     id: "codex",
     name: "Codex",
@@ -76,6 +106,70 @@ const definitions: StandardAppDefinition[] = [
     iconKey: "vscode",
     configKind: "vscode-json",
     getConfigPath: (paths) => paths.vscodeConfig(),
+  },
+  {
+    id: "github-copilot",
+    name: "GitHub Copilot",
+    clientType: "vscode", // Use vscode logic for config if applicable
+    iconKey: "github",
+    configKind: "env-only",
+    getConfigPath: () => "",
+  },
+  {
+    id: "opencode",
+    name: "OpenCode",
+    clientType: "vscode",
+    iconKey: "roocode",
+    configKind: "standard-json",
+    getConfigPath: () => "",
+  },
+  {
+    id: "gemini",
+    name: "Gemini CLI",
+    clientType: "vscode",
+    iconKey: "gemini",
+    configKind: "standard-json",
+    getConfigPath: () => "",
+  },
+  {
+    id: "factory",
+    name: "Factory",
+    clientType: "vscode",
+    iconKey: "factory",
+    configKind: "standard-json",
+    getConfigPath: () => "",
+  },
+  {
+    id: "continue",
+    name: "Continue",
+    clientType: "vscode",
+    iconKey: "continue",
+    configKind: "standard-json",
+    getConfigPath: () => "",
+  },
+  {
+    id: "goose",
+    name: "Goose",
+    clientType: "vscode",
+    iconKey: "goose",
+    configKind: "standard-json",
+    getConfigPath: () => "",
+  },
+  {
+    id: "roo",
+    name: "Roo Code",
+    clientType: "vscode",
+    iconKey: "roocode",
+    configKind: "env-only",
+    getConfigPath: () => "",
+  },
+  {
+    id: "trae",
+    name: "Trae",
+    clientType: "vscode",
+    iconKey: "trae",
+    configKind: "env-only",
+    getConfigPath: () => "",
   },
 ];
 

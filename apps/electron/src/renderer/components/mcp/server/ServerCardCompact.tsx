@@ -13,7 +13,7 @@ interface ServerCardCompactProps {
   server: MCPServer;
   onToggle: (checked: boolean) => void;
   onDelete?: () => void;
-  onError: () => void;
+  onError: (e: React.MouseEvent) => void;
   onClick: () => void;
   isExpanded: boolean;
 }
@@ -58,39 +58,50 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
   return (
     <Card
       className={cn(
-        "hover:border-primary/50 transition-colors cursor-pointer",
-        isExpanded && "border-primary",
+        "hover:border-primary/50 transition-all duration-300 cursor-pointer rounded-2xl soft-shadow hover:-translate-y-0.5",
+        isExpanded && "border-primary ring-2 ring-primary/10",
       )}
       onClick={onClick}
     >
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between gap-3">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-medium text-sm truncate">{server.name}</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="font-bold text-sm truncate tracking-tight">
+                {server.name}
+              </h3>
             </div>
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1.5">
               <Badge
                 variant="outline"
-                className={cn("h-5 text-xs", status.pulseEffect)}
+                className={cn(
+                  "h-5 text-[10px] rounded-full px-2 font-bold tracking-tight border-border/40",
+                  status.pulseEffect,
+                )}
               >
                 <div
-                  className={cn("h-2 w-2 rounded-full mr-1", status.color)}
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full mr-1.5",
+                    status.color,
+                  )}
                 />
                 {t(`serverList.status.${server.status}`)}
               </Badge>
               {server.serverType === "remote" && (
-                <Badge variant="secondary" className="h-5 text-xs">
+                <Badge
+                  variant="secondary"
+                  className="h-5 text-[10px] rounded-full px-2 font-bold tracking-tight"
+                >
                   Remote
                 </Badge>
               )}
               {hasUnsetRequiredParams(server) && (
                 <Badge
                   variant="destructive"
-                  className="h-5 text-xs flex items-center"
+                  className="h-5 text-[10px] rounded-full px-2 flex items-center font-bold tracking-tight"
                   title={t("serverList.requiredParamsNotSet")}
                 >
-                  <AlertCircle className="h-3 w-3 mr-1 flex-shrink-0" />
+                  <AlertCircle className="h-2.5 w-2.5 mr-1 flex-shrink-0" />
                   <span className="truncate">
                     {t("serverList.configRequired")}
                   </span>
@@ -100,17 +111,17 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
           </div>
 
           <div
-            className="flex items-center gap-2"
+            className="flex items-center gap-3"
             onClick={(e) => e.stopPropagation()}
           >
             {server.status === "error" && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 rounded-full"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onError();
+                  onError(e);
                 }}
               >
                 <AlertCircle className="h-4 w-4 text-destructive" />
@@ -130,13 +141,13 @@ export const ServerCardCompact: React.FC<ServerCardCompactProps> = ({
                   : undefined
               }
               onCheckedChange={onToggle}
-              className="data-[state=checked]:bg-primary"
+              className="data-[state=checked]:bg-emerald-500"
             />
 
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               onClick={(e) => {
                 e.stopPropagation();
                 if (typeof onDelete === "function") onDelete();

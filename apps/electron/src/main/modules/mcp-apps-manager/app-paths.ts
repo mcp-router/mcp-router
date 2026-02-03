@@ -119,6 +119,10 @@ export class AppPaths {
     return path.join(this.HOME, ".codex", "config.toml");
   }
 
+  public antigravityConfig(): string {
+    return path.join(this.HOME, ".gemini", "antigravity", "mcp_config.json");
+  }
+
   public async exists(filePath: string): Promise<boolean> {
     try {
       await fs.promises.access(filePath, fs.constants.F_OK);

@@ -1,7 +1,4 @@
-import {
-  safeConsoleLog,
-  safeConsoleError,
-} from "@/main/utils/logger";
+import { safeConsoleLog, safeConsoleError } from "@/main/utils/logger";
 
 export type ConnectionState =
   | "disconnected"

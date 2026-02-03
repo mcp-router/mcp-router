@@ -167,7 +167,10 @@ export class MarketplaceService {
     const cleanRepo = repo.replace(/\.git$/, "");
 
     // Validate owner and repo to prevent SSRF attacks
-    if (!/^[a-zA-Z0-9_-]+$/.test(owner) || !/^[a-zA-Z0-9_.-]+$/.test(cleanRepo)) {
+    if (
+      !/^[a-zA-Z0-9_-]+$/.test(owner) ||
+      !/^[a-zA-Z0-9_.-]+$/.test(cleanRepo)
+    ) {
       return null;
     }
 
@@ -195,7 +198,10 @@ export class MarketplaceService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        this.githubStatsCache.set(cacheKey, { data: null, timestamp: Date.now() });
+        this.githubStatsCache.set(cacheKey, {
+          data: null,
+          timestamp: Date.now(),
+        });
         return null;
       }
 
@@ -207,11 +213,17 @@ export class MarketplaceService {
         watchers: data.subscribers_count || 0,
       };
 
-      this.githubStatsCache.set(cacheKey, { data: stats, timestamp: Date.now() });
+      this.githubStatsCache.set(cacheKey, {
+        data: stats,
+        timestamp: Date.now(),
+      });
       return stats;
     } catch (error: unknown) {
       console.debug("[Marketplace] Failed to fetch GitHub stats:", error);
-      this.githubStatsCache.set(cacheKey, { data: null, timestamp: Date.now() });
+      this.githubStatsCache.set(cacheKey, {
+        data: null,
+        timestamp: Date.now(),
+      });
       return null;
     }
   }

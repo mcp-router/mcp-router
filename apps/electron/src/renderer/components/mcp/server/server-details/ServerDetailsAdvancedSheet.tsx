@@ -385,26 +385,40 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
       return (
         <Tabs
           defaultValue={hasInputParams ? "params" : "general"}
-          className="mt-4"
+          className="mt-0"
         >
-          <TabsList className={`grid w-full ${getTabsListClass()}`}>
+          <TabsList
+            className={`grid w-full gap-2 bg-muted/30 p-1 rounded-full ${getTabsListClass()}`}
+          >
             {hasInputParams && (
-              <TabsTrigger value="params">
+              <TabsTrigger
+                value="params"
+                className="rounded-full transition-all"
+              >
                 {t("serverDetails.inputParameters")}
               </TabsTrigger>
             )}
-            <TabsTrigger value="general">
+            <TabsTrigger
+              value="general"
+              className="rounded-full transition-all"
+            >
               {t("serverDetails.generalSettings")}
             </TabsTrigger>
             {showToolsTab && (
-              <TabsTrigger value="tools">
+              <TabsTrigger
+                value="tools"
+                className="rounded-full transition-all"
+              >
                 {t("serverDetails.tools")}
               </TabsTrigger>
             )}
           </TabsList>
 
           {hasInputParams && (
-            <TabsContent value="params" className="space-y-6 mt-4">
+            <TabsContent
+              value="params"
+              className="space-y-8 mt-8 focus-visible:outline-none"
+            >
               <ServerDetailsInputParams
                 server={server}
                 inputParamValues={inputParamValues}
@@ -413,12 +427,18 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
             </TabsContent>
           )}
 
-          <TabsContent value="general" className="space-y-6 mt-4">
+          <TabsContent
+            value="general"
+            className="space-y-8 mt-8 focus-visible:outline-none"
+          >
             {renderGeneralSettingsContent()}
           </TabsContent>
 
           {showToolsTab && (
-            <TabsContent value="tools" className="space-y-6 mt-4">
+            <TabsContent
+              value="tools"
+              className="space-y-8 mt-8 focus-visible:outline-none"
+            >
               {renderToolsContent()}
             </TabsContent>
           )}
@@ -428,31 +448,33 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
 
     // No tabs needed - just show general settings directly
     return (
-      <div className="space-y-6 mt-4">{renderGeneralSettingsContent()}</div>
+      <div className="space-y-8 mt-4">{renderGeneralSettingsContent()}</div>
     );
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-        <SheetHeader className="pb-4 border-b">
-          <SheetTitle className="text-xl font-bold flex items-center gap-2">
-            <Settings2 className="h-5 w-5 text-primary" />
+      <SheetContent className="w-full sm:max-w-xl overflow-y-auto rounded-l-3xl border-l soft-shadow p-0">
+        <SheetHeader className="p-8 border-b bg-muted/10">
+          <SheetTitle className="text-2xl font-extrabold flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Settings2 className="h-5 w-5 text-primary" />
+            </div>
             {t("serverDetails.advancedConfiguration")}
           </SheetTitle>
-          <SheetDescription>
+          <SheetDescription className="text-base mt-2">
             {t("serverDetails.advancedConfigurationDescription")}
           </SheetDescription>
         </SheetHeader>
 
-        {renderTabsContent()}
+        <div className="px-8 py-6">{renderTabsContent()}</div>
 
-        <SheetFooter className="flex justify-between sm:justify-between border-t pt-4">
+        <SheetFooter className="sticky bottom-0 bg-background/80 backdrop-blur-md flex justify-between sm:justify-between border-t p-8 mt-auto">
           <Button
             variant="ghost"
             onClick={() => setIsOpen(false)}
             disabled={isLoading}
-            className="gap-2"
+            className="gap-2 rounded-full h-11 px-6"
           >
             {t("common.cancel")}
           </Button>
@@ -491,7 +513,7 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
               }
             }}
             disabled={isLoading}
-            className="gap-2"
+            className="gap-2 rounded-full h-11 px-8 font-semibold soft-shadow transition-all hover:-translate-y-0.5"
           >
             {isLoading ? (
               <>

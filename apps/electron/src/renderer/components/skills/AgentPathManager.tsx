@@ -110,44 +110,57 @@ const AgentPathManager: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-background/30">
       {/* Header */}
-      <div className="flex justify-between items-center p-4 border-b">
-        <h2 className="text-lg font-semibold">
-          {t("skills.agentPaths.title")}
-        </h2>
-        <Button onClick={() => setIsNewDialogOpen(true)}>
+      <div className="flex justify-between items-center p-8 bg-background/50 backdrop-blur-sm border-b border-border/40">
+        <div className="flex items-center gap-3">
+          <div className="bg-primary/10 p-2 rounded-xl">
+            <IconFolderOpen className="w-5 h-5 text-primary" />
+          </div>
+          <h2 className="text-xl font-black tracking-tight">
+            {t("skills.agentPaths.title")}
+          </h2>
+        </div>
+        <Button
+          onClick={() => setIsNewDialogOpen(true)}
+          className="rounded-full px-6 font-bold shadow-sm"
+        >
           <IconPlus className="w-4 h-4 mr-2" />
           {t("common.add")}
         </Button>
       </div>
 
       {/* Agent Path List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-8">
         {agentPaths.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground">
-            {t("skills.agentPaths.empty")}
+          <div className="flex flex-col items-center justify-center min-h-[300px] text-muted-foreground bg-card/30 backdrop-blur-sm rounded-3xl border border-dashed border-border/60">
+            <IconFolderOpen className="w-12 h-12 opacity-20 mb-4" />
+            <p className="text-lg font-bold tracking-tight">
+              {t("skills.agentPaths.empty")}
+            </p>
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="grid gap-4">
             {agentPaths.map((agentPath) => (
               <div
                 key={agentPath.id}
-                className="flex items-center justify-between px-4 py-3 hover:bg-muted/50"
+                className="flex items-center justify-between p-6 bg-card/40 rounded-2xl border border-border/40 soft-shadow hover:bg-card/60 transition-all group"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium">{agentPath.name}</div>
-                  <div className="text-sm text-muted-foreground truncate">
+                  <div className="font-black text-base tracking-tight mb-1">
+                    {agentPath.name}
+                  </div>
+                  <div className="text-sm text-muted-foreground truncate font-medium bg-muted/30 px-3 py-1 rounded-lg inline-block max-w-full">
                     {agentPath.path}
                   </div>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-destructive hover:text-destructive ml-2"
+                  className="h-10 w-10 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors ml-4"
                   onClick={() => handleDeleteAgentPath(agentPath.id)}
                 >
-                  <IconTrash className="w-4 h-4" />
+                  <IconTrash className="w-5 h-5" />
                 </Button>
               </div>
             ))}

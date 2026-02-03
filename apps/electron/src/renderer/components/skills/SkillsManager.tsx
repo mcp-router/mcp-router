@@ -13,6 +13,12 @@ import {
   Badge,
   TooltipProvider,
   ScrollArea,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@mcp_router/ui";
 import {
   IconDownload,
@@ -20,6 +26,8 @@ import {
   IconPlus,
   IconSearch,
   IconRefresh,
+  IconFilter,
+  IconChevronDown,
 } from "@tabler/icons-react";
 import { usePlatformAPI } from "@/renderer/platform-api";
 import type {
@@ -358,30 +366,40 @@ const SkillsManager: React.FC = () => {
   return (
     <ErrorBoundary>
       <TooltipProvider>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full bg-background/30">
           {/* Header */}
-          <div className="flex flex-col gap-4 p-4 border-b">
+          <div className="flex flex-col gap-6 p-10 border-b border-border/40 bg-background/50 backdrop-blur-md">
             {/* Top row: Title, Search, and Actions */}
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-lg font-semibold shrink-0">
-                {t("skills.unified.title", { defaultValue: "Skills Library" })}
-              </h2>
+            <div className="flex items-center justify-between gap-8">
+              <div className="flex items-center gap-4 shrink-0">
+                <div className="bg-primary/10 p-2.5 rounded-2xl">
+                  <IconPlus className="w-6 h-6 text-primary" />
+                </div>
+                <h2 className="text-2xl font-black tracking-tight">
+                  {t("skills.unified.title", {
+                    defaultValue: "Skills Library",
+                  })}
+                </h2>
+              </div>
 
               {/* Search */}
-              <div className="relative flex-1 max-w-md">
-                <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <div className="relative flex-1 max-w-xl">
+                <IconSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder={t("skills.searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-11 h-11 rounded-full bg-background border-border/40 shadow-sm focus:ring-primary/20 transition-all"
                   aria-label={t("skills.searchPlaceholder")}
                 />
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2 shrink-0">
-                <Button onClick={() => setIsNewDialogOpen(true)}>
+              <div className="flex gap-3 shrink-0">
+                <Button
+                  onClick={() => setIsNewDialogOpen(true)}
+                  className="rounded-full px-6 h-11 font-bold shadow-lg shadow-primary/5"
+                >
                   <IconPlus className="w-4 h-4 mr-2" />
                   {t("skills.new")}
                 </Button>
@@ -389,67 +407,108 @@ const SkillsManager: React.FC = () => {
             </div>
 
             {/* Bottom row: Client filters and secondary actions */}
-            <div className="flex items-center justify-between gap-4">
-              {/* Client Filter Chips */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-muted-foreground">
-                  {t("skills.unified.filter", { defaultValue: "Filter:" })}
-                </span>
-                <Badge
-                  variant={selectedClientIds.size === 0 ? "default" : "outline"}
-                  className={cn(
-                    "cursor-pointer transition-colors",
-                    selectedClientIds.size === 0 &&
-                      "bg-primary text-primary-foreground",
-                  )}
-                  onClick={handleClearClientFilters}
-                >
-                  {t("skills.unified.all", { defaultValue: "All" })}
-                </Badge>
-                {clientApps.map((client) => (
-                  <Badge
-                    key={client.id}
-                    variant={
-                      selectedClientIds.has(client.id) ? "default" : "outline"
-                    }
-                    className={cn(
-                      "cursor-pointer transition-colors",
-                      selectedClientIds.has(client.id) &&
-                        "bg-primary text-primary-foreground",
-                    )}
-                    onClick={() => handleClientFilterToggle(client.id)}
+            <div className="flex items-center justify-between gap-6">
+              {/* Consolidated Client Filter */}
+              <div className="flex items-center gap-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant={
+                        selectedClientIds.size > 0 ? "default" : "outline"
+                      }
+                      size="sm"
+                      className="rounded-full px-5 h-9 font-bold text-xs uppercase tracking-widest gap-2 border-border/60"
+                    >
+                      <IconFilter className="w-3.5 h-3.5" />
+                      {t("skills.unified.filter", {
+                        defaultValue: "Filter Clients",
+                      })}
+                      {selectedClientIds.size > 0 && (
+                        <Badge className="ml-1 h-5 min-w-[20px] px-1 bg-background text-primary rounded-full text-[10px] font-black border-none">
+                          {selectedClientIds.size}
+                        </Badge>
+                      )}
+                      <IconChevronDown className="w-3.5 h-3.5 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-56 rounded-2xl border-border/40 soft-shadow"
+                    align="start"
                   >
-                    {client.name}
-                  </Badge>
-                ))}
+                    <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest opacity-50 px-3 py-2">
+                      Select Clients
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-border/20" />
+                    <DropdownMenuCheckboxItem
+                      checked={selectedClientIds.size === 0}
+                      onCheckedChange={handleClearClientFilters}
+                      className="rounded-xl mx-1 my-0.5 focus:bg-primary/5"
+                    >
+                      {t("skills.unified.all", { defaultValue: "All Clients" })}
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuSeparator className="bg-border/20" />
+                    <ScrollArea className="h-[200px]">
+                      {clientApps.map((client) => (
+                        <DropdownMenuCheckboxItem
+                          key={client.id}
+                          checked={selectedClientIds.has(client.id)}
+                          onCheckedChange={() =>
+                            handleClientFilterToggle(client.id)
+                          }
+                          className="rounded-xl mx-1 my-0.5 focus:bg-primary/5"
+                        >
+                          {client.name}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </ScrollArea>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {selectedClientIds.size > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearClientFilters}
+                    className="h-8 rounded-full px-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Clear
+                  </Button>
+                )}
               </div>
 
               {/* Secondary Actions */}
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-2 shrink-0 bg-muted/30 p-1 rounded-full border border-border/40">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={handleRefresh}
                   disabled={isRefreshing}
+                  className="rounded-full h-8 px-4 text-xs font-bold"
                 >
                   <IconRefresh
                     className={cn(
-                      "w-4 h-4 mr-2",
+                      "w-3.5 h-3.5 mr-2",
                       isRefreshing && "animate-spin",
                     )}
                   />
                   {t("common.refresh")}
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleImport}>
-                  <IconDownload className="w-4 h-4 mr-2" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleImport}
+                  className="rounded-full h-8 px-4 text-xs font-bold"
+                >
+                  <IconDownload className="w-3.5 h-3.5 mr-2" />
                   {t("skills.import")}
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={handleOpenSkillsFolder}
+                  className="rounded-full h-8 px-4 text-xs font-bold"
                 >
-                  <IconFolderOpen className="w-4 h-4 mr-2" />
+                  <IconFolderOpen className="w-3.5 h-3.5 mr-2" />
                   {t("skills.openFolder")}
                 </Button>
               </div>
@@ -457,16 +516,21 @@ const SkillsManager: React.FC = () => {
           </div>
 
           {/* Skills Grid */}
-          <ScrollArea className="flex-1">
-            <div className="p-4">
+          <ScrollArea className="flex-1 bg-background/10">
+            <div className="p-10">
               {filteredSkills.length === 0 ? (
-                <div className="flex items-center justify-center h-64 text-muted-foreground">
-                  {searchQuery || selectedClientIds.size > 0
-                    ? t("skills.noResults")
-                    : t("skills.empty")}
+                <div className="flex flex-col items-center justify-center min-h-[400px] text-muted-foreground bg-card/30 backdrop-blur-sm rounded-[2.5rem] border border-dashed border-border/60">
+                  <div className="bg-muted/50 p-6 rounded-full mb-6">
+                    <IconSearch className="w-12 h-12 opacity-20" />
+                  </div>
+                  <p className="text-xl font-bold tracking-tight">
+                    {searchQuery || selectedClientIds.size > 0
+                      ? t("skills.noResults")
+                      : t("skills.empty")}
+                  </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                   {filteredSkills.map((skill) => (
                     <UnifiedSkillCard
                       key={skill.id}

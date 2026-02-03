@@ -62,9 +62,9 @@ export const ServerSettingsModal: React.FC<Props> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="max-w-lg rounded-2xl border-border/40 p-6">
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-xl">
             {t("serverSettings.title", {
               defaultValue: `${server.name} Settings`,
               serverName: server.name,
@@ -73,36 +73,40 @@ export const ServerSettingsModal: React.FC<Props> = ({
           <DialogDescription></DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-2">
-          <section className="space-y-2">
-            <div className="text-sm font-medium">
+        <div className="space-y-6">
+          <section className="space-y-4">
+            <div className="text-sm font-bold flex items-center gap-2 px-1">
               {t("serverSettings.project", { defaultValue: "Project" })}
             </div>
-            <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex flex-wrap gap-4 items-center">
               <Select
                 value={currentProjectId ?? "__none__"}
                 onValueChange={handleAssign}
                 disabled={assigning}
               >
-                <SelectTrigger className="w-64">
+                <SelectTrigger className="w-64 h-11 rounded-full px-5 bg-muted/20 border-muted/40 focus:bg-muted/30 transition-all">
                   <SelectValue
                     placeholder={t("projects.unassigned", {
                       defaultValue: "Unassigned",
                     })}
                   />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">
+                <SelectContent className="rounded-2xl">
+                  <SelectItem value="__none__" className="rounded-lg">
                     {t("projects.unassigned", { defaultValue: "Unassigned" })}
                   </SelectItem>
                   {projectOptions.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
+                    <SelectItem key={p.id} value={p.id} className="rounded-lg">
                       {p.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Button variant="outline" onClick={onOpenManageProjects}>
+              <Button
+                variant="outline"
+                onClick={onOpenManageProjects}
+                className="rounded-full h-11 px-6"
+              >
                 {t("serverSettings.manageProjects", {
                   defaultValue: "Manage Projects",
                 })}
@@ -110,10 +114,14 @@ export const ServerSettingsModal: React.FC<Props> = ({
             </div>
           </section>
 
-          <Separator />
+          <Separator className="bg-border/40" />
 
           <section>
-            <Button variant="destructive" onClick={onDelete}>
+            <Button
+              variant="destructive"
+              onClick={onDelete}
+              className="rounded-full h-11 px-6"
+            >
               {t("serverSettings.delete", { defaultValue: "Delete Server" })}
             </Button>
           </section>

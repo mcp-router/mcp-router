@@ -5,29 +5,32 @@ import { useActivityData } from "./hooks/useActivityData";
 import ActivityHeatmap from "./components/ActivityHeatmap";
 import QueryWordCloud from "./components/QueryWordCloud";
 import ActivityLog from "./components/ActivityLog";
+import { IconActivity, IconRefresh } from "@tabler/icons-react";
+import { Button } from "@mcp_router/ui";
+import { cn } from "@/renderer/utils/tailwind-utils";
 
 interface LogViewerProps {
-  /** ヒートマップ表示期間（日数） */
+  /** Display period for heatmap (days) */
   heatmapDays?: number;
 }
 
 /**
- * 今日の日付をYYYY-MM-DD形式で取得
+ * Get today's date in YYYY-MM-DD format
  */
 const getTodayString = (): string => {
   const today = new Date();
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 };
 
-const LogViewer: React.FC<LogViewerProps> = ({ heatmapDays = 30 }) => {
+const LogViewer: React.FC<LogViewerProps> = ({ heatmapDays = 180 }) => {
   const { t } = useTranslation();
   const { currentWorkspace } = useWorkspaceStore();
 
-  // 選択中の日付（デフォルトは今日）
+  // Selected date (default is today)
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
 
-  // Activity データ取得
+  // Activity Data fetching
   const {
     heatmapData,
     wordCloudData,
@@ -40,12 +43,12 @@ const LogViewer: React.FC<LogViewerProps> = ({ heatmapDays = 30 }) => {
     refreshTrigger,
   });
 
-  // 手動リフレッシュ
+  // Manual refresh
   const handleRefresh = useCallback(() => {
     setRefreshTrigger((prev) => prev + 1);
   }, []);
 
-  // ワークスペース変更時にリフレッシュ
+  // Refresh on workspace change
   useEffect(() => {
     if (currentWorkspace) {
       handleRefresh();
@@ -53,40 +56,49 @@ const LogViewer: React.FC<LogViewerProps> = ({ heatmapDays = 30 }) => {
   }, [currentWorkspace?.id, handleRefresh]);
 
   return (
-    <div className="p-4 flex flex-col h-full gap-4">
-      {/* ヘッダー */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">
-          {t("logs.activity.title", "Activity")}
-        </h2>
-        <button
+    <div className="flex flex-col min-h-full bg-background/30">
+      {/* Header */}
+      <div className="flex items-center justify-between p-10 bg-background/50 backdrop-blur-md border-b border-border/40">
+        <div className="flex items-center gap-4">
+          <div className="bg-primary/10 p-2.5 rounded-2xl">
+            <IconActivity className="w-6 h-6 text-primary" />
+          </div>
+          <h2 className="text-2xl font-extrabold tracking-tight">
+            {t("logs.activity.title", { defaultValue: "Activity" })}
+          </h2>
+        </div>
+        <Button
           onClick={handleRefresh}
-          className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 rounded text-primary text-sm transition-colors"
+          variant="outline"
+          className="rounded-full px-6 h-11 font-bold shadow-sm border-border/60 gap-2"
           aria-label={t("logs.viewer.refresh", "Refresh")}
         >
+          <IconRefresh className={cn("w-4 h-4", loading && "animate-spin")} />
           {t("logs.viewer.refresh", "Refresh")}
-        </button>
+        </Button>
       </div>
 
-      {/* ヒートマップ */}
-      <ActivityHeatmap
-        data={heatmapData}
-        selectedDate={selectedDate}
-        onDateSelect={setSelectedDate}
-        loading={loading}
-        days={heatmapDays}
-      />
+      <div className="p-10 space-y-8 max-w-[1400px] mx-auto w-full">
+        {/* Heatmap */}
+        <ActivityHeatmap
+          data={heatmapData}
+          selectedDate={selectedDate}
+          onDateSelect={setSelectedDate}
+          loading={loading}
+          days={heatmapDays}
+        />
 
-      {/* Word Cloud と Activity Log を横並びに */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0">
-        {/* Word Cloud (1/3) */}
-        <div className="lg:col-span-1">
-          <QueryWordCloud data={wordCloudData} loading={loading} />
-        </div>
+        {/* Word Cloud and Activity Log */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Word Cloud (1/3) */}
+          <div className="lg:col-span-1">
+            <QueryWordCloud data={wordCloudData} loading={loading} />
+          </div>
 
-        {/* Activity Log (2/3) */}
-        <div className="lg:col-span-2 min-h-0">
-          <ActivityLog items={activityItems} loading={loading} />
+          {/* Activity Log (2/3) */}
+          <div className="lg:col-span-2">
+            <ActivityLog items={activityItems} loading={loading} />
+          </div>
         </div>
       </div>
     </div>

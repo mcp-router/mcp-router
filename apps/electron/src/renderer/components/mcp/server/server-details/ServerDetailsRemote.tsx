@@ -27,18 +27,18 @@ const ServerDetailsRemote: React.FC<ServerDetailsRemoteProps> = ({
         <div className="space-y-3">
           <Label
             htmlFor="remote-url"
-            className="text-base font-medium flex items-center gap-1.5"
+            className="text-base font-bold flex items-center gap-2 px-1"
           >
-            <Server className="h-4 w-4 text-muted-foreground" />
+            <Server className="h-4 w-4 text-primary" />
             {t("serverDetails.remoteUrl")}
           </Label>
           <Input
             id="remote-url"
             value={server.remoteUrl || ""}
             disabled
-            className="font-mono"
+            className="h-12 rounded-full px-5 bg-muted/20 border-muted/50 font-mono"
           />
-          <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
+          <p className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-2xl px-4 border border-border/50">
             {t("serverDetails.remoteUrl")}
           </p>
         </div>
@@ -46,9 +46,9 @@ const ServerDetailsRemote: React.FC<ServerDetailsRemoteProps> = ({
         <div className="space-y-3">
           <Label
             htmlFor="bearer-token"
-            className="text-base font-medium flex items-center gap-1.5"
+            className="text-base font-bold flex items-center gap-2 px-1"
           >
-            <Settings className="h-4 w-4 text-muted-foreground" />
+            <Settings className="h-4 w-4 text-primary" />
             {t("serverDetails.bearerToken")}
           </Label>
           <Input
@@ -58,9 +58,9 @@ const ServerDetailsRemote: React.FC<ServerDetailsRemoteProps> = ({
               setEditedBearerToken && setEditedBearerToken(e.target.value)
             }
             placeholder={t("serverDetails.bearerTokenPlaceholder")}
-            className="font-mono"
+            className="h-12 rounded-full px-5 bg-muted/20 border-muted/50 focus:bg-muted/30 transition-all font-mono"
           />
-          <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
+          <p className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-2xl px-4 border border-border/50">
             {t("serverDetails.bearerTokenHelp")}
           </p>
         </div>

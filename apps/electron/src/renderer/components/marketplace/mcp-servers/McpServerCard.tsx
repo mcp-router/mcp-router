@@ -126,12 +126,12 @@ export const McpServerCard: React.FC<McpServerCardProps> = ({
       }}
       aria-label={`View details for ${serverData.title || serverData.name}`}
     >
-      <CardContent className="p-5">
-        <div className="flex flex-col gap-4">
+      <CardContent className="p-6">
+        <div className="flex flex-col gap-6">
           {/* Header with icon and name */}
           <div className="flex items-start gap-4">
             {/* Icon */}
-            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center overflow-hidden soft-shadow border border-white/10">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-muted/30 flex items-center justify-center overflow-hidden soft-shadow border border-border/40">
               {iconSrc ? (
                 <img
                   src={iconSrc}

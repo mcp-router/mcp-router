@@ -487,7 +487,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
     {
       id: "gemini",
       name: "Gemini CLI",
-      icon: "google",
+      icon: "gemini",
       mcpConfigPath: {
         darwin: path.join(HOME, ".gemini", "settings.json"),
         win32: path.join(HOME, ".gemini", "settings.json"),
@@ -532,7 +532,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
     {
       id: "antigravity",
       name: "Antigravity",
-      icon: "google",
+      icon: "antigravity",
       mcpConfigPath: {
         darwin: path.join(HOME, ".gemini", "antigravity", "mcp_config.json"),
         win32: path.join(HOME, ".gemini", "antigravity", "mcp_config.json"),
@@ -574,7 +574,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
     {
       id: "factory",
       name: "Factory",
-      icon: "terminal",
+      icon: "factory",
       mcpConfigPath: {
         darwin: path.join(HOME, ".factory", "mcp.json"),
         win32: path.join(HOME, ".factory", "mcp.json"),
@@ -612,7 +612,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
     {
       id: "continue",
       name: "Continue",
-      icon: "terminal",
+      icon: "continue",
       mcpConfigPath: {
         darwin: path.join(HOME, ".continue", "config.json"),
         win32: path.join(HOME, ".continue", "config.json"),
@@ -644,7 +644,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
     {
       id: "goose",
       name: "Goose",
-      icon: "terminal",
+      icon: "goose",
       mcpConfigPath: {
         darwin: path.join(HOME, ".config", "goose", "config.yaml"),
         win32: path.join(HOME, ".config", "goose", "config.yaml"),
@@ -678,7 +678,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
     {
       id: "roo",
       name: "Roo Code",
-      icon: "terminal",
+      icon: "roocode",
       mcpConfigPath: {
         // Roo Code uses environment-based configuration
       },
@@ -723,7 +723,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
     {
       id: "trae",
       name: "Trae",
-      icon: "terminal",
+      icon: "trae",
       mcpConfigPath: {
         // Trae uses environment-based configuration
       },

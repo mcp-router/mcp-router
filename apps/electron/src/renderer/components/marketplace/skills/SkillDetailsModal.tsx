@@ -73,13 +73,17 @@ function parseSkillFrontmatter(content: string): {
   license?: string;
   body: string;
 } {
-  const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
+  const frontmatterMatch = content.match(
+    /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/,
+  );
   if (!frontmatterMatch) {
     return { body: content };
   }
 
   const [, frontmatter, body] = frontmatterMatch;
-  const result: ReturnType<typeof parseSkillFrontmatter> = { body: body.trim() };
+  const result: ReturnType<typeof parseSkillFrontmatter> = {
+    body: body.trim(),
+  };
 
   // Simple YAML parsing for common fields
   const descMatch = frontmatter.match(/^description:\s*(.+)$/m);
@@ -92,7 +96,9 @@ function parseSkillFrontmatter(content: string): {
     result.author = authorMatch[1].trim();
   }
 
-  const versionMatch = frontmatter.match(/^\s*version:\s*["']?([^"'\n]+)["']?$/m);
+  const versionMatch = frontmatter.match(
+    /^\s*version:\s*["']?([^"'\n]+)["']?$/m,
+  );
   if (versionMatch) {
     result.version = versionMatch[1].trim();
   }
@@ -124,10 +130,14 @@ export const SkillDetailsModal: React.FC<SkillDetailsModalProps> = ({
   if (!skill) return null;
 
   // Parse SKILL.md frontmatter to extract description and metadata
-  const parsedContent = readmeContent ? parseSkillFrontmatter(readmeContent) : null;
+  const parsedContent = readmeContent
+    ? parseSkillFrontmatter(readmeContent)
+    : null;
   const effectiveDescription =
     parsedContent?.description ||
-    (skill.description !== "No description available" ? skill.description : null);
+    (skill.description !== "No description available"
+      ? skill.description
+      : null);
   const effectiveAuthor = parsedContent?.author || skill.author;
   const effectiveVersion = parsedContent?.version || skill.version;
 
@@ -158,7 +168,10 @@ export const SkillDetailsModal: React.FC<SkillDetailsModalProps> = ({
                 {skill.name}
               </DialogTitle>
               <DialogDescription className="mt-1">
-                {effectiveDescription || t("marketplace.skills.noDescription", { defaultValue: "No description available" })}
+                {effectiveDescription ||
+                  t("marketplace.skills.noDescription", {
+                    defaultValue: "No description available",
+                  })}
               </DialogDescription>
             </div>
             {skill.rating && (

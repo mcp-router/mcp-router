@@ -21,16 +21,16 @@ const ServerDetailsAutoStart: React.FC<ServerDetailsAutoStartProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-2">
-        <PlayCircle className="h-5 w-5 text-muted-foreground mt-0.5" />
+      <div className="flex items-start gap-4 px-1">
+        <PlayCircle className="h-5 w-5 text-primary mt-1" />
         <div className="flex-1 space-y-4">
           <div>
-            <h3 className="text-sm font-medium leading-none">
+            <h3 className="text-base font-bold leading-none">
               {t("serverDetails.autoStart")}
             </h3>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/50">
+          <div className="flex items-center justify-between p-6 rounded-2xl border border-border/40 bg-muted/10 soft-shadow transition-all hover:bg-muted/20">
             <Label
               htmlFor="auto-start"
               className="text-sm font-medium cursor-pointer flex-1"
@@ -42,6 +42,7 @@ const ServerDetailsAutoStart: React.FC<ServerDetailsAutoStartProps> = ({
               checked={isEditing ? editedAutoStart : server.autoStart || false}
               onCheckedChange={isEditing ? setEditedAutoStart : undefined}
               disabled={!isEditing}
+              className="data-[state=checked]:bg-primary"
             />
           </div>
         </div>

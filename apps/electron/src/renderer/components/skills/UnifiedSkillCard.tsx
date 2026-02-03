@@ -128,10 +128,11 @@ export const UnifiedSkillCard: React.FC<UnifiedSkillCardProps> = ({
   return (
     <Card
       className={cn(
-        "flex flex-col cursor-pointer transition-all duration-200",
-        "hover:border-primary/50 hover:shadow-md",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        "p-4",
+        "flex flex-col cursor-pointer transition-all duration-300 ease-in-out",
+        "bg-card/40 hover:bg-card border-border/40 hover:border-primary/40",
+        "hover:shadow-xl soft-shadow hover:-translate-y-1.5",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+        "p-7 rounded-[2rem]",
       )}
       onClick={onClick}
       onKeyDown={handleKeyDown}
@@ -143,16 +144,16 @@ export const UnifiedSkillCard: React.FC<UnifiedSkillCardProps> = ({
       })}
     >
       {/* Top: Skill name + DISCOVERED badge */}
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <h3 className="font-semibold text-sm leading-tight truncate flex-1">
+      <div className="flex items-start justify-between gap-3 mb-5">
+        <h3 className="font-extrabold text-lg leading-tight truncate flex-1 tracking-tight">
           {skill.name}
         </h3>
         {skill.source === "discovered" && (
           <Badge
             variant="secondary"
-            className="text-xs px-1.5 py-0 shrink-0 uppercase tracking-wide"
+            className="text-[10px] px-2.5 py-1 shrink-0 uppercase tracking-widest font-black rounded-full bg-blue-500/10 text-blue-600 border-blue-500/20"
           >
-            {t("skills.unified.discovered", { defaultValue: "Discovered" })}
+            {t("skills.unified.discovered", { defaultValue: "Found" })}
           </Badge>
         )}
       </div>
@@ -160,37 +161,41 @@ export const UnifiedSkillCard: React.FC<UnifiedSkillCardProps> = ({
       {/* Middle: Description excerpt (2 lines) */}
       <p
         className={cn(
-          "text-xs text-muted-foreground line-clamp-2 flex-1 min-h-[2.5rem]",
-          !description && "italic",
+          "text-sm text-muted-foreground/80 line-clamp-3 flex-1 min-h-[3.75rem] leading-relaxed",
+          !description && "italic opacity-40",
         )}
       >
         {description ||
           t("skills.unified.noDescription", {
-            defaultValue: "No description available",
+            defaultValue: "No description found in SKILL.md",
           })}
       </p>
 
       {/* Bottom: Client status icons - only show installed/enabled clients */}
       {installedClientStates.length > 0 && (
         <div
-          className="flex items-center flex-wrap gap-0.5 mt-3 pt-3 border-t"
+          className="flex items-center flex-wrap gap-1.5 mt-6 pt-5 border-t border-border/20"
           aria-label={t("skills.unified.clientStates", {
             defaultValue: "Client installation states",
           })}
         >
           {installedClientStates.slice(0, 8).map((clientState) => (
-            <ClientStatusIcon
+            <div
               key={clientState.clientId}
-              clientId={clientState.clientId}
-              clientIcon={clientState.clientIcon}
-              clientName={clientState.clientName}
-              state={clientState.state}
-              size="sm"
-              showTooltip
-            />
+              className="bg-muted/40 p-1.5 rounded-full transition-transform hover:scale-110"
+            >
+              <ClientStatusIcon
+                clientId={clientState.clientId}
+                clientIcon={clientState.clientIcon}
+                clientName={clientState.clientName}
+                state={clientState.state}
+                size="sm"
+                showTooltip
+              />
+            </div>
           ))}
           {installedClientStates.length > 8 && (
-            <span className="text-xs text-muted-foreground ml-1">
+            <span className="text-[10px] font-black text-primary ml-1 bg-primary/10 px-2 py-1 rounded-full uppercase">
               +{installedClientStates.length - 8}
             </span>
           )}

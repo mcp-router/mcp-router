@@ -17,7 +17,7 @@ const DiscoverWrapper: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Breadcrumbs: Servers > Add */}
-      <Breadcrumb>
+      <Breadcrumb className="px-1">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
@@ -31,9 +31,17 @@ const DiscoverWrapper: React.FC = () => {
         </BreadcrumbList>
       </Breadcrumb>
 
-      {/* Page title */}
-      <h1 className="text-3xl font-bold">{t("discoverServers.title")}</h1>
-      <Manual />
+      <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-2xl soft-shadow overflow-hidden">
+        <div className="p-8 border-b border-border/40 bg-card/50">
+          <h1 className="text-3xl font-extrabold tracking-tight">
+            {t("discoverServers.title")}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Add a new MCP server to your router using one of the methods below.
+          </p>
+        </div>
+        <Manual />
+      </div>
     </div>
   );
 };

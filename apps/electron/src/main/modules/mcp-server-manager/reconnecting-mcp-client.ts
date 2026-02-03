@@ -2,10 +2,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { ConnectionMonitor, ConnectionState } from "./connection-monitor";
 import { HealthChecker } from "./health-checker";
-import {
-  safeConsoleLog,
-  safeConsoleError,
-} from "@/main/utils/logger";
+import { safeConsoleLog, safeConsoleError } from "@/main/utils/logger";
 
 export interface ReconnectingClientOptions {
   serverId: string;

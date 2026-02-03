@@ -5,6 +5,7 @@ import ReactDOM from "react-dom/client";
 import App from "@/renderer/components/App";
 import { HashRouter } from "react-router-dom";
 import { TitleBar } from "@/renderer/components/TitleBar";
+import { SidebarProvider } from "@mcp_router/ui";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
@@ -12,13 +13,15 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <HashRouter>
-      <div className="h-screen flex flex-col">
+      <SidebarProvider
+        defaultOpen={true}
+        className="h-screen flex flex-col bg-background"
+      >
         <TitleBar />
-        <div className="flex-1 overflow-hidden">
-          <div className="h-2" />
+        <div className="flex-1 relative">
           <App />
         </div>
-      </div>
+      </SidebarProvider>
     </HashRouter>
   </React.StrictMode>,
 );

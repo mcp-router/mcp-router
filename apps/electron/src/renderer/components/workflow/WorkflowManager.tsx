@@ -8,6 +8,7 @@ import {
   Label,
   RadioGroup,
   RadioGroupItem,
+  Badge,
 } from "@mcp_router/ui";
 import { Card } from "@mcp_router/ui";
 import {
@@ -286,12 +287,12 @@ export default function WorkflowManager() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex border-b mb-6">
+      <div className="flex bg-muted/30 p-1 rounded-full w-fit mb-8">
         <button
-          className={`px-4 py-2 -mb-px font-medium transition-colors ${
+          className={`px-6 py-2 rounded-full font-medium transition-all ${
             activeTab === "workflows"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-500 hover:text-gray-700"
+              ? "bg-background shadow-sm text-primary"
+              : "text-muted-foreground hover:text-foreground"
           }`}
           onClick={() => setActiveTab("workflows")}
         >
@@ -299,10 +300,10 @@ export default function WorkflowManager() {
           Workflows
         </button>
         <button
-          className={`px-4 py-2 -mb-px font-medium transition-colors ml-4 ${
+          className={`px-6 py-2 rounded-full font-medium transition-all ${
             activeTab === "modules"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-500 hover:text-gray-700"
+              ? "bg-background shadow-sm text-primary"
+              : "text-muted-foreground hover:text-foreground"
           }`}
           onClick={() => setActiveTab("modules")}
         >
@@ -313,23 +314,28 @@ export default function WorkflowManager() {
 
       {/* Workflows Tab */}
       {activeTab === "workflows" && (
-        <div>
+        <div className="space-y-6">
           <div className="flex justify-end mb-4">
-            <Button onClick={handleCreateWorkflow}>
+            <Button
+              onClick={handleCreateWorkflow}
+              className="rounded-full shadow-sm"
+            >
               <Plus className="w-4 h-4 mr-2" />
               New Workflow
             </Button>
           </div>
 
           {workflows.length === 0 ? (
-            <Card className="p-8 text-center">
-              <p className="text-gray-500 mb-4">No workflows created yet</p>
-              <Button onClick={handleCreateWorkflow}>
+            <Card className="p-12 text-center rounded-2xl border-dashed bg-background/50">
+              <p className="text-muted-foreground mb-6">
+                No workflows created yet
+              </p>
+              <Button onClick={handleCreateWorkflow} className="rounded-full">
                 Create Your First Workflow
               </Button>
             </Card>
           ) : (
-            <div className="space-y-6">
+            <div className="grid gap-6">
               {/* Group workflows by type */}
               {Object.entries(
                 workflows.reduce(
@@ -342,10 +348,16 @@ export default function WorkflowManager() {
                   {} as Record<string, typeof workflows>,
                 ),
               ).map(([workflowType, typeWorkflows]) => (
-                <Card key={workflowType} className="p-4">
-                  <h3 className="text-lg font-semibold mb-3">
-                    Type: {workflowType}
-                  </h3>
+                <Card
+                  key={workflowType}
+                  className="p-6 rounded-2xl bg-background/50 shadow-sm border-muted/20"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-primary" />
+                      Type: {workflowType}
+                    </h3>
+                  </div>
                   <RadioGroup
                     value={typeWorkflows.find((w) => w.enabled)?.id || "none"}
                     onValueChange={(value) =>
@@ -357,16 +369,16 @@ export default function WorkflowManager() {
                   >
                     <div className="space-y-3">
                       {/* None option */}
-                      <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-900">
+                      <div className="flex items-center space-x-3 p-3 rounded-xl transition-colors hover:bg-muted/30">
                         <RadioGroupItem
                           value="none"
                           id={`${workflowType}-none`}
                         />
                         <Label
                           htmlFor={`${workflowType}-none`}
-                          className="flex-1 cursor-pointer"
+                          className="flex-1 cursor-pointer font-medium text-muted-foreground"
                         >
-                          <span className="text-gray-500">無効化</span>
+                          Disabled
                         </Label>
                       </div>
 
@@ -378,10 +390,10 @@ export default function WorkflowManager() {
                         return (
                           <div
                             key={workflow.id}
-                            className={`flex items-center space-x-3 p-2 rounded ${
+                            className={`flex items-center space-x-3 p-4 rounded-xl border transition-all ${
                               isDisabled
-                                ? "bg-gray-100 dark:bg-gray-900 opacity-60"
-                                : "hover:bg-gray-50 dark:hover:bg-gray-900"
+                                ? "bg-muted/50 opacity-60 grayscale"
+                                : "hover:bg-muted/30 hover:shadow-sm border-transparent hover:border-muted/20"
                             }`}
                           >
                             <RadioGroupItem
@@ -397,30 +409,31 @@ export default function WorkflowManager() {
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
                                     <span
-                                      className={`font-medium ${isDisabled ? "text-gray-400" : ""}`}
+                                      className={`font-semibold ${isDisabled ? "text-muted-foreground" : ""}`}
                                     >
                                       {workflow.name}
                                     </span>
                                     {isDisabled && (
-                                      <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
-                                        <AlertCircle className="w-4 h-4" />
-                                        <span className="text-xs font-medium">
-                                          Invalid
-                                        </span>
-                                      </div>
+                                      <Badge
+                                        variant="outline"
+                                        className="rounded-full border-orange-200 bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:border-orange-900/30"
+                                      >
+                                        <AlertCircle className="w-3 h-3 mr-1" />
+                                        Invalid
+                                      </Badge>
                                     )}
                                   </div>
-                                  <p className="text-sm text-gray-500">
-                                    {workflow.nodes.length} nodes,{" "}
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {workflow.nodes.length} nodes ·{" "}
                                     {workflow.edges.length} connections
                                   </p>
                                   {isDisabled && validity.reason && (
-                                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                                      ⚠️ {validity.reason}
+                                    <p className="text-xs text-destructive mt-1 font-medium">
+                                      {validity.reason}
                                     </p>
                                   )}
                                   {workflow.description && (
-                                    <p className="text-sm text-gray-600 mt-1">
+                                    <p className="text-sm text-muted-foreground mt-2 line-clamp-1">
                                       {workflow.description}
                                     </p>
                                   )}
@@ -431,10 +444,11 @@ export default function WorkflowManager() {
                                       e.stopPropagation();
                                       handleEditWorkflow(workflow);
                                     }}
-                                    variant="ghost"
+                                    variant="secondary"
                                     size="sm"
+                                    className="rounded-full h-8 px-4"
                                   >
-                                    編集
+                                    Edit
                                   </Button>
                                   <Button
                                     onClick={(e) => {
@@ -442,9 +456,10 @@ export default function WorkflowManager() {
                                       handleDeleteWorkflow(workflow.id);
                                     }}
                                     variant="ghost"
-                                    size="sm"
+                                    size="icon"
+                                    className="rounded-full h-8 w-8 text-muted-foreground hover:text-destructive"
                                   >
-                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                    <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </div>
                               </div>
@@ -463,17 +478,19 @@ export default function WorkflowManager() {
 
       {/* Modules Tab */}
       {activeTab === "modules" && (
-        <div>
+        <div className="space-y-6">
           {/* Module Create/Edit Form */}
           {isCreatingModule || editingModule ? (
-            <Card className="p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-4">
+            <Card className="p-8 rounded-2xl bg-background/50 shadow-md border-primary/10">
+              <h3 className="text-lg font-semibold mb-6">
                 {isCreatingModule ? "Create New Module" : "Edit Module"}
               </h3>
 
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="module-name">Name</Label>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="module-name" className="ml-1">
+                    Name
+                  </Label>
                   <Input
                     id="module-name"
                     value={moduleFormData.name}
@@ -484,13 +501,15 @@ export default function WorkflowManager() {
                       })
                     }
                     placeholder="Module name"
-                    className="mt-1"
+                    className="rounded-full px-5"
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="module-script">Script</Label>
-                  <div className="mt-1">
+                <div className="space-y-2">
+                  <Label htmlFor="module-script" className="ml-1">
+                    Script
+                  </Label>
+                  <div className="mt-1 rounded-2xl overflow-hidden border">
                     <HookModuleEditor
                       value={moduleFormData.script || ""}
                       onChange={(value) =>
@@ -500,18 +519,22 @@ export default function WorkflowManager() {
                         })
                       }
                       height="400px"
-                      placeholder="// Enter JavaScript code here
-// context object is available with request and response data"
+                      placeholder="// Enter JavaScript code here\n// context object is available with request and response data"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={cancelEditModule}>
-                    <X className="w-4 h-4 mr-1" />
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button
+                    variant="ghost"
+                    onClick={cancelEditModule}
+                    className="rounded-full"
+                  >
+                    <X className="w-4 h-4 mr-2" />
                     Cancel
                   </Button>
                   <Button
+                    className="rounded-full px-8 shadow-sm"
                     onClick={() => {
                       if (isCreatingModule) {
                         handleCreateModule(platformAPI);
@@ -521,7 +544,7 @@ export default function WorkflowManager() {
                     }}
                     disabled={!moduleFormData.name || !moduleFormData.script}
                   >
-                    <Save className="w-4 h-4 mr-1" />
+                    <Save className="w-4 h-4 mr-2" />
                     {isCreatingModule ? "Create" : "Update"}
                   </Button>
                 </div>
@@ -529,7 +552,10 @@ export default function WorkflowManager() {
             </Card>
           ) : (
             <div className="flex justify-end mb-4">
-              <Button onClick={startCreateModule}>
+              <Button
+                onClick={startCreateModule}
+                className="rounded-full shadow-sm"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 New Module
               </Button>
@@ -540,25 +566,31 @@ export default function WorkflowManager() {
           {!isCreatingModule &&
             !editingModule &&
             (modules.length === 0 ? (
-              <Card className="p-8 text-center">
-                <p className="text-gray-500 mb-4">No modules created yet</p>
-                <Button onClick={startCreateModule}>
+              <Card className="p-12 text-center rounded-2xl border-dashed bg-background/50">
+                <p className="text-muted-foreground mb-6">
+                  No modules created yet
+                </p>
+                <Button onClick={startCreateModule} className="rounded-full">
                   Create Your First Module
                 </Button>
               </Card>
             ) : (
               <div className="grid gap-4">
                 {modules.map((module) => (
-                  <Card key={module.id} className="p-4">
+                  <Card
+                    key={module.id}
+                    className="p-4 rounded-2xl bg-background/50 hover:bg-background transition-colors shadow-sm group"
+                  >
                     <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold">{module.name}</h3>
+                      <div className="flex-1 px-2">
+                        <h3 className="font-semibold">{module.name}</h3>
                       </div>
-                      <div className="flex gap-2 ml-4">
+                      <div className="flex gap-1">
                         <Button
                           onClick={() => startEditModule(module)}
                           variant="ghost"
-                          size="sm"
+                          size="icon"
+                          className="rounded-full h-8 w-8 text-muted-foreground"
                         >
                           <Edit2 className="w-4 h-4" />
                         </Button>
@@ -567,9 +599,10 @@ export default function WorkflowManager() {
                             handleDeleteModule(platformAPI, module.id)
                           }
                           variant="ghost"
-                          size="sm"
+                          size="icon"
+                          className="rounded-full h-8 w-8 text-muted-foreground hover:text-destructive"
                         >
-                          <Trash2 className="w-4 h-4 text-red-500" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>

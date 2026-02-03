@@ -66,23 +66,25 @@ const SidebarComponent: React.FC = () => {
   };
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon" className="border-r-0 bg-transparent">
       <div className="pt-[50px]" />
-      <SidebarHeader>
+      <SidebarHeader className="py-4 px-4 overflow-hidden">
         <Link
-          to="/apps/electron/public"
-          className="flex items-center no-underline px-2 py-1"
+          to="/"
+          className="flex items-center no-underline transition-opacity hover:opacity-80 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
         >
-          <img src={iconImage} className="w-8 h-8 mr-3" alt="Logo" />
-          <h1 className="text-xl font-bold tracking-tight">
+          <div className="bg-primary/10 p-2 rounded-xl group-data-[collapsible=icon]:mr-0 mr-3 shrink-0 shadow-sm shadow-primary/5 transition-all">
+            <img src={iconImage} className="w-5 h-5" alt="Logo" />
+          </div>
+          <h1 className="text-base font-black tracking-tight truncate group-data-[collapsible=icon]:hidden uppercase">
             {t("home.title")}
           </h1>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2">
         {/* Marketplace */}
-        <SidebarGroup>
+        <SidebarGroup className="py-2">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -90,13 +92,16 @@ const SidebarComponent: React.FC = () => {
                   asChild
                   tooltip={t("marketplace.title")}
                   isActive={location.pathname === "/marketplace"}
+                  className="rounded-xl transition-all duration-300 h-11 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                 >
                   <Link
                     to="/marketplace"
-                    className="flex items-center gap-3 py-5 px-3 w-full"
+                    className="flex items-center gap-3 px-3 w-full"
                   >
-                    <IconBuildingStore className="h-6 w-6" />
-                    <span className="text-base">{t("marketplace.title")}</span>
+                    <IconBuildingStore className="h-5 w-5 stroke-[2.5]" />
+                    <span className="font-bold text-sm">
+                      {t("marketplace.title")}
+                    </span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -106,11 +111,11 @@ const SidebarComponent: React.FC = () => {
 
         {/* MCP Group */}
         <Collapsible defaultOpen className="group/collapsible-mcp">
-          <SidebarGroup>
-            <SidebarGroupLabel>
-              <CollapsibleTrigger className="flex flex-row items-center w-full">
+          <SidebarGroup className="py-2">
+            <SidebarGroupLabel className="px-3 mb-1 group-data-[collapsible=icon]:hidden">
+              <CollapsibleTrigger className="flex flex-row items-center w-full text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 hover:text-primary transition-colors">
                 MCP
-                <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible-mcp:rotate-180" />
+                <ChevronDown className="ml-auto h-3 w-3 transition-transform group-data-[state=open]/collapsible-mcp:rotate-180" />
               </CollapsibleTrigger>
             </SidebarGroupLabel>
             <CollapsibleContent>
@@ -121,13 +126,14 @@ const SidebarComponent: React.FC = () => {
                       asChild
                       tooltip={t("sidebar.myServers")}
                       isActive={location.pathname === "/servers"}
+                      className="rounded-xl transition-all duration-300 h-11 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                     >
                       <Link
                         to="/servers"
-                        className="flex items-center gap-3 py-5 px-3 w-full"
+                        className="flex items-center gap-3 px-3 w-full"
                       >
-                        <IconServer className="h-6 w-6" />
-                        <span className="text-base">
+                        <IconServer className="h-5 w-5 stroke-[2.5]" />
+                        <span className="font-bold text-sm">
                           {t("sidebar.myServers")}
                         </span>
                       </Link>
@@ -140,13 +146,16 @@ const SidebarComponent: React.FC = () => {
                         asChild
                         tooltip={t("sidebar.logs")}
                         isActive={location.pathname === "/logs"}
+                        className="rounded-xl transition-all duration-300 h-11 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                       >
                         <Link
                           to="/logs"
-                          className="flex items-center gap-3 py-5 px-3 w-full"
+                          className="flex items-center gap-3 px-3 w-full"
                         >
-                          <IconActivity className="h-6 w-6" />
-                          <span className="text-base">{t("sidebar.logs")}</span>
+                          <IconActivity className="h-5 w-5 stroke-[2.5]" />
+                          <span className="font-bold text-sm">
+                            {t("sidebar.logs")}
+                          </span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -160,11 +169,11 @@ const SidebarComponent: React.FC = () => {
         {/* Skills Group */}
         {!isRemoteWorkspace && (
           <Collapsible defaultOpen className="group/collapsible-skills">
-            <SidebarGroup>
-              <SidebarGroupLabel>
-                <CollapsibleTrigger className="flex flex-row items-center w-full">
+            <SidebarGroup className="py-2">
+              <SidebarGroupLabel className="px-3 mb-1 group-data-[collapsible=icon]:hidden">
+                <CollapsibleTrigger className="flex flex-row items-center w-full text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 hover:text-primary transition-colors">
                   {t("skills.title")}
-                  <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible-skills:rotate-180" />
+                  <ChevronDown className="ml-auto h-3 w-3 transition-transform group-data-[state=open]/collapsible-skills:rotate-180" />
                 </CollapsibleTrigger>
               </SidebarGroupLabel>
               <CollapsibleContent>
@@ -175,13 +184,14 @@ const SidebarComponent: React.FC = () => {
                         asChild
                         tooltip={t("sidebar.mySkills")}
                         isActive={location.pathname === "/skills"}
+                        className="rounded-xl transition-all duration-300 h-11 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                       >
                         <Link
                           to="/skills"
-                          className="flex items-center gap-3 py-5 px-3 w-full"
+                          className="flex items-center gap-3 px-3 w-full"
                         >
-                          <IconWand className="h-6 w-6" />
-                          <span className="text-base">
+                          <IconWand className="h-5 w-5 stroke-[2.5]" />
+                          <span className="font-bold text-sm">
                             {t("sidebar.mySkills")}
                           </span>
                         </Link>
@@ -194,8 +204,8 @@ const SidebarComponent: React.FC = () => {
           </Collapsible>
         )}
 
-        {/* Client Apps - Combined MCP App Integrations + Agent Paths */}
-        <SidebarGroup>
+        {/* Client Apps */}
+        <SidebarGroup className="py-2">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -206,13 +216,16 @@ const SidebarComponent: React.FC = () => {
                     location.pathname === "/clients" ||
                     location.pathname === "/skills/agents"
                   }
+                  className="rounded-xl transition-all duration-300 h-11 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                 >
                   <Link
                     to="/clients"
-                    className="flex items-center gap-3 py-5 px-3 w-full"
+                    className="flex items-center gap-3 px-3 w-full"
                   >
-                    <IconDeviceDesktop className="h-6 w-6" />
-                    <span className="text-base">{t("sidebar.clientApps")}</span>
+                    <IconDeviceDesktop className="h-5 w-5 stroke-[2.5]" />
+                    <span className="font-bold text-sm">
+                      {t("sidebar.clientApps")}
+                    </span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -221,24 +234,25 @@ const SidebarComponent: React.FC = () => {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="p-4">
         <SidebarMenu>
           {updateAvailable && (
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
                 tooltip={t("updateNotification.installNow")}
+                className="rounded-xl h-11 bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all mb-2"
               >
                 <Link
                   to="#"
                   onClick={handleInstallUpdate}
-                  className="flex items-center gap-3 py-5 px-3 w-full"
+                  className="flex items-center gap-3 px-3 w-full"
                 >
                   <div className="relative">
-                    <IconDownload className="h-6 w-6" />
-                    <span className="absolute w-2 h-2 bg-red-500 rounded-full top-0 right-0"></span>
+                    <IconDownload className="h-5 w-5 stroke-[2.5]" />
+                    <span className="absolute w-2 h-2 bg-red-500 rounded-full -top-0.5 -right-0.5 border border-background animate-pulse"></span>
                   </div>
-                  <span className="text-base">
+                  <span className="font-bold text-sm group-data-[collapsible=icon]:hidden">
                     {t("updateNotification.title")}
                   </span>
                 </Link>
@@ -250,13 +264,16 @@ const SidebarComponent: React.FC = () => {
               asChild
               tooltip={t("common.settings")}
               isActive={location.pathname === "/settings"}
+              className="rounded-xl transition-all duration-300 h-11 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
             >
               <Link
                 to="/settings"
-                className="flex items-center gap-3 py-5 px-3 w-full"
+                className="flex items-center gap-3 px-3 w-full"
               >
-                <IconSettings className="h-6 w-6" />
-                <span className="text-base">{t("common.settings")}</span>
+                <IconSettings className="h-5 w-5 stroke-[2.5]" />
+                <span className="font-bold text-sm group-data-[collapsible=icon]:hidden">
+                  {t("common.settings")}
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

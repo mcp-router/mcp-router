@@ -8,6 +8,7 @@ import {
   IconX,
   IconMessage,
   IconFile,
+  IconActivity,
 } from "@tabler/icons-react";
 import {
   ActivityLogEntry,
@@ -58,56 +59,63 @@ const ExecutionRow: React.FC<{
   const toolName = exec.toolName || exec.toolKey?.split(":")[1] || "unknown";
 
   return (
-    <div className="border-t border-border/50 first:border-t-0">
-      {/* 実行行ヘッダー */}
+    <div className="border-t border-border/20 first:border-t-0">
+      {/* Execution row header */}
       <button
         onClick={onToggle}
         className={cn(
-          "w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-muted/30 transition-colors",
-          isExpanded && "bg-muted/20",
+          "w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-primary/5 transition-all duration-200",
+          isExpanded && "bg-primary/5",
         )}
       >
         <IconChevronRight
           size={14}
           className={cn(
-            "text-muted-foreground transition-transform duration-200 shrink-0",
+            "text-muted-foreground transition-transform duration-300 shrink-0",
             isExpanded && "rotate-90",
           )}
         />
-        <IconPlayerPlay
-          size={14}
+        <div
           className={cn(
-            "shrink-0",
-            hasError ? "text-destructive" : "text-primary",
+            "p-1.5 rounded-lg shrink-0",
+            hasError
+              ? "bg-destructive/10 text-destructive"
+              : "bg-primary/10 text-primary",
           )}
-        />
+        >
+          <IconPlayerPlay size={14} className="stroke-[2.5]" />
+        </div>
         <span
           className={cn(
-            "text-sm font-medium flex-1 truncate",
+            "text-sm font-bold flex-1 truncate tracking-tight",
             hasError ? "text-destructive" : "text-foreground",
           )}
         >
           {toolName}
         </span>
-        <span className="text-xs text-muted-foreground shrink-0">
+        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 shrink-0 bg-muted/30 px-2 py-0.5 rounded-full">
           {exec.duration}ms
         </span>
         {hasError ? (
-          <IconX size={14} className="text-destructive shrink-0" />
+          <div className="bg-destructive/10 p-1 rounded-full">
+            <IconX size={12} className="text-destructive stroke-[3]" />
+          </div>
         ) : (
-          <IconCheck size={14} className="text-green-600 shrink-0" />
+          <div className="bg-emerald-500/10 p-1 rounded-full">
+            <IconCheck size={12} className="text-emerald-600 stroke-[3]" />
+          </div>
         )}
       </button>
 
-      {/* 展開時の詳細 */}
+      {/* Expanded details */}
       {isExpanded && (
-        <div className="px-3 pb-3 pt-1 bg-muted/10 text-xs space-y-2">
+        <div className="px-11 pb-5 pt-1 bg-muted/5 text-xs space-y-4">
           {/* Arguments */}
           <div>
-            <p className="text-muted-foreground font-medium mb-1">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">
               {t("logs.activity.log.arguments", "Arguments")}
             </p>
-            <pre className="bg-background/50 border border-border/50 rounded p-2 overflow-x-auto max-h-32 text-[11px]">
+            <pre className="bg-background/50 border border-border/40 rounded-xl p-4 overflow-x-auto max-h-48 font-mono text-[11px] leading-relaxed shadow-inner">
               {formatJson(exec.arguments)}
             </pre>
           </div>
@@ -115,19 +123,19 @@ const ExecutionRow: React.FC<{
           {/* Error or Result */}
           {hasError && exec.errorMessage ? (
             <div>
-              <p className="text-destructive font-medium mb-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-destructive/60 mb-2">
                 {t("logs.activity.log.error", "Error")}
               </p>
-              <pre className="bg-destructive/10 border border-destructive/30 rounded p-2 overflow-x-auto max-h-32 text-[11px] text-destructive">
+              <pre className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 overflow-x-auto max-h-48 font-mono text-[11px] text-destructive leading-relaxed shadow-inner">
                 {exec.errorMessage}
               </pre>
             </div>
           ) : (
             <div>
-              <p className="text-muted-foreground font-medium mb-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">
                 {t("logs.activity.log.result", "Result")}
               </p>
-              <pre className="bg-background/50 border border-border/50 rounded p-2 overflow-x-auto max-h-48 text-[11px]">
+              <pre className="bg-background/50 border border-border/40 rounded-xl p-4 overflow-x-auto max-h-64 font-mono text-[11px] leading-relaxed shadow-inner">
                 {formatJson(exec.responseData)}
               </pre>
             </div>
@@ -139,7 +147,7 @@ const ExecutionRow: React.FC<{
 };
 
 /**
- * セッションカード（ToolDiscovery + 関連ToolExecute）
+ * Session card (ToolDiscovery + related ToolExecute)
  */
 const SessionCard: React.FC<{
   session: ActivitySession;
@@ -155,38 +163,38 @@ const SessionCard: React.FC<{
   return (
     <div
       className={cn(
-        "border rounded-lg overflow-hidden",
-        hasError ? "border-destructive/30" : "border-border",
+        "border rounded-[1.5rem] overflow-hidden bg-card/20 backdrop-blur-sm transition-all hover:bg-card/30",
+        hasError ? "border-destructive/20" : "border-border/40",
       )}
     >
-      {/* ヘッダー部分 */}
-      <div className="p-3">
-        <div className="flex items-start justify-between gap-2">
+      {/* Header */}
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             {/* Context */}
             {discovery.context ? (
-              <p className="text-sm font-medium text-foreground line-clamp-2">
+              <p className="text-sm font-bold text-foreground line-clamp-2 tracking-tight leading-snug">
                 {discovery.context}
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground italic">
+              <p className="text-sm text-muted-foreground/60 italic font-medium">
                 {t("logs.activity.log.noContext", "Tool search")}
               </p>
             )}
 
-            {/* クエリタグ */}
+            {/* Query tags */}
             {discovery.query && discovery.query.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-1.5">
+              <div className="flex flex-wrap gap-1.5 mt-3">
                 {discovery.query.slice(0, 5).map((q: string, i: number) => (
                   <span
                     key={i}
-                    className="text-xs text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded"
+                    className="text-[10px] font-black uppercase tracking-widest text-primary/70 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/5"
                   >
                     {q}
                   </span>
                 ))}
                 {discovery.query.length > 5 && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] font-bold text-muted-foreground/40 px-1 pt-0.5">
                     +{discovery.query.length - 5}
                   </span>
                 )}
@@ -194,15 +202,20 @@ const SessionCard: React.FC<{
             )}
           </div>
 
-          <span className="text-xs text-muted-foreground shrink-0">
-            {formatTime(discovery.timestamp)}
-          </span>
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 bg-muted/30 px-2 py-0.5 rounded-full">
+              {formatTime(discovery.timestamp)}
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary/40">
+              {session.clientName}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* 実行ツール一覧 */}
+      {/* Executed tools */}
       {executions.length > 0 && (
-        <div className="border-t border-border/50">
+        <div className="border-t border-border/20 bg-background/30">
           {executions.map((exec) => (
             <ExecutionRow
               key={exec.id}
@@ -214,9 +227,9 @@ const SessionCard: React.FC<{
         </div>
       )}
 
-      {/* 実行なしの場合 */}
+      {/* No executions */}
       {executions.length === 0 && (
-        <div className="border-t border-border/50 px-3 py-2 text-xs text-muted-foreground italic">
+        <div className="border-t border-border/20 px-5 py-3 text-[11px] text-muted-foreground/40 font-medium italic bg-background/20">
           {t("logs.activity.log.noExecutions", "No tools executed")}
         </div>
       )}
@@ -282,60 +295,79 @@ const StandaloneCard: React.FC<{
   return (
     <div
       className={cn(
-        "border rounded-lg overflow-hidden",
-        hasError ? "border-destructive/30" : "border-border",
+        "border rounded-[1.5rem] overflow-hidden bg-card/20 backdrop-blur-sm transition-all hover:bg-card/30",
+        hasError ? "border-destructive/20" : "border-border/40",
       )}
     >
-      {/* ヘッダー */}
+      {/* Header */}
       <button
         onClick={onToggle}
         className={cn(
-          "w-full flex items-center gap-2 p-3 text-left hover:bg-muted/30 transition-colors",
-          isExpanded && "bg-muted/20",
+          "w-full flex items-center gap-3 p-5 text-left hover:bg-primary/5 transition-all duration-200",
+          isExpanded && "bg-primary/5",
         )}
       >
         <IconChevronRight
           size={14}
           className={cn(
-            "text-muted-foreground transition-transform duration-200 shrink-0",
+            "text-muted-foreground transition-transform duration-300 shrink-0",
             isExpanded && "rotate-90",
           )}
         />
-        {getActivityIcon(entry.type, hasError)}
-        <span
+        <div
           className={cn(
-            "text-sm font-medium flex-1 truncate",
-            hasError ? "text-destructive" : "text-foreground",
+            "p-1.5 rounded-lg shrink-0",
+            hasError
+              ? "bg-destructive/10 text-destructive"
+              : "bg-primary/10 text-primary",
           )}
         >
-          {displayName}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {entry.serverName}
-        </span>
-        <span className="text-xs text-muted-foreground shrink-0">
-          {entry.duration}ms
-        </span>
-        <span className="text-xs text-muted-foreground shrink-0">
-          {formatTime(entry.timestamp)}
-        </span>
-        {hasError ? (
-          <IconX size={14} className="text-destructive shrink-0" />
-        ) : (
-          <IconCheck size={14} className="text-green-600 shrink-0" />
-        )}
+          {getActivityIcon(entry.type, hasError)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <span
+            className={cn(
+              "text-sm font-bold block truncate tracking-tight",
+              hasError ? "text-destructive" : "text-foreground",
+            )}
+          >
+            {displayName}
+          </span>
+          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary/40 block mt-0.5">
+            {entry.serverName}
+          </span>
+        </div>
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 bg-muted/30 px-2 py-0.5 rounded-full">
+              {entry.duration}ms
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
+              {formatTime(entry.timestamp)}
+            </span>
+          </div>
+          {hasError ? (
+            <div className="bg-destructive/10 p-1 rounded-full">
+              <IconX size={12} className="text-destructive stroke-[3]" />
+            </div>
+          ) : (
+            <div className="bg-emerald-500/10 p-1 rounded-full">
+              <IconCheck size={12} className="text-emerald-600 stroke-[3]" />
+            </div>
+          )}
+        </div>
       </button>
 
-      {/* 展開時の詳細 */}
+      {/* Expanded details */}
       {isExpanded && (
-        <div className="px-3 pb-3 pt-1 border-t border-border/50 bg-muted/10 text-xs space-y-2">
-          {/* Arguments (ReadResource以外) */}
+        <div className="px-11 pb-5 pt-1 border-t border-border/20 bg-muted/5 text-xs space-y-4">
+          {/* Arguments */}
           {hasArguments && (
             <div>
-              <p className="text-muted-foreground font-medium mb-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">
                 {t("logs.activity.log.arguments", "Arguments")}
               </p>
-              <pre className="bg-background/50 border border-border/50 rounded p-2 overflow-x-auto max-h-32 text-[11px]">
+              <pre className="bg-background/50 border border-border/40 rounded-xl p-4 overflow-x-auto max-h-48 font-mono text-[11px] leading-relaxed shadow-inner">
                 {formatJson(entry.arguments)}
               </pre>
             </div>
@@ -344,19 +376,19 @@ const StandaloneCard: React.FC<{
           {/* Error or Result */}
           {hasError && entry.errorMessage ? (
             <div>
-              <p className="text-destructive font-medium mb-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-destructive/60 mb-2">
                 {t("logs.activity.log.error", "Error")}
               </p>
-              <pre className="bg-destructive/10 border border-destructive/30 rounded p-2 overflow-x-auto max-h-32 text-[11px] text-destructive">
+              <pre className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 overflow-x-auto max-h-48 font-mono text-[11px] text-destructive leading-relaxed shadow-inner">
                 {entry.errorMessage}
               </pre>
             </div>
           ) : (
             <div>
-              <p className="text-muted-foreground font-medium mb-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">
                 {t("logs.activity.log.result", "Result")}
               </p>
-              <pre className="bg-background/50 border border-border/50 rounded p-2 overflow-x-auto max-h-48 text-[11px]">
+              <pre className="bg-background/50 border border-border/40 rounded-xl p-4 overflow-x-auto max-h-64 font-mono text-[11px] leading-relaxed shadow-inner">
                 {formatJson(entry.responseData)}
               </pre>
             </div>
@@ -422,7 +454,7 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
 
   if (loading) {
     return (
-      <Card className="p-4 h-full">
+      <Card className="p-8 h-full rounded-[2rem] border-border/40 bg-card/40 backdrop-blur-sm shadow-sm">
         <div className="flex justify-center items-center h-32">
           <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
         </div>
@@ -432,19 +464,22 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
 
   if (items.length === 0) {
     return (
-      <Card className="p-4 h-full">
-        <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-          <IconSearch size={16} className="text-muted-foreground" />
+      <Card className="p-10 h-full rounded-[2.5rem] border-border/40 bg-card/40 backdrop-blur-sm soft-shadow">
+        <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 mb-8 flex items-center gap-2">
+          <IconSearch size={16} className="text-primary/60" />
           {t("logs.activity.log.title", "Activity Log")}
         </h3>
-        <div className="flex items-center justify-center h-24 text-muted-foreground text-sm">
-          {t("logs.activity.log.empty", "No activities for selected date")}
+        <div className="flex flex-col items-center justify-center h-48 text-muted-foreground/40 text-sm bg-muted/10 rounded-3xl border border-dashed border-border/40">
+          <IconActivity size={32} className="opacity-20 mb-4" />
+          <p className="font-bold tracking-tight">
+            {t("logs.activity.log.empty", "No activities for selected date")}
+          </p>
         </div>
       </Card>
     );
   }
 
-  // 統計
+  // Stats
   const stats = {
     sessions: filteredItems.filter((i) => i.type === "session").length,
     executions: filteredItems.reduce((acc, item) => {
@@ -456,17 +491,17 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
   };
 
   return (
-    <Card className="p-4 h-full overflow-hidden flex flex-col">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium flex items-center gap-2">
-          <IconSearch size={16} className="text-muted-foreground" />
+    <Card className="p-10 h-full rounded-[2.5rem] border-border/40 bg-card/40 backdrop-blur-sm soft-shadow overflow-hidden flex flex-col">
+      <div className="flex items-center justify-between mb-8">
+        <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
+          <IconSearch size={16} className="text-primary/60" />
           {t("logs.activity.log.title", "Activity Log")}
         </h3>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary px-3 py-1 rounded-full shadow-sm">
             {stats.sessions} {t("logs.activity.log.sessions", "sessions")}
           </span>
-          <span>
+          <span className="text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-600 px-3 py-1 rounded-full shadow-sm">
             {stats.executions} {t("logs.activity.log.executions", "executions")}
           </span>
         </div>
@@ -474,7 +509,7 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
 
       <ActivityLogFilterBar filters={filters} onFiltersChange={setFilters} />
 
-      <div className="flex-1 overflow-y-auto space-y-2">
+      <div className="flex-1 overflow-y-auto pr-2 -mr-2 mt-4 space-y-3">
         {filteredItems.map((item) => {
           if (item.type === "session") {
             return (
