@@ -59,14 +59,48 @@ export interface SkillsSearchOptions {
   sort?: SkillsSortOption;
 }
 
-export interface RegistrySkill {
-  /** Unique identifier (kebab-case, e.g., "vercel-react-best-practices") */
+/**
+ * Raw skill data from skills.sh API
+ */
+export interface RegistrySkillApiResponse {
+  /** Unique identifier */
   id: string;
+  /** Skill ID (kebab-case) */
+  skillId: string;
   /** Display name */
   name: string;
   /** Total installation count */
   installs: number;
-  /** Origin repository/source (e.g., "vercel-labs/agent-skills") */
+  /** Origin repository/source (e.g., "vercel-labs/skills") */
+  source: string;
+}
+
+/**
+ * Enriched skill data for frontend consumption
+ */
+export interface RegistrySkill {
+  /** Unique identifier */
+  id: string;
+  /** Display name */
+  name: string;
+  /** Description (may be empty) */
+  description?: string;
+  /** Version (placeholder if not provided) */
+  version?: string;
+  /** Author (extracted from source) */
+  author?: string;
+  /** Repository information */
+  repository?: {
+    url: string;
+    source: string;
+  };
+  /** Tags */
+  tags?: string[];
+  /** Icon URL */
+  icon?: string;
+  /** Total installation count */
+  installs: number;
+  /** Origin source */
   topSource: string;
 }
 

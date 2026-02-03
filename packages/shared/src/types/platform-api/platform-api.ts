@@ -14,6 +14,7 @@ import { WorkflowAPI } from "./domains/workflow-api";
 import { ProjectsAPI } from "./domains/projects-api";
 import { SkillsAPI } from "./domains/skills-api";
 import { ClientAppsAPI } from "./domains/client-apps-api";
+import { MarketplaceAPI } from "./domains/marketplace-api";
 
 /**
  * Main Platform API interface with domain-driven structure
@@ -52,6 +53,9 @@ export interface PlatformAPI {
 
   // Skills management domain
   skills: SkillsAPI;
+
+  // Marketplace domain
+  marketplace: MarketplaceAPI;
 
   // Client Apps management domain
   clientApps: ClientAppsAPI;

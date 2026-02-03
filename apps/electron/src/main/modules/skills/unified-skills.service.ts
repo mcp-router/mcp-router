@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import { promises as fsPromises } from "fs";
 import path from "path";
 import { SingletonService } from "@/main/modules/singleton-service";
@@ -297,6 +298,25 @@ export class UnifiedSkillsService extends SingletonService<
         const newPath = this.fileManager.getSkillPath(normalizedName);
         await fsPromises.rename(oldPath, newPath);
 
+        // Update symlinks for all clients that have this skill enabled
+        const clients = await clientAppService.list();
+        const stateRepo = ClientSkillStateRepository.getInstance();
+
+        for (const client of clients) {
+          const state = stateRepo.findBySkillAndClient(id, client.id);
+          if (state?.state === "enabled" && client.skillsPath) {
+            const resolvedPaths = this.resolveClientSkillsPath(
+              client.skillsPath,
+            );
+            for (const targetDir of resolvedPaths) {
+              const oldTarget = path.join(targetDir, skill.name);
+              const newTarget = path.join(targetDir, normalizedName);
+              this.fileManager.removeSymlink(oldTarget);
+              this.fileManager.createSymlink(newPath, newTarget);
+            }
+          }
+        }
+
         updateData.name = normalizedName;
       }
 
@@ -401,21 +421,27 @@ export class UnifiedSkillsService extends SingletonService<
         );
       }
 
-      // Create symlink in each resolved path
+      // Create symlink in each resolved path, tracking success
       const skillPath = this.fileManager.getSkillPath(skill.name);
+      let allSucceeded = true;
       for (const targetDir of resolvedPaths) {
         const targetPath = path.join(targetDir, skill.name);
-        this.fileManager.createSymlink(skillPath, targetPath);
+        const success = this.fileManager.createSymlink(skillPath, targetPath);
+        if (!success) {
+          allSucceeded = false;
+          console.warn(`Failed to create symlink at ${targetPath}`);
+        }
       }
 
-      // Update or create state record
+      // Update or create state record with actual symlink status
       const existingState = stateRepo.findBySkillAndClient(skillId, clientId);
       const now = Date.now();
+      const symlinkStatus: SymlinkStatus = allSucceeded ? "active" : "broken";
 
       if (existingState) {
         stateRepo.update(existingState.id, {
           state: "enabled" as ClientSkillStateType,
-          symlinkStatus: "active" as SymlinkStatus,
+          symlinkStatus,
           lastSyncAt: now,
           updatedAt: now,
         });
@@ -426,7 +452,7 @@ export class UnifiedSkillsService extends SingletonService<
           state: "enabled" as ClientSkillStateType,
           isManaged: true,
           source: "local" as SkillSource,
-          symlinkStatus: "active" as SymlinkStatus,
+          symlinkStatus,
           lastSyncAt: now,
           createdAt: now,
           updatedAt: now,
@@ -560,6 +586,13 @@ export class UnifiedSkillsService extends SingletonService<
         );
       }
 
+      // Validate that the skill path still exists
+      if (!fs.existsSync(discovered.skillPath)) {
+        throw new Error(
+          `Skill "${skillName}" no longer exists at ${discovered.skillPath}. Please refresh and try again.`,
+        );
+      }
+
       // Validate skill name
       const normalizedName = this.validateAndNormalizeName(skillName);
 
@@ -667,15 +700,27 @@ export class UnifiedSkillsService extends SingletonService<
 
   /**
    * Enable a skill for all clients
+   * Returns sync result with success/error details for each client
    */
-  public async enableAll(skillId: string): Promise<void> {
+  public async enableAll(skillId: string): Promise<SkillSyncResult> {
+    const result: SkillSyncResult = {
+      synced: [],
+      skipped: [],
+      errors: [],
+    };
+
     try {
       const skillRepo = SkillRepository.getInstance();
 
       // Update the skill's enabled flag
       const skill = skillRepo.getById(skillId);
       if (!skill) {
-        throw new Error(`Skill not found: ${skillId}`);
+        result.errors.push({
+          clientId: "all",
+          skillId,
+          error: `Skill not found: ${skillId}`,
+        });
+        return result;
       }
 
       skillRepo.update(skillId, {
@@ -683,17 +728,29 @@ export class UnifiedSkillsService extends SingletonService<
         updatedAt: Date.now(),
       });
 
-      // Sync to all clients
-      await this.syncToAllClients(skillId);
-    } catch (error) {
-      this.handleError("enableAll", error);
+      // Sync to all clients and return the result
+      return await this.syncToAllClients(skillId);
+    } catch (error: any) {
+      result.errors.push({
+        clientId: "all",
+        skillId,
+        error: error.message || "Unknown error",
+      });
+      return result;
     }
   }
 
   /**
    * Disable a skill for all clients
+   * Returns sync result with success/error details for each client
    */
-  public async disableAll(skillId: string): Promise<void> {
+  public async disableAll(skillId: string): Promise<SkillSyncResult> {
+    const result: SkillSyncResult = {
+      synced: [],
+      skipped: [],
+      errors: [],
+    };
+
     try {
       const skillRepo = SkillRepository.getInstance();
       const clientAppService = getClientAppService();
@@ -701,7 +758,12 @@ export class UnifiedSkillsService extends SingletonService<
       // Update the skill's enabled flag
       const skill = skillRepo.getById(skillId);
       if (!skill) {
-        throw new Error(`Skill not found: ${skillId}`);
+        result.errors.push({
+          clientId: "all",
+          skillId,
+          error: `Skill not found: ${skillId}`,
+        });
+        return result;
       }
 
       skillRepo.update(skillId, {
@@ -709,20 +771,38 @@ export class UnifiedSkillsService extends SingletonService<
         updatedAt: Date.now(),
       });
 
-      // Disable for all clients
+      // Disable for all clients, collecting results
       const clients = await clientAppService.list();
       for (const client of clients) {
-        if (client.skillsPath) {
-          try {
-            await this.disableForClient(skillId, client.id);
-          } catch {
-            // Continue with other clients even if one fails
-          }
+        if (!client.skillsPath) {
+          result.skipped.push({
+            clientId: client.id,
+            skillId,
+            reason: "No skills path configured",
+          });
+          continue;
+        }
+
+        try {
+          await this.disableForClient(skillId, client.id);
+          result.synced.push({ clientId: client.id, skillId });
+        } catch (error: any) {
+          result.errors.push({
+            clientId: client.id,
+            skillId,
+            error: error.message || "Unknown error",
+          });
         }
       }
-    } catch (error) {
-      this.handleError("disableAll", error);
+    } catch (error: any) {
+      result.errors.push({
+        clientId: "all",
+        skillId,
+        error: error.message || "Unknown error",
+      });
     }
+
+    return result;
   }
 
   // ==========================================================================

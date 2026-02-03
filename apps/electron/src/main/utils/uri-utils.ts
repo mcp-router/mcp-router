@@ -48,8 +48,11 @@ export function createUriVariants(
 
   // 1. Try with original protocol if available
   if (originalProtocol) {
+    const normalizedProtocol = originalProtocol.includes("://")
+      ? originalProtocol
+      : `${originalProtocol}://`;
     uriFormats.push({
-      uri: `${originalProtocol}${path}`,
+      uri: `${normalizedProtocol}${path}`,
       description: "original protocol",
     });
   }

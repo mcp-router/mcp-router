@@ -421,8 +421,10 @@ export class MCPServerManager {
     config: Partial<MCPServerConfig>,
   ): MCPServer | undefined {
     const oldServer = this.servers.get(id);
-    if (oldServer && config.name && oldServer.name !== config.name) {
-      this.serverNameToIdMap.delete(oldServer.name);
+    const oldName = oldServer?.name;
+    const isRenaming = !!(oldServer && config.name && oldName !== config.name);
+    if (isRenaming && oldName) {
+      this.serverNameToIdMap.delete(oldName);
     }
 
     const updatedServer = this.serverService.updateServer(id, config);
@@ -437,6 +439,17 @@ export class MCPServerManager {
       Object.assign(server, updatedServer, { status, logs });
       server.toolPermissions = server.toolPermissions || {};
       this.updateServerNameMapping(server);
+      if (isRenaming && oldName && config.name) {
+        const wasRunning = this.serverStatusMap.get(oldName);
+        if (this.serverStatusMap.has(oldName)) {
+          this.serverStatusMap.delete(oldName);
+        }
+        if (wasRunning !== undefined) {
+          this.serverStatusMap.set(config.name, wasRunning);
+        } else if (server.status === "running") {
+          this.serverStatusMap.set(config.name, true);
+        }
+      }
     }
 
     this.eventEmitter.emit("server-updated", id);

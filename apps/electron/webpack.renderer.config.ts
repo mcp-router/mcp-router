@@ -4,6 +4,9 @@ import * as path from "path";
 import { rules } from "./webpack.rules";
 import { plugins } from "./webpack.plugins";
 
+const devServerPort = Number(process.env.WEBPACK_DEV_SERVER_PORT || 9000);
+const devServerHost = process.env.WEBPACK_DEV_SERVER_HOST || "127.0.0.1";
+
 rules.push({
   test: /\.css$/,
   use: [
@@ -17,6 +20,18 @@ rules.push({
 });
 
 export const rendererConfig: Configuration = {
+  devServer: {
+    host: devServerHost,
+    port: devServerPort,
+    client: {
+      webSocketURL: {
+        hostname: devServerHost,
+        port: devServerPort,
+        pathname: "/ws",
+        protocol: "ws",
+      },
+    },
+  },
   module: {
     rules,
   },

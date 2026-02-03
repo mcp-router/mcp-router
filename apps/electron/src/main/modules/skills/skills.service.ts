@@ -1,5 +1,6 @@
 import { SingletonService } from "@/main/modules/singleton-service";
 import { SkillRepository } from "./skills.repository";
+import { ClientSkillStateRepository } from "./client-skill-state.repository";
 import { SkillsFileManager } from "./skills-file-manager";
 import { AgentPathRepository } from "./agent-path.repository";
 import { getSymlinkTargetPath } from "./skills-agent-paths";
@@ -290,6 +291,9 @@ export class SkillService extends SingletonService<
       // Delete skill directory
       const skillPath = this.fileManager.getSkillPath(skill.name);
       this.fileManager.deleteSkillDirectory(skillPath);
+
+      // Clean up client skill state records
+      ClientSkillStateRepository.getInstance().deleteBySkill(id);
 
       // Delete from database
       const ok = repo.delete(id);

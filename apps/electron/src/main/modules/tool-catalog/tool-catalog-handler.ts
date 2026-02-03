@@ -239,6 +239,7 @@ export class ToolCatalogHandler extends RequestHandlerBase {
     serverId: string;
     toolName: string;
   } {
+    this.rebuildNameLookup();
     // Split on FIRST colon only (tool names may contain colons)
     const colonIndex = toolKey.indexOf(":");
     if (colonIndex <= 0) {

@@ -9,6 +9,7 @@ import {
 } from "@/main/modules/skills/skills-agent-paths";
 import { SkillRepository } from "@/main/modules/skills/skills.repository";
 import { getServerService } from "@/main/modules/mcp-server-manager/server-service";
+import { TokenManager } from "../mcp-apps-manager/token-manager";
 import {
   isPathContained,
   isPathAllowed,
@@ -23,8 +24,9 @@ import type {
   TokenServerAccess,
   StandardClientDefinition,
   DiscoveredSkill,
+  Token,
 } from "@mcp_router/shared";
-import { STANDARD_CLIENTS } from "./client-definitions";
+import { STANDARD_CLIENTS, getClientById } from "./client-definitions";
 import { ClientAppRepository } from "./client-app.repository";
 import {
   detectClient,
@@ -488,6 +490,11 @@ export class ClientAppService extends SingletonService<
           };
         }
 
+        if (client.token) {
+          const tokenManager = new TokenManager();
+          tokenManager.updateTokenServerAccess(client.token, serverAccess);
+        }
+
         return {
           success: true,
           message: `Successfully updated server access for "${client.name}"`,
@@ -495,12 +502,29 @@ export class ClientAppService extends SingletonService<
         };
       }
 
-      // For standard clients, we need to update through token manager
-      // TODO: Implement token-based server access update for standard clients
+      // For standard clients, update through token manager
+      const tokenManager = new TokenManager();
+      const existingToken = this.getTokenForClient(client, tokenManager);
+      if (existingToken) {
+        const updated = tokenManager.updateTokenServerAccess(
+          existingToken.id,
+          serverAccess,
+        );
+        if (!updated) {
+          return {
+            success: false,
+            message: "Failed to update server access",
+          };
+        }
+      } else {
+        const tokenId = await this.generateClientToken(client, serverAccess);
+        await this.writeMcpConfig(client, tokenId);
+      }
+
       return {
-        success: false,
-        message:
-          "Server access update for standard clients not yet implemented",
+        success: true,
+        message: `Successfully updated server access for "${client.name}"`,
+        clientApp: (await this.get(id)) || undefined,
       };
     } catch (error: any) {
       return {
@@ -880,7 +904,10 @@ export class ClientAppService extends SingletonService<
       ]);
 
       // Get server access from token (if configured)
-      const serverAccess = this.generateDefaultServerAccess();
+      const tokenManager = new TokenManager();
+      const token = this.getTokenForClientDefinition(def, tokenManager);
+      const serverAccess =
+        token?.serverAccess ?? this.generateDefaultServerAccess();
 
       const now = Date.now();
 
@@ -898,6 +925,7 @@ export class ClientAppService extends SingletonService<
         skillsPath,
         skillsConfigured,
         serverAccess,
+        token: token?.id,
         isStandard: true,
         isCustom: false,
         createdAt: now,
@@ -922,6 +950,36 @@ export class ClientAppService extends SingletonService<
     }
 
     return serverAccess;
+  }
+
+  private getTokenForClient(
+    client: ClientApp,
+    tokenManager: TokenManager,
+  ): Token | null {
+    const tokens = tokenManager.listTokens();
+    const normalizedId = client.id.toLowerCase();
+    const normalizedName = client.name.toLowerCase();
+
+    return (
+      tokens.find((token) => token.clientId.toLowerCase() === normalizedId) ||
+      tokens.find((token) => token.clientId.toLowerCase() === normalizedName) ||
+      null
+    );
+  }
+
+  private getTokenForClientDefinition(
+    def: StandardClientDefinition,
+    tokenManager: TokenManager,
+  ): Token | null {
+    const tokens = tokenManager.listTokens();
+    const normalizedId = def.id.toLowerCase();
+    const normalizedName = def.name.toLowerCase();
+
+    return (
+      tokens.find((token) => token.clientId.toLowerCase() === normalizedId) ||
+      tokens.find((token) => token.clientId.toLowerCase() === normalizedName) ||
+      null
+    );
   }
 
   /**
@@ -1268,10 +1326,17 @@ export class ClientAppService extends SingletonService<
   /**
    * Generate a token for a client
    */
-  private async generateClientToken(_client: ClientApp): Promise<string> {
-    // TODO: Integrate with TokenManager from mcp-apps-manager
-    // For now, return empty string
-    return "";
+  private async generateClientToken(
+    client: ClientApp,
+    serverAccess?: TokenServerAccess,
+  ): Promise<string> {
+    const tokenManager = new TokenManager();
+    const access = serverAccess ?? client.serverAccess;
+    const token = tokenManager.generateToken({
+      clientId: client.id,
+      serverAccess: access,
+    });
+    return token.id;
   }
 
   /**
@@ -1279,7 +1344,7 @@ export class ClientAppService extends SingletonService<
    */
   private async writeMcpConfig(
     client: ClientApp,
-    _token: string,
+    token: string,
   ): Promise<void> {
     if (!client.mcpConfigPath) {
       throw new Error("Client has no MCP config path");
@@ -1289,8 +1354,125 @@ export class ClientAppService extends SingletonService<
     const configDir = path.dirname(client.mcpConfigPath);
     await fsPromises.mkdir(configDir, { recursive: true });
 
-    // TODO: Implement based on config format (json/toml/env-only)
-    // Reference: mcp-apps-manager.service.ts updateAppConfig method
+    const standardDef = client.isStandard
+      ? getClientById(client.id)
+      : undefined;
+    const format =
+      standardDef?.configFormat ||
+      (client.mcpConfigPath.endsWith(".toml") ? "toml" : "json");
+
+    if (format === "toml") {
+      await this.updateMcpRouterConfigToml(client.mcpConfigPath, token);
+      return;
+    }
+
+    if (format !== "json") {
+      throw new Error("Unsupported MCP config format");
+    }
+
+    let config: any = {};
+    try {
+      const content = await fsPromises.readFile(client.mcpConfigPath, "utf8");
+      config = JSON.parse(content);
+    } catch {
+      config = {};
+    }
+
+    const routerConfig = this.createMcpRouterConfig(token);
+
+    if (config.servers) {
+      config.servers["mcp-router"] = routerConfig;
+    } else if (config.mcp) {
+      config.mcp["mcp-router"] = routerConfig;
+    } else {
+      config.mcpServers = {
+        ...(config.mcpServers || {}),
+        "mcp-router": routerConfig,
+      };
+    }
+
+    await fsPromises.writeFile(
+      client.mcpConfigPath,
+      JSON.stringify(config, null, 2),
+      "utf8",
+    );
+  }
+
+  private createMcpRouterConfig(tokenId: string): {
+    command: string;
+    args: string[];
+    env: Record<string, string>;
+  } {
+    return {
+      command: "npx",
+      args: ["-y", "@mcp_router/cli@latest", "connect"],
+      env: {
+        MCPR_TOKEN: tokenId,
+      },
+    };
+  }
+
+  private async updateMcpRouterConfigToml(
+    filePath: string,
+    tokenId: string,
+  ): Promise<void> {
+    const isWindows = process.platform === "win32";
+    const command = isWindows
+      ? "C:\\\\Program Files\\\\nodejs\\\\npx.cmd"
+      : "npx";
+    const localAppData = isWindows
+      ? path.join(os.homedir(), "AppData", "Local")
+      : null;
+    const escapedLocalAppData = localAppData?.replace(/\\/g, "\\\\");
+
+    const blockMain =
+      `[mcp_servers.mcp_router]\n` +
+      `command = "${command}"\n` +
+      `args    = ["-y", "@mcp_router/cli@latest", "connect"]\n` +
+      `startup_timeout_sec = 120\n`;
+    let blockEnv =
+      `\n[mcp_servers.mcp_router.env]\n` + `MCPR_TOKEN = "${tokenId}"\n`;
+    if (escapedLocalAppData) {
+      blockEnv += `LOCALAPPDATA = "${escapedLocalAppData}"\n`;
+    }
+    const newBlock = `${blockMain}${blockEnv}`;
+
+    let content = "";
+    try {
+      content = await fsPromises.readFile(filePath, "utf8");
+    } catch {
+      // no file yet
+    }
+
+    if (content) {
+      const blockPattern =
+        /\[mcp_servers\.mcp_router\][\s\S]*?(?:\n\[mcp_servers\.mcp_router\.env\][\s\S]*?)?(?=\n\[[^\n]+\]|$)/g;
+      let replaced = false;
+      content = content.replace(blockPattern, () => {
+        if (replaced) {
+          return "";
+        }
+        replaced = true;
+        return newBlock;
+      });
+
+      if (!replaced) {
+        content = content.trimEnd();
+        if (content.length > 0 && !content.endsWith("\n")) {
+          content += "\n";
+        }
+        content += `\n${newBlock}`;
+      } else {
+        content = content.replace(/\n{3,}/g, "\n\n").trimEnd();
+        if (!content.endsWith("\n")) {
+          content += "\n";
+        }
+      }
+    } else {
+      content = newBlock;
+    }
+
+    await fsPromises.writeFile(filePath, content, "utf8");
   }
 
   /**

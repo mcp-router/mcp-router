@@ -119,8 +119,7 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
     };
 
     loadContent();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skill?.id]);
+  }, [skill?.id, skill?.source, skill?.sourcePath, platformAPI]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

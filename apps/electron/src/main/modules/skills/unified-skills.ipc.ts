@@ -22,8 +22,8 @@ interface UnifiedSkillsService {
   adoptSkill(skillName: string, sourceClientId: string): Promise<UnifiedSkill>;
   syncToAllClients(skillId: string): Promise<SkillSyncResult>;
   verifyAndRepairAll(): Promise<SkillVerifyResult>;
-  enableAll(skillId: string): Promise<void>;
-  disableAll(skillId: string): Promise<void>;
+  enableAll(skillId: string): Promise<SkillSyncResult>;
+  disableAll(skillId: string): Promise<SkillSyncResult>;
 }
 
 let unifiedSkillsService: UnifiedSkillsService | null = null;

@@ -193,7 +193,7 @@ export class SkillsFileManager {
     try {
       const lstats = fs.lstatSync(symlinkPath);
       if (!lstats.isSymbolicLink()) {
-        return "broken";
+        return "none";
       }
 
       // Check if target exists

@@ -234,6 +234,10 @@ export class RemotePlatformAPI implements PlatformAPI {
     return this.localPlatformAPI.skills;
   }
 
+  get marketplace() {
+    return this.localPlatformAPI.marketplace;
+  }
+
   get clientApps() {
     return this.localPlatformAPI.clientApps;
   }

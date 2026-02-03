@@ -246,8 +246,8 @@ export class RequestHandlers extends RequestHandlerBase {
             !this.originalProtocols.has(resource.uri) &&
             resource.uri.includes("://")
           ) {
-            const protocol = resource.uri.split("://")[0];
-            this.originalProtocols.set(resource.uri, protocol);
+            const protocolPrefix = `${resource.uri.split("://")[0]}://`;
+            this.originalProtocols.set(resource.uri, protocolPrefix);
           }
 
           const resourceWithSource = {

@@ -301,6 +301,60 @@ declare global {
       } | null>;
       marketplaceReadme: (repoUrl: string) => Promise<string | null>;
       marketplaceClearCache: () => Promise<{ success: boolean }>;
+      marketplaceSkillsSearch: (options?: {
+        search?: string;
+        limit?: number;
+        cursor?: string;
+        tags?: string[];
+      }) => Promise<{
+        skills: Array<{
+          skill: {
+            id: string;
+            name: string;
+            description: string;
+            version: string;
+            author?: string;
+            repository?: {
+              url: string;
+              source: string;
+            };
+            tags?: string[];
+            icon?: string;
+          };
+          _meta: {
+            publishedAt: string;
+            downloads?: number;
+          };
+        }>;
+        metadata: {
+          nextCursor: string | null;
+          count: number;
+        };
+      }>;
+      marketplaceSkillsDetails: (skillId: string) => Promise<{
+        id: string;
+        name: string;
+        description: string;
+        version: string;
+        author?: string;
+        repository?: {
+          url: string;
+          source: string;
+        };
+        tags?: string[];
+        icon?: string;
+      } | null>;
+      marketplaceSkillsContent: (repoUrl: string) => Promise<string | null>;
+      marketplaceSkillsInstall: (options: {
+        skillId: string;
+        repoUrl: string;
+        targetName?: string;
+        projectId?: string | null;
+      }) => Promise<{
+        success: boolean;
+        skillId?: string;
+        error?: string;
+      }>;
     };
   }
 }
