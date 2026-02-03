@@ -254,6 +254,26 @@ contextBridge.exposeInMainWorld("electronAPI", {
   marketplaceReadme: (repoUrl: string) =>
     ipcRenderer.invoke("marketplace:readme", repoUrl),
   marketplaceClearCache: () => ipcRenderer.invoke("marketplace:clearCache"),
+  marketplaceGitHubStats: (repoUrl: string) =>
+    ipcRenderer.invoke("marketplace:githubStats", repoUrl),
+  marketplaceGitHubStatsBatch: (repoUrls: string[]) =>
+    ipcRenderer.invoke("marketplace:githubStatsBatch", repoUrls),
+  marketplaceSkillsSearch: (options?: {
+    search?: string;
+    limit?: number;
+    cursor?: string;
+    tags?: string[];
+  }) => ipcRenderer.invoke("marketplace:skills:search", options),
+  marketplaceSkillsDetails: (skillId: string) =>
+    ipcRenderer.invoke("marketplace:skills:details", skillId),
+  marketplaceSkillsContent: (repoUrl: string) =>
+    ipcRenderer.invoke("marketplace:skills:content", repoUrl),
+  marketplaceSkillsInstall: (options: {
+    skillId: string;
+    repoUrl: string;
+    targetName?: string;
+    projectId?: string | null;
+  }) => ipcRenderer.invoke("marketplace:skills:install", options),
 
   // Client Apps Management
   listClientApps: () => ipcRenderer.invoke("client-app:list"),

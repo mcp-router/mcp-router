@@ -72,12 +72,16 @@ export interface RegistryServerResult {
 export interface RegistrySkill {
   id: string;
   name: string;
-  description: string;
-  version: string;
+  description?: string;
+  version?: string;
   author?: string;
   repository?: RegistryServerRepository;
   tags?: string[];
   icon?: string;
+  /** Total installation count */
+  installs?: number;
+  /** Origin source (e.g., "vercel-labs/skills") */
+  topSource?: string;
 }
 
 /**
@@ -89,6 +93,24 @@ export interface RegistrySkillResult {
     publishedAt: string;
     downloads?: number;
   };
+}
+
+// =============================================================================
+// GitHub Stats Types
+// =============================================================================
+
+/**
+ * GitHub repository statistics
+ */
+export interface GitHubStats {
+  /** Number of stars */
+  stars: number;
+  /** Number of forks */
+  forks: number;
+  /** Number of open issues */
+  openIssues: number;
+  /** Number of watchers */
+  watchers: number;
 }
 
 // =============================================================================
@@ -198,6 +220,12 @@ export interface MarketplaceAPI {
     getDetails: (serverName: string) => Promise<RegistryServer | null>;
     /** Fetch README content from the server's repository */
     getReadme: (repoUrl: string) => Promise<string | null>;
+    /** Fetch GitHub stats for a repository */
+    getGitHubStats: (repoUrl: string) => Promise<GitHubStats | null>;
+    /** Batch fetch GitHub stats for multiple repositories */
+    getGitHubStatsBatch: (
+      repoUrls: string[],
+    ) => Promise<Record<string, GitHubStats | null>>;
   };
 
   /** Skill marketplace operations */

@@ -22,9 +22,6 @@ import type {
   SkillSortOption,
 } from "./types";
 
-// Import mock data for development
-import { MOCK_MARKETPLACE_SKILLS as mockSkills } from "./types";
-
 /**
  * Skeleton card component for loading state
  */
@@ -149,13 +146,43 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({
   const loadSkills = useCallback(async () => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // const response = await platformAPI.marketplace.skills.search({ search: searchQuery });
-      // setSkills(response.skills);
+      const response = await platformAPI.marketplace.skills.search({
+        search: searchQuery.trim() || undefined,
+        limit: 50,
+      });
+      // Handle skills.sh API response format:
+      // { skills: [{ id, skillId, name, installs, source }, ...] }
+      const mappedSkills = response.skills.map((item: any) => {
+        // Check if item has a nested 'skill' property or is the skill directly
+        const skill = item.skill ?? item;
+        const meta = item._meta ?? {};
 
-      // Using mock data for now
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
-      setSkills(mockSkills);
+        // Extract author from source (e.g., "vercel-labs/skills" -> "vercel-labs")
+        const source = skill.source || skill.topSource || "";
+        const author = source.split("/")[0] || "Unknown";
+
+        // Construct GitHub repository URL for SKILL.md fetching
+        // Format: https://github.com/{source} with skill path skills/{skillId}/SKILL.md
+        const skillId = skill.skillId || skill.name;
+        const repositoryUrl = source
+          ? `https://github.com/${source}#skill:${skillId}`
+          : skill.repository?.url;
+
+        return {
+          id: skill.id,
+          name: skill.name || skillId,
+          description: skill.description || "No description available",
+          author: skill.author || author,
+          version: skill.version || "1.0.0",
+          installCount: skill.installs ?? meta.downloads ?? 0,
+          tags: skill.tags || [],
+          repositoryUrl,
+          compatibility: [],
+          createdAt: meta.publishedAt || new Date().toISOString(),
+          updatedAt: meta.publishedAt || new Date().toISOString(),
+        } as MarketplaceSkill;
+      });
+      setSkills(mappedSkills);
     } catch (error) {
       console.error("Failed to load marketplace skills:", error);
       toast.error(
@@ -166,7 +193,7 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [t]);
+  }, [platformAPI, searchQuery, t]);
 
   // Load installed skills to check installation status
   const loadInstalledSkills = useCallback(async () => {
@@ -219,16 +246,19 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({
   const handleInstall = useCallback(
     async (skill: MarketplaceSkill) => {
       try {
-        // TODO: Implement actual installation logic
-        // This would typically:
-        // 1. Download the skill from the repository
-        // 2. Create a local skill entry
-        // 3. Copy/clone files to the skills directory
+        if (!skill.repositoryUrl) {
+          throw new Error("Skill repository not available");
+        }
 
-        // For now, we'll create a local skill with the same name
-        await platformAPI.skills.create({
-          name: skill.name,
+        const result = await platformAPI.marketplace.skills.install({
+          skillId: skill.id,
+          repoUrl: skill.repositoryUrl,
+          targetName: skill.name,
         });
+
+        if (!result.success) {
+          throw new Error(result.error || "Failed to install skill");
+        }
 
         // Update installed skills set
         setInstalledSkillIds((prev) => {
@@ -260,55 +290,30 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({
   );
 
   // Handle viewing skill details
-  const handleViewDetails = useCallback(async (skill: MarketplaceSkill) => {
-    setSelectedSkill(skill);
-    setIsModalOpen(true);
-    setReadmeContent(null);
+  const handleViewDetails = useCallback(
+    async (skill: MarketplaceSkill) => {
+      setSelectedSkill(skill);
+      setIsModalOpen(true);
+      setReadmeContent(null);
 
-    // Load README content if repository URL is available
-    if (skill.repositoryUrl) {
-      setIsLoadingReadme(true);
-      try {
-        // TODO: Replace with actual API call when backend is ready
-        // const readme = await platformAPI.marketplace.fetchReadme(skill.repositoryUrl);
-        // setReadmeContent(readme);
-
-        // Mock README content for now
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        setReadmeContent(`# ${skill.name}
-
-${skill.description}
-
-## Installation
-
-Install this skill using MCP Router's marketplace.
-
-## Usage
-
-This skill provides the following capabilities:
-
-${skill.tags.map((tag) => `- ${tag}`).join("\n")}
-
-## Compatibility
-
-Tested with: ${skill.compatibility.join(", ")}
-
-## Author
-
-Created by ${skill.author}
-
-## License
-
-MIT License
-`);
-      } catch (error) {
-        console.error("Failed to load README:", error);
-        setReadmeContent(null);
-      } finally {
-        setIsLoadingReadme(false);
+      // Load README content if repository URL is available
+      if (skill.repositoryUrl) {
+        setIsLoadingReadme(true);
+        try {
+          const content = await platformAPI.marketplace.skills.getContent(
+            skill.repositoryUrl,
+          );
+          setReadmeContent(content);
+        } catch (error) {
+          console.error("Failed to load README:", error);
+          setReadmeContent(null);
+        } finally {
+          setIsLoadingReadme(false);
+        }
       }
-    }
-  }, []);
+    },
+    [platformAPI],
+  );
 
   // Handle modal close
   const handleCloseModal = useCallback(() => {

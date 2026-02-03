@@ -16,8 +16,18 @@ import type {
   Workspace,
   ProjectsAPI,
   SkillsAPI,
+  MarketplaceAPI,
   ClientAppsAPI,
   ClientApp,
+  McpServerSearchOptions,
+  McpServerSearchResponse,
+  SkillsSearchOptions,
+  SkillsSearchResponse,
+  RegistryServer,
+  RegistrySkill,
+  InstallSkillInput,
+  InstallSkillResult,
+  GitHubStats,
 } from "@mcp_router/shared";
 
 // Electron implementation of the Platform API
@@ -33,6 +43,7 @@ class ElectronPlatformAPI implements PlatformAPI {
   workflows: WorkflowAPI;
   projects: ProjectsAPI;
   skills: SkillsAPI;
+  marketplace: MarketplaceAPI;
   clientApps: ClientAppsAPI;
 
   constructor() {
@@ -264,6 +275,41 @@ class ElectronPlatformAPI implements PlatformAPI {
         adopt: (input) => window.electronAPI.adoptSkill(input),
         sync: (skillId) => window.electronAPI.syncSkills(skillId),
         verify: () => window.electronAPI.verifySkills(),
+      },
+    };
+
+    // Initialize marketplace domain
+    this.marketplace = {
+      servers: {
+        search: (
+          options?: McpServerSearchOptions,
+        ): Promise<McpServerSearchResponse> =>
+          window.electronAPI.marketplaceSearch(options),
+        getDetails: (serverName: string): Promise<RegistryServer | null> =>
+          window.electronAPI.marketplaceDetails(serverName),
+        getReadme: (repoUrl: string): Promise<string | null> =>
+          window.electronAPI.marketplaceReadme(repoUrl),
+        getGitHubStats: (repoUrl: string): Promise<GitHubStats | null> =>
+          window.electronAPI.marketplaceGitHubStats(repoUrl),
+        getGitHubStatsBatch: (
+          repoUrls: string[],
+        ): Promise<Record<string, GitHubStats | null>> =>
+          window.electronAPI.marketplaceGitHubStatsBatch(repoUrls),
+      },
+      skills: {
+        search: (
+          options?: SkillsSearchOptions,
+        ): Promise<SkillsSearchResponse> =>
+          window.electronAPI.marketplaceSkillsSearch(options),
+        getDetails: (skillId: string): Promise<RegistrySkill | null> =>
+          window.electronAPI.marketplaceSkillsDetails(skillId),
+        getContent: (repoUrl: string): Promise<string | null> =>
+          window.electronAPI.marketplaceSkillsContent(repoUrl),
+        install: (input: InstallSkillInput): Promise<InstallSkillResult> =>
+          window.electronAPI.marketplaceSkillsInstall(input),
+      },
+      clearCache: async () => {
+        await window.electronAPI.marketplaceClearCache();
       },
     };
 

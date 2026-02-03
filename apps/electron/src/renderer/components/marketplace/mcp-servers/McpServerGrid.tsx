@@ -1,12 +1,23 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Skeleton } from "@mcp_router/ui";
-import { Button } from "@mcp_router/ui";
-import { Card, CardContent } from "@mcp_router/ui";
+import {
+  Skeleton,
+  Button,
+  Card,
+  CardContent,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@mcp_router/ui";
 import { AlertCircle, ChevronLeft, ChevronRight, Search } from "lucide-react";
-import { McpServerCard, RegistryServerWithMeta } from "./McpServerCard";
+import { McpServerCard, RegistryServerWithMeta, GitHubStats } from "./McpServerCard";
 import { McpServerDetailsModal } from "./McpServerDetailsModal";
 import { cn } from "@/renderer/utils/tailwind-utils";
+import { usePlatformAPI } from "@/renderer/platform-api";
+
+type SortOption = "stars" | "recent" | "updated" | "verified" | "name";
 
 interface RegistryResponse {
   servers: RegistryServerWithMeta[];
@@ -28,6 +39,7 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
   className,
 }) => {
   const { t } = useTranslation();
+  const platformAPI = usePlatformAPI();
   const [servers, setServers] = useState<RegistryServerWithMeta[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +48,8 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
   const [currentCursor, setCurrentCursor] = useState<string | undefined>(
     undefined,
   );
+  const [sortOption, setSortOption] = useState<SortOption>("stars");
+  const [githubStats, setGithubStats] = useState<Record<string, GitHubStats | null>>({});
 
   // Modal state
   const [selectedServer, setSelectedServer] =
@@ -76,6 +90,26 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
     fetchServers();
   }, [searchQuery, fetchServers]);
 
+  // Fetch GitHub stats for servers with repositories
+  useEffect(() => {
+    if (servers.length === 0) return;
+
+    const repoUrls = servers
+      .map((s) => s.server.repository?.url)
+      .filter((url): url is string => !!url);
+
+    if (repoUrls.length === 0) return;
+
+    platformAPI.marketplace.servers
+      .getGitHubStatsBatch(repoUrls)
+      .then((stats) => {
+        setGithubStats(stats);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch GitHub stats:", err);
+      });
+  }, [servers, platformAPI]);
+
   const handleNextPage = () => {
     if (nextCursor) {
       // Save current cursor for going back
@@ -109,6 +143,46 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
     // Delay clearing selected server to allow modal close animation
     window.setTimeout(() => setSelectedServer(null), 200);
   };
+
+  // Sort servers based on selected option
+  const sortedServers = useMemo(() => {
+    const sorted = [...servers];
+    const getMeta = (s: RegistryServerWithMeta) =>
+      s._meta?.["io.modelcontextprotocol.registry/official"];
+    const getStars = (s: RegistryServerWithMeta) =>
+      githubStats[s.server.repository?.url || ""]?.stars || 0;
+
+    switch (sortOption) {
+      case "stars":
+        return sorted.sort((a, b) => getStars(b) - getStars(a));
+      case "recent":
+        return sorted.sort((a, b) => {
+          const aDate = getMeta(a)?.publishedAt || "";
+          const bDate = getMeta(b)?.publishedAt || "";
+          return new Date(bDate).getTime() - new Date(aDate).getTime();
+        });
+      case "updated":
+        return sorted.sort((a, b) => {
+          const aDate = getMeta(a)?.updatedAt || getMeta(a)?.publishedAt || "";
+          const bDate = getMeta(b)?.updatedAt || getMeta(b)?.publishedAt || "";
+          return new Date(bDate).getTime() - new Date(aDate).getTime();
+        });
+      case "verified":
+        return sorted.sort((a, b) => {
+          const aVerified = getMeta(a)?.status === "verified" ? 1 : 0;
+          const bVerified = getMeta(b)?.status === "verified" ? 1 : 0;
+          return bVerified - aVerified;
+        });
+      case "name":
+        return sorted.sort((a, b) => {
+          const aName = a.server.title || a.server.name;
+          const bName = b.server.title || b.server.name;
+          return aName.localeCompare(bName);
+        });
+      default:
+        return sorted;
+    }
+  }, [servers, sortOption, githubStats]);
 
   // Loading skeleton grid
   if (isLoading) {
@@ -185,13 +259,49 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
 
   return (
     <div className={cn("space-y-4", className)}>
+      {/* Sort controls */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {t("marketplace.servers.count", {
+            count: sortedServers.length,
+            defaultValue: `${sortedServers.length} servers`,
+          })}
+        </p>
+        <Select
+          value={sortOption}
+          onValueChange={(value) => setSortOption(value as SortOption)}
+        >
+          <SelectTrigger className="w-[160px]" aria-label="Sort servers">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="stars">
+              {t("marketplace.servers.sortStars", { defaultValue: "Most Stars" })}
+            </SelectItem>
+            <SelectItem value="recent">
+              {t("marketplace.servers.sortRecent", { defaultValue: "Recently Added" })}
+            </SelectItem>
+            <SelectItem value="updated">
+              {t("marketplace.servers.sortUpdated", { defaultValue: "Recently Updated" })}
+            </SelectItem>
+            <SelectItem value="verified">
+              {t("marketplace.servers.sortVerified", { defaultValue: "Verified First" })}
+            </SelectItem>
+            <SelectItem value="name">
+              {t("marketplace.servers.sortName", { defaultValue: "Name (A-Z)" })}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Server Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {servers.map((server) => (
+        {sortedServers.map((server) => (
           <McpServerCard
             key={server.server.name}
             server={server}
             onClick={() => handleServerClick(server)}
+            githubStats={githubStats[server.server.repository?.url || ""]}
           />
         ))}
       </div>

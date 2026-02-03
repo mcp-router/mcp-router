@@ -26,6 +26,19 @@ import { getSkillService } from "@/main/modules/skills/skills.service";
 import { cleanupOldLogs } from "./main/utils/log-cleanup";
 import { logger } from "./main/utils/logger-factory";
 
+// Global handler for uncaught EPIPE errors.
+// EPIPE occurs when writing to a pipe whose receiving end has closed (e.g., when MCP server
+// processes terminate). These errors are non-critical and should not crash the application.
+process.on("uncaughtException", (error: NodeJS.ErrnoException) => {
+  if (error.code === "EPIPE") {
+    // Silently ignore EPIPE errors - they're expected when child processes terminate
+    return;
+  }
+  // Log and re-throw other uncaught exceptions
+  logger.error({ err: error }, "Uncaught exception");
+  throw error;
+});
+
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
   // If we can't get the lock, it means another instance is running

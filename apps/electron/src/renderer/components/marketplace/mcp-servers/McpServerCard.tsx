@@ -1,8 +1,25 @@
 import React from "react";
 import { Card, CardContent } from "@mcp_router/ui";
 import { Badge } from "@mcp_router/ui";
-import { CheckCircle2, Server } from "lucide-react";
+import { CheckCircle2, Server, Calendar, Star, GitFork } from "lucide-react";
 import { cn } from "@/renderer/utils/tailwind-utils";
+
+/**
+ * Formats ISO date to relative time (e.g., "2 days ago", "3 months ago")
+ */
+function formatRelativeTime(isoDate: string): string {
+  const date = new Date(isoDate);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+  return `${Math.floor(diffDays / 365)} years ago`;
+}
 
 export interface RegistryServer {
   name: string;
@@ -34,25 +51,53 @@ export interface RegistryServerWithMeta {
     "io.modelcontextprotocol.registry/official": {
       status: string;
       publishedAt: string;
+      updatedAt?: string;
       isLatest: boolean;
     };
   };
+}
+
+export interface GitHubStats {
+  stars: number;
+  forks: number;
+  openIssues: number;
+  watchers: number;
+}
+
+/**
+ * Formats large numbers with K/M suffixes
+ */
+function formatCount(count: number): string {
+  if (count >= 1000000) {
+    return `${(count / 1000000).toFixed(1)}M`;
+  }
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}K`;
+  }
+  return count.toString();
 }
 
 interface McpServerCardProps {
   server: RegistryServerWithMeta;
   onClick: () => void;
   className?: string;
+  githubStats?: GitHubStats | null;
 }
 
 export const McpServerCard: React.FC<McpServerCardProps> = ({
   server,
   onClick,
   className,
+  githubStats,
 }) => {
   const { server: serverData, _meta } = server;
-  const isVerified =
-    _meta?.["io.modelcontextprotocol.registry/official"]?.status === "verified";
+  const officialMeta = _meta?.["io.modelcontextprotocol.registry/official"];
+  const isVerified = officialMeta?.status === "verified";
+  const publishedAt = officialMeta?.publishedAt;
+
+  // Extract a clean display name from the full server name
+  // e.g., "ai.aliengiraffe/spotdb" -> "spotdb" or use title if available
+  const displayName = serverData.title || serverData.name.split("/").pop() || serverData.name;
 
   // Get the first icon if available
   const iconSrc = serverData.icons?.[0]?.src;
@@ -111,8 +156,8 @@ export const McpServerCard: React.FC<McpServerCardProps> = ({
             {/* Name and badges */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-medium text-sm truncate">
-                  {serverData.title || serverData.name}
+                <h3 className="font-medium text-sm truncate" title={serverData.name}>
+                  {displayName}
                 </h3>
                 {isVerified && (
                   <Badge
@@ -124,9 +169,31 @@ export const McpServerCard: React.FC<McpServerCardProps> = ({
                   </Badge>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                v{serverData.version}
-              </p>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                <span>v{serverData.version}</span>
+                {githubStats && (
+                  <>
+                    <span className="text-muted-foreground/50">•</span>
+                    <span className="flex items-center gap-1" title="GitHub stars">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      {formatCount(githubStats.stars)}
+                    </span>
+                    <span className="flex items-center gap-1" title="Forks">
+                      <GitFork className="h-3 w-3" />
+                      {formatCount(githubStats.forks)}
+                    </span>
+                  </>
+                )}
+                {publishedAt && !githubStats && (
+                  <>
+                    <span className="text-muted-foreground/50">•</span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {formatRelativeTime(publishedAt)}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

@@ -2,6 +2,10 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { ConnectionMonitor, ConnectionState } from "./connection-monitor";
 import { HealthChecker } from "./health-checker";
+import {
+  safeConsoleLog,
+  safeConsoleError,
+} from "@/main/utils/logger";
 
 export interface ReconnectingClientOptions {
   serverId: string;
@@ -97,7 +101,7 @@ export class ReconnectingMCPClient {
             this.maxDelayMs,
           );
 
-          console.log(
+          safeConsoleLog(
             `[ReconnectingMCPClient] Initial connection to ${this.serverName} failed (attempt ${attempt + 1}/${this.maxRetries + 1}), retrying in ${delay}ms...`,
           );
 
@@ -122,7 +126,7 @@ export class ReconnectingMCPClient {
     }
 
     // All retries exhausted
-    console.error(
+    safeConsoleError(
       `[ReconnectingMCPClient] Failed to connect to ${this.serverName} after ${this.maxRetries + 1} attempts`,
     );
     this.onStatusChange("failed");
@@ -151,7 +155,7 @@ export class ReconnectingMCPClient {
     try {
       this.client.close();
     } catch (error) {
-      console.error(
+      safeConsoleError(
         `[ReconnectingMCPClient] Error closing client ${this.serverId}:`,
         error,
       );
@@ -163,7 +167,7 @@ export class ReconnectingMCPClient {
     const originalOnError = transport.onerror;
 
     transport.onclose = () => {
-      console.log(
+      safeConsoleLog(
         `[ReconnectingMCPClient] Transport closed for ${this.serverName}`,
       );
       originalOnClose?.();
@@ -173,7 +177,7 @@ export class ReconnectingMCPClient {
     };
 
     transport.onerror = (error: Error) => {
-      console.error(
+      safeConsoleError(
         `[ReconnectingMCPClient] Transport error for ${this.serverName}:`,
         error,
       );
@@ -214,7 +218,7 @@ export class ReconnectingMCPClient {
 
       return true;
     } catch (error) {
-      console.error(
+      safeConsoleError(
         `[ReconnectingMCPClient] Reconnect failed for ${this.serverName}:`,
         error,
       );
@@ -249,12 +253,12 @@ export class ReconnectingMCPClient {
       },
       intervalMs: this.healthCheckIntervalMs,
       onHealthy: () => {
-        console.log(
+        safeConsoleLog(
           `[ReconnectingMCPClient] Health check passed for ${this.serverName}`,
         );
       },
       onUnhealthy: () => {
-        console.log(
+        safeConsoleLog(
           `[ReconnectingMCPClient] Health check failed for ${this.serverName}`,
         );
         if (!this.disposed && this.monitor.getState() === "connected") {

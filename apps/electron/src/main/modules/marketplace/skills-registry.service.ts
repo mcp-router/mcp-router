@@ -35,6 +35,22 @@ export class SkillsRegistryService {
   async searchSkills(
     options: SkillsSearchOptions = {},
   ): Promise<SkillsRegistryResponse> {
+    // Validate search parameters
+    if (options.search !== undefined) {
+      if (typeof options.search !== "string" || options.search.length > 500) {
+        throw new Error("Search query too long (max 500 characters)");
+      }
+    }
+    if (options.limit !== undefined) {
+      if (
+        typeof options.limit !== "number" ||
+        options.limit < 1 ||
+        options.limit > 100
+      ) {
+        throw new Error("Invalid limit value (must be 1-100)");
+      }
+    }
+
     const cacheKey = `search:${JSON.stringify(options)}`;
     const cached = this.cache.get(cacheKey) as
       | CacheEntry<SkillsRegistryResponse>
@@ -53,17 +69,34 @@ export class SkillsRegistryService {
 
     const url = `${SKILLS_REGISTRY_BASE}/skills${params.toString() ? `?${params}` : ""}`;
 
-    const response = await fetch(url, {
-      headers: { Accept: "application/json" },
-    });
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    if (!response.ok) {
-      throw new Error(`Skills Registry API error: ${response.status}`);
+      const response = await fetch(url, {
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { skills: [], hasMore: false };
+        }
+        throw new Error("Failed to load skills data");
+      }
+
+      const data = (await response.json()) as SkillsRegistryResponse;
+      this.cache.set(cacheKey, { data, timestamp: Date.now() });
+      return data;
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error("Request timeout. Please check your connection.");
+      }
+      throw new Error(
+        "Failed to connect to skills registry. Please try again.",
+      );
     }
-
-    const data = (await response.json()) as SkillsRegistryResponse;
-    this.cache.set(cacheKey, { data, timestamp: Date.now() });
-    return data;
   }
 
   /**
@@ -93,12 +126,24 @@ export class SkillsRegistryService {
 
   /**
    * Fetch SKILL.md content from a GitHub repository
-   * Tries main branch first, then master
+   * Uses GitHub Trees API to search the entire repo for SKILL.md files
+   * Supports two URL formats:
+   * 1. Standard: https://github.com/owner/repo
+   * 2. Skill-specific: https://github.com/owner/repo#skill:skillId
+   *    -> prefers SKILL.md in paths containing skillId
    */
   async fetchSkillMd(repoUrl: string): Promise<string | null> {
     // Handle both full URLs and owner/repo format
     let owner: string;
     let repo: string;
+    let skillId = ""; // Skill ID from URL fragment
+
+    // Check for skill-specific URL format: github.com/owner/repo#skill:skillId
+    const skillMatch = repoUrl.match(/#skill:([a-zA-Z0-9_-]+)$/);
+    if (skillMatch) {
+      skillId = skillMatch[1];
+      repoUrl = repoUrl.replace(/#skill:[a-zA-Z0-9_-]+$/, "");
+    }
 
     if (repoUrl.includes("github.com")) {
       const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
@@ -114,7 +159,12 @@ export class SkillsRegistryService {
     // Clean repo name (remove .git suffix if present)
     repo = repo.replace(/\.git$/, "");
 
-    const cacheKey = `skill-content:${owner}/${repo}`;
+    // Validate owner and repo to prevent SSRF attacks
+    if (!/^[a-zA-Z0-9_-]+$/.test(owner) || !/^[a-zA-Z0-9_.-]+$/.test(repo)) {
+      return null;
+    }
+
+    const cacheKey = `skill-content:${owner}/${repo}/${skillId}`;
     const cached = this.cache.get(cacheKey) as
       | CacheEntry<string | null>
       | undefined;
@@ -123,27 +173,124 @@ export class SkillsRegistryService {
       return cached.data;
     }
 
+    // Try to find SKILL.md using GitHub Trees API
+    const content = await this.findSkillMdInRepo(owner, repo, skillId);
+    this.cache.set(cacheKey, { data: content, timestamp: Date.now() });
+    return content;
+  }
+
+  /**
+   * Search repository tree for SKILL.md files using GitHub API
+   * Prefers files in paths matching the skillId if provided
+   */
+  private async findSkillMdInRepo(
+    owner: string,
+    repo: string,
+    skillId: string,
+  ): Promise<string | null> {
     const branches = ["main", "master"];
 
     for (const branch of branches) {
-      const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/SKILL.md`;
       try {
-        const response = await fetch(url);
-        if (response.ok) {
-          const content = await response.text();
-          this.cache.set(cacheKey, { data: content, timestamp: Date.now() });
-          return content;
+        // Fetch repository tree
+        const treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const treeResponse = await fetch(treeUrl, {
+          headers: {
+            Accept: "application/vnd.github.v3+json",
+            "User-Agent": "MCP-Router",
+          },
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!treeResponse.ok) {
+          continue;
         }
-      } catch (error) {
-        console.debug(
-          `[SkillsRegistry] Failed to fetch SKILL.md from ${branch}:`,
-          error,
+
+        const treeData = (await treeResponse.json()) as {
+          tree: Array<{ path: string; type: string }>;
+        };
+
+        // Find all SKILL.md files
+        const skillMdFiles = treeData.tree
+          .filter(
+            (item) =>
+              item.type === "blob" &&
+              item.path.toLowerCase().endsWith("skill.md"),
+          )
+          .map((item) => item.path);
+
+        if (skillMdFiles.length === 0) {
+          continue;
+        }
+
+        // Score and sort files to find best match
+        const scoredFiles = skillMdFiles.map((path) => {
+          let score = 0;
+          const lowerPath = path.toLowerCase();
+
+          // Prefer exact SKILL.md filename (not readme.md etc)
+          if (path.endsWith("SKILL.md") || path.endsWith("skill.md")) {
+            score += 10;
+          }
+
+          // If skillId provided, prefer paths containing it
+          if (skillId) {
+            const lowerSkillId = skillId.toLowerCase();
+            if (lowerPath.includes(lowerSkillId)) {
+              score += 20;
+            }
+            // Also check without common prefixes
+            const prefixless = lowerSkillId.replace(
+              /^(vercel|anthropic|openai)-/,
+              "",
+            );
+            if (prefixless !== lowerSkillId && lowerPath.includes(prefixless)) {
+              score += 15;
+            }
+          }
+
+          // Prefer shallower paths (root SKILL.md is good fallback)
+          const depth = path.split("/").length;
+          score -= depth;
+
+          return { path, score };
+        });
+
+        // Sort by score descending
+        scoredFiles.sort((a, b) => b.score - a.score);
+
+        // Fetch content of best match
+        const bestMatch = scoredFiles[0];
+        const contentUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${bestMatch.path}`;
+
+        const contentController = new AbortController();
+        const contentTimeoutId = setTimeout(
+          () => contentController.abort(),
+          10000,
         );
+
+        const contentResponse = await fetch(contentUrl, {
+          signal: contentController.signal,
+        });
+        clearTimeout(contentTimeoutId);
+
+        if (contentResponse.ok) {
+          return await contentResponse.text();
+        }
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name === "AbortError") {
+          console.debug(
+            `[SkillsRegistry] Request timeout searching repo tree for ${branch}`,
+          );
+        }
         continue;
       }
     }
 
-    this.cache.set(cacheKey, { data: null, timestamp: Date.now() });
     return null;
   }
 

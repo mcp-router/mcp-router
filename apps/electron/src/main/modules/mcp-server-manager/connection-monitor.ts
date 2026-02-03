@@ -1,3 +1,8 @@
+import {
+  safeConsoleLog,
+  safeConsoleError,
+} from "@/main/utils/logger";
+
 export type ConnectionState =
   | "disconnected"
   | "connecting"
@@ -67,7 +72,7 @@ export class ConnectionMonitor {
   }
 
   handleError(error: Error): void {
-    console.error(
+    safeConsoleError(
       `[ConnectionMonitor] Server ${this.serverId} error:`,
       error.message,
     );
@@ -106,7 +111,7 @@ export class ConnectionMonitor {
     if (this.disposed) return;
 
     if (this.retryCount >= this.maxRetries) {
-      console.log(
+      safeConsoleLog(
         `[ConnectionMonitor] Server ${this.serverId} max retries (${this.maxRetries}) reached`,
       );
       this.setState("failed");
@@ -114,7 +119,7 @@ export class ConnectionMonitor {
     }
 
     const delay = this.getNextDelay();
-    console.log(
+    safeConsoleLog(
       `[ConnectionMonitor] Server ${this.serverId} reconnecting in ${delay}ms (attempt ${this.retryCount + 1}/${this.maxRetries})`,
     );
 
@@ -126,18 +131,18 @@ export class ConnectionMonitor {
       try {
         const success = await this.onReconnect();
         if (success) {
-          console.log(
+          safeConsoleLog(
             `[ConnectionMonitor] Server ${this.serverId} reconnected successfully`,
           );
           this.markConnected();
         } else {
-          console.log(
+          safeConsoleLog(
             `[ConnectionMonitor] Server ${this.serverId} reconnect failed`,
           );
           this.scheduleReconnect();
         }
       } catch (error) {
-        console.error(
+        safeConsoleError(
           `[ConnectionMonitor] Server ${this.serverId} reconnect error:`,
           error,
         );

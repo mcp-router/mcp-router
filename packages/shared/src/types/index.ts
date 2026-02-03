@@ -47,6 +47,23 @@ export {
   WorkflowAPI,
   // Skills API
   SkillsAPI,
+  // Marketplace API
+  MarketplaceAPI,
+  // Marketplace domain types
+  RegistryServer,
+  RegistryServerPackage,
+  RegistryServerIcon,
+  RegistryServerRepository,
+  RegistryServerResult,
+  RegistrySkill,
+  RegistrySkillResult,
+  McpServerSearchOptions,
+  SkillsSearchOptions,
+  McpServerSearchResponse,
+  SkillsSearchResponse,
+  InstallSkillInput,
+  InstallSkillResult,
+  GitHubStats,
   // Client Apps API
   ClientAppsAPI,
   // Main Platform API

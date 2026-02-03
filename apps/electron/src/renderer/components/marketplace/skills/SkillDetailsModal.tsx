@@ -63,6 +63,49 @@ function formatDate(isoDate: string): string {
 }
 
 /**
+ * Parses YAML frontmatter from SKILL.md content
+ * Returns the extracted metadata and the content without frontmatter
+ */
+function parseSkillFrontmatter(content: string): {
+  description?: string;
+  author?: string;
+  version?: string;
+  license?: string;
+  body: string;
+} {
+  const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
+  if (!frontmatterMatch) {
+    return { body: content };
+  }
+
+  const [, frontmatter, body] = frontmatterMatch;
+  const result: ReturnType<typeof parseSkillFrontmatter> = { body: body.trim() };
+
+  // Simple YAML parsing for common fields
+  const descMatch = frontmatter.match(/^description:\s*(.+)$/m);
+  if (descMatch) {
+    result.description = descMatch[1].trim();
+  }
+
+  const authorMatch = frontmatter.match(/^\s*author:\s*(.+)$/m);
+  if (authorMatch) {
+    result.author = authorMatch[1].trim();
+  }
+
+  const versionMatch = frontmatter.match(/^\s*version:\s*["']?([^"'\n]+)["']?$/m);
+  if (versionMatch) {
+    result.version = versionMatch[1].trim();
+  }
+
+  const licenseMatch = frontmatter.match(/^license:\s*(.+)$/m);
+  if (licenseMatch) {
+    result.license = licenseMatch[1].trim();
+  }
+
+  return result;
+}
+
+/**
  * SkillDetailsModal displays full details of a marketplace skill
  * Including SKILL.md content preview, compatibility info, and install button
  */
@@ -79,6 +122,14 @@ export const SkillDetailsModal: React.FC<SkillDetailsModalProps> = ({
   const [isInstalling, setIsInstalling] = useState(false);
 
   if (!skill) return null;
+
+  // Parse SKILL.md frontmatter to extract description and metadata
+  const parsedContent = readmeContent ? parseSkillFrontmatter(readmeContent) : null;
+  const effectiveDescription =
+    parsedContent?.description ||
+    (skill.description !== "No description available" ? skill.description : null);
+  const effectiveAuthor = parsedContent?.author || skill.author;
+  const effectiveVersion = parsedContent?.version || skill.version;
 
   const handleInstall = async () => {
     if (isInstalled || isInstalling) return;
@@ -107,7 +158,7 @@ export const SkillDetailsModal: React.FC<SkillDetailsModalProps> = ({
                 {skill.name}
               </DialogTitle>
               <DialogDescription className="mt-1">
-                {skill.description}
+                {effectiveDescription || t("marketplace.skills.noDescription", { defaultValue: "No description available" })}
               </DialogDescription>
             </div>
             {skill.rating && (
@@ -133,10 +184,10 @@ export const SkillDetailsModal: React.FC<SkillDetailsModalProps> = ({
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <IconUser className="h-4 w-4" />
-                  <span>{skill.author}</span>
+                  <span>{effectiveAuthor}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-medium">v{skill.version}</span>
+                  <span className="font-medium">v{effectiveVersion}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <IconDownload className="h-4 w-4" />
@@ -231,10 +282,10 @@ export const SkillDetailsModal: React.FC<SkillDetailsModalProps> = ({
                     <Skeleton className="h-4 w-5/6" />
                     <Skeleton className="h-4 w-2/3" />
                   </div>
-                ) : readmeContent ? (
+                ) : parsedContent ? (
                   <div className="prose prose-sm dark:prose-invert max-w-none">
                     <pre className="whitespace-pre-wrap text-sm bg-muted/50 p-4 rounded-lg overflow-auto max-h-64">
-                      {readmeContent}
+                      {parsedContent.body || readmeContent}
                     </pre>
                   </div>
                 ) : (

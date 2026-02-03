@@ -28,17 +28,10 @@ const isDev = process.env.NODE_ENV === "development";
 let logger: pino.Logger;
 
 if (isDev) {
-  // Development: pretty console output
+  // Development: simple JSON to stdout (no worker threads)
+  // Note: pino-pretty transport spawns workers that don't work with Electron's webpack bundle
   logger = pino({
     level: "debug",
-    transport: {
-      target: "pino-pretty",
-      options: {
-        colorize: true,
-        translateTime: "SYS:standard",
-        ignore: "pid,hostname",
-      },
-    },
     base: {
       app: "mcp-router",
     },

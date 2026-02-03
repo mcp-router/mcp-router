@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -44,14 +43,6 @@ function getCompatibilityLabel(compat: SkillCompatibility): string {
     "roo-code": "Roo Code",
   };
   return labels[compat] || compat;
-}
-
-/**
- * Truncates text to a maximum length with ellipsis
- */
-function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength).trim() + "...";
 }
 
 /**
@@ -133,10 +124,6 @@ export const SkillCard: React.FC<SkillCardProps> = ({
       </CardHeader>
 
       <CardContent className="flex-1 pb-2">
-        <CardDescription className="text-sm line-clamp-3">
-          {truncateText(skill.description, 150)}
-        </CardDescription>
-
         {/* Tags */}
         <div className="flex flex-wrap gap-1 mt-3">
           {skill.tags.slice(0, 3).map((tag) => (
