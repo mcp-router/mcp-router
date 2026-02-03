@@ -122,12 +122,24 @@ const ClientApps: React.FC = () => {
   // Get status badge for installation
   const getInstallationBadge = (client: ClientApp) => {
     if (client.isCustom) {
-      return <Badge variant="secondary">{t("clientApps.custom")}</Badge>;
+      return (
+        <Badge variant="secondary" className="rounded-full px-3">
+          {t("clientApps.custom")}
+        </Badge>
+      );
     }
     if (!client.installed) {
-      return <Badge variant="outline">{t("clientApps.notInstalled")}</Badge>;
+      return (
+        <Badge variant="outline" className="rounded-full px-3">
+          {t("clientApps.notInstalled")}
+        </Badge>
+      );
     }
-    return <Badge variant="secondary">{t("clientApps.installed")}</Badge>;
+    return (
+      <Badge variant="secondary" className="rounded-full px-3">
+        {t("clientApps.installed")}
+      </Badge>
+    );
   };
 
   // Get MCP status text
@@ -445,62 +457,78 @@ const ClientApps: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 p-6 bg-background/50 h-full overflow-auto">
       {/* Header */}
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-center bg-card p-6 rounded-2xl soft-shadow border border-muted/50">
         <div>
-          <h2 className="text-2xl font-bold">{t("clientApps.title")}</h2>
-          <p className="text-muted-foreground">{t("clientApps.description")}</p>
+          <h2 className="text-3xl font-extrabold tracking-tight">
+            {t("clientApps.title")}
+          </h2>
+          <p className="text-muted-foreground mt-1">
+            {t("clientApps.description")}
+          </p>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
+        <Button
+          onClick={() => setIsAddDialogOpen(true)}
+          className="rounded-full px-6 soft-shadow"
+        >
           <IconPlus className="w-4 h-4 mr-2" />
           {t("clientApps.addClient")}
         </Button>
       </div>
 
       {/* Client Cards Grid */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {clients.map((client) => (
-          <Card key={client.id} className="overflow-hidden">
-            <CardHeader>
+          <Card
+            key={client.id}
+            className="overflow-hidden rounded-2xl soft-shadow border-muted/50 bg-card/50 hover:bg-card transition-all duration-300"
+          >
+            <CardHeader className="pb-4">
               <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   {/* Display icon if available */}
-                  {client.icon && (
-                    <div
-                      className="w-6 h-6 flex items-center justify-center"
-                      dangerouslySetInnerHTML={{
-                        __html: client.icon.replace(
-                          /<svg/g,
-                          '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
-                        ),
-                      }}
-                    />
-                  )}
-                  <CardTitle className="truncate max-w-[150px]">
+                  <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center soft-shadow border border-white/10 p-2">
+                    {client.icon ? (
+                      <div
+                        className="w-full h-full flex items-center justify-center"
+                        dangerouslySetInnerHTML={{
+                          __html: client.icon.replace(
+                            /<svg/g,
+                            '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
+                          ),
+                        }}
+                      />
+                    ) : (
+                      <IconPlus className="w-6 h-6 text-muted-foreground/50" />
+                    )}
+                  </div>
+                  <CardTitle className="truncate max-w-[150px] font-bold tracking-tight">
                     {client.name}
                   </CardTitle>
                 </div>
                 <div className="flex gap-2">{getInstallationBadge(client)}</div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
+            <CardContent className="pb-6">
+              <div className="space-y-3 bg-muted/30 p-4 rounded-xl">
                 {/* MCP Status */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium w-16">MCP:</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    MCP Status
+                  </span>
                   {getMcpStatus(client)}
                 </div>
                 {/* Skills Status */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium w-16">
-                    {t("clientApps.skillsLabel")}:
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    {t("clientApps.skillsLabel")}
                   </span>
                   {getSkillsStatus(client)}
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex gap-2 justify-between flex-wrap">
+            <CardFooter className="flex gap-3 justify-between flex-wrap bg-muted/20 p-4">
               <div className="flex gap-2 flex-wrap">
                 {/* How To Use button - only if configured with token */}
                 {client.mcpConfigured && client.token && (
@@ -508,6 +536,7 @@ const ClientApps: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => openHowToUseModal(client)}
+                    className="rounded-full px-4"
                   >
                     {t("clientApps.howToUse")}
                   </Button>
@@ -519,16 +548,18 @@ const ClientApps: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => openEditDialog(client)}
+                      className="rounded-full px-4"
                     >
-                      <IconPencil className="w-4 h-4 mr-1" />
+                      <IconPencil className="w-4 h-4 mr-2" />
                       {t("common.edit")}
                     </Button>
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => openDeleteDialog(client)}
+                      className="rounded-full px-4"
                     >
-                      <IconTrash className="w-4 h-4 mr-1" />
+                      <IconTrash className="w-4 h-4 mr-2" />
                       {t("common.delete")}
                     </Button>
                   </>
@@ -543,6 +574,7 @@ const ClientApps: React.FC = () => {
                       variant="default"
                       size="sm"
                       onClick={() => handleConfigureMcp(client)}
+                      className="rounded-full px-6 soft-shadow"
                     >
                       {t("clientApps.configure")}
                     </Button>
@@ -553,6 +585,7 @@ const ClientApps: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => openServerAccessDialog(client)}
+                    className="rounded-full px-4"
                   >
                     {t("clientApps.serverAccess")}
                   </Button>
@@ -572,17 +605,19 @@ const ClientApps: React.FC = () => {
 
       {/* Add Custom Client Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl soft-shadow border-muted/50">
           <DialogHeader>
-            <DialogTitle>{t("clientApps.addCustomClient.title")}</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight">
+              {t("clientApps.addCustomClient.title")}
+            </DialogTitle>
             <DialogDescription>
               {t("clientApps.addCustomClient.description")}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-5 py-4">
             {/* Name field */}
             <div className="grid gap-2">
-              <Label htmlFor="client-name">
+              <Label htmlFor="client-name" className="font-semibold text-sm">
                 {t("clientApps.addCustomClient.name")}
               </Label>
               <Input
@@ -593,11 +628,15 @@ const ClientApps: React.FC = () => {
                   setAddDialogError(null);
                 }}
                 placeholder={t("clientApps.addCustomClient.namePlaceholder")}
+                className="rounded-full bg-muted/30 focus-visible:bg-muted/50 transition-all border-muted/50"
               />
             </div>
             {/* MCP Config Path field */}
             <div className="grid gap-2">
-              <Label htmlFor="mcp-config-path">
+              <Label
+                htmlFor="mcp-config-path"
+                className="font-semibold text-sm"
+              >
                 {t("clientApps.addCustomClient.mcpConfigPath")}
               </Label>
               <div className="flex gap-2">
@@ -611,11 +650,13 @@ const ClientApps: React.FC = () => {
                   placeholder={t(
                     "clientApps.addCustomClient.mcpConfigPathPlaceholder",
                   )}
-                  className="flex-1"
+                  className="flex-1 rounded-full bg-muted/30 focus-visible:bg-muted/50 transition-all border-muted/50"
                 />
                 <Button
                   type="button"
                   variant="outline"
+                  size="icon"
+                  className="rounded-full shrink-0"
                   onClick={() =>
                     handleSelectMcpConfigPath(
                       setNewMcpConfigPath,
@@ -626,13 +667,13 @@ const ClientApps: React.FC = () => {
                   <IconFolderOpen className="w-4 h-4" />
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground ml-1">
                 {t("clientApps.addCustomClient.mcpConfigPathHint")}
               </p>
             </div>
             {/* Skills Path field */}
             <div className="grid gap-2">
-              <Label htmlFor="skills-path">
+              <Label htmlFor="skills-path" className="font-semibold text-sm">
                 {t("clientApps.addCustomClient.skillsPath")}
               </Label>
               <div className="flex gap-2">
@@ -646,11 +687,13 @@ const ClientApps: React.FC = () => {
                   placeholder={t(
                     "clientApps.addCustomClient.skillsPathPlaceholder",
                   )}
-                  className="flex-1"
+                  className="flex-1 rounded-full bg-muted/30 focus-visible:bg-muted/50 transition-all border-muted/50"
                 />
                 <Button
                   type="button"
                   variant="outline"
+                  size="icon"
+                  className="rounded-full shrink-0"
                   onClick={() =>
                     handleSelectSkillsPath(setNewSkillsPath, setAddDialogError)
                   }
@@ -658,19 +701,28 @@ const ClientApps: React.FC = () => {
                   <IconFolderOpen className="w-4 h-4" />
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground ml-1">
                 {t("clientApps.addCustomClient.skillsPathHint")}
               </p>
             </div>
             {addDialogError && (
-              <p className="text-xs text-destructive">{addDialogError}</p>
+              <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-lg border border-destructive/20">
+                {addDialogError}
+              </p>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseAddDialog}>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCloseAddDialog}
+              className="rounded-full px-6"
+            >
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleAddCustomClient}>
+            <Button
+              onClick={handleAddCustomClient}
+              className="rounded-full px-6 soft-shadow"
+            >
               {t("clientApps.addClient")}
             </Button>
           </DialogFooter>
@@ -679,17 +731,22 @@ const ClientApps: React.FC = () => {
 
       {/* Edit Custom Client Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl soft-shadow border-muted/50">
           <DialogHeader>
-            <DialogTitle>{t("clientApps.editClient.title")}</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight">
+              {t("clientApps.editClient.title")}
+            </DialogTitle>
             <DialogDescription>
               {t("clientApps.editClient.description")}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-5 py-4">
             {/* Name field */}
             <div className="grid gap-2">
-              <Label htmlFor="edit-client-name">
+              <Label
+                htmlFor="edit-client-name"
+                className="font-semibold text-sm"
+              >
                 {t("clientApps.addCustomClient.name")}
               </Label>
               <Input
@@ -700,11 +757,15 @@ const ClientApps: React.FC = () => {
                   setEditDialogError(null);
                 }}
                 placeholder={t("clientApps.addCustomClient.namePlaceholder")}
+                className="rounded-full bg-muted/30 focus-visible:bg-muted/50 transition-all border-muted/50"
               />
             </div>
             {/* MCP Config Path field */}
             <div className="grid gap-2">
-              <Label htmlFor="edit-mcp-config-path">
+              <Label
+                htmlFor="edit-mcp-config-path"
+                className="font-semibold text-sm"
+              >
                 {t("clientApps.addCustomClient.mcpConfigPath")}
               </Label>
               <div className="flex gap-2">
@@ -718,11 +779,13 @@ const ClientApps: React.FC = () => {
                   placeholder={t(
                     "clientApps.addCustomClient.mcpConfigPathPlaceholder",
                   )}
-                  className="flex-1"
+                  className="flex-1 rounded-full bg-muted/30 focus-visible:bg-muted/50 transition-all border-muted/50"
                 />
                 <Button
                   type="button"
                   variant="outline"
+                  size="icon"
+                  className="rounded-full shrink-0"
                   onClick={() =>
                     handleSelectMcpConfigPath(
                       setEditMcpConfigPath,
@@ -736,7 +799,10 @@ const ClientApps: React.FC = () => {
             </div>
             {/* Skills Path field */}
             <div className="grid gap-2">
-              <Label htmlFor="edit-skills-path">
+              <Label
+                htmlFor="edit-skills-path"
+                className="font-semibold text-sm"
+              >
                 {t("clientApps.addCustomClient.skillsPath")}
               </Label>
               <div className="flex gap-2">
@@ -750,11 +816,13 @@ const ClientApps: React.FC = () => {
                   placeholder={t(
                     "clientApps.addCustomClient.skillsPathPlaceholder",
                   )}
-                  className="flex-1"
+                  className="flex-1 rounded-full bg-muted/30 focus-visible:bg-muted/50 transition-all border-muted/50"
                 />
                 <Button
                   type="button"
                   variant="outline"
+                  size="icon"
+                  className="rounded-full shrink-0"
                   onClick={() =>
                     handleSelectSkillsPath(
                       setEditSkillsPath,
@@ -767,14 +835,25 @@ const ClientApps: React.FC = () => {
               </div>
             </div>
             {editDialogError && (
-              <p className="text-xs text-destructive">{editDialogError}</p>
+              <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-lg border border-destructive/20">
+                {editDialogError}
+              </p>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseEditDialog}>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCloseEditDialog}
+              className="rounded-full px-6"
+            >
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleEditCustomClient}>{t("common.save")}</Button>
+            <Button
+              onClick={handleEditCustomClient}
+              className="rounded-full px-6 soft-shadow"
+            >
+              {t("common.save")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -784,19 +863,19 @@ const ClientApps: React.FC = () => {
         open={isServerAccessDialogOpen}
         onOpenChange={setIsServerAccessDialogOpen}
       >
-        <DialogContent className="max-w-md overflow-hidden">
+        <DialogContent className="max-w-md overflow-hidden rounded-2xl soft-shadow border-muted/50">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight">
               {t("clientApps.serverAccess")} - {selectedClient?.name}
             </DialogTitle>
           </DialogHeader>
 
           <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
               {t("clientApps.serverAccessDescription")}
             </p>
-            <ScrollArea className="h-[60vh] pr-4">
-              <div className="space-y-4 pr-2">
+            <ScrollArea className="h-[50vh] pr-4">
+              <div className="space-y-6 pr-2">
                 {projectSections.map((section) => {
                   const totalServers = section.servers.length;
                   const selectedCount = section.servers.filter(
@@ -808,13 +887,14 @@ const ClientApps: React.FC = () => {
                   return (
                     <div
                       key={section.projectId}
-                      className="space-y-2 border-b last:border-b-0 pb-3"
+                      className="space-y-3 bg-muted/20 p-4 rounded-xl border border-muted/50"
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-3">
                           <Checkbox
                             id={`project-${section.projectId}`}
                             checked={allSelected}
+                            className="rounded-sm"
                             onCheckedChange={(checked) =>
                               handleProjectCheckboxChange(
                                 section.projectId,
@@ -822,15 +902,21 @@ const ClientApps: React.FC = () => {
                               )
                             }
                           />
-                          <Label htmlFor={`project-${section.projectId}`}>
+                          <Label
+                            htmlFor={`project-${section.projectId}`}
+                            className="font-bold"
+                          >
                             {section.name}
                           </Label>
                         </div>
-                        <span className="text-xs text-muted-foreground">
+                        <Badge
+                          variant="outline"
+                          className="rounded-full px-2 text-[10px] font-bold"
+                        >
                           {selectedCount}/{totalServers}
-                        </span>
+                        </Badge>
                       </div>
-                      <div className="space-y-1 pl-6">
+                      <div className="space-y-2 pl-7 pt-1">
                         {section.servers.map((server) => (
                           <div
                             key={server.id}
@@ -839,11 +925,15 @@ const ClientApps: React.FC = () => {
                             <Checkbox
                               id={`server-${server.id}`}
                               checked={selectedServerAccess[server.id] === true}
+                              className="rounded-sm"
                               onCheckedChange={(checked) =>
                                 handleServerCheckboxChange(server.id, !!checked)
                               }
                             />
-                            <Label htmlFor={`server-${server.id}`}>
+                            <Label
+                              htmlFor={`server-${server.id}`}
+                              className="text-sm font-medium"
+                            >
                               {server.name}
                             </Label>
                           </div>
@@ -857,41 +947,52 @@ const ClientApps: React.FC = () => {
             </ScrollArea>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 pt-2">
             <Button
               onClick={() => setIsServerAccessDialogOpen(false)}
               variant="outline"
+              className="rounded-full px-6"
             >
               {t("common.cancel")}
             </Button>
-            <Button onClick={saveServerAccess}>{t("common.save")}</Button>
+            <Button
+              onClick={saveServerAccess}
+              className="rounded-full px-6 soft-shadow"
+            >
+              {t("common.save")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl soft-shadow border-muted/50">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight">
               {t("clientApps.deleteConfirm.title")} - {clientToDelete?.name}
             </DialogTitle>
           </DialogHeader>
 
           <div className="py-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {t("clientApps.deleteConfirm.message")}
             </p>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button
               onClick={() => setIsDeleteDialogOpen(false)}
               variant="outline"
+              className="rounded-full px-6"
             >
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleDeleteClient} variant="destructive">
+            <Button
+              onClick={handleDeleteClient}
+              variant="destructive"
+              className="rounded-full px-6 soft-shadow"
+            >
               {t("common.delete")}
             </Button>
           </DialogFooter>

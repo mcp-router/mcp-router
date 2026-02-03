@@ -97,7 +97,8 @@ export const McpServerCard: React.FC<McpServerCardProps> = ({
 
   // Extract a clean display name from the full server name
   // e.g., "ai.aliengiraffe/spotdb" -> "spotdb" or use title if available
-  const displayName = serverData.title || serverData.name.split("/").pop() || serverData.name;
+  const displayName =
+    serverData.title || serverData.name.split("/").pop() || serverData.name;
 
   // Get the first icon if available
   const iconSrc = serverData.icons?.[0]?.src;
@@ -111,7 +112,7 @@ export const McpServerCard: React.FC<McpServerCardProps> = ({
   return (
     <Card
       className={cn(
-        "hover:border-primary/50 transition-colors cursor-pointer h-full",
+        "hover:border-primary/50 hover:soft-shadow transition-all duration-300 cursor-pointer h-full rounded-2xl border-muted/50 bg-card/50 hover:bg-card",
         className,
       )}
       onClick={onClick}
@@ -125,12 +126,12 @@ export const McpServerCard: React.FC<McpServerCardProps> = ({
       }}
       aria-label={`View details for ${serverData.title || serverData.name}`}
     >
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-3">
+      <CardContent className="p-5">
+        <div className="flex flex-col gap-4">
           {/* Header with icon and name */}
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-4">
             {/* Icon */}
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center overflow-hidden soft-shadow border border-white/10">
               {iconSrc ? (
                 <img
                   src={iconSrc}
@@ -147,7 +148,7 @@ export const McpServerCard: React.FC<McpServerCardProps> = ({
               ) : null}
               <Server
                 className={cn(
-                  "h-5 w-5 text-muted-foreground",
+                  "h-6 w-6 text-muted-foreground/70",
                   iconSrc && "hidden",
                 )}
               />
@@ -156,40 +157,37 @@ export const McpServerCard: React.FC<McpServerCardProps> = ({
             {/* Name and badges */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-medium text-sm truncate" title={serverData.name}>
+                <h3
+                  className="font-bold text-base truncate tracking-tight"
+                  title={serverData.name}
+                >
                   {displayName}
                 </h3>
                 {isVerified && (
                   <Badge
                     variant="secondary"
-                    className="h-5 text-xs flex items-center gap-1"
+                    className="h-5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 rounded-full px-2"
                   >
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                     <span>Verified</span>
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                <span>v{serverData.version}</span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                <span className="bg-muted/50 px-1.5 py-0.5 rounded-md font-mono">
+                  v{serverData.version}
+                </span>
                 {githubStats && (
                   <>
-                    <span className="text-muted-foreground/50">•</span>
-                    <span className="flex items-center gap-1" title="GitHub stars">
+                    <span className="text-muted-foreground/30">•</span>
+                    <span
+                      className="flex items-center gap-1"
+                      title="GitHub stars"
+                    >
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      {formatCount(githubStats.stars)}
-                    </span>
-                    <span className="flex items-center gap-1" title="Forks">
-                      <GitFork className="h-3 w-3" />
-                      {formatCount(githubStats.forks)}
-                    </span>
-                  </>
-                )}
-                {publishedAt && !githubStats && (
-                  <>
-                    <span className="text-muted-foreground/50">•</span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {formatRelativeTime(publishedAt)}
+                      <span className="font-medium">
+                        {formatCount(githubStats.stars)}
+                      </span>
                     </span>
                   </>
                 )}
@@ -199,25 +197,28 @@ export const McpServerCard: React.FC<McpServerCardProps> = ({
 
           {/* Description */}
           {truncatedDescription && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
+            <p className="text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed">
               {truncatedDescription}
             </p>
           )}
 
           {/* Package badges */}
           {serverData.packages && serverData.packages.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-auto">
+            <div className="flex flex-wrap gap-1.5 mt-auto pt-2">
               {serverData.packages.slice(0, 3).map((pkg, index) => (
                 <Badge
                   key={`${pkg.registryType}-${index}`}
                   variant="outline"
-                  className="h-5 text-xs"
+                  className="h-6 text-[11px] rounded-full px-2.5 bg-muted/20 border-muted/50 hover:bg-muted/40 transition-colors"
                 >
                   {pkg.registryType}
                 </Badge>
               ))}
               {serverData.packages.length > 3 && (
-                <Badge variant="outline" className="h-5 text-xs">
+                <Badge
+                  variant="outline"
+                  className="h-6 text-[11px] rounded-full px-2 bg-muted/20 border-muted/50"
+                >
                   +{serverData.packages.length - 3}
                 </Badge>
               )}

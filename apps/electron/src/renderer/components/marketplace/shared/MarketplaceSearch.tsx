@@ -106,7 +106,10 @@ export const MarketplaceSearch: React.FC<MarketplaceSearchProps> = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={cn("pl-10", hasContent && "pr-10")}
+          className={cn(
+            "pl-10 rounded-full bg-muted/30 border-none focus-visible:ring-primary/20 focus-visible:bg-muted/50 transition-all",
+            hasContent && "pr-10",
+          )}
           aria-label={placeholder}
         />
         {hasContent && (
