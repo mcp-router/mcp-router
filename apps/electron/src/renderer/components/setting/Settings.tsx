@@ -324,39 +324,41 @@ const Settings: React.FC = () => {
     : t("settings.notSubscribed");
 
   return (
-    <div className="p-6 flex flex-col gap-6">
-      <h1 className="text-3xl font-bold">{t("common.settings")}</h1>
+    <div className="p-10 flex flex-col gap-10 max-w-4xl mx-auto">
+      <h1 className="text-4xl font-bold tracking-tight">
+        {t("common.settings")}
+      </h1>
 
       {/* Account & Plan Hero Card */}
-      <Card className="border-2">
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center gap-2">
-            <IconUser className="h-5 w-5" />
+      <Card className="border-border/40 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl flex items-center gap-2.5">
+            <IconUser className="h-5 w-5 text-primary" />
             {t("settings.accountAndPlan")}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8">
           {/* User Info & Plan Section */}
           {isAuthenticated ? (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-1">
               <div>
-                <p className="text-lg font-semibold">
+                <p className="text-xl font-semibold">
                   {userInfo?.name || userInfo?.userId}
                 </p>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2.5 mt-1.5">
                   {isSubscribed ? (
-                    <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                    <span className="text-sm font-medium text-primary">
                       {planNameLabel}
                     </span>
                   ) : (
                     <>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-muted-foreground font-medium">
                         Free
                       </span>
                       <Button
                         variant="link"
                         size="sm"
-                        className="h-auto p-0 text-sm"
+                        className="h-auto p-0 text-sm font-semibold text-primary hover:no-underline"
                         onClick={() =>
                           window.open(
                             "https://mcp-router.net/en/profile",
@@ -375,19 +377,20 @@ const Settings: React.FC = () => {
                 size="sm"
                 onClick={handleLogout}
                 disabled={isLoggingIn}
+                className="rounded-full px-5 border-border/60"
               >
                 {isLoggingIn ? t("settings.loggingOut") : t("settings.logout")}
               </Button>
             </div>
           ) : (
-            <div className="p-4 rounded-lg bg-slate-100 dark:bg-slate-800">
-              <p className="text-sm text-muted-foreground mb-3">
+            <div className="p-6 rounded-xl bg-secondary/40 border border-border/40">
+              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                 {t("settings.loginOptionalDescription")}
               </p>
               <Button
                 onClick={handleLogin}
                 disabled={isLoggingIn}
-                className="w-full"
+                className="w-full rounded-full h-11 font-semibold"
               >
                 {isLoggingIn ? t("settings.loggingIn") : t("settings.login")}
               </Button>
@@ -396,44 +399,47 @@ const Settings: React.FC = () => {
 
           {/* Pro Features Section */}
           {isAuthenticated && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold">
+            <div className="space-y-5">
+              <div className="flex items-center gap-2.5 text-sm font-semibold text-muted-foreground/80">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">
                   Pro
                 </span>
                 {t("settings.proFeatures")}
               </div>
 
               {/* Cloud Sync */}
-              <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-4">
+              <div className="p-6 rounded-xl border border-border/40 bg-card/50 space-y-5">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <IconCloud className="h-5 w-5 text-purple-500" />
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-2 rounded-full bg-primary/10">
+                      <IconCloud className="h-5 w-5 text-primary" />
+                    </div>
                     <div>
-                      <p className="font-medium">{t("settings.cloudSync")}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-semibold">{t("settings.cloudSync")}</p>
+                      <p className="text-xs text-muted-foreground/80 mt-0.5">
                         {t("settings.cloudSyncDescription")}
                       </p>
                     </div>
                   </div>
                   {/* Pro限定バッジ or トグル（パスフレーズ設定済みの場合のみ） */}
                   {!isSubscribed ? (
-                    <span className="text-xs px-2 py-1 rounded bg-slate-200 dark:bg-slate-700 text-muted-foreground">
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-secondary text-muted-foreground font-bold uppercase tracking-tight">
                       {t("settings.proOnly")}
                     </span>
                   ) : (
                     cloudSyncStatus?.hasPassphrase && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         {cloudSyncStatus?.enabled && (
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={handleSyncNow}
                             disabled={isSyncing || isLoadingCloudSync}
+                            className="rounded-full h-8 px-4 text-xs font-medium border-border/60"
                           >
                             {isSyncing ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             ) : (
                               t("settings.syncNow", {
                                 defaultValue: "Sync Now",
@@ -457,61 +463,65 @@ const Settings: React.FC = () => {
                 {/* Pro users: State-based UI */}
                 {isSubscribed && cloudSyncStatus && (
                   <>
-                    {cloudSyncStatus.hasPassphrase ? (
-                      /* パスフレーズ設定済み: ステータス表示 */
-                      <div className="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-2">
-                        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                          <IconLock className="h-4 w-4" />
-                          {t("settings.passphraseSet")}
-                        </div>
-                        {cloudSyncStatus.enabled &&
-                          cloudSyncStatus.lastSyncedAt && (
-                            <p className="text-xs text-muted-foreground">
-                              {t("settings.lastSynced")}:{" "}
-                              {new Date(
-                                cloudSyncStatus.lastSyncedAt,
-                              ).toLocaleString()}
+                    {
+                      cloudSyncStatus.hasPassphrase ? (
+                        /* パスフレーズ設定済み: ステータス表示 */
+                        <div className="pt-5 border-t border-border/40 space-y-2.5">
+                          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 font-medium">
+                            <IconLock className="h-4 w-4" />
+                            {t("settings.passphraseSet")}
+                          </div>
+                          {cloudSyncStatus.enabled &&
+                            cloudSyncStatus.lastSyncedAt && (
+                              <p className="text-xs text-muted-foreground">
+                                {t("settings.lastSynced")}:{" "}
+                                {new Date(
+                                  cloudSyncStatus.lastSyncedAt,
+                                ).toLocaleString()}
+                              </p>
+                            )}
+                          {cloudSyncStatus.lastError && (
+                            <p className="text-xs text-red-500/90 font-medium">
+                              {cloudSyncStatus.lastError}
                             </p>
                           )}
-                        {cloudSyncStatus.lastError && (
-                          <p className="text-xs text-red-500">
-                            {cloudSyncStatus.lastError}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      /* パスフレーズ未設定: 入力欄 + 有効化ボタン */
-                      <div className="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-3">
-                        <p className="text-sm text-muted-foreground">
-                          {t("settings.setPassphraseDescription")}
-                        </p>
-                        <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                          {t("settings.passphraseWarning")}
-                        </p>
-                        <div className="flex gap-2">
-                          <Input
-                            type="password"
-                            placeholder={t("settings.passphrasePlaceholder")}
-                            value={cloudSyncPassphrase}
-                            onChange={(e) =>
-                              setCloudSyncPassphrase(e.target.value)
-                            }
-                            className="flex-1"
-                          />
-                          <Button
-                            size="sm"
-                            onClick={handleSetPassphraseAndEnable}
-                            disabled={
-                              isSettingPassphrase || !cloudSyncPassphrase.trim()
-                            }
-                          >
-                            {isSettingPassphrase
-                              ? t("common.saving")
-                              : t("settings.enableCloudSync")}
-                          </Button>
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        /* パスフレーズ未設定: 入力欄 + 有効化ボタン */
+                        <div className="pt-5 border-t border-border/40 space-y-4">
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {t("settings.setPassphraseDescription")}
+                          </p>
+                          <p className="text-sm text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/30 p-3 rounded-lg border border-amber-200/50 dark:border-amber-800/30">
+                            {t("settings.passphraseWarning")}
+                          </p>
+                          <div className="flex gap-2.5">
+                            <Input
+                              type="password"
+                              placeholder={t("settings.passphrasePlaceholder")}
+                              value={cloudSyncPassphrase}
+                              onChange={(e) =>
+                                setCloudSyncPassphrase(e.target.value)
+                              }
+                              className="flex-1 rounded-full px-4 border-border/60"
+                            />
+                            <Button
+                              size="sm"
+                              onClick={handleSetPassphraseAndEnable}
+                              disabled={
+                                isSettingPassphrase ||
+                                !cloudSyncPassphrase.trim()
+                              }
+                              className="rounded-full px-6 font-semibold"
+                            >
+                              {isSettingPassphrase
+                                ? t("common.saving")
+                                : t("settings.enableCloudSync")}
+                            </Button>
+                          </div>
+                        </div>
+                      ) /* パスフレーズ未設定終わり */
+                    }
                   </>
                 )}
               </div>
@@ -521,26 +531,31 @@ const Settings: React.FC = () => {
       </Card>
 
       {/* Preferences Section */}
-      <Card>
-        <CardHeader>
+      <Card className="border-border/40 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="pb-4">
           <CardTitle className="text-xl">{t("settings.preferences")}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-1">
           {/* Language */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
+          <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold">
                 {t("common.language")}
               </label>
+              <p className="text-xs text-muted-foreground">
+                {t("settings.languageDescription", {
+                  defaultValue: "Select your preferred language",
+                })}
+              </p>
             </div>
             <Select
               value={getCurrentLanguage()}
               onValueChange={handleLanguageChange}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] rounded-full border-border/60">
                 <SelectValue placeholder={t("common.language")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 <SelectItem value="en">English</SelectItem>
                 <SelectItem value="zh">中文</SelectItem>
                 <SelectItem value="ja">日本語</SelectItem>
@@ -549,11 +564,16 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Theme */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
+          <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold">
                 {t("settings.theme")}
               </label>
+              <p className="text-xs text-muted-foreground">
+                {t("settings.themeDescription", {
+                  defaultValue: "Choose how the application looks",
+                })}
+              </p>
             </div>
             <Select
               value={theme}
@@ -561,10 +581,10 @@ const Settings: React.FC = () => {
                 setTheme(value)
               }
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] rounded-full border-border/60">
                 <SelectValue placeholder={t("settings.theme")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 <SelectItem value="light">
                   {t("settings.themeLight")}
                 </SelectItem>
@@ -577,12 +597,12 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Auto Update */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
+          <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold">
                 {t("settings.autoUpdate")}
               </label>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground max-w-[400px]">
                 {t("settings.autoUpdateDescription")}
               </p>
             </div>
@@ -594,12 +614,12 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Show Window on Startup */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
+          <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold">
                 {t("settings.showWindowOnStartup")}
               </label>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground max-w-[400px]">
                 {t("settings.showWindowOnStartupDescription")}
               </p>
             </div>
@@ -611,12 +631,12 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Load External MCP Configs */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
+          <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold">
                 {t("settings.loadExternalMCPConfigs")}
               </label>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground max-w-[400px]">
                 {t("settings.loadExternalMCPConfigsDescription")}
               </p>
             </div>
@@ -628,12 +648,12 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Prefix Tool Names */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
+          <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold">
                 {t("settings.prefixToolNames")}
               </label>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground max-w-[400px]">
                 {t("settings.prefixToolNamesDescription")}
               </p>
             </div>
@@ -645,12 +665,12 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Analytics */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium">
+          <div className="flex items-center justify-between py-5 last:border-0">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold">
                 {t("settings.analytics")}
               </label>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground max-w-[400px]">
                 {t("settings.analyticsDescription")}
               </p>
             </div>
@@ -664,19 +684,19 @@ const Settings: React.FC = () => {
       </Card>
 
       {/* Community & Feedback Section */}
-      <Card>
-        <CardHeader>
+      <Card className="border-border/40 shadow-sm rounded-2xl overflow-hidden mb-10">
+        <CardHeader className="pb-4">
           <CardTitle className="text-xl">{t("settings.community")}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8">
           {/* Discord */}
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {t("settings.communityDescription")}
             </p>
             <Button
               variant="outline"
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2.5 rounded-full h-11 border-border/60 font-semibold"
               onClick={() =>
                 window.open("https://discord.gg/dwG9jPrhxB", "_blank")
               }
@@ -687,21 +707,21 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Feedback */}
-          <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-            <p className="text-sm text-muted-foreground">
+          <div className="space-y-5 pt-6 border-t border-border/40">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {t("settings.feedbackDescription")}
             </p>
             <Textarea
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              rows={3}
+              rows={4}
               placeholder={t("feedback.placeholder")}
-              className="text-sm"
+              className="text-sm rounded-xl p-4 border-border/60 resize-none focus-visible:ring-primary/20"
             />
             <Button
               onClick={handleSubmitFeedback}
               disabled={!feedback.trim() || isSendingFeedback}
-              className="w-full"
+              className="w-full rounded-full h-11 font-semibold"
             >
               {isSendingFeedback ? t("common.loading") : t("common.send")}
             </Button>

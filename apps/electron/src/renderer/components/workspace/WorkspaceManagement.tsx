@@ -92,22 +92,28 @@ const WorkspaceManagement: React.FC = () => {
   };
 
   return (
-    <div className="p-6 flex flex-col gap-6">
+    <div className="p-10 flex flex-col gap-10 max-w-4xl mx-auto">
       {/* Header */}
-      <h1 className="text-3xl font-bold">{t("workspace.manage")}</h1>
+      <h1 className="text-4xl font-bold tracking-tight">
+        {t("workspace.manage")}
+      </h1>
 
       {/* Workspace List */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="border-border/40 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between pb-6">
           <CardTitle className="text-xl">{t("workspace.title")}</CardTitle>
-          <Button onClick={handleAddWorkspace} size="sm">
+          <Button
+            onClick={handleAddWorkspace}
+            size="sm"
+            className="rounded-full px-5 h-9 font-semibold"
+          >
             <Plus className="h-4 w-4 mr-2" />
             {t("workspace.addNew")}
           </Button>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-4">
           {sortedWorkspaces.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-12 text-muted-foreground bg-secondary/20 rounded-xl border border-dashed border-border/60">
               No workspaces found
             </div>
           ) : (
@@ -118,35 +124,40 @@ const WorkspaceManagement: React.FC = () => {
               return (
                 <div
                   key={workspace.id}
-                  className={`flex items-center justify-between p-4 rounded-lg border ${
+                  className={`flex items-center justify-between p-6 rounded-xl border shadow-sm transition-all ${
                     isActive
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:bg-accent/50 cursor-pointer"
-                  } transition-colors`}
+                      ? "border-primary bg-primary/[0.03] ring-1 ring-primary/20"
+                      : "border-border/40 hover:border-border/80 hover:bg-secondary/20 cursor-pointer"
+                  }`}
                   onClick={() =>
                     !isActive && handleWorkspaceClick(workspace.id)
                   }
                 >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-12 w-12 border border-border/40">
                       {workspace.displayInfo?.avatarUrl ? (
                         <AvatarImage src={workspace.displayInfo.avatarUrl} />
                       ) : (
-                        <AvatarFallback>
+                        <AvatarFallback className="bg-primary/5 text-primary font-bold">
                           {getWorkspaceInitials(workspace.name)}
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{workspace.name}</span>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2.5">
+                        <Icon className="h-4 w-4 text-muted-foreground/70" />
+                        <span className="font-semibold text-lg">
+                          {workspace.name}
+                        </span>
                         {isActive && (
-                          <span className="text-xs text-primary font-medium">
-                            (Active)
+                          <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                            {t("common.active", { defaultValue: "Active" })}
                           </span>
                         )}
                       </div>
+                      <p className="text-xs text-muted-foreground/60">
+                        Workspace ID: {workspace.id.slice(0, 8)}...
+                      </p>
                     </div>
                   </div>
 
@@ -154,6 +165,7 @@ const WorkspaceManagement: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="rounded-full h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEditWorkspace(workspace);
@@ -164,6 +176,7 @@ const WorkspaceManagement: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="rounded-full h-9 w-9 p-0 hover:bg-destructive/10 hover:text-destructive transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeletingWorkspace(workspace);
