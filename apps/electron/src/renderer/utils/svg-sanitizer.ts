@@ -7,6 +7,17 @@
  * - javascript: URLs in href/xlink:href attributes
  * - data: URLs that could contain scripts
  * - Foreign object elements that could contain HTML
+ *
+ * WARNING: Known bypass risks with regex-based SVG sanitization:
+ * - HTML entity encoding (e.g., &#106;avascript:) can bypass URL scheme checks
+ * - CDATA sections can hide script content from regex patterns
+ * - Parser differentials between regex and browser SVG parsers (e.g., null bytes,
+ *   unusual whitespace, or encoding tricks that regex misses but browsers parse)
+ * - Nested/malformed tags that confuse regex matching but render in browsers
+ *
+ * TODO: Replace with DOMPurify (a DOM-based sanitizer) for robust protection.
+ * DOMPurify parses SVG the same way browsers do, eliminating parser differential
+ * attacks. See: https://github.com/cure53/DOMPurify
  */
 
 // List of dangerous event handler attributes to remove

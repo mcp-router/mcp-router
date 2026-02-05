@@ -30,155 +30,19 @@ import {
   IconChevronDown,
 } from "@tabler/icons-react";
 import { usePlatformAPI } from "@/renderer/platform-api";
-import type {
-  Skill,
-  DiscoveredSkill,
-  UnifiedSkill,
-  ClientApp,
-  ClientSkillSummary,
-} from "@mcp_router/shared";
+import type { UnifiedSkill, ClientApp } from "@mcp_router/shared";
 import { toast } from "sonner";
 import { cn } from "@/renderer/utils/tailwind-utils";
 import { UnifiedSkillCard } from "./UnifiedSkillCard";
 import UnifiedSkillDetailSheet from "./UnifiedSkillDetailSheet";
 import { ErrorBoundary } from "@/renderer/components/common/ErrorBoundary";
 
-/**
- * Transforms local skills and discovered skills into unified skills format.
- * This is a temporary solution until the backend UnifiedSkillsService is implemented.
- *
- * Note: Content is loaded lazily when the skill detail sheet opens, not during list
- */
-function transformToUnifiedSkills(
-  localSkills: Skill[],
-  discoveredSkills: DiscoveredSkill[],
-  clientApps: ClientApp[],
-): UnifiedSkill[] {
-  const unifiedMap = new Map<string, UnifiedSkill>();
-
-  // Create client states template for all clients
-  const createClientStates = (): ClientSkillSummary[] =>
-    clientApps.map((client) => ({
-      clientId: client.id,
-      clientName: client.name,
-      clientIcon: client.icon,
-      state: "not-installed" as const,
-      isManaged: false,
-      symlinkStatus: "none" as const,
-    }));
-
-  // Process local skills first
-  for (const skill of localSkills) {
-    const clientStates = createClientStates();
-
-    // Mark as enabled in all clients if the skill is globally enabled
-    if (skill.enabled) {
-      for (const cs of clientStates) {
-        cs.state = "enabled";
-        cs.isManaged = true;
-        cs.symlinkStatus = "active";
-      }
-    }
-
-    unifiedMap.set(skill.name, {
-      id: skill.id,
-      name: skill.name,
-      content: null, // Content is loaded lazily when detail sheet opens
-      source: "local",
-      clientStates,
-      globalSync: skill.enabled,
-      projectId: skill.projectId,
-      createdAt: skill.createdAt,
-      updatedAt: skill.updatedAt,
-    });
-  }
-
-  // Process discovered skills
-  for (const discovered of discoveredSkills) {
-    const existing = unifiedMap.get(discovered.skillName);
-
-    if (existing) {
-      // Update the client state for this discovered skill
-      let clientState = existing.clientStates.find(
-        (cs) => cs.clientId === discovered.sourceClientId,
-      );
-
-      // If client not in list (not installed), add it dynamically
-      if (!clientState) {
-        clientState = {
-          clientId: discovered.sourceClientId,
-          clientName: discovered.sourceClientName,
-          clientIcon: undefined, // No icon for uninstalled clients
-          state: "not-installed" as const,
-          isManaged: false,
-          symlinkStatus: "none" as const,
-        };
-        existing.clientStates.push(clientState);
-      }
-
-      clientState.state = "enabled";
-      clientState.isManaged = discovered.isSymlink;
-      clientState.symlinkStatus = discovered.isSymlink ? "active" : "none";
-
-      // Also update sourcePath if this is a discovered skill without one
-      if (!existing.sourcePath && existing.source === "discovered") {
-        existing.sourcePath = discovered.skillPath;
-      }
-    } else {
-      // Create new unified skill from discovered
-      const clientStates = createClientStates();
-      let clientState = clientStates.find(
-        (cs) => cs.clientId === discovered.sourceClientId,
-      );
-
-      // If client not in list (not installed), add it dynamically
-      if (!clientState) {
-        clientState = {
-          clientId: discovered.sourceClientId,
-          clientName: discovered.sourceClientName,
-          clientIcon: undefined, // No icon for uninstalled clients
-          state: "not-installed" as const,
-          isManaged: false,
-          symlinkStatus: "none" as const,
-        };
-        clientStates.push(clientState);
-      }
-
-      clientState.state = "enabled";
-      clientState.isManaged = discovered.isSymlink;
-      clientState.symlinkStatus = discovered.isSymlink ? "active" : "none";
-
-      unifiedMap.set(discovered.skillName, {
-        id: `discovered-${discovered.sourceClientId}-${discovered.skillName}`,
-        name: discovered.skillName,
-        content: null, // Content loaded lazily when detail sheet opens
-        source: "discovered",
-        originClientId: discovered.sourceClientId,
-        sourcePath: discovered.skillPath, // Store path for content loading
-        clientStates,
-        globalSync: false,
-        projectId: null,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      });
-    }
-  }
-
-  // Convert map to array and sort by name
-  return Array.from(unifiedMap.values()).sort((a, b) =>
-    a.name.localeCompare(b.name),
-  );
-}
-
 const SkillsManager: React.FC = () => {
   const { t } = useTranslation();
   const platformAPI = usePlatformAPI();
 
-  // Data state
-  const [localSkills, setLocalSkills] = useState<Skill[]>([]);
-  const [discoveredSkills, setDiscoveredSkills] = useState<DiscoveredSkill[]>(
-    [],
-  );
+  // Data state - now using unified skills from backend
+  const [unifiedSkills, setUnifiedSkills] = useState<UnifiedSkill[]>([]);
   const [clientApps, setClientApps] = useState<ClientApp[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -188,14 +52,14 @@ const SkillsManager: React.FC = () => {
   const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(
     new Set(),
   );
-  const [selectedSkill, setSelectedSkill] = useState<UnifiedSkill | null>(null);
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
 
   // New skill dialog state
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [newSkillName, setNewSkillName] = useState("");
   const [dialogError, setDialogError] = useState<string | null>(null);
 
-  // Load all data
+  // Load all data - now using unified skills API from backend
   const loadData = useCallback(
     async (showRefreshIndicator = false) => {
       if (showRefreshIndicator) {
@@ -203,14 +67,12 @@ const SkillsManager: React.FC = () => {
       }
 
       try {
-        const [skillsList, discovered, clients] = await Promise.all([
-          platformAPI.skills.list(),
-          platformAPI.clientApps.discoverSkillsFromClients(),
+        const [skills, clients] = await Promise.all([
+          platformAPI.skills.unified.list(),
           platformAPI.clientApps.list(),
         ]);
 
-        setLocalSkills(skillsList);
-        setDiscoveredSkills(discovered);
+        setUnifiedSkills(skills);
         setClientApps(clients);
       } catch (error) {
         console.error("Failed to load skills data:", error);
@@ -226,12 +88,6 @@ const SkillsManager: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
-
-  // Transform to unified skills
-  const unifiedSkills = useMemo(
-    () => transformToUnifiedSkills(localSkills, discoveredSkills, clientApps),
-    [localSkills, discoveredSkills, clientApps],
-  );
 
   // Filter skills by search query and selected clients
   const filteredSkills = useMemo(() => {
@@ -292,8 +148,9 @@ const SkillsManager: React.FC = () => {
       setIsNewDialogOpen(false);
       setNewSkillName("");
       await loadData();
-    } catch (error: any) {
-      setDialogError(error.message || t("skills.createError"));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      setDialogError(message || t("skills.createError"));
     }
   };
 
@@ -309,9 +166,10 @@ const SkillsManager: React.FC = () => {
       await platformAPI.skills.import();
       toast.success(t("skills.importSuccess"));
       await loadData();
-    } catch (error: any) {
-      if (error.message !== "No folder selected") {
-        toast.error(error.message || t("skills.importError"));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message !== "No folder selected") {
+        toast.error(message || t("skills.importError"));
       }
     }
   };
@@ -330,30 +188,26 @@ const SkillsManager: React.FC = () => {
     loadData(true);
   };
 
+  // Derive selectedSkill from ID (avoids re-render loop from object reference changes)
+  const selectedSkill = useMemo(
+    () => unifiedSkills.find((s) => s.id === selectedSkillId) ?? null,
+    [unifiedSkills, selectedSkillId],
+  );
+
   // Handle skill selection
   const handleSkillClick = (skill: UnifiedSkill) => {
-    setSelectedSkill(skill);
+    setSelectedSkillId(skill.id);
   };
 
   // Handle detail sheet close
   const handleDetailClose = () => {
-    setSelectedSkill(null);
+    setSelectedSkillId(null);
   };
 
   // Handle skill update (refresh data)
   const handleSkillUpdate = () => {
     loadData(true);
   };
-
-  // Update selected skill when unifiedSkills changes (fixes stale state after loadData)
-  useEffect(() => {
-    if (selectedSkill) {
-      const updated = unifiedSkills.find((s) => s.id === selectedSkill.id);
-      if (updated) {
-        setSelectedSkill(updated);
-      }
-    }
-  }, [unifiedSkills, selectedSkill]);
 
   if (isLoading) {
     return (

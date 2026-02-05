@@ -187,20 +187,21 @@ export class SkillsFileManager {
   }
 
   /**
-   * Verify symlink status
+   * Verify symlink status (async)
    */
-  verifySymlink(symlinkPath: string): SymlinkStatus {
+  async verifySymlink(symlinkPath: string): Promise<SymlinkStatus> {
     try {
-      const lstats = fs.lstatSync(symlinkPath);
+      const lstats = await fs.promises.lstat(symlinkPath);
       if (!lstats.isSymbolicLink()) {
         return "none";
       }
 
       // Check if target exists
-      const targetPath = fs.readlinkSync(symlinkPath);
-      if (fs.existsSync(targetPath)) {
+      const targetPath = await fs.promises.readlink(symlinkPath);
+      try {
+        await fs.promises.access(targetPath);
         return "active";
-      } else {
+      } catch {
         return "broken";
       }
     } catch {
@@ -353,6 +354,29 @@ export class SkillsFileManager {
       return null;
     }
     return fs.readFileSync(skillMdPath, "utf-8");
+  }
+
+  /**
+   * Read SKILL.md content from managed skills directory (async)
+   *
+   * Security: Validates path is within skills directory
+   */
+  async readSkillMdAsync(skillPath: string): Promise<string | null> {
+    // Validate path is within skills directory
+    if (!isPathContained(this.skillsDir, skillPath)) {
+      console.error(
+        `Security: Cannot read from outside skills directory: ${skillPath}`,
+      );
+      return null;
+    }
+
+    const skillMdPath = path.join(skillPath, "SKILL.md");
+    try {
+      await fs.promises.access(skillMdPath);
+      return await fs.promises.readFile(skillMdPath, "utf-8");
+    } catch {
+      return null;
+    }
   }
 
   /**

@@ -221,6 +221,10 @@ declare global {
       // Unified Skills (per-client state management)
       listUnifiedSkills: () => Promise<UnifiedSkill[]>;
       getUnifiedSkill: (id: string) => Promise<UnifiedSkill | null>;
+      updateUnifiedSkill: (
+        id: string,
+        updates: { name?: string; content?: string; globalSync?: boolean; projectId?: string | null },
+      ) => Promise<UnifiedSkill>;
       setClientSkillState: (
         input: SetClientSkillStateInput,
       ) => Promise<ClientSkillState>;

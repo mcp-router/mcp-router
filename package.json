@@ -34,7 +34,6 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.19.3",
     "@types/node-fetch": "^2.6.13",
-    "@types/react": "^19.2.7",
     "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
@@ -44,7 +43,6 @@
     "globals": "^16.5.0",
     "knip": "^5.80.2",
     "prettier": "^3.7.4",
-    "tsx": "^4.21.0",
     "turbo": "^2.7.3",
     "typescript": "^5.9.3"
   },

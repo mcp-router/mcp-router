@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import { promises as fsPromises } from "fs";
 import path from "path";
 import { SingletonService } from "@/main/modules/singleton-service";
@@ -84,82 +83,61 @@ export class UnifiedSkillsService extends SingletonService<
       const unifiedSkills: UnifiedSkill[] = [];
       const processedNames = new Set<string>();
 
-      // Process local skills first (they take precedence)
+      // Process local skills in parallel (they take precedence)
+      const localUnified = await Promise.all(
+        localSkills.map(async (skill) => {
+          const clientStates = await this.buildClientStates(
+            skill.id,
+            skill.name,
+            clients,
+          );
+          return this.buildLocalUnifiedSkill(skill, clientStates, null);
+        }),
+      );
+
+      unifiedSkills.push(...localUnified);
       for (const skill of localSkills) {
-        const clientStates = await this.buildClientStates(
-          skill.id,
-          skill.name,
-          clients,
-        );
-        const content = this.fileManager.readSkillMd(
-          this.fileManager.getSkillPath(skill.name),
-        );
-
-        unifiedSkills.push({
-          id: skill.id,
-          name: skill.name,
-          content,
-          source: "local" as SkillSource,
-          originClientId: undefined,
-          clientStates,
-          globalSync: skill.enabled, // Use enabled flag as globalSync indicator
-          projectId: skill.projectId,
-          createdAt: skill.createdAt,
-          updatedAt: skill.updatedAt,
-        });
-
         processedNames.add(skill.name.toLowerCase());
       }
 
-      // Process discovered skills that are not already local
-      for (const discovered of discoveredSkills) {
+      // Filter discovered skills that are not already local
+      const skillsDir = this.fileManager.getSkillsDirectory();
+      const filteredDiscovered = discoveredSkills.filter((discovered) => {
         const nameLower = discovered.skillName.toLowerCase();
-
-        // Skip if already processed as local skill
         if (processedNames.has(nameLower)) {
-          continue;
+          return false;
         }
-
-        // Skip symlinks that point to our managed skills directory
-        if (discovered.isSymlink && discovered.symlinkTarget) {
-          const skillsDir = this.fileManager.getSkillsDirectory();
-          if (discovered.symlinkTarget.startsWith(skillsDir)) {
-            continue;
-          }
+        if (
+          discovered.isSymlink &&
+          discovered.symlinkTarget &&
+          discovered.symlinkTarget.startsWith(skillsDir)
+        ) {
+          return false;
         }
+        return true;
+      });
 
-        // Create unified skill from discovered skill
-        const clientStates = await this.buildClientStatesForDiscovered(
-          discovered,
-          clients,
-        );
+      // Process discovered skills in parallel
+      const discoveredUnified = await Promise.all(
+        filteredDiscovered.map(async (discovered) => {
+          const clientStates = await this.buildClientStatesForDiscovered(
+            discovered,
+            clients,
+          );
+          const discoveredId = `discovered:${discovered.sourceClientId}:${discovered.skillName}`;
+          return this.buildDiscoveredUnifiedSkill(
+            discoveredId,
+            discovered.skillName,
+            discovered.sourceClientId,
+            clientStates,
+            null,
+          );
+        }),
+      );
 
-        // Read content if available
-        let content: string | null = null;
-        if (discovered.hasSkillMd) {
-          try {
-            const skillMdPath = path.join(discovered.skillPath, "SKILL.md");
-            content = await fsPromises.readFile(skillMdPath, "utf-8");
-          } catch {
-            // Failed to read content
-          }
-        }
-
-        const now = Date.now();
-        unifiedSkills.push({
-          id: `discovered:${discovered.sourceClientId}:${discovered.skillName}`,
-          name: discovered.skillName,
-          content,
-          source: "discovered" as SkillSource,
-          originClientId: discovered.sourceClientId,
-          clientStates,
-          globalSync: false,
-          projectId: null,
-          createdAt: now,
-          updatedAt: now,
-        });
-
-        processedNames.add(nameLower);
+      unifiedSkills.push(...discoveredUnified);
+      for (const discovered of filteredDiscovered) {
+        processedNames.add(discovered.skillName.toLowerCase());
       }
 
       return unifiedSkills;
@@ -207,19 +185,13 @@ export class UnifiedSkillsService extends SingletonService<
               }
             }
 
-            const now = Date.now();
-            return {
-              id: skillId,
-              name: discovered.skillName,
-              content,
-              source: "discovered" as SkillSource,
-              originClientId: discovered.sourceClientId,
+            return this.buildDiscoveredUnifiedSkill(
+              skillId,
+              discovered.skillName,
+              discovered.sourceClientId,
               clientStates,
-              globalSync: false,
-              projectId: null,
-              createdAt: now,
-              updatedAt: now,
-            };
+              content,
+            );
           }
         }
         return null;
@@ -233,27 +205,14 @@ export class UnifiedSkillsService extends SingletonService<
         return null;
       }
 
-      const clientStates = await this.buildClientStates(
-        skill.id,
-        skill.name,
-        clients,
-      );
-      const content = this.fileManager.readSkillMd(
-        this.fileManager.getSkillPath(skill.name),
-      );
+      const [clientStates, content] = await Promise.all([
+        this.buildClientStates(skill.id, skill.name, clients),
+        this.fileManager.readSkillMdAsync(
+          this.fileManager.getSkillPath(skill.name),
+        ),
+      ]);
 
-      return {
-        id: skill.id,
-        name: skill.name,
-        content,
-        source: "local" as SkillSource,
-        originClientId: undefined,
-        clientStates,
-        globalSync: skill.enabled,
-        projectId: skill.projectId,
-        createdAt: skill.createdAt,
-        updatedAt: skill.updatedAt,
-      };
+      return this.buildLocalUnifiedSkill(skill, clientStates, content);
     } catch (error) {
       return this.handleError("getUnified", error, null);
     }
@@ -261,6 +220,12 @@ export class UnifiedSkillsService extends SingletonService<
 
   /**
    * Update a unified skill's properties
+   *
+   * Operation order (to prevent race conditions):
+   * 1. Validate inputs and collect operations
+   * 2. Perform filesystem operations (rename, content write)
+   * 3. Update symlinks (non-fatal failures logged for repair via verifyAndRepairAll)
+   * 4. Update database last (only after filesystem success)
    */
   public async updateUnified(
     id: string,
@@ -285,21 +250,72 @@ export class UnifiedSkillsService extends SingletonService<
       const now = Date.now();
       const updateData: Partial<Skill> = { updatedAt: now };
 
-      // Handle name change (rename folder)
+      // Track the effective skill name (may change if renamed)
+      let effectiveSkillName = skill.name;
+      let newSkillPath: string | null = null;
+
+      // === Phase 1: Validate and collect operations ===
+
+      // Validate name change if requested
       if (updates.name && updates.name !== skill.name) {
         const normalizedName = this.validateAndNormalizeName(updates.name);
         const existingSkill = skillRepo.findByName(normalizedName);
         if (existingSkill && existingSkill.id !== id) {
           throw new Error(`Skill with name "${normalizedName}" already exists`);
         }
+        updateData.name = normalizedName;
+        effectiveSkillName = normalizedName;
+      }
 
-        // Rename the skill folder
-        const oldPath = this.fileManager.getSkillPath(skill.name);
-        const newPath = this.fileManager.getSkillPath(normalizedName);
-        await fsPromises.rename(oldPath, newPath);
+      // Validate globalSync and projectId updates
+      if (updates.globalSync !== undefined) {
+        updateData.enabled = updates.globalSync;
+      }
+      if (updates.projectId !== undefined) {
+        updateData.projectId = updates.projectId;
+      }
 
-        // Update symlinks for all clients that have this skill enabled
-        const clients = await clientAppService.list();
+      // === Phase 2: Perform filesystem operations ===
+      // Note: If any operation fails, we attempt rollback of prior operations
+
+      const oldPath = this.fileManager.getSkillPath(skill.name);
+      let renameSucceeded = false;
+
+      // Handle name change (rename folder) - must succeed before DB update
+      if (updateData.name && updateData.name !== skill.name) {
+        newSkillPath = this.fileManager.getSkillPath(updateData.name);
+        await fsPromises.rename(oldPath, newSkillPath);
+        renameSucceeded = true;
+      }
+
+      // Handle content update
+      if (updates.content !== undefined) {
+        const skillPath =
+          newSkillPath ?? this.fileManager.getSkillPath(effectiveSkillName);
+        try {
+          this.fileManager.writeSkillMd(skillPath, updates.content);
+        } catch (contentError) {
+          // Rollback rename if content write fails
+          if (renameSucceeded && newSkillPath) {
+            try {
+              await fsPromises.rename(newSkillPath, oldPath);
+            } catch (rollbackError) {
+              console.error(
+                `Failed to rollback rename after content write failure: ${rollbackError}`,
+              );
+            }
+          }
+          throw contentError;
+        }
+      }
+
+      // === Phase 3: Update symlinks (non-fatal failures) ===
+
+      // Pre-fetch clients once for both Phase 3 and Phase 4
+      const clients = await clientAppService.list();
+
+      // Update symlinks for all clients if name changed
+      if (updateData.name && updateData.name !== skill.name && newSkillPath) {
         const stateRepo = ClientSkillStateRepository.getInstance();
 
         for (const client of clients) {
@@ -310,39 +326,26 @@ export class UnifiedSkillsService extends SingletonService<
             );
             for (const targetDir of resolvedPaths) {
               const oldTarget = path.join(targetDir, skill.name);
-              const newTarget = path.join(targetDir, normalizedName);
-              this.fileManager.removeSymlink(oldTarget);
-              this.fileManager.createSymlink(newPath, newTarget);
+              const newTarget = path.join(targetDir, updateData.name);
+              // Non-fatal: log failures for repair via verifyAndRepairAll()
+              const removeSuccess = this.fileManager.removeSymlink(oldTarget);
+              const createSuccess = this.fileManager.createSymlink(
+                newSkillPath,
+                newTarget,
+              );
+              if (!removeSuccess || !createSuccess) {
+                console.warn(
+                  `Symlink update failed for client ${client.id}, skill ${updateData.name}. ` +
+                    `Run verifyAndRepairAll() to repair.`,
+                );
+              }
             }
           }
         }
-
-        updateData.name = normalizedName;
       }
 
-      // Handle content update
-      if (updates.content !== undefined) {
-        const skillName = updateData.name ?? skill.name;
-        const skillPath = this.fileManager.getSkillPath(skillName);
-        this.fileManager.writeSkillMd(skillPath, updates.content);
-      }
+      // === Phase 4: Update database (only after filesystem success) ===
 
-      // Handle globalSync update
-      if (updates.globalSync !== undefined) {
-        updateData.enabled = updates.globalSync;
-
-        // Sync to all clients if enabled
-        if (updates.globalSync) {
-          // Will be synced after update completes
-        }
-      }
-
-      // Handle projectId update
-      if (updates.projectId !== undefined) {
-        updateData.projectId = updates.projectId;
-      }
-
-      // Update database record
       skillRepo.update(id, updateData);
 
       // If globalSync was enabled, sync to all clients
@@ -351,33 +354,19 @@ export class UnifiedSkillsService extends SingletonService<
       }
 
       // Return updated unified skill
-      const clients = await clientAppService.list();
       const updatedSkill = skillRepo.getById(id);
       if (!updatedSkill) {
         throw new Error(`Failed to retrieve updated skill: ${id}`);
       }
 
-      const clientStates = await this.buildClientStates(
-        updatedSkill.id,
-        updatedSkill.name,
-        clients,
-      );
-      const content = this.fileManager.readSkillMd(
-        this.fileManager.getSkillPath(updatedSkill.name),
-      );
+      const [clientStates, content] = await Promise.all([
+        this.buildClientStates(updatedSkill.id, updatedSkill.name, clients),
+        this.fileManager.readSkillMdAsync(
+          this.fileManager.getSkillPath(updatedSkill.name),
+        ),
+      ]);
 
-      return {
-        id: updatedSkill.id,
-        name: updatedSkill.name,
-        content,
-        source: "local" as SkillSource,
-        originClientId: undefined,
-        clientStates,
-        globalSync: updatedSkill.enabled,
-        projectId: updatedSkill.projectId,
-        createdAt: updatedSkill.createdAt,
-        updatedAt: updatedSkill.updatedAt,
-      };
+      return this.buildLocalUnifiedSkill(updatedSkill, clientStates, content);
     } catch (error) {
       return this.handleError("updateUnified", error);
     }
@@ -586,11 +575,50 @@ export class UnifiedSkillsService extends SingletonService<
         );
       }
 
-      // Validate that the skill path still exists
-      if (!fs.existsSync(discovered.skillPath)) {
-        throw new Error(
-          `Skill "${skillName}" no longer exists at ${discovered.skillPath}. Please refresh and try again.`,
-        );
+      // Validate that the skill path still exists and is a directory
+      try {
+        const stats = await fsPromises.lstat(discovered.skillPath);
+
+        // Handle symlinks by resolving and checking target
+        if (stats.isSymbolicLink()) {
+          try {
+            const resolvedTarget = await fsPromises.realpath(
+              discovered.skillPath,
+            );
+            const targetStats = await fsPromises.lstat(resolvedTarget);
+            if (!targetStats.isDirectory()) {
+              throw new Error(
+                `Skill "${skillName}" at ${discovered.skillPath} is a symlink pointing to a file, not a directory.`,
+              );
+            }
+          } catch (resolveError: unknown) {
+            // Handle broken symlinks (target doesn't exist)
+            if (
+              resolveError instanceof Error &&
+              (resolveError as NodeJS.ErrnoException).code === "ENOENT"
+            ) {
+              throw new Error(
+                `Skill "${skillName}" is a broken symlink at ${discovered.skillPath}. The symlink target no longer exists.`,
+              );
+            }
+            throw resolveError;
+          }
+        } else if (!stats.isDirectory()) {
+          throw new Error(
+            `Skill "${skillName}" at ${discovered.skillPath} is not a directory.`,
+          );
+        }
+      } catch (error: unknown) {
+        if (
+          error instanceof Error &&
+          (error as NodeJS.ErrnoException).code === "ENOENT"
+        ) {
+          throw new Error(
+            `Skill "${skillName}" no longer exists at ${discovered.skillPath}. Please refresh and try again.`,
+          );
+        }
+        // Re-throw other errors (including our validation errors)
+        throw error;
       }
 
       // Validate skill name
@@ -614,27 +642,14 @@ export class UnifiedSkillsService extends SingletonService<
 
       // Return as UnifiedSkill
       const clients = await clientAppService.list();
-      const clientStates = await this.buildClientStates(
-        skill.id,
-        skill.name,
-        clients,
-      );
-      const content = this.fileManager.readSkillMd(
-        this.fileManager.getSkillPath(skill.name),
-      );
+      const [clientStates, content] = await Promise.all([
+        this.buildClientStates(skill.id, skill.name, clients),
+        this.fileManager.readSkillMdAsync(
+          this.fileManager.getSkillPath(skill.name),
+        ),
+      ]);
 
-      return {
-        id: skill.id,
-        name: skill.name,
-        content,
-        source: "local" as SkillSource,
-        originClientId: undefined,
-        clientStates,
-        globalSync: skill.enabled,
-        projectId: skill.projectId,
-        createdAt: skill.createdAt,
-        updatedAt: skill.updatedAt,
-      };
+      return this.buildLocalUnifiedSkill(skill, clientStates, content);
     } catch (error) {
       return this.handleError("adoptSkill", error);
     }
@@ -676,22 +691,26 @@ export class UnifiedSkillsService extends SingletonService<
         }
 
         try {
-          await this.enableForClient(skillId, client.id);
+          this.enableForClientWithData(skill, client);
           result.synced.push({ clientId: client.id, skillId });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error ? error.message : String(error);
           result.errors.push({
             clientId: client.id,
             skillId,
-            error: error.message || "Unknown error",
+            error: message || "Unknown error",
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Top-level error (skill not found, etc.)
+      const message =
+        error instanceof Error ? error.message : String(error);
       result.errors.push({
         clientId: "all",
         skillId,
-        error: error.message || "Unknown error",
+        error: message || "Unknown error",
       });
     }
 
@@ -730,11 +749,12 @@ export class UnifiedSkillsService extends SingletonService<
 
       // Sync to all clients and return the result
       return await this.syncToAllClients(skillId);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       result.errors.push({
         clientId: "all",
         skillId,
-        error: error.message || "Unknown error",
+        error: message || "Unknown error",
       });
       return result;
     }
@@ -786,19 +806,21 @@ export class UnifiedSkillsService extends SingletonService<
         try {
           await this.disableForClient(skillId, client.id);
           result.synced.push({ clientId: client.id, skillId });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : String(error);
           result.errors.push({
             clientId: client.id,
             skillId,
-            error: error.message || "Unknown error",
+            error: message || "Unknown error",
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       result.errors.push({
         clientId: "all",
         skillId,
-        error: error.message || "Unknown error",
+        error: message || "Unknown error",
       });
     }
 
@@ -843,7 +865,7 @@ export class UnifiedSkillsService extends SingletonService<
 
           for (const targetDir of resolvedPaths) {
             const targetPath = path.join(targetDir, skill.name);
-            const status = this.fileManager.verifySymlink(targetPath);
+            const status = await this.fileManager.verifySymlink(targetPath);
 
             if (status === "active") {
               result.healthy++;
@@ -865,11 +887,12 @@ export class UnifiedSkillsService extends SingletonService<
                     updatedAt: Date.now(),
                   });
                 }
-              } catch (error: any) {
+              } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : String(error);
                 result.failed.push({
                   clientId: client.id,
                   skillName: skill.name,
-                  error: error.message || "Failed to repair symlink",
+                  error: message || "Failed to repair symlink",
                 });
               }
             }
@@ -888,6 +911,108 @@ export class UnifiedSkillsService extends SingletonService<
   // ==========================================================================
 
   /**
+   * Build a UnifiedSkill object for a local (router-managed) skill
+   */
+  private buildLocalUnifiedSkill(
+    skill: Skill,
+    clientStates: ClientSkillSummary[],
+    content: string | null,
+  ): UnifiedSkill {
+    return {
+      id: skill.id,
+      name: skill.name,
+      content,
+      source: "local" as SkillSource,
+      originClientId: undefined,
+      clientStates,
+      globalSync: skill.enabled,
+      projectId: skill.projectId,
+      createdAt: skill.createdAt,
+      updatedAt: skill.updatedAt,
+    };
+  }
+
+  /**
+   * Build a UnifiedSkill object for a discovered (not yet adopted) skill
+   */
+  private buildDiscoveredUnifiedSkill(
+    id: string,
+    skillName: string,
+    sourceClientId: string,
+    clientStates: ClientSkillSummary[],
+    content: string | null,
+  ): UnifiedSkill {
+    const now = Date.now();
+    return {
+      id,
+      name: skillName,
+      content,
+      source: "discovered" as SkillSource,
+      originClientId: sourceClientId,
+      clientStates,
+      globalSync: false,
+      projectId: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+  }
+
+  /**
+   * Enable a skill for a specific client using pre-fetched data.
+   * Avoids re-fetching skill and client data (N+1 pattern).
+   */
+  private enableForClientWithData(skill: Skill, client: ClientApp): void {
+    const stateRepo = ClientSkillStateRepository.getInstance();
+
+    if (!client.skillsPath) {
+      throw new Error(`Client ${client.name} has no skills path configured`);
+    }
+
+    const resolvedPaths = this.resolveClientSkillsPath(client.skillsPath);
+    if (resolvedPaths.length === 0) {
+      throw new Error(
+        `Could not resolve skills path for client ${client.name}`,
+      );
+    }
+
+    const skillPath = this.fileManager.getSkillPath(skill.name);
+    let allSucceeded = true;
+    for (const targetDir of resolvedPaths) {
+      const targetPath = path.join(targetDir, skill.name);
+      const success = this.fileManager.createSymlink(skillPath, targetPath);
+      if (!success) {
+        allSucceeded = false;
+        console.warn(`Failed to create symlink at ${targetPath}`);
+      }
+    }
+
+    const existingState = stateRepo.findBySkillAndClient(skill.id, client.id);
+    const now = Date.now();
+    const symlinkStatus: SymlinkStatus = allSucceeded ? "active" : "broken";
+
+    if (existingState) {
+      stateRepo.update(existingState.id, {
+        state: "enabled" as ClientSkillStateType,
+        symlinkStatus,
+        lastSyncAt: now,
+        updatedAt: now,
+      });
+    } else {
+      stateRepo.add({
+        skillId: skill.id,
+        clientId: client.id,
+        state: "enabled" as ClientSkillStateType,
+        isManaged: true,
+        source: "local" as SkillSource,
+        symlinkStatus,
+        lastSyncAt: now,
+        createdAt: now,
+        updatedAt: now,
+      } as Omit<ClientSkillState, "id">);
+    }
+  }
+
+  /**
    * Build client states for a local skill
    */
   private async buildClientStates(
@@ -896,57 +1021,54 @@ export class UnifiedSkillsService extends SingletonService<
     clients: ClientApp[],
   ): Promise<ClientSkillSummary[]> {
     const stateRepo = ClientSkillStateRepository.getInstance();
-    const clientStates: ClientSkillSummary[] = [];
 
-    for (const client of clients) {
-      // Get state from database
-      const dbState = stateRepo.findBySkillAndClient(skillId, client.id);
+    const clientStates = await Promise.all(
+      clients.map(async (client) => {
+        // Get state from database
+        const dbState = stateRepo.findBySkillAndClient(skillId, client.id);
 
-      // Check actual symlink status
-      let symlinkStatus: SymlinkStatus = "none";
-      let state: ClientSkillStateType = "not-installed";
+        // Check actual symlink status
+        let symlinkStatus: SymlinkStatus = "none";
+        let state: ClientSkillStateType = "not-installed";
 
-      if (client.skillsPath) {
-        const resolvedPaths = this.resolveClientSkillsPath(client.skillsPath);
-        if (resolvedPaths.length > 0) {
-          // Check all resolved paths and aggregate status
-          let foundActive = false;
-          let foundBroken = false;
+        if (client.skillsPath) {
+          const resolvedPaths = this.resolveClientSkillsPath(client.skillsPath);
+          if (resolvedPaths.length > 0) {
+            // Check all resolved paths in parallel and aggregate status
+            const statuses = await Promise.all(
+              resolvedPaths.map((resolvedPath) => {
+                const targetPath = path.join(resolvedPath, skillName);
+                return this.fileManager.verifySymlink(targetPath);
+              }),
+            );
 
-          for (const resolvedPath of resolvedPaths) {
-            const targetPath = path.join(resolvedPath, skillName);
-            const rawStatus = this.fileManager.verifySymlink(targetPath);
-            if (rawStatus === "active") {
-              foundActive = true;
-              break; // Active takes precedence
-            } else if (rawStatus === "broken") {
-              foundBroken = true;
-            }
-          }
+            const foundActive = statuses.some((s) => s === "active");
+            const foundBroken = statuses.some((s) => s === "broken");
 
-          if (foundActive) {
-            symlinkStatus = "active";
-            state = "enabled";
-          } else if (foundBroken) {
-            symlinkStatus = "broken";
-            if (dbState?.state === "disabled") {
+            if (foundActive) {
+              symlinkStatus = "active";
+              state = "enabled";
+            } else if (foundBroken) {
+              symlinkStatus = "broken";
+              if (dbState?.state === "disabled") {
+                state = "disabled";
+              }
+            } else if (dbState?.state === "disabled") {
               state = "disabled";
             }
-          } else if (dbState?.state === "disabled") {
-            state = "disabled";
           }
         }
-      }
 
-      clientStates.push({
-        clientId: client.id,
-        clientName: client.name,
-        clientIcon: client.icon,
-        state,
-        isManaged: dbState?.isManaged ?? symlinkStatus === "active",
-        symlinkStatus,
-      });
-    }
+        return {
+          clientId: client.id,
+          clientName: client.name,
+          clientIcon: client.icon,
+          state,
+          isManaged: dbState?.isManaged ?? symlinkStatus === "active",
+          symlinkStatus,
+        } as ClientSkillSummary;
+      }),
+    );
 
     return clientStates;
   }
@@ -958,41 +1080,46 @@ export class UnifiedSkillsService extends SingletonService<
     discovered: DiscoveredSkill,
     clients: ClientApp[],
   ): Promise<ClientSkillSummary[]> {
-    const clientStates: ClientSkillSummary[] = [];
+    const clientStates = await Promise.all(
+      clients.map(async (client) => {
+        let state: ClientSkillStateType = "not-installed";
+        let symlinkStatus: SymlinkStatus = "none";
 
-    for (const client of clients) {
-      let state: ClientSkillStateType = "not-installed";
-      let symlinkStatus: SymlinkStatus = "none";
+        // Check if this client is the source of the discovered skill
+        if (client.id === discovered.sourceClientId) {
+          state = "enabled";
+          symlinkStatus = discovered.isSymlink ? "active" : "none";
+        } else if (client.skillsPath) {
+          // Check if the skill exists in this client's path
+          const resolvedPaths = this.resolveClientSkillsPath(client.skillsPath);
+          const statuses = await Promise.all(
+            resolvedPaths.map((targetDir) => {
+              const targetPath = path.join(targetDir, discovered.skillName);
+              return this.fileManager.verifySymlink(targetPath);
+            }),
+          );
 
-      // Check if this client is the source of the discovered skill
-      if (client.id === discovered.sourceClientId) {
-        state = "enabled";
-        symlinkStatus = discovered.isSymlink ? "active" : "none";
-      } else if (client.skillsPath) {
-        // Check if the skill exists in this client's path
-        const resolvedPaths = this.resolveClientSkillsPath(client.skillsPath);
-        for (const targetDir of resolvedPaths) {
-          const targetPath = path.join(targetDir, discovered.skillName);
-          const rawStatus = this.fileManager.verifySymlink(targetPath);
-          if (rawStatus === "active") {
+          const foundActive = statuses.some((s) => s === "active");
+          const foundBroken = statuses.some((s) => s === "broken");
+
+          if (foundActive) {
             state = "enabled";
             symlinkStatus = "active";
-            break;
-          } else if (rawStatus === "broken") {
+          } else if (foundBroken) {
             symlinkStatus = "broken";
           }
         }
-      }
 
-      clientStates.push({
-        clientId: client.id,
-        clientName: client.name,
-        clientIcon: client.icon,
-        state,
-        isManaged: false, // Discovered skills are not managed until adopted
-        symlinkStatus,
-      });
-    }
+        return {
+          clientId: client.id,
+          clientName: client.name,
+          clientIcon: client.icon,
+          state,
+          isManaged: false, // Discovered skills are not managed until adopted
+          symlinkStatus,
+        } as ClientSkillSummary;
+      }),
+    );
 
     return clientStates;
   }

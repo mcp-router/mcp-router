@@ -13,12 +13,18 @@ apps/electron/src/main/modules/skills/
 ├── agent-path.repository.ts          # Agent path DB operations
 ├── client-skill-state.repository.ts  # Per-client skill state DB operations
 ├── skills-agent-paths.ts             # Agent path utilities
+├── skills-errors.ts                  # Structured error classes
+├── skills-error-mapper.ts            # Node.js to SkillsError mapping
 ├── skills-file-manager.ts            # File system operations
 ├── skills.repository.ts              # Skill DB operations
 ├── skills.service.ts                 # Business logic
 ├── skills.ipc.ts                     # IPC handlers (basic CRUD)
 ├── unified-skills.ipc.ts             # IPC handlers (unified per-client state)
-└── unified-skills.service.ts         # Unified skills service (per-client state management)
+├── unified-skills.service.ts         # Unified skills service (per-client state management)
+└── __tests__/                        # Unit tests
+    ├── skills.repository.test.ts
+    ├── skills-file-manager.test.ts
+    └── unified-skills.service.test.ts
 ```
 
 ### Type Definitions
@@ -300,9 +306,117 @@ All path security functions are centralized in `apps/electron/src/main/utils/pat
 - `validateAgentPath()` - Agent path validation
 - `validateCopyOperation()` - Copy operation boundary checking
 
+## Error Handling
+
+### Structured Error Classes
+
+The skills system uses structured error classes with error codes and recoverability flags:
+
+```typescript
+// Base error class
+abstract class SkillsError extends Error {
+  abstract readonly code: string;
+  abstract readonly recoverable: boolean;
+}
+
+// Filesystem errors
+class PermissionDeniedError extends SkillsError { code = 'PERMISSION_DENIED'; recoverable = false; }
+class DiskFullError extends SkillsError { code = 'DISK_FULL'; recoverable = false; }
+class PathNotFoundError extends SkillsError { code = 'PATH_NOT_FOUND'; recoverable = false; }
+
+// Symlink errors
+class BrokenSymlinkError extends SkillsError { code = 'BROKEN_SYMLINK'; recoverable = true; }
+class TargetExistsError extends SkillsError { code = 'TARGET_EXISTS'; recoverable = false; }
+
+// Validation errors
+class SkillNotFoundError extends SkillsError { code = 'SKILL_NOT_FOUND'; recoverable = false; }
+class SkillAlreadyExistsError extends SkillsError { code = 'SKILL_ALREADY_EXISTS'; recoverable = false; }
+```
+
+### Error Mapping
+
+Node.js filesystem errors are mapped to structured errors via `skills-error-mapper.ts`:
+
+- `EACCES` → `PermissionDeniedError`
+- `ENOENT` → `PathNotFoundError`
+- `ENOSPC` → `DiskFullError`
+- `EEXIST` → `TargetExistsError`
+
+### UI Error Handling
+
+Frontend error utilities in `skills-error-utils.ts` provide:
+
+- `getSkillsErrorMessage()` - User-friendly i18n messages
+- `showSkillsError()` - Toast notification with retry for recoverable errors
+- `handleSkillsError()` - Combined logging and notification
+
+## State Management
+
+### Zustand Store
+
+The renderer process uses a Zustand store (`skills-store.ts`) following the `server-store.ts` pattern:
+
+```typescript
+interface SkillsStoreState {
+  // Data
+  skills: UnifiedSkill[];
+  clientApps: ClientApp[];
+
+  // Loading states
+  isLoading: boolean;
+  isRefreshing: boolean;
+  isUpdating: string[];
+
+  // Error state
+  error: string | null;
+
+  // UI state
+  searchQuery: string;
+  selectedClientIds: Set<string>;
+  selectedSkillId: string | null;
+
+  // Actions
+  fetchSkills: () => Promise<void>;
+  createSkill: (name: string) => Promise<UnifiedSkill>;
+  updateSkill: (id: string, updates: {...}) => Promise<UnifiedSkill>;
+  deleteSkill: (id: string) => Promise<void>;
+  enableForClient: (skillId: string, clientId: string) => Promise<void>;
+  disableForClient: (skillId: string, clientId: string) => Promise<void>;
+  // ... etc
+}
+```
+
+The store factory (`createSkillsStore`) accepts a `getPlatformAPI` function for dependency injection during testing.
+
+## Testing
+
+### Unit Tests
+
+Located in `apps/electron/src/main/modules/skills/__tests__/`:
+
+- `skills.repository.test.ts` - Repository CRUD, findByName case-insensitivity
+- `skills-file-manager.test.ts` - Symlink creation/verification, path security
+- `unified-skills.service.test.ts` - Service methods, error handling
+
+Path security tests in `apps/electron/src/main/utils/__tests__/path-security.test.ts`:
+
+- Path containment checks
+- Skill name validation
+- Symlink target validation
+
+### E2E Tests
+
+Located in `apps/electron/e2e/specs/skills.spec.ts`:
+
+- Skills list display
+- New skill dialog
+- Search filtering
+- Skill detail sheet
+
 ## Future Considerations
 
 1. **Remote Workspace Support**: Currently only local workspaces are supported
 2. **Skill Export**: Skill export/backup functionality (import is already implemented)
 3. **Skill Templates**: Pre-defined skill templates
 4. **Cloud Sync**: Skill synchronization via cloud
+5. **Store Integration**: Complete SkillsManager migration to Zustand store
