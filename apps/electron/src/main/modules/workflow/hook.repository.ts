@@ -3,26 +3,26 @@ import { HookModule } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * Hook Moduleリポジトリクラス
- * HookModuleの永続化を管理
+ * Hook Module repository class.
+ * Manages persistence of HookModules.
  */
 export class HookRepository {
   private static instance: HookRepository | null = null;
 
   /**
-   * コンストラクタ
+   * Constructor
    */
   private constructor() {
     this.initializeTable();
   }
 
   /**
-   * テーブルを初期化
+   * Initialize the table
    */
   private initializeTable(): void {
     const db = getSqliteManager();
     try {
-      // hook_modulesテーブルを作成
+      // Create hook_modules table
       db.execute(`
         CREATE TABLE IF NOT EXISTS hook_modules (
           id TEXT PRIMARY KEY,
@@ -33,20 +33,20 @@ export class HookRepository {
         )
       `);
 
-      // インデックスを作成
+      // Create index
       db.execute(
         "CREATE INDEX IF NOT EXISTS idx_hook_modules_name ON hook_modules(name)",
       );
 
-      console.log("[HookRepository] テーブルの初期化が完了しました");
+      console.log("[HookRepository] Table initialization completed");
     } catch (error) {
-      console.error("[HookRepository] テーブルの初期化中にエラー:", error);
+      console.error("[HookRepository] Error initializing table:", error);
       throw error;
     }
   }
 
   /**
-   * シングルトンインスタンスの取得
+   * Get the singleton instance
    */
   public static getInstance(): HookRepository {
     if (!HookRepository.instance) {
@@ -56,14 +56,14 @@ export class HookRepository {
   }
 
   /**
-   * テスト用にインスタンスをリセット
+   * Reset the instance (for testing)
    */
   public static resetInstance(): void {
     HookRepository.instance = null;
   }
 
   /**
-   * 全てのHook Moduleを取得
+   * Get all Hook Modules
    */
   public getAllHookModules(): HookModule[] {
     const db = getSqliteManager();
@@ -81,7 +81,7 @@ export class HookRepository {
   }
 
   /**
-   * IDでHook Moduleを取得
+   * Get a Hook Module by ID
    */
   public getHookModuleById(id: string): HookModule | null {
     const db = getSqliteManager();
@@ -106,7 +106,7 @@ export class HookRepository {
   }
 
   /**
-   * 名前でHook Moduleを取得
+   * Get a Hook Module by name
    */
   public getHookModuleByName(name: string): HookModule | null {
     const db = getSqliteManager();
@@ -131,7 +131,7 @@ export class HookRepository {
   }
 
   /**
-   * Hook Moduleを作成
+   * Create a Hook Module
    */
   public createHookModule(module: Omit<HookModule, "id">): HookModule {
     const db = getSqliteManager();
@@ -164,7 +164,7 @@ export class HookRepository {
   }
 
   /**
-   * Hook Moduleを更新
+   * Update a Hook Module
    */
   public updateHookModule(
     id: string,
@@ -202,7 +202,7 @@ export class HookRepository {
   }
 
   /**
-   * Hook Moduleを削除
+   * Delete a Hook Module
    */
   public deleteHookModule(id: string): boolean {
     const db = getSqliteManager();
@@ -218,7 +218,7 @@ export class HookRepository {
   }
 
   /**
-   * Hook Moduleの存在確認（名前）
+   * Check if a Hook Module exists by name
    */
   public existsByName(name: string): boolean {
     const db = getSqliteManager();
@@ -235,13 +235,13 @@ export class HookRepository {
   }
 
   /**
-   * Hook Moduleをインポート（名前の重複を回避）
+   * Import a Hook Module (avoiding name duplicates)
    */
   public importHookModule(module: Omit<HookModule, "id">): HookModule {
     let name = module.name;
     let counter = 1;
 
-    // 名前が重複する場合は番号を付与
+    // Append number if name already exists
     while (this.existsByName(name)) {
       name = `${module.name}_${counter}`;
       counter++;
@@ -254,14 +254,14 @@ export class HookRepository {
   }
 
   /**
-   * 複数のHook Moduleを一括作成
+   * Bulk create Hook Modules
    */
   public createHookModules(modules: Omit<HookModule, "id">[]): HookModule[] {
     return modules.map((module) => this.createHookModule(module));
   }
 
   /**
-   * 全てのHook Moduleを削除（テスト用）
+   * Delete all Hook Modules (for testing)
    */
   public deleteAllHookModules(): void {
     const db = getSqliteManager();
@@ -270,7 +270,7 @@ export class HookRepository {
 }
 
 /**
- * HookRepositoryのシングルトンインスタンスを取得
+ * Get the singleton instance of HookRepository
  */
 export function getHookRepository(): HookRepository {
   return HookRepository.getInstance();

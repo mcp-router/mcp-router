@@ -1,5 +1,5 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
-import { TokenManager } from "@/main/modules/mcp-apps-manager/token-manager";
+import { TokenManager } from "@/main/modules/client-apps/token-manager";
 import { TokenServerAccess } from "@mcp_router/shared";
 
 export class TokenValidator {
@@ -28,7 +28,7 @@ export class TokenValidator {
     token: string | undefined,
     serverName: string,
   ): string {
-    // 通常の認証ロジック
+    // Normal authentication logic
     if (!token || typeof token !== "string") {
       throw new McpError(ErrorCode.InvalidRequest, "Token is required");
     }

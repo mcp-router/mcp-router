@@ -51,7 +51,7 @@ const ANIMATE_EVENT_REGEX =
  * @param svgContent - The raw SVG string to sanitize
  * @returns Sanitized SVG string safe for rendering, or empty string if invalid
  */
-export function sanitizeSvg(svgContent: string): string {
+function sanitizeSvg(svgContent: string): string {
   if (!svgContent || typeof svgContent !== "string") {
     return "";
   }
@@ -119,5 +119,3 @@ export function sanitizeSvgWithStyles(
     return sanitized.replace(/<svg/, `<svg style="${styles}"`);
   }
 }
-
-export default sanitizeSvg;

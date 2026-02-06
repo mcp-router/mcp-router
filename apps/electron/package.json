@@ -88,7 +88,7 @@
     "@electron-forge/plugin-webpack": "^7.10.2",
     "@electron-forge/publisher-github": "^7.10.2",
     "@electron/fuses": "^1.8.0",
-    "@electron/rebuild": "^3.7.2",
+    "@electron/rebuild": "^4.0.2",
     "@playwright/test": "^1.57.0",
     "@types/cors": "^2.8.19",
     "@types/electron-squirrel-startup": "^1.0.2",

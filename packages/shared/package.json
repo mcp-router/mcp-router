@@ -1,6 +1,6 @@
 {
   "name": "@mcp_router/shared",
-  "version": "0.5.4",
+  "version": "0.10.0",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,7 +15,7 @@
     "knip": "cd ../.. && knip --workspace packages/shared"
   },
   "devDependencies": {
-    "@types/node": "^20.19.16",
-    "typescript": "^5.9.2"
+    "@types/node": "^22.19.3",
+    "typescript": "^5.9.3"
   }
 }

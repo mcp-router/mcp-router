@@ -41,18 +41,18 @@ export class SettingsService extends SingletonService<
   }
 
   /**
-   * アプリケーション設定を取得
+   * Get application settings
    */
   public getSettings(): AppSettings {
     try {
       return SettingsRepository.getInstance().getSettings();
     } catch (error) {
-      return this.handleError("設定取得", error);
+      return this.handleError("settings retrieval", error);
     }
   }
 
   /**
-   * 全ての設定を一度に保存
+   * Save all settings at once
    */
   public saveSettings(settings: AppSettings): boolean {
     try {
@@ -63,20 +63,20 @@ export class SettingsService extends SingletonService<
       }
       return result;
     } catch (error) {
-      return this.handleError("設定保存", error, false);
+      return this.handleError("settings save", error, false);
     }
   }
 }
 
 /**
- * SettingsServiceのシングルトンインスタンスを取得
+ * Get the singleton instance of SettingsService
  */
 export function getSettingsService(): SettingsService {
   return SettingsService.getInstance();
 }
 
 /**
- * OS起動時のウィンドウ表示設定に応じてログイン項目設定を更新
+ * Update login item settings based on the show-window-on-startup preference
  */
 export function applyLoginItemSettings(showWindowOnStartup: boolean): void {
   try {
@@ -97,7 +97,7 @@ export function applyLoginItemSettings(showWindowOnStartup: boolean): void {
 }
 
 /**
- * 設定のテーマに基づいてネイティブテーマを更新
+ * Update the native theme based on the settings theme
  */
 export function applyThemeSettings(theme?: Theme): void {
   try {

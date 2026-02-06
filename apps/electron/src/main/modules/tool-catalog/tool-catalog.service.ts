@@ -9,9 +9,6 @@ import type {
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { MiniSearchProvider } from "./minisearch-provider";
 
-// Re-export for consumers
-export type { SearchProvider, SearchProviderRequest };
-
 // Internal type for search context filtering
 // eslint-disable-next-line custom/no-scattered-types
 type SearchContext = {

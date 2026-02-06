@@ -42,6 +42,7 @@
     "myServers": "My Servers",
     "mySkills": "My Skills",
     "logs": "Logs",
+    "workflows": "Workflows",
     "clientApps": "Client Apps"
   },
   "logs": {
@@ -163,30 +164,7 @@
     "showWindowOnStartupDescription": "Display MCP Router when your computer boots. Disable to start in the background."
   },
   "mcpApps": {
-    "title": "MCP App Integrations",
-    "description": "Manage MCP configuration for supported AI applications.",
-    "addCustomApp": "Add Custom App",
-    "customAppDescription": "Create a custom app integration with MCP Router.",
-    "enterAppName": "Enter custom app name",
-    "configured": "MCP Router is configured for this application.",
-    "notConfigured": "MCP Router configuration is not set up for this application.",
-    "installRequired": "Install this application to use MCP Router with it.",
-    "howToUse": "How To Use",
-    "addMcpConfig": "Add MCP Config",
-    "notAvailable": "Not Available",
-    "serverAccess": "Access Control",
-    "selectServers": "Select which servers this app can access:",
-    "accessControlSaved": "Access control settings saved successfully",
-    "enterValidName": "Please enter a valid app name",
-    "notInstalled": "Not Installed",
-    "installed": "Installed",
-    "multipleConfigs": "Multiple Configs",
-    "unify": "Unify",
-    "delete": "Delete",
-    "confirmDelete": "Confirm Delete",
-    "deleteWarning": "Are you sure you want to delete this custom app? This action cannot be undone.",
-    "deleteSuccess": "App deleted successfully",
-    "deleteFailed": "Failed to delete app"
+    "howToUse": "How To Use"
   },
   "serverDetails": {
     "serverName": "Server Name",

@@ -1,6 +1,6 @@
 {
   "name": "@mcp_router/remote-api-types",
-  "version": "0.5.4",
+  "version": "0.10.0",
   "description": "tRPC type definitions and schemas for MCP Router remote API",
   "keywords": [
     "mcp",
@@ -61,9 +61,9 @@
   "devDependencies": {
     "@mcp_router/shared": "workspace:*",
     "@trpc/server": "^11.8.1",
-    "@types/node": "^20.19.16",
+    "@types/node": "^22.19.3",
     "eslint": "^9.35.0",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   }
 }

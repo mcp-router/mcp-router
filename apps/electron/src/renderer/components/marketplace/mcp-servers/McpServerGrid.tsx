@@ -12,11 +12,8 @@ import {
   SelectValue,
 } from "@mcp_router/ui";
 import { AlertCircle, ChevronLeft, ChevronRight, Search } from "lucide-react";
-import {
-  McpServerCard,
-  RegistryServerWithMeta,
-  GitHubStats,
-} from "./McpServerCard";
+import { McpServerCard, RegistryServerWithMeta } from "./McpServerCard";
+import type { GitHubStats } from "@mcp_router/shared";
 import { McpServerDetailsModal } from "./McpServerDetailsModal";
 import { cn } from "@/renderer/utils/tailwind-utils";
 import { usePlatformAPI } from "@/renderer/platform-api";
@@ -359,5 +356,3 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
     </div>
   );
 };
-
-export default McpServerGrid;

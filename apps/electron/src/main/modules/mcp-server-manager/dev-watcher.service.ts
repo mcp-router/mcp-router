@@ -2,7 +2,7 @@
 import chokidar, { FSWatcher } from "chokidar";
 import path from "path";
 
-export interface DevConfig {
+interface DevConfig {
   enabled: boolean;
   watch: string[];
   cwd?: string;

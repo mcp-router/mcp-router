@@ -1,5 +1,7 @@
 # MCP Router QoL Features Implementation Plan
 
+> **STATUS: COMPLETED**
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add 5 quality-of-life features from mcp-hub: REST API, SSE Event Bridge, MCP Marketplace, Hot Reload, and Structured Logging.

@@ -1,6 +1,6 @@
 // apps/electron/src/main/modules/mcp-server-runtime/event-bridge.ts
 
-export type EventType =
+type EventType =
   | "heartbeat"
   | "hub_state"
   | "servers_updated"
@@ -8,7 +8,7 @@ export type EventType =
   | "resource_list_changed"
   | "config_changed";
 
-export interface BridgeEvent {
+interface BridgeEvent {
   type: EventType;
   data: Record<string, unknown>;
   timestamp: string;

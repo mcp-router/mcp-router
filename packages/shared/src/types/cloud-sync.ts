@@ -13,7 +13,7 @@ export interface CloudSyncState {
   enabled: boolean;
   lastSyncedAt?: string;
   lastError?: string;
-  /** safeStorage で暗号化済み、Base64エンコード */
+  /** Encrypted with safeStorage, Base64-encoded */
   encryptedPassphrase?: string;
 }
 

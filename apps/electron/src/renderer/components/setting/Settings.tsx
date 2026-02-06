@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@mcp_router/ui";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@mcp_router/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@mcp_router/ui";
 import { Button } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
 import { Input } from "@mcp_router/ui";
@@ -27,8 +21,8 @@ import { postHogService } from "../../services/posthog-service";
 import type { CloudSyncStatus, AppSettings } from "@mcp_router/shared";
 
 /**
- * Boolean設定のトグルハンドラーを生成するヘルパー関数
- * Optimistic update、保存、エラー時のロールバック、ローディング状態を管理
+ * Helper function to generate toggle handlers for boolean settings.
+ * Manages optimistic update, save, rollback on error, and loading state.
  */
 type BooleanSettingKey = {
   [K in keyof AppSettings]: AppSettings[K] extends boolean | undefined
@@ -37,13 +31,13 @@ type BooleanSettingKey = {
 }[keyof AppSettings];
 
 interface CreateBooleanSettingToggleOptions {
-  /** 設定キー */
+  /** Setting key */
   settingKey: BooleanSettingKey;
-  /** ローカルステートのセッター */
+  /** Local state setter */
   stateSetter: React.Dispatch<React.SetStateAction<boolean>>;
-  /** ローディング状態のセッター */
+  /** Loading state setter */
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  /** 保存成功後に実行する追加処理 */
+  /** Additional processing to run after a successful save */
   onSuccess?: (checked: boolean, currentSettings: AppSettings) => void;
 }
 
@@ -74,7 +68,7 @@ const createBooleanSettingToggle = ({
 };
 
 const Settings: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [isRefreshingSubscription, setIsRefreshingSubscription] =
     useState(false);
   const [loadExternalMCPConfigs, setLoadExternalMCPConfigs] =
@@ -109,20 +103,7 @@ const Settings: React.FC = () => {
     subscribeToAuthChanges,
   } = useAuthStore();
 
-  const handleLanguageChange = (value: string) => {
-    i18n.changeLanguage(value);
-  };
-
-  // Get normalized language code for select
-  const getCurrentLanguage = () => {
-    const currentLang = i18n.language;
-    if (currentLang.startsWith("en")) return "en";
-    if (currentLang.startsWith("ja")) return "ja";
-    if (currentLang.startsWith("zh")) return "zh";
-    return "en";
-  };
-
-  // 認証状態の監視
+  // Monitor authentication state
   useEffect(() => {
     checkAuthStatus();
     const unsubscribe = subscribeToAuthChanges();
@@ -164,7 +145,7 @@ const Settings: React.FC = () => {
     loadCloudSyncStatus();
   }, []);
 
-  // Settingsページ表示時にサブスクリプション情報を更新
+  // Refresh subscription info when Settings page is displayed
   useEffect(() => {
     if (isAuthenticated) {
       const refreshSubscriptionInfo = async () => {
@@ -174,25 +155,25 @@ const Settings: React.FC = () => {
     }
   }, [isAuthenticated, checkAuthStatus]);
 
-  // ログイン処理
+  // Login handler
   const handleLogin = async () => {
     try {
       await login();
     } catch (error) {
-      console.error("ログインに失敗しました:", error);
+      console.error("Login failed:", error);
     }
   };
 
-  // ログアウト処理
+  // Logout handler
   const handleLogout = async () => {
     try {
       await logout();
     } catch (error) {
-      console.error("ログアウトに失敗しました:", error);
+      console.error("Logout failed:", error);
     }
   };
 
-  // サブスクリプション情報の更新処理
+  // Refresh subscription info
   const _handleRefreshSubscription = async () => {
     if (!isAuthenticated || isRefreshingSubscription) return;
 
@@ -200,7 +181,7 @@ const Settings: React.FC = () => {
       setIsRefreshingSubscription(true);
       await checkAuthStatus(true);
     } catch (error) {
-      console.error("サブスクリプション情報の更新に失敗しました:", error);
+      console.error("Failed to refresh subscription info:", error);
     } finally {
       setIsRefreshingSubscription(false);
     }
@@ -259,7 +240,7 @@ const Settings: React.FC = () => {
     try {
       setIsSettingPassphrase(true);
       await platformAPI.cloudSync.setPassphrase(cloudSyncPassphrase);
-      // パスフレーズ設定後、自動でCloud Syncを有効化
+      // Automatically enable Cloud Sync after setting passphrase
       const newStatus = await platformAPI.cloudSync.setEnabled(true);
       setCloudSyncStatus(newStatus);
       setCloudSyncPassphrase("");
@@ -422,7 +403,7 @@ const Settings: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  {/* Pro限定バッジ or トグル（パスフレーズ設定済みの場合のみ） */}
+                  {/* Pro-only badge or toggle (only when passphrase is set) */}
                   {!isSubscribed ? (
                     <span className="text-[10px] px-2 py-1 rounded-full bg-secondary text-muted-foreground font-bold uppercase tracking-tight">
                       {t("settings.proOnly")}
@@ -465,7 +446,7 @@ const Settings: React.FC = () => {
                   <>
                     {
                       cloudSyncStatus.hasPassphrase ? (
-                        /* パスフレーズ設定済み: ステータス表示 */
+                        /* Passphrase set: show status */
                         <div className="pt-5 border-t border-border/40 space-y-2.5">
                           <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 font-medium">
                             <IconLock className="h-4 w-4" />
@@ -487,7 +468,7 @@ const Settings: React.FC = () => {
                           )}
                         </div>
                       ) : (
-                        /* パスフレーズ未設定: 入力欄 + 有効化ボタン */
+                        /* Passphrase not set: input field + enable button */
                         <div className="pt-5 border-t border-border/40 space-y-4">
                           <p className="text-sm text-muted-foreground leading-relaxed">
                             {t("settings.setPassphraseDescription")}
@@ -520,7 +501,7 @@ const Settings: React.FC = () => {
                             </Button>
                           </div>
                         </div>
-                      ) /* パスフレーズ未設定終わり */
+                      ) /* End passphrase not set */
                     }
                   </>
                 )}
@@ -536,33 +517,6 @@ const Settings: React.FC = () => {
           <CardTitle className="text-xl">{t("settings.preferences")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1">
-          {/* Language */}
-          <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
-            <div className="space-y-1">
-              <label className="text-sm font-semibold">
-                {t("common.language")}
-              </label>
-              <p className="text-xs text-muted-foreground">
-                {t("settings.languageDescription", {
-                  defaultValue: "Select your preferred language",
-                })}
-              </p>
-            </div>
-            <Select
-              value={getCurrentLanguage()}
-              onValueChange={handleLanguageChange}
-            >
-              <SelectTrigger className="w-[180px] rounded-full border-border/60">
-                <SelectValue placeholder={t("common.language")} />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="zh">中文</SelectItem>
-                <SelectItem value="ja">日本語</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Theme */}
           <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
             <div className="space-y-1">

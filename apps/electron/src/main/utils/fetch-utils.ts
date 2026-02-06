@@ -44,7 +44,7 @@ export async function fetchWithToken(
  * @returns Parsed JSON response
  * @throws Error if token is not available, fetch fails, or response is not valid JSON
  */
-export async function fetchWithTokenJson<T = any>(
+async function fetchWithTokenJson<T = any>(
   path: string,
   options: RequestInit & { token?: string; apiBaseUrl?: string } = {},
 ): Promise<T> {

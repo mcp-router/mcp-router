@@ -12,8 +12,8 @@ import {
 import { SqliteManager } from "./database/sqlite-manager";
 
 /**
- * 共通設定ファイルマネージャー
- * ワークスペース間で共有される設定をJSONファイルで管理
+ * Shared configuration file manager.
+ * Manages settings shared across workspaces via JSON file.
  */
 export class SharedConfigManager implements ISharedConfigManager {
   private static instance: SharedConfigManager | null = null;
@@ -27,7 +27,7 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * トークンのディープコピーを作成
+   * Create a deep copy of a token
    */
   private cloneToken(token: Token): Token {
     return {
@@ -37,7 +37,7 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * シングルトンインスタンスを取得
+   * Get the singleton instance
    */
   public static getInstance(): SharedConfigManager {
     if (!SharedConfigManager.instance) {
@@ -47,14 +47,14 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * インスタンスをリセット（テスト用）
+   * Reset the instance (for testing)
    */
   public static resetInstance(): void {
     SharedConfigManager.instance = null;
   }
 
   /**
-   * 設定ファイルを読み込み
+   * Load the configuration file
    */
   private loadConfig(): SharedConfig {
     try {
@@ -62,10 +62,10 @@ export class SharedConfigManager implements ISharedConfigManager {
         const data = fs.readFileSync(this.configPath, "utf-8");
         const config = JSON.parse(data);
 
-        // 既存のトークンデータを正規化（マイグレーション後の不正なデータを修正）
+        // Normalize existing token data (fix invalid data after migration)
         if (config.mcpApps?.tokens) {
           config.mcpApps.tokens = config.mcpApps.tokens.map((token: any) => {
-            // フィールド名を正規化
+            // Normalize field names
             const normalizedToken: Token = {
               id: token.id,
               clientId: token.clientId || token.client_id,
@@ -73,7 +73,7 @@ export class SharedConfigManager implements ISharedConfigManager {
               serverAccess: {},
             };
 
-            // サーバーアクセス情報をマップに変換
+            // Convert server access info to map
             const serverAccessValue = token.serverAccess || {};
             normalizedToken.serverAccess = {
               ...(serverAccessValue as TokenServerAccess),
@@ -89,7 +89,7 @@ export class SharedConfigManager implements ISharedConfigManager {
       console.error("[SharedConfigManager] Failed to load config:", error);
     }
 
-    // デフォルト設定を返す
+    // Return default settings
     return {
       settings: { ...DEFAULT_APP_SETTINGS },
       mcpApps: {
@@ -103,11 +103,11 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * 設定ファイルを保存
+   * Save the configuration file
    */
   private saveConfig(): void {
     try {
-      // メタ情報を更新
+      // Update meta information
       if (!this.config._meta) {
         this.config._meta = {
           version: "1.0.0",
@@ -117,7 +117,7 @@ export class SharedConfigManager implements ISharedConfigManager {
         this.config._meta.lastModified = new Date().toISOString();
       }
 
-      // ファイルに書き込み
+      // Write to file
       fs.writeFileSync(
         this.configPath,
         JSON.stringify(this.config, null, 2),
@@ -130,21 +130,21 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * 初期化
+   * Initialize
    */
   async initialize(): Promise<void> {
-    // 設定ファイルが存在しない場合は、既存のデータベースからマイグレーション
+    // If config file doesn't exist, migrate from existing database
     if (!fs.existsSync(this.configPath)) {
       await this.migrateFromDatabase("local-default");
     }
   }
 
   /**
-   * 既存のデータベースからマイグレーション
+   * Migrate from an existing database
    */
   async migrateFromDatabase(workspaceId: string): Promise<void> {
     try {
-      // ワークスペースのデータベースパスを構築
+      // Build workspace database path
       const dbPath =
         workspaceId === "local-default"
           ? path.join(app.getPath("userData"), "mcprouter.db")
@@ -161,7 +161,7 @@ export class SharedConfigManager implements ISharedConfigManager {
 
       const db = new SqliteManager(dbPath);
 
-      // settingsテーブルからデータを移行
+      // Migrate data from settings table
 
       const settingsRows = db.all<{ key: string; value: string }>(
         "SELECT key, value FROM settings",
@@ -180,11 +180,11 @@ export class SharedConfigManager implements ISharedConfigManager {
       });
       this.config.settings = settings;
 
-      // tokensテーブルからデータを移行
+      // Migrate data from tokens table
 
       const tokenRows = db.all<any>("SELECT * FROM tokens");
 
-      // フィールド名を正しい形式に変換
+      // Convert field names to correct format
       this.config.mcpApps.tokens = tokenRows.map((row) => {
         const token: Token = {
           id: row.id,
@@ -193,7 +193,7 @@ export class SharedConfigManager implements ISharedConfigManager {
           serverAccess: {},
         };
 
-        // サーバーアクセス情報をマップに変換
+        // Convert server access info to map
         if (row.serverAccess) {
           token.serverAccess = { ...(row.serverAccess as TokenServerAccess) };
         }
@@ -201,14 +201,14 @@ export class SharedConfigManager implements ISharedConfigManager {
         return token;
       });
 
-      // メタ情報を記録
+      // Record meta information
       this.config._meta = {
         version: "1.0.0",
         migratedAt: new Date().toISOString(),
         lastModified: new Date().toISOString(),
       };
 
-      // 設定を保存
+      // Save config
       this.saveConfig();
 
       db.close();
@@ -220,7 +220,7 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * アプリケーション設定を取得
+   * Get application settings
    */
   getSettings(): AppSettings {
     return {
@@ -230,7 +230,7 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * アプリケーション設定を保存
+   * Save application settings
    */
   saveSettings(settings: AppSettings): void {
     this.config.settings = {
@@ -242,14 +242,14 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * トークンリストを取得
+   * Get token list
    */
   getTokens(): Token[] {
     return this.config.mcpApps.tokens.map((token) => this.cloneToken(token));
   }
 
   /**
-   * トークンを取得
+   * Get a token by ID
    */
   getToken(tokenId: string): Token | undefined {
     const token = this.config.mcpApps.tokens.find((t) => t.id === tokenId);
@@ -257,7 +257,7 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * トークンを保存
+   * Save a token
    */
   saveToken(token: Token): void {
     const normalizedToken: Token = {
@@ -277,7 +277,7 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * トークンを削除
+   * Delete a token
    */
   deleteToken(tokenId: string): void {
     this.config.mcpApps.tokens = this.config.mcpApps.tokens.filter(
@@ -287,7 +287,7 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * クライアントIDに関連するトークンを削除
+   * Delete tokens associated with a client ID
    */
   deleteClientTokens(clientId: string): void {
     this.config.mcpApps.tokens = this.config.mcpApps.tokens.filter(
@@ -297,7 +297,7 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * クライアントIDでトークンを取得
+   * Get tokens by client ID
    */
   getTokensByClientId(clientId: string): Token[] {
     return this.config.mcpApps.tokens
@@ -306,7 +306,7 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * トークンのサーバーIDリストを更新
+   * Update server access list for a token
    */
   updateTokenServerAccess(
     tokenId: string,
@@ -320,8 +320,8 @@ export class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * ワークスペースのサーバーリストとトークンを同期
-   * 新しいサーバーがあれば自動的にトークンに追加
+   * Sync tokens with workspace server list.
+   * Automatically adds new servers to tokens.
    */
   syncTokensWithWorkspaceServers(serverList: string[]): void {
     let updated = false;
@@ -337,7 +337,7 @@ export class SharedConfigManager implements ISharedConfigManager {
       });
       const nextSize = Object.keys(nextAccess).length;
 
-      // 新しいサーバーIDが追加された場合のみ更新
+      // Only update if new server IDs were added
       if (nextSize > initialSize) {
         token.serverAccess = nextAccess;
         updated = true;
@@ -347,7 +347,7 @@ export class SharedConfigManager implements ISharedConfigManager {
       }
     });
 
-    // 変更があった場合は保存
+    // Save if changes were made
     if (updated) {
       this.saveConfig();
       console.log(
@@ -358,7 +358,7 @@ export class SharedConfigManager implements ISharedConfigManager {
 }
 
 /**
- * SharedConfigManagerのシングルトンインスタンスを取得
+ * Get the singleton instance of SharedConfigManager
  */
 export function getSharedConfigManager(): SharedConfigManager {
   return SharedConfigManager.getInstance();

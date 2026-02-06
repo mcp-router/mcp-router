@@ -2,7 +2,6 @@ import { setupAuthHandlers } from "../modules/auth/auth.ipc";
 import { setupMcpServerHandlers } from "../modules/mcp-server-manager/mcp-server-manager.ipc";
 import { setupLogHandlers } from "../modules/mcp-logger/mcp-logger.ipc";
 import { setupSettingsHandlers } from "../modules/settings/settings.ipc";
-import { setupMcpAppsHandlers } from "../modules/mcp-apps-manager/mcp-apps-manager.ipc";
 import { setupSystemHandlers } from "../modules/system/system-handler";
 import { setupPackageHandlers } from "../modules/system/package-handlers";
 import { setupWorkspaceHandlers } from "../modules/workspace/workspace.ipc";
@@ -21,58 +20,55 @@ import { setupClientAppHandlers } from "../modules/client-apps/client-app.ipc";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 
 /**
- * IPC通信ハンドラのセットアップを行う関数
- * アプリケーション初期化時に呼び出される
+ * Set up IPC communication handlers.
+ * Called during application initialization.
  */
 export function setupIpcHandlers(deps: {
   getServerManager: () => MCPServerManager;
 }): void {
-  // 認証関連
+  // Authentication
   setupAuthHandlers();
 
-  // MCPサーバー関連
+  // MCP servers
   setupMcpServerHandlers(deps.getServerManager);
 
-  // ログ関連
+  // Logs
   setupLogHandlers();
 
-  // 設定関連
+  // Settings
   setupSettingsHandlers();
 
-  // MCPアプリ設定関連
-  setupMcpAppsHandlers();
-
-  // システム関連（ユーティリティ、フィードバック、アップデート）
+  // System (utilities, feedback, updates)
   setupSystemHandlers();
 
-  // パッケージ関連（バージョン解決とマネージャー管理）
+  // Packages (version resolution and manager management)
   setupPackageHandlers();
 
-  // ワークスペース関連
+  // Workspaces
   setupWorkspaceHandlers();
 
-  // Workflow関連
+  // Workflows
   setupWorkflowHandlers();
 
-  // Hook Module関連
+  // Hook Modules
   setupHookHandlers();
 
-  // Projects関連
+  // Projects
   setupProjectHandlers({ getServerManager: deps.getServerManager });
 
-  // Cloud Sync関連
+  // Cloud Sync
   setupCloudSyncHandlers();
 
-  // Skills関連
+  // Skills
   setupSkillHandlers();
 
-  // Unified Skills関連
+  // Unified Skills
   setUnifiedSkillsService(getUnifiedSkillsService());
   setupUnifiedSkillsHandlers();
 
-  // Marketplace関連
+  // Marketplace
   setupMarketplaceHandlers();
 
-  // Client Apps関連
+  // Client Apps
   setupClientAppHandlers();
 }

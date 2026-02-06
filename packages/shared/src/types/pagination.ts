@@ -1,9 +1,9 @@
 /**
- * カーソルベースページネーションの共通型定義
+ * Common type definitions for cursor-based pagination
  */
 
 /**
- * カーソルベースのクエリオプション
+ * Cursor-based query options
  */
 export interface CursorPaginationOptions {
   cursor?: string;
@@ -11,7 +11,7 @@ export interface CursorPaginationOptions {
 }
 
 /**
- * カーソルベースのクエリ結果
+ * Cursor-based query result
  */
 export interface CursorPaginationResult<T> {
   items: T[];
@@ -21,7 +21,7 @@ export interface CursorPaginationResult<T> {
 }
 
 /**
- * カーソルの内部表現
+ * Internal representation of a cursor
  */
 export interface CursorData {
   timestamp: number;

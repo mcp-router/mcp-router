@@ -1,17 +1,17 @@
 import type { ServersRouter } from "./servers";
 import type { LogsRouter } from "./logs";
 
-// メインのRouter型定義
+// Main Router type definition
 export type RemoteAPIRouter = {
   servers: ServersRouter;
   logs: LogsRouter;
 };
 
-// 各ドメインのRouter型をエクスポート
+// Export Router types for each domain
 export type { ServersRouter } from "./servers";
 export type { LogsRouter } from "./logs";
 
-// Zodスキーマのエクスポート（サーバー側で使用）
+// Export Zod schemas (used on the server side)
 export {
   mcpServerConfigSchema,
   createServerSchema,
@@ -21,7 +21,7 @@ export {
 
 export { logQueryOptionsSchema } from "./logs";
 
-// 型のエクスポート
+// Export types
 export type {
   ServerStatus,
   CreateServerInput,

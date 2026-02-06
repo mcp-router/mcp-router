@@ -9,7 +9,6 @@ import type {
   MCPServer,
   Project,
   ProjectOptimization,
-  TokenServerAccess,
   Skill,
   SkillWithContent,
   CreateSkillInput,
@@ -26,7 +25,6 @@ import {
   WorkflowDefinition,
   HookModule,
 } from "@mcp_router/shared";
-import { McpAppsManagerResult, McpApp } from "@/main/modules/mcp-apps-service";
 import { ServerPackageUpdates } from "./lib/utils/backend/package-version-resolver";
 
 declare global {
@@ -93,16 +91,7 @@ declare global {
       setCloudSyncPassphrase: (passphrase: string) => Promise<void>;
       syncCloudNow: () => Promise<CloudSyncStatus>;
 
-      // MCP Apps Management
-      listMcpApps: () => Promise<McpApp[]>;
-      addMcpAppConfig: (appName: string) => Promise<McpAppsManagerResult>;
-      deleteMcpApp: (appName: string) => Promise<boolean>;
       [key: string]: any;
-      updateAppServerAccess: (
-        appName: string,
-        serverAccess: TokenServerAccess,
-      ) => Promise<McpAppsManagerResult>;
-      unifyAppConfig: (appName: string) => Promise<McpAppsManagerResult>;
 
       // Command checking
       checkCommandExists: (command: string) => Promise<boolean>;

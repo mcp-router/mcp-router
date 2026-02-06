@@ -5,8 +5,8 @@ import {
 } from "./workflow.repository";
 
 /**
- * Workflowドメインサービス
- * Workflowのビジネスロジックとバックエンドサービスを提供
+ * Workflow domain service.
+ * Provides business logic and backend services for Workflows.
  */
 export class WorkflowService {
   private static instance: WorkflowService | null = null;
@@ -17,7 +17,7 @@ export class WorkflowService {
   }
 
   /**
-   * シングルトンインスタンスの取得
+   * Get the singleton instance
    */
   public static getInstance(): WorkflowService {
     if (!WorkflowService.instance) {
@@ -27,35 +27,35 @@ export class WorkflowService {
   }
 
   /**
-   * テスト用にインスタンスをリセット
+   * Reset the instance (for testing)
    */
   public static resetInstance(): void {
     WorkflowService.instance = null;
   }
 
   /**
-   * 全てのワークフローを取得
+   * Get all workflows
    */
   public async getAllWorkflows(): Promise<WorkflowDefinition[]> {
     return this.repository.getAllWorkflows();
   }
 
   /**
-   * 有効なワークフローのみを取得
+   * Get only enabled workflows
    */
   public async getEnabledWorkflows(): Promise<WorkflowDefinition[]> {
     return this.repository.getEnabledWorkflows();
   }
 
   /**
-   * IDでワークフローを取得
+   * Get a workflow by ID
    */
   public async getWorkflowById(id: string): Promise<WorkflowDefinition | null> {
     return this.repository.getWorkflowById(id);
   }
 
   /**
-   * タイプ別にワークフローを取得
+   * Get workflows by type
    */
   public async getWorkflowsByType(
     workflowType: string,
@@ -64,25 +64,25 @@ export class WorkflowService {
   }
 
   /**
-   * ワークフローを作成
+   * Create a workflow
    */
   public async createWorkflow(
     workflow: Omit<WorkflowDefinition, "id" | "createdAt" | "updatedAt">,
   ): Promise<WorkflowDefinition> {
-    // バリデーション
+    // Validate
     this.validateWorkflow(workflow);
 
     return this.repository.createWorkflow(workflow);
   }
 
   /**
-   * ワークフローを更新
+   * Update a workflow
    */
   public async updateWorkflow(
     id: string,
     updates: Partial<Omit<WorkflowDefinition, "id" | "createdAt">>,
   ): Promise<WorkflowDefinition | null> {
-    // 部分的なバリデーション
+    // Partial validation
     if (updates.nodes !== undefined || updates.edges !== undefined) {
       const existing = await this.getWorkflowById(id);
       if (existing) {
@@ -95,16 +95,16 @@ export class WorkflowService {
   }
 
   /**
-   * 指定したワークフローを有効化し、同じタイプの他のワークフローを無効化
+   * Enable the specified workflow and disable other workflows of the same type
    */
   public async setActiveWorkflow(id: string): Promise<boolean> {
-    // Workflowを取得
+    // Get the workflow
     const workflow = await this.getWorkflowById(id);
     if (!workflow) {
       throw new Error(`Workflow not found: ${id}`);
     }
 
-    // WorkflowExecutorで妥当性を検証
+    // Validate with WorkflowExecutor
     const { WorkflowExecutor } = await import("./workflow-executor");
     const isValid = WorkflowExecutor.isValidWorkflow(workflow);
 
@@ -115,27 +115,27 @@ export class WorkflowService {
       );
     }
 
-    // 妥当なWorkflowのみ有効化
+    // Only enable valid workflows
     return this.repository.setActiveWorkflow(id);
   }
 
   /**
-   * 指定したワークフローを無効化
+   * Disable a workflow
    */
   public async disableWorkflow(id: string): Promise<boolean> {
     return this.repository.disableWorkflow(id);
   }
 
   /**
-   * ワークフローを削除
+   * Delete a workflow
    */
   public async deleteWorkflow(id: string): Promise<boolean> {
     return this.repository.deleteWorkflow(id);
   }
 
   /**
-   * ワークフローを実行
-   * TODO: WorkflowExecutorクラスに移動予定
+   * Execute a workflow
+   * TODO: To be moved to WorkflowExecutor class
    */
   public async executeWorkflow(id: string, context?: any): Promise<any> {
     const workflow = await this.getWorkflowById(id);
@@ -147,7 +147,7 @@ export class WorkflowService {
       throw new Error(`Workflow is disabled: ${id}`);
     }
 
-    // WorkflowExecutorを使用して実行
+    // Execute using WorkflowExecutor
     const { WorkflowExecutor } = await import("./workflow-executor");
     const executor = new WorkflowExecutor(workflow);
 
@@ -162,7 +162,7 @@ export class WorkflowService {
   }
 
   /**
-   * ワークフローのバリデーション
+   * Validate a workflow
    */
   private validateWorkflow(workflow: any): void {
     if (!workflow.name || workflow.name.trim().length === 0) {
@@ -181,7 +181,7 @@ export class WorkflowService {
       throw new Error("Workflow edges must be an array");
     }
 
-    // スタートノードの存在確認
+    // Check for start node
     const hasStartNode = workflow.nodes.some(
       (node: any) => node.type === "start",
     );
@@ -189,7 +189,7 @@ export class WorkflowService {
       throw new Error("Workflow must have a start node");
     }
 
-    // エンドノードの存在確認
+    // Check for end node
     const hasEndNode = workflow.nodes.some((node: any) => node.type === "end");
     if (!hasEndNode) {
       throw new Error("Workflow must have an end node");
@@ -198,7 +198,7 @@ export class WorkflowService {
 }
 
 /**
- * WorkflowServiceのシングルトンインスタンスを取得
+ * Get the singleton instance of WorkflowService
  */
 export function getWorkflowService(): WorkflowService {
   return WorkflowService.getInstance();

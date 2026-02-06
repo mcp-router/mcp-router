@@ -8,6 +8,7 @@ import {
   IconDownload,
   IconWand,
   IconBuildingStore,
+  IconArrowsShuffle,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/renderer/stores";
@@ -155,6 +156,27 @@ const SidebarComponent: React.FC = () => {
                           <IconActivity className="h-5 w-5 stroke-[2.5]" />
                           <span className="font-bold text-sm">
                             {t("sidebar.logs")}
+                          </span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
+
+                  {!isRemoteWorkspace && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={t("sidebar.workflows")}
+                        isActive={location.pathname.startsWith("/workflows")}
+                        className="rounded-xl transition-all duration-300 h-11 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                      >
+                        <Link
+                          to="/workflows"
+                          className="flex items-center gap-3 px-3 w-full"
+                        >
+                          <IconArrowsShuffle className="h-5 w-5 stroke-[2.5]" />
+                          <span className="font-bold text-sm">
+                            {t("sidebar.workflows")}
                           </span>
                         </Link>
                       </SidebarMenuButton>

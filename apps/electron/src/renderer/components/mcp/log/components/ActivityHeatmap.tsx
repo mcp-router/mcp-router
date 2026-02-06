@@ -9,12 +9,12 @@ interface ActivityHeatmapProps {
   selectedDate: string | null;
   onDateSelect: (date: string) => void;
   loading?: boolean;
-  /** 表示する日数 */
+  /** Number of days to display */
   days?: number;
 }
 
 /**
- * アクティビティカウントに応じた色を返す
+ * Return a color based on the activity count
  */
 const getHeatColor = (count: number, maxCount: number): string => {
   if (count === 0 || maxCount === 0) return "bg-muted/20";

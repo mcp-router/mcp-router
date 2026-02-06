@@ -27,7 +27,7 @@ interface ActivityLogProps {
 }
 
 /**
- * 時刻をフォーマット
+ * Format a timestamp as time string
  */
 const formatTime = (timestamp: number): string => {
   const date = new Date(timestamp);
@@ -35,7 +35,7 @@ const formatTime = (timestamp: number): string => {
 };
 
 /**
- * JSONを整形して表示
+ * Pretty-print JSON data
  */
 const formatJson = (data: unknown): string => {
   if (data === undefined || data === null) return "-";
@@ -47,7 +47,7 @@ const formatJson = (data: unknown): string => {
 };
 
 /**
- * 実行ツール行（アコーディオン）
+ * Tool execution row (accordion)
  */
 const ExecutionRow: React.FC<{
   exec: ActivityLogEntry;
@@ -238,7 +238,7 @@ const SessionCard: React.FC<{
 };
 
 /**
- * タイプに応じたアイコンを返す
+ * Return an icon based on the activity type
  */
 const getActivityIcon = (
   type: ActivityLogEntry["type"],
@@ -263,7 +263,7 @@ const getActivityIcon = (
 };
 
 /**
- * タイプに応じた表示名を返す
+ * Return a display name based on the activity type
  */
 const getActivityDisplayName = (entry: ActivityLogEntry): string => {
   switch (entry.type) {
@@ -280,7 +280,7 @@ const getActivityDisplayName = (entry: ActivityLogEntry): string => {
 };
 
 /**
- * 単独のアクティビティカード（ToolExecute、CallTool、GetPrompt、ReadResource）
+ * Standalone activity card (ToolExecute, CallTool, GetPrompt, ReadResource)
  */
 const StandaloneCard: React.FC<{
   entry: ActivityLogEntry;

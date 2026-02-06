@@ -1,19 +1,19 @@
 /**
- * Activity Log関連の型定義
- * ToolDiscovery/ToolExecuteのログを可視化するための型
+ * Activity log type definitions
+ * Types for visualizing ToolDiscovery/ToolExecute logs
  */
 
 /**
- * ヒートマップのセルデータ
+ * Heatmap cell data
  */
 export interface HeatmapCell {
   date: string; // YYYY-MM-DD
   hour: number; // 0-23
-  count: number; // アクティビティ数
+  count: number; // Activity count
 }
 
 /**
- * ヒートマップデータ
+ * Heatmap data
  */
 export interface HeatmapData {
   cells: HeatmapCell[];
@@ -21,25 +21,25 @@ export interface HeatmapData {
 }
 
 /**
- * Word Cloudの単語データ
+ * Word cloud item data
  */
 export interface WordCloudItem {
   text: string;
-  value: number; // 出現頻度
+  value: number; // Occurrence frequency
 }
 
 /**
- * アクティビティログの種別
+ * Activity log entry type
  */
 export type ActivityType =
   | "ToolDiscovery"
   | "ToolExecute"
-  | "CallTool" // 直接ツール呼び出し
-  | "GetPrompt" // プロンプト取得
-  | "ReadResource"; // リソース読み取り
+  | "CallTool" // Direct tool call
+  | "GetPrompt" // Prompt retrieval
+  | "ReadResource"; // Resource read
 
 /**
- * アクティビティログエントリ
+ * Activity log entry
  */
 export interface ActivityLogEntry {
   id: string;
@@ -47,7 +47,7 @@ export interface ActivityLogEntry {
   clientId: string;
   clientName: string;
   type: ActivityType;
-  // ToolDiscoveryの場合
+  // For ToolDiscovery
   query?: string[];
   context?: string;
   discoveredTools?: {
@@ -56,27 +56,27 @@ export interface ActivityLogEntry {
     serverName: string;
     relevance: number;
   }[];
-  // ToolExecuteの場合
+  // For ToolExecute
   toolKey?: string;
   toolName?: string;
   serverName?: string;
   arguments?: Record<string, unknown>;
-  // 共通
+  // Common fields
   status: "success" | "error";
   duration: number;
   errorMessage?: string;
-  // レスポンスデータ
+  // Response data
   responseData?: unknown;
 
-  // GetPromptの場合
+  // For GetPrompt
   promptName?: string;
 
-  // ReadResourceの場合
+  // For ReadResource
   resourceUri?: string;
 }
 
 /**
- * 日付別のアクティビティサマリー
+ * Daily activity summary
  */
 export interface DailyActivitySummary {
   date: string; // YYYY-MM-DD
@@ -89,21 +89,21 @@ export interface DailyActivitySummary {
 }
 
 /**
- * ToolDiscoveryとその後のToolExecuteをグループ化したセッション
+ * Session grouping a ToolDiscovery with subsequent ToolExecute calls
  */
 export interface ActivitySession {
   id: string;
-  timestamp: number; // セッション開始時刻（ToolDiscoveryの時刻）
+  timestamp: number; // Session start time (time of ToolDiscovery)
   clientId: string;
   clientName: string;
-  // ToolDiscovery情報
+  // ToolDiscovery info
   discovery: ActivityLogEntry;
-  // 関連するToolExecute（発見されたツールを実行したもの）
+  // Related ToolExecute calls (executions of discovered tools)
   executions: ActivityLogEntry[];
 }
 
 /**
- * セッションまたは単独のToolExecute
+ * Session or standalone ToolExecute
  */
 export type ActivityItem =
   | { type: "session"; session: ActivitySession }

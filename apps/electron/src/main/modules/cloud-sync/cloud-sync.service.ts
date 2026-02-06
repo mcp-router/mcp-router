@@ -523,25 +523,25 @@ export class CloudSyncService {
     const incomingServers = entry.mcpServers ?? [];
 
     if (entry.id === activeWorkspaceId) {
-      // アクティブワークスペースはServerManagerを通じて操作
-      // ロールバック用に既存サーバーを保持
+      // Active workspace is operated through ServerManager
+      // Keep existing servers for rollback
       const serverManager = this.getServerManager();
       const existingServers = serverManager.getServers();
       const backupConfigs = existingServers.map((s) => this.serializeServer(s));
       const removedIds: string[] = [];
 
       try {
-        // 既存サーバーを削除
+        // Remove existing servers
         existingServers.forEach((server) => {
           serverManager.removeServer(server.id);
           removedIds.push(server.id);
         });
-        // 新しいサーバーを追加
+        // Add new servers
         incomingServers.forEach((config) => {
           serverManager.addServer(config);
         });
       } catch (error) {
-        // エラー時は削除したサーバーを復元
+        // On error, restore the removed servers
         console.error(
           "[CloudSync] Failed to replace servers, attempting rollback:",
           error,
@@ -552,7 +552,7 @@ export class CloudSyncService {
               serverManager.addServer(config);
             }
           } catch {
-            // ロールバック失敗は無視
+            // Ignore rollback failures
           }
         });
         throw error;
@@ -560,7 +560,7 @@ export class CloudSyncService {
       return;
     }
 
-    // 非アクティブワークスペースはリポジトリを直接操作（トランザクション使用）
+    // For non-active workspaces, operate on the repository directly (using transactions)
     const repo = await this.getServerRepositoryForWorkspace(entry.id);
     repo.database.transaction(() => {
       repo.database.exec("DELETE FROM servers");

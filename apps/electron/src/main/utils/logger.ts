@@ -52,7 +52,7 @@ export function logError(...args: unknown[]): void {
 /**
  * WARN level log
  */
-export function logWarn(...args: unknown[]): void {
+function logWarn(...args: unknown[]): void {
   if (args.length === 1) {
     logger.warn(args[0]);
   } else {
@@ -63,7 +63,7 @@ export function logWarn(...args: unknown[]): void {
 /**
  * DEBUG level log
  */
-export function logDebug(...args: unknown[]): void {
+function logDebug(...args: unknown[]): void {
   if (args.length === 1) {
     logger.debug(args[0]);
   } else {
@@ -87,7 +87,5 @@ export const safeConsoleError = safeLog(console.error.bind(console));
 /**
  * Safe console.warn wrapper that handles EPIPE errors gracefully.
  */
-export const safeConsoleWarn = safeLog(console.warn.bind(console));
+const safeConsoleWarn = safeLog(console.warn.bind(console));
 
-// Export logger for direct use
-export { logger };

@@ -1,34 +1,34 @@
 /**
- * リクエストログ関連の型定義
+ * Request log type definitions
  */
 
 import { CursorPaginationOptions, CursorPaginationResult } from "./pagination";
 
 /**
- * リクエストログエントリのインターフェース
+ * Request log entry interface
  */
 export interface RequestLogEntry {
-  id: string; // 一意のID
-  timestamp: number; // UNIX タイムスタンプ
-  clientId: string; // クライアント識別子
-  clientName: string; // クライアント名
-  serverId: string; // サーバ識別子
-  serverName: string; // サーバ名
-  requestType: string; // リクエストタイプ（CallTool, ReadResource など）
-  requestParams: any; // リクエストパラメータ
-  responseStatus: "success" | "error"; // レスポンスステータス
-  responseData?: any; // レスポンスデータ
-  duration: number; // 処理時間（ms）
-  errorMessage?: string; // エラーメッセージ（あれば）
+  id: string; // Unique ID
+  timestamp: number; // UNIX timestamp
+  clientId: string; // Client identifier
+  clientName: string; // Client name
+  serverId: string; // Server identifier
+  serverName: string; // Server name
+  requestType: string; // Request type (CallTool, ReadResource, etc.)
+  requestParams: any; // Request parameters
+  responseStatus: "success" | "error"; // Response status
+  responseData?: any; // Response data
+  duration: number; // Processing time (ms)
+  errorMessage?: string; // Error message (if any)
 }
 
 /**
- * リクエストログ新規作成時の入力インターフェース（idとtimestampは自動生成）
+ * Input interface for creating a new request log entry (id and timestamp are auto-generated)
  */
 export type RequestLogEntryInput = Omit<RequestLogEntry, "id" | "timestamp">;
 
 /**
- * リクエストログクエリのフィルターオプション
+ * Filter options for request log queries
  */
 export interface RequestLogFilters {
   clientId?: string;
@@ -40,20 +40,20 @@ export interface RequestLogFilters {
 }
 
 /**
- * リクエストログクエリのオプション
+ * Options for request log queries
  */
 export interface RequestLogQueryOptions
   extends RequestLogFilters, CursorPaginationOptions {}
 
 /**
- * リクエストログクエリの結果
+ * Result of request log queries
  */
 export interface RequestLogQueryResult extends CursorPaginationResult<RequestLogEntry> {
-  logs: RequestLogEntry[]; // 互換性のため残す
+  logs: RequestLogEntry[]; // Kept for backward compatibility
 }
 
 /**
- * MCP Manager用のシンプルなリクエストログエントリ
+ * Simplified request log entry for MCP Manager
  */
 export interface McpManagerRequestLogEntry {
   timestamp: string;
@@ -67,7 +67,7 @@ export interface McpManagerRequestLogEntry {
 }
 
 /**
- * MCP Aggregatorサーバーの定数
+ * MCP Aggregator server constants
  */
 export const AGGREGATOR_SERVER_ID = "mcp-router-aggregator";
 export const AGGREGATOR_SERVER_NAME = "MCP Router Aggregator";

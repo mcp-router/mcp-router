@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { MCPServer } from "@mcp_router/shared";
 
-// MCPServerConfig Zodスキーマ
+// MCPServerConfig Zod schema
 export const mcpServerConfigSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -39,25 +39,25 @@ export const mcpServerConfigSchema = z.object({
   toolPermissions: z.record(z.string(), z.boolean()).optional(),
 });
 
-// CreateServerInput Zodスキーマ
+// CreateServerInput Zod schema
 export const createServerSchema = z.object({
   type: z.enum(["config", "dxt"]),
   config: mcpServerConfigSchema.optional(),
   dxtFile: z.instanceof(Uint8Array).optional(),
 });
 
-// UpdateServerInput Zodスキーマ
+// UpdateServerInput Zod schema
 export const updateServerSchema = z.object({
   id: z.string(),
   config: mcpServerConfigSchema.partial(),
 });
 
-// 削除用スキーマ
+// Delete schema
 export const deleteServerSchema = z.object({
   id: z.string(),
 });
 
-// 型定義
+// Type definitions
 export interface ServerStatus {
   type: "stopped" | "starting" | "running" | "stopping" | "error";
   error?: string;
@@ -69,11 +69,11 @@ export interface ServerStatus {
   };
 }
 
-// Serverインターフェースを削除し、MCPServerを直接使用
+// Removed Server interface, using MCPServer directly
 export type CreateServerInput = z.infer<typeof createServerSchema>;
 export type UpdateServerInput = z.infer<typeof updateServerSchema>;
 
-// tRPC Router型定義
+// tRPC Router type definition
 export type ServersRouter = {
   list: {
     query: () => Promise<MCPServer[]>;

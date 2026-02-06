@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 priority: p1
 issue_id: "016"
 tags: [code-review, security, bug, ipc]

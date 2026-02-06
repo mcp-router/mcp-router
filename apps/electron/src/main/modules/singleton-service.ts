@@ -1,45 +1,45 @@
 import { logError } from "@/main/utils/logger";
 
 /**
- * シングルトンサービスの基底クラス
+ * Base class for singleton services.
  *
- * このクラスを継承することで、以下の機能を提供します：
- * 1. シングルトンパターンの実装
- * 2. ワークスペース切り替え時のインスタンスリセット
- * 3. 動的なリポジトリ取得（ワークスペース切り替えに対応）
- * 4. エラーハンドリング共通処理
+ * Inheriting from this class provides the following features:
+ * 1. Singleton pattern implementation
+ * 2. Instance reset on workspace switch
+ * 3. Dynamic repository retrieval (supports workspace switching)
+ * 4. Common error handling
  *
- * @template T - サービスが扱うエンティティの型
- * @template K - エンティティのIDの型（デフォルトはstring）
- * @template S - サービスクラス自身の型
+ * @template T - Entity type managed by the service
+ * @template K - Entity ID type (defaults to string)
+ * @template S - The service class type itself
  */
 export abstract class SingletonService<_T, _K = string, _S = any> {
   /**
-   * シングルトンインスタンスを格納するMapオブジェクト
-   * キー: サービスクラスのコンストラクタ
-   * 値: サービスのインスタンス
+   * Map storing singleton instances.
+   * Key: Service class constructor
+   * Value: Service instance
    */
   private static instances: Map<Function, any> = new Map();
 
   /**
-   * コンストラクタ
-   * 注意: シングルトンパターンを維持するため、直接インスタンス化せず、
-   * getInstance()メソッドを使用してください
+   * Constructor.
+   * Note: To maintain the singleton pattern, use getInstance() instead of
+   * direct instantiation.
    */
   public constructor() {}
 
   /**
-   * エンティティ名を取得する抽象メソッド（エラーメッセージなどに使用）
-   * 各サブクラスで実装が必要
+   * Abstract method to get entity name (used for error messages, etc.).
+   * Must be implemented by each subclass.
    */
   protected abstract getEntityName(): string;
 
   /**
-   * エラーハンドリング共通処理
-   * @param operation - 処理名
-   * @param error - エラーオブジェクト
-   * @param defaultValue - エラー時に返す値（指定なしの場合は例外が投げられる）
-   * @returns デフォルト値または例外をスロー
+   * Common error handling.
+   * @param operation - Operation name
+   * @param error - Error object
+   * @param defaultValue - Value to return on error (throws if not specified)
+   * @returns Default value or throws
    */
   protected handleError(
     operation: string,
@@ -47,7 +47,7 @@ export abstract class SingletonService<_T, _K = string, _S = any> {
     defaultValue?: any,
   ): any {
     const entityName = this.getEntityName();
-    const message = `${entityName}の${operation}中にエラーが発生しました`;
+    const message = `Error during ${operation} of ${entityName}`;
     logError(message, error);
 
     if (arguments.length > 2) {
@@ -58,9 +58,9 @@ export abstract class SingletonService<_T, _K = string, _S = any> {
   }
 
   /**
-   * シングルトンインスタンスを取得する
-   * @param ServiceClass - サービスクラスのコンストラクタ
-   * @returns サービスのインスタンス
+   * Get the singleton instance.
+   * @param ServiceClass - Service class constructor
+   * @returns Service instance
    */
   protected static getInstanceBase<T extends SingletonService<any, any, any>>(
     this: new () => T,
@@ -72,9 +72,9 @@ export abstract class SingletonService<_T, _K = string, _S = any> {
   }
 
   /**
-   * 特定のサービスのインスタンスをリセットする
-   * ワークスペース切り替え時に使用される
-   * @param ServiceClass - リセットするサービスクラスのコンストラクタ
+   * Reset a specific service instance.
+   * Used when switching workspaces.
+   * @param ServiceClass - Constructor of the service class to reset
    */
   protected static resetInstanceBase<T extends Function>(
     ServiceClass: T,
@@ -83,8 +83,8 @@ export abstract class SingletonService<_T, _K = string, _S = any> {
   }
 
   /**
-   * すべてのサービスインスタンスをリセットする
-   * アプリケーション終了時やテスト時に使用
+   * Reset all service instances.
+   * Used on application exit or during tests.
    */
   public static resetAllInstances(): void {
     SingletonService.instances.clear();

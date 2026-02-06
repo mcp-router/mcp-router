@@ -6,11 +6,7 @@
  */
 
 // Re-export types for consumers that import from this module
-export type {
-  SkillsSearchOptions,
-  RegistrySkill,
-  SkillsRegistryResponse,
-} from "./marketplace.types";
+export type { SkillsSearchOptions } from "./marketplace.types";
 
 import type {
   SkillsSearchOptions,

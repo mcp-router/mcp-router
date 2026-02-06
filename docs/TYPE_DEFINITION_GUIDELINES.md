@@ -42,20 +42,30 @@ Types should NOT be defined in:
 
 ```
 packages/shared/src/types/
-├── domains/          # Domain entities
-│   ├── mcp.ts       # MCP server, tool, resource types
-│   ├── auth.service.ts      # Authentication types
-│   └── workspace.ts # Workspace types
-├── api/             # API-related types
-│   ├── requests.ts  # API request types
-│   ├── responses.ts # API response types
-│   └── errors.ts    # API error types
-├── ui/              # UI component patterns
-│   ├── props.ts     # Common prop interfaces
-│   └── state.ts     # Common state patterns
-├── store/           # Store state types
-│   └── ipc.ts     # Store state interfaces
-└── ipc.ts         # Main export file
+├── index.ts                # Main export file
+├── auth.ts                 # Authentication types
+├── workspace.ts            # Workspace types
+├── mcp-types.ts            # MCP server, tool, resource types
+├── mcp-app-types.ts        # MCP app types
+├── skill-types.ts          # Skills types
+├── client-app-types.ts     # Client app types
+├── workflow-types.ts        # Workflow and hook types
+├── settings-types.ts       # Settings types
+├── token-types.ts          # Token and access control types
+├── log-types.ts            # Log types
+├── project-types.ts        # Project types
+├── tool-catalog-types.ts   # Tool catalog and search types
+├── activity-types.ts       # Activity types
+├── elicitation-types.ts    # Elicitation types
+├── cloud-sync.ts           # Cloud sync types
+├── shared-config.ts        # Shared config types
+├── user-types.ts           # User types
+├── pagination.ts           # Pagination types
+├── utils.ts                # Utility types
+├── cli.ts                  # CLI types
+├── database/               # Database-specific types
+├── platform-api/           # Platform API interfaces
+└── ui/                     # UI component patterns
 ```
 
 ## Type Definition Rules

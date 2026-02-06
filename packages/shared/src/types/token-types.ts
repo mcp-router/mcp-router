@@ -1,9 +1,9 @@
 /**
- * トークン関連の型定義
+ * Token-related type definitions
  */
 
 /**
- * サーバーアクセス権限のマップ
+ * Map of server access permissions
  */
 export type TokenServerAccess = Record<string, boolean>;
 
@@ -19,32 +19,32 @@ export interface TokenResourceIndicator {
 }
 
 /**
- * トークンのインターフェース
+ * Token interface
  */
 export interface Token {
-  id: string; // トークンの一意のID
-  clientId: string; // 関連付けられたクライアントID
-  issuedAt: number; // トークン発行時のUNIXタイムスタンプ
-  serverAccess: TokenServerAccess; // サーバーごとのアクセス権（true=許可、false=拒否）
-  expiresAt?: number; // トークンの有効期限（UNIXタイムスタンプ）
+  id: string; // Unique token ID
+  clientId: string; // Associated client ID
+  issuedAt: number; // UNIX timestamp when the token was issued
+  serverAccess: TokenServerAccess; // Per-server access permissions (true=allow, false=deny)
+  expiresAt?: number; // Token expiration (UNIX timestamp)
   /** RFC 8707 resource indicators - restricts token to specific resources */
   resourceIndicators?: TokenResourceIndicator[];
 }
 
 /**
- * トークン生成時のオプション
+ * Options for token generation
  */
 export interface TokenGenerateOptions {
-  clientId: string; // クライアントID
-  serverAccess: TokenServerAccess; // アクセスを許可するサーバIDマップ
-  expiresIn?: number; // トークンの有効期間（秒）、デフォルトは24時間
+  clientId: string; // Client ID
+  serverAccess: TokenServerAccess; // Map of server IDs to grant access to
+  expiresIn?: number; // Token validity period in seconds, default is 24 hours
 }
 
 /**
- * トークン検証の結果
+ * Token validation result
  */
 export interface TokenValidationResult {
-  isValid: boolean; // トークンが存在するかどうか
-  clientId?: string; // 有効な場合のクライアントID
-  error?: string; // エラーメッセージ（存在しない場合）
+  isValid: boolean; // Whether the token exists
+  clientId?: string; // Client ID if valid
+  error?: string; // Error message if not found
 }

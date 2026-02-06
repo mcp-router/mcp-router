@@ -56,7 +56,7 @@ import {
 import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
 import ServerDetailsAdvancedSheet from "@/renderer/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
 import { useServerEditingStore } from "@/renderer/stores";
-import ProjectSettingsModal from "@/renderer/components/mcp/server/ProjectSettingsModal";
+import { ProjectSettingsModal } from "@/renderer/components/mcp/server/ProjectSettingsModal";
 
 const STATUS_VISUALS = {
   running: {

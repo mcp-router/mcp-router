@@ -6,7 +6,6 @@ import type { PlatformAPI } from "@mcp_router/shared";
 import type {
   AuthAPI,
   ServerAPI,
-  AppAPI,
   PackageAPI,
   SettingsAPI,
   CloudSyncAPI,
@@ -34,7 +33,6 @@ import type {
 class ElectronPlatformAPI implements PlatformAPI {
   auth: AuthAPI;
   servers: ServerAPI;
-  apps: AppAPI;
   packages: PackageAPI;
   settings: SettingsAPI;
   cloudSync: CloudSyncAPI;
@@ -92,29 +90,6 @@ class ElectronPlatformAPI implements PlatformAPI {
         return server?.status || { type: "stopped" };
       },
       selectFile: (options) => window.electronAPI.serverSelectFile(options),
-    };
-
-    // Initialize apps domain (with token management)
-    this.apps = {
-      list: () => window.electronAPI.listMcpApps(),
-      create: (appName) => window.electronAPI.addMcpAppConfig(appName),
-      delete: (appName) => window.electronAPI.deleteMcpApp(appName),
-      updateServerAccess: (appName, serverAccess) =>
-        window.electronAPI.updateAppServerAccess(appName, serverAccess),
-      unifyConfig: (appName) => window.electronAPI.unifyAppConfig(appName),
-
-      // Token management
-      tokens: {
-        generate: async () => {
-          throw new Error("Token generation not available in Electron");
-        },
-        revoke: async () => {
-          throw new Error("Token revocation not available in Electron");
-        },
-        list: async () => {
-          throw new Error("Token listing not available in Electron");
-        },
-      },
     };
 
     // Initialize packages domain (with system utilities)

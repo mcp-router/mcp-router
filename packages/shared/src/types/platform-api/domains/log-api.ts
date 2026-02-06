@@ -12,7 +12,7 @@ import type { RequestLogEntry } from "../../log-types";
 export type LogEntry = RequestLogEntry;
 
 /**
- * Platform API用のログフィルター
+ * Log filters for Platform API
  */
 interface LogFilters {
   clientId?: string;
@@ -24,15 +24,15 @@ interface LogFilters {
 }
 
 /**
- * Platform API用のログクエリオプション
+ * Log query options for Platform API
  */
 export interface LogQueryOptions extends LogFilters, CursorPaginationOptions {}
 
 /**
- * Platform API用のログクエリ結果
+ * Log query result for Platform API
  */
 export interface LogQueryResult extends CursorPaginationResult<LogEntry> {
-  logs: LogEntry[]; // 互換性のため残す
+  logs: LogEntry[]; // Kept for backward compatibility
 }
 
 export interface LogAPI {

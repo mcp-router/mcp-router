@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { RequestLogEntry } from "@mcp_router/shared";
 
-// LogQueryOptions Zodスキーマ
+// LogQueryOptions Zod schema
 export const logQueryOptionsSchema = z.object({
   clientId: z.string().optional(),
   serverId: z.string().optional(),
@@ -15,7 +15,7 @@ export const logQueryOptionsSchema = z.object({
 
 export type LogQueryOptions = z.infer<typeof logQueryOptionsSchema>;
 
-// tRPC Router型定義
+// tRPC Router type definition
 export type LogsRouter = {
   list: {
     query: (input?: LogQueryOptions) => Promise<{

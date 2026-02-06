@@ -7,13 +7,13 @@ import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * サーバ情報用リポジトリクラス
- * BetterSQLite3を使用してサーバ情報を管理
+ * Repository class for server information.
+ * Manages server data using BetterSQLite3.
  */
 export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   private static instance: McpServerManagerRepository | null = null;
   /**
-   * テーブル作成SQL
+   * Table creation SQL
    */
   private static readonly CREATE_TABLE_SQL = `
     CREATE TABLE IF NOT EXISTS servers (
@@ -44,7 +44,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   `;
 
   /**
-   * インデックス作成SQL
+   * Index creation SQL
    */
   private static readonly INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_servers_name ON servers(name)",
@@ -52,8 +52,8 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   ];
 
   /**
-   * コンストラクタ
-   * @param db SqliteManagerインスタンス
+   * Constructor
+   * @param db SqliteManager instance
    */
   private constructor(db: SqliteManager) {
     super(db, "servers");
@@ -64,7 +64,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   }
 
   /**
-   * シングルトンインスタンスを取得
+   * Get the singleton instance
    */
   public static getInstance(): McpServerManagerRepository {
     const db = getSqliteManager();
@@ -78,7 +78,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   }
 
   /**
-   * 指定したデータベースでリポジトリを作成
+   * Create a repository for a specific database
    */
   public static createForDatabase(
     db: SqliteManager,
@@ -87,36 +87,36 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   }
 
   /**
-   * インスタンスをリセット
+   * Reset the instance
    */
   public static resetInstance(): void {
     McpServerManagerRepository.instance = null;
   }
 
   /**
-   * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
+   * Initialize the table (implements BaseRepository abstract method)
    */
   protected initializeTable(): void {
     try {
-      // テーブルを作成
+      // Create the table
       this.db.execute(McpServerManagerRepository.CREATE_TABLE_SQL);
 
-      // インデックスを作成
+      // Create indexes
       McpServerManagerRepository.INDEXES.forEach((indexSQL) => {
         this.db.execute(indexSQL);
       });
     } catch (error) {
-      console.error("[ServerRepository] テーブルの初期化中にエラー:", error);
+      console.error("[ServerRepository] Error initializing table:", error);
       throw error;
     }
   }
 
   /**
-   * JSON文字列を安全にパース
-   * @param jsonString JSON文字列
-   * @param errorLabel エラーメッセージ用のラベル
-   * @param defaultValue パース失敗時のデフォルト値
-   * @returns パースされたオブジェクト
+   * Safely parse a JSON string
+   * @param jsonString JSON string
+   * @param errorLabel Label for error messages
+   * @param defaultValue Default value on parse failure
+   * @returns Parsed object
    */
   private safeParseJSON<T>(
     jsonString: string | null,
@@ -128,20 +128,20 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
     try {
       return JSON.parse(jsonString) as T;
     } catch (error) {
-      console.error(`${errorLabel}のJSONパースに失敗しました:`, error);
+      console.error(`Failed to parse JSON for ${errorLabel}:`, error);
       return defaultValue;
     }
   }
 
   /**
-   * DBの行をエンティティに変換（非同期バージョン）
+   * Convert a database row to an entity
    */
   protected mapRowToEntity(row: any): MCPServer {
     try {
-      // データをパース
+      // Parse data fields
       const env = this.safeParseJSON<Record<string, any>>(
         row.env,
-        "環境変数",
+        "env",
         {},
       );
       const requiredParams: string[] = row.required_params
@@ -151,14 +151,14 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
       const bearerToken = row.bearer_token;
       const inputParams = this.safeParseJSON<any>(
         row.input_params,
-        "入力パラメータ",
+        "input_params",
         undefined,
       );
-      const args = this.safeParseJSON<any[]>(row.args, "引数", []);
+      const args = this.safeParseJSON<any[]>(row.args, "args", []);
       const remoteUrl = row.remote_url;
       const toolPermissions = this.safeParseJSON<Record<string, boolean>>(
         row.tool_permissions,
-        "ツール権限",
+        "tool_permissions",
         {},
       );
       const dev = this.safeParseJSON<
@@ -168,9 +168,9 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
             cwd?: string;
           }
         | undefined
-      >(row.dev, "dev設定", undefined);
+      >(row.dev, "dev", undefined);
 
-      // エンティティオブジェクトを構築
+      // Build entity object
       return {
         id: row.id,
         name: row.name,
@@ -195,15 +195,15 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         logs: [],
       };
     } catch (error) {
-      console.error("サーバデータの変換中にエラーが発生しました1:", error);
+      console.error("Error converting server data (mapRowToEntity):", error);
       throw error;
     }
   }
 
   /**
-   * エンティティのデータをJSON文字列に変換
-   * @param entity サーバーエンティティ
-   * @returns JSON文字列化されたデータのオブジェクト
+   * Serialize entity data to JSON strings
+   * @param entity Server entity
+   * @returns Object with JSON-stringified data
    */
   private serializeEntityData(entity: MCPServer) {
     return {
@@ -223,13 +223,13 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   }
 
   /**
-   * エンティティをDBの行に変換
+   * Convert an entity to a database row
    */
   protected mapEntityToRow(entity: MCPServer): Record<string, any> {
     try {
       const now = Date.now();
 
-      // データをシリアライズ
+      // Serialize data
       const {
         bearerToken,
         env,
@@ -241,7 +241,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         dev,
       } = this.serializeEntityData(entity);
 
-      // DB行オブジェクトを構築
+      // Build database row object
       return {
         id: entity.id,
         name: entity.name,
@@ -267,21 +267,21 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         updated_at: now,
       };
     } catch (error) {
-      console.error("サーバデータの変換中にエラーが発生しました2:", error);
+      console.error("Error converting server data (mapEntityToRow):", error);
       throw error;
     }
   }
 
   /**
-   * サーバ情報を追加する
-   * @param serverConfig サーバ設定情報
-   * @returns 追加されたサーバ情報
+   * Add server information
+   * @param serverConfig Server configuration
+   * @returns Added server information
    */
   public addServer(serverConfig: MCPServerConfig): MCPServer {
     try {
       const id = serverConfig.id || uuidv4();
 
-      // MCPServerオブジェクトを作成
+      // Create MCPServer object
       const server: MCPServer = {
         ...serverConfig,
         id,
@@ -290,40 +290,40 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         toolPermissions: serverConfig.toolPermissions || {},
       };
 
-      // リポジトリに追加
+      // Add to repository
       this.add(server);
 
       return server;
     } catch (error) {
-      console.error("サーバの追加中にエラーが発生しました:", error);
+      console.error("Error adding server:", error);
       throw error;
     }
   }
 
   /**
-   * 全てのサーバ情報を取得する
-   * @returns サーバ情報の配列
+   * Get all server information
+   * @returns Array of server information
    */
   public getAllServers(): MCPServer[] {
     try {
       return this.getAll();
     } catch (error) {
-      console.error("サーバ情報の取得中にエラーが発生しました:", error);
+      console.error("Error retrieving server list:", error);
       throw error;
     }
   }
 
   /**
-   * 指定されたIDのサーバ情報を取得する
-   * @param id サーバID
-   * @returns サーバ情報（存在しない場合はundefined）
+   * Get server information by ID
+   * @param id Server ID
+   * @returns Server information (undefined if not found)
    */
   public getServerById(id: string): MCPServer | undefined {
     try {
       return this.getById(id);
     } catch (error) {
       console.error(
-        `ID: ${id} のサーバ情報の取得中にエラーが発生しました:`,
+        `Error retrieving server with ID: ${id}:`,
         error,
       );
       throw error;
@@ -331,14 +331,14 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   }
 
   /**
-   * エンティティをDBの行に変換（更新用、タイムスタンプを指定可能）
+   * Convert an entity to a database row for updates (with custom timestamps)
    */
   private mapEntityToRowForUpdate(
     entity: MCPServer,
     createdAt: number,
   ): Record<string, any> {
     try {
-      // データをシリアライズ
+      // Serialize data
       const {
         bearerToken,
         env,
@@ -350,7 +350,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         dev,
       } = this.serializeEntityData(entity);
 
-      // DB行オブジェクトを構築
+      // Build database row object
       return {
         id: entity.id,
         name: entity.name,
@@ -376,36 +376,36 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         updated_at: Date.now(),
       };
     } catch (error) {
-      console.error("サーバデータの変換中にエラーが発生しました3:", error);
+      console.error("Error converting server data (mapEntityToRowForUpdate):", error);
       throw error;
     }
   }
 
   /**
-   * サーバ情報を更新する
-   * @param id サーバID
-   * @param config 更新するサーバ設定情報
-   * @returns 更新されたサーバ情報（存在しない場合はundefined）
+   * Update server information
+   * @param id Server ID
+   * @param config Server configuration to update
+   * @returns Updated server information (undefined if not found)
    */
   public updateServer(
     id: string,
     config: Partial<MCPServerConfig>,
   ): MCPServer | undefined {
     try {
-      // 既存のサーバ情報を取得
+      // Get existing server information
       const existingServer = this.getById(id);
       if (!existingServer) {
         return undefined;
       }
 
-      // 既存のcreatedAtを取得
+      // Get existing createdAt timestamp
       const createdAtResult = this.db.get<{ created_at: number }>(
         `SELECT created_at FROM ${this.tableName} WHERE id = :id`,
         { id },
       );
       const createdAt = createdAtResult?.created_at || Date.now();
 
-      // 更新するフィールドを設定
+      // Set fields to update
       const updatedServer: MCPServer = {
         ...existingServer,
         ...config,
@@ -418,24 +418,24 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         prompts: existingServer.prompts,
       };
 
-      // 行データを生成（同期）
+      // Generate row data
       const row = this.mapEntityToRowForUpdate(updatedServer, createdAt);
 
-      // SET句を生成
+      // Generate SET clause (do not update ID)
       const setClauses = Object.keys(row)
-        .filter((key) => key !== "id") // IDは更新しない
+        .filter((key) => key !== "id")
         .map((key) => `${key} = :${key}`)
         .join(", ");
 
-      // SQL文を構築
+      // Build SQL statement
       const sql = `UPDATE ${this.tableName} SET ${setClauses} WHERE id = :id`;
 
-      // クエリを実行
+      // Execute query
       this.db.execute(sql, row);
       return updatedServer;
     } catch (error) {
       console.error(
-        `ID: ${id} のサーバ情報の更新中にエラーが発生しました:`,
+        `Error updating server with ID: ${id}:`,
         error,
       );
       throw error;
@@ -443,9 +443,9 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   }
 
   /**
-   * サーバ情報を削除する
-   * @param id サーバID
-   * @returns 削除に成功した場合はtrue、失敗した場合はfalse
+   * Delete server information
+   * @param id Server ID
+   * @returns true if deletion succeeded, false otherwise
    */
   public deleteServer(id: string): boolean {
     try {
@@ -457,13 +457,13 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
       const result = this.delete(id);
 
       if (result) {
-        console.log(`サーバ "${server.name}" が削除されました (ID: ${id})`);
+        console.log(`Server "${server.name}" deleted (ID: ${id})`);
       }
 
       return result;
     } catch (error) {
       console.error(
-        `ID: ${id} のサーバ情報の削除中にエラーが発生しました:`,
+        `Error deleting server with ID: ${id}:`,
         error,
       );
       throw error;

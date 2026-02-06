@@ -8,8 +8,8 @@ import { getHookService } from "./hook.service";
 
 /**
  * WorkflowExecutor
- * Workflowの実行エンジン
- * ノードグラフを解析し、順序立てて実行する
+ * Workflow execution engine.
+ * Parses the node graph and executes nodes in order.
  */
 export class WorkflowExecutor {
   private workflow: WorkflowDefinition;
@@ -20,14 +20,14 @@ export class WorkflowExecutor {
   }
 
   /**
-   * Workflowが有効な構造を持っているか検証
-   * Start -> MCP Call -> End が接続されている必要がある
+   * Validate whether the workflow has a valid structure.
+   * Requires Start -> MCP Call -> End to be connected.
    */
   public static isValidWorkflow(workflow: WorkflowDefinition): boolean {
     const nodes = workflow.nodes;
     const edges = workflow.edges;
 
-    // 必須ノードの存在確認
+    // Check for required nodes
     const startNode = nodes.find((n) => n.type === "start");
     const endNode = nodes.find((n) => n.type === "end");
     const mcpCallNode = nodes.find((n) => n.type === "mcp-call");
@@ -39,14 +39,14 @@ export class WorkflowExecutor {
       return false;
     }
 
-    // パスの存在確認: Start -> MCP Call
+    // Check path existence: Start -> MCP Call
     const pathFromStartToMcp = WorkflowExecutor.hasPath(
       edges,
       startNode.id,
       mcpCallNode.id,
     );
 
-    // パスの存在確認: MCP Call -> End
+    // Check path existence: MCP Call -> End
     const pathFromMcpToEnd = WorkflowExecutor.hasPath(
       edges,
       mcpCallNode.id,
@@ -64,14 +64,14 @@ export class WorkflowExecutor {
   }
 
   /**
-   * グラフ内で fromId から toId へのパスが存在するか確認
+   * Check whether a path exists from fromId to toId in the graph
    */
   private static hasPath(
     edges: WorkflowEdge[],
     fromId: string,
     toId: string,
   ): boolean {
-    // 隣接リストを作成
+    // Build adjacency list
     const adjacencyList: Record<string, string[]> = {};
     edges.forEach((edge) => {
       if (!adjacencyList[edge.source]) {
@@ -80,7 +80,7 @@ export class WorkflowExecutor {
       adjacencyList[edge.source].push(edge.target);
     });
 
-    // BFSでパスを探索
+    // BFS path search
     const visited = new Set<string>();
     const queue = [fromId];
     visited.add(fromId);
@@ -105,25 +105,25 @@ export class WorkflowExecutor {
   }
 
   /**
-   * Workflowを実行
-   * @param context 実行コンテキスト（MCPリクエストの情報など）
+   * Execute the workflow
+   * @param context Execution context (MCP request information, etc.)
    */
   public async execute(context: any): Promise<any> {
     if (!this.workflow.enabled) {
       throw new Error(`Workflow is disabled: ${this.workflow.id}`);
     }
 
-    // ノードの実行順序を決定
+    // Determine node execution order
     const executionOrder = this.determineExecutionOrder();
 
-    // 実行結果を格納
+    // Store execution results
     const results: Record<string, any> = {};
 
-    // MCPリクエストの実行結果
+    // MCP request execution result
     let mcpResult: any = undefined;
 
     try {
-      // 各ノードを順番に実行
+      // Execute each node in order
       for (const nodeId of executionOrder) {
         const node = this.workflow.nodes.find((n) => n.id === nodeId);
         if (!node) continue;
@@ -131,7 +131,7 @@ export class WorkflowExecutor {
         const result = await this.executeNode(node, context, results);
         results[nodeId] = result;
 
-        // mcp-callノードの結果を保存
+        // Save mcp-call node result
         if (node.type === "mcp-call" && result.mcpResponse !== undefined) {
           mcpResult = result.mcpResponse;
         }
@@ -144,7 +144,7 @@ export class WorkflowExecutor {
         executedAt: Date.now(),
         context,
         results,
-        mcpResult, // MCPリクエストの結果を含める
+        mcpResult, // Include MCP request result
       };
     } catch (error) {
       console.error(`Error executing workflow ${this.workflow.id}:`, error);
@@ -162,46 +162,46 @@ export class WorkflowExecutor {
   }
 
   /**
-   * ノードの実行順序を決定
-   * トポロジカルソートを使用してDAGの実行順序を決定
+   * Determine node execution order.
+   * Uses topological sort to determine DAG execution order.
    */
   private determineExecutionOrder(): string[] {
     const nodes = this.workflow.nodes;
     const edges = this.workflow.edges;
 
-    // 隣接リストを作成
+    // Build adjacency list
     const adjacencyList: Record<string, string[]> = {};
     const inDegree: Record<string, number> = {};
 
-    // 初期化
+    // Initialize
     nodes.forEach((node) => {
       adjacencyList[node.id] = [];
       inDegree[node.id] = 0;
     });
 
-    // エッジから隣接リストと入次数を構築
+    // Build adjacency list and in-degree from edges
     edges.forEach((edge) => {
       adjacencyList[edge.source].push(edge.target);
       inDegree[edge.target]++;
     });
 
-    // トポロジカルソート（カーンのアルゴリズム）
+    // Topological sort (Kahn's algorithm)
     const queue: string[] = [];
     const executionOrder: string[] = [];
 
-    // 入次数が0のノード（開始ノード）をキューに追加
+    // Add nodes with in-degree 0 (start nodes) to queue
     Object.keys(inDegree).forEach((nodeId) => {
       if (inDegree[nodeId] === 0) {
         queue.push(nodeId);
       }
     });
 
-    // BFSで処理
+    // Process via BFS
     while (queue.length > 0) {
       const currentNode = queue.shift()!;
       executionOrder.push(currentNode);
 
-      // 隣接ノードの入次数を減らす
+      // Decrement in-degree of adjacent nodes
       adjacencyList[currentNode].forEach((neighbor) => {
         inDegree[neighbor]--;
         if (inDegree[neighbor] === 0) {
@@ -210,7 +210,7 @@ export class WorkflowExecutor {
       });
     }
 
-    // 循環がある場合はエラー
+    // Error if cycle detected
     if (executionOrder.length !== nodes.length) {
       throw new Error("Workflow contains a cycle");
     }
@@ -219,7 +219,7 @@ export class WorkflowExecutor {
   }
 
   /**
-   * 個別のノードを実行
+   * Execute an individual node
    */
   private async executeNode(
     node: WorkflowNode,
@@ -230,19 +230,19 @@ export class WorkflowExecutor {
 
     switch (node.type) {
       case "start":
-        // 開始ノードは何もしない
+        // Start node - no operation
         return { started: true, timestamp: Date.now() };
 
       case "end":
-        // 終了ノードは最終結果を返す
+        // End node - return final results
         return { completed: true, timestamp: Date.now(), previousResults };
 
       case "hook":
-        // Hookノードの実行
+        // Execute hook node
         return await this.executeHookNode(node, context, previousResults);
 
       case "mcp-call":
-        // MCPコールノード - 本来のMCPリクエストを実行
+        // MCP call node - execute the actual MCP request
         return await this.executeMcpCallNode(node, context, previousResults);
 
       default:
@@ -252,7 +252,7 @@ export class WorkflowExecutor {
   }
 
   /**
-   * MCPコールノードを実行
+   * Execute an MCP call node
    */
   private async executeMcpCallNode(
     node: WorkflowNode,
@@ -261,7 +261,7 @@ export class WorkflowExecutor {
   ): Promise<any> {
     console.log(`Executing MCP call node: ${node.id}`);
 
-    // コンテキストからMCPハンドラーを取得
+    // Get MCP handler from context
     const mcpHandler = context.mcpHandler;
 
     if (!mcpHandler || typeof mcpHandler !== "function") {
@@ -274,14 +274,14 @@ export class WorkflowExecutor {
     }
 
     try {
-      // MCPリクエストを実行
+      // Execute MCP request
       console.log(`Executing MCP request: ${context.method}`);
       const mcpResponse = await mcpHandler();
 
       return {
         type: "mcp-call",
         success: true,
-        mcpResponse, // MCPレスポンスを含める
+        mcpResponse, // Include MCP response
         timestamp: Date.now(),
       };
     } catch (error) {
@@ -296,7 +296,7 @@ export class WorkflowExecutor {
   }
 
   /**
-   * Hookノードを実行
+   * Execute a hook node
    */
   private async executeHookNode(
     node: WorkflowNode,
@@ -310,7 +310,7 @@ export class WorkflowExecutor {
       return { skipped: true, reason: "No hook configuration" };
     }
 
-    // Hook実行用のコンテキストを構築
+    // Build context for hook execution
     const hookContext = {
       ...context,
       workflowId: this.workflow.id,
@@ -323,7 +323,7 @@ export class WorkflowExecutor {
     try {
       let scriptToExecute: string | undefined;
 
-      // HookModuleを参照している場合
+      // If referencing a HookModule
       if (hook.hookModuleId) {
         const module = await this.hookService.getHookModuleById(
           hook.hookModuleId,
@@ -338,12 +338,12 @@ export class WorkflowExecutor {
         }
         scriptToExecute = module.script;
       } else if (hook.script) {
-        // インラインスクリプトの場合
+        // Inline script
         scriptToExecute = hook.script;
       }
 
       if (scriptToExecute) {
-        // スクリプトを実行
+        // Execute the script
         const result = await this.hookService.executeHookScript(
           scriptToExecute,
           hookContext,
@@ -362,7 +362,7 @@ export class WorkflowExecutor {
     } catch (error) {
       console.error(`Error executing hook node ${node.id}:`, error);
 
-      // エラーが発生してもWorkflowの実行を継続（設定により変更可能）
+      // Continue workflow execution even on error (configurable)
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),
@@ -372,7 +372,7 @@ export class WorkflowExecutor {
   }
 
   /**
-   * 前処理Hookを実行（将来の拡張用）
+   * Execute pre-processing hooks (for future extension)
    */
   public async executePreHooks(context: any): Promise<any[]> {
     const preHookNodes = this.workflow.nodes.filter(
@@ -389,7 +389,7 @@ export class WorkflowExecutor {
   }
 
   /**
-   * 後処理Hookを実行（将来の拡張用）
+   * Execute post-processing hooks (for future extension)
    */
   public async executePostHooks(context: any, response: any): Promise<any[]> {
     const postHookNodes = this.workflow.nodes.filter(
@@ -407,10 +407,10 @@ export class WorkflowExecutor {
   }
 
   /**
-   * ノードが前処理Hookかどうかを判定（将来の拡張用）
+   * Determine whether a node is a pre-processing hook (for future extension)
    */
   private isPreHook(node: WorkflowNode): boolean {
-    // startノードから直接つながっているか、mcp-callノードの前にあるか
+    // Check if directly connected from start node or before mcp-call node
     const startNode = this.workflow.nodes.find((n) => n.type === "start");
     if (!startNode) return false;
 
@@ -421,10 +421,10 @@ export class WorkflowExecutor {
   }
 
   /**
-   * ノードが後処理Hookかどうかを判定（将来の拡張用）
+   * Determine whether a node is a post-processing hook (for future extension)
    */
   private isPostHook(node: WorkflowNode): boolean {
-    // endノードに直接つながっているか、mcp-callノードの後にあるか
+    // Check if directly connected to end node or after mcp-call node
     const endNode = this.workflow.nodes.find((n) => n.type === "end");
     if (!endNode) return false;
 

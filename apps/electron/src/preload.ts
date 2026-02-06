@@ -84,17 +84,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("cloud-sync:set-passphrase", passphrase),
   syncCloudNow: () => ipcRenderer.invoke("cloud-sync:sync-now"),
 
-  // MCP Apps Management
-  listMcpApps: () => ipcRenderer.invoke("mcp-apps:list"),
-  addMcpAppConfig: (appName: string) =>
-    ipcRenderer.invoke("mcp-apps:add", appName),
-  deleteMcpApp: (appName: string) =>
-    ipcRenderer.invoke("mcp-apps:delete", appName),
-  updateAppServerAccess: (appName: string, serverAccess: TokenServerAccess) =>
-    ipcRenderer.invoke("mcp-apps:update-server-access", appName, serverAccess),
-  unifyAppConfig: (appName: string) =>
-    ipcRenderer.invoke("mcp-apps:unify", appName),
-
   // Command check
   checkCommandExists: (command: string) =>
     ipcRenderer.invoke("system:commandExists", command),

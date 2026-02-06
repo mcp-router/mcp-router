@@ -14,7 +14,7 @@ interface CacheEntry {
   timestamp: number;
 }
 
-export interface GitHubStats {
+interface GitHubStats {
   stars: number;
   forks: number;
   openIssues: number;

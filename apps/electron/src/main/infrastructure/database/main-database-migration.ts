@@ -2,27 +2,27 @@ import { SqliteManager } from "./sqlite-manager";
 import { Migration } from "@mcp_router/shared";
 
 /**
- * データベースマイグレーション管理クラス
- * 全てのマイグレーションを一元管理
+ * Database migration management class.
+ * Centrally manages all migrations.
  */
 export class MainDatabaseMigration {
-  // 登録されたマイグレーションリスト（順序付き）
+  // Registered migration list (ordered)
   private migrations: Migration[] = [];
 
   /**
-   * コンストラクタ - マイグレーションを登録
+   * Constructor - registers migrations
    */
   public constructor(private db: SqliteManager) {
-    // マイグレーションを実行順に登録
+    // Register migrations in execution order
     this.registerMigrations();
   }
 
   /**
-   * 実行すべき全てのマイグレーションを登録
-   * 新しいマイグレーションを追加する場合はここに追加する
+   * Register all migrations to be executed.
+   * Add new migrations here.
    */
   private registerMigrations(): void {
-    // ServerRepository関連のマイグレーション
+    // ServerRepository-related migrations
     this.migrations.push({
       id: "20250601_add_server_type_column",
       description: "Add server_type column to servers table",
@@ -83,14 +83,14 @@ export class MainDatabaseMigration {
       execute: (db) => this.migrateAddToolPermissionsColumn(db),
     });
 
-    // Projects feature (servers.project_id 列とインデックス)
+    // Projects feature (servers.project_id column and index)
     this.migrations.push({
       id: "20251101_projects_bootstrap",
       description: "Ensure servers.project_id column and index",
       execute: (db) => this.migrateProjectsBootstrap(db),
     });
 
-    // トークンテーブルをメインDBに確実に作成
+    // Ensure tokens table exists in main DB
     this.migrations.push({
       id: "20250627_ensure_tokens_table_in_main_db",
       description:
@@ -98,21 +98,21 @@ export class MainDatabaseMigration {
       execute: (db) => this.migrateEnsureTokensTableInMainDb(db),
     });
 
-    // Hooksテーブルを追加
+    // Add hooks table
     this.migrations.push({
       id: "20250805_add_hooks_table",
       description: "Add hooks table for MCP request/response hooks",
       execute: (db) => this.migrateAddHooksTable(db),
     });
 
-    // Projects optimization カラムを追加
+    // Add projects optimization column
     this.migrations.push({
       id: "20260120_add_project_optimization_column",
       description: "Add optimization column to projects table",
       execute: (db) => this.migrateAddProjectOptimizationColumn(db),
     });
 
-    // Agent paths テーブルを追加
+    // Add agent paths table
     this.migrations.push({
       id: "20260124_add_agent_paths_table",
       description: "Add agent_paths table for custom symlink targets",
@@ -144,20 +144,20 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * 全てのマイグレーションを実行
+   * Run all migrations
    */
   public runMigrations(): void {
     const db = this.db;
 
-    // マイグレーション管理テーブルの初期化
+    // Initialize migration management table
     this.initMigrationTable();
 
-    // 実行済みマイグレーションを取得
+    // Get completed migrations
     const completedMigrations = this.getCompletedMigrations();
 
-    // 各マイグレーションを実行（実行済みのものはスキップ）
+    // Execute each migration (skip already completed ones)
     for (const migration of this.migrations) {
-      // 既に実行済みの場合はスキップ
+      // Skip if already executed
       if (completedMigrations.has(migration.id)) {
         continue;
       }
@@ -166,24 +166,24 @@ export class MainDatabaseMigration {
         `Running migration ${migration.id}: ${migration.description}`,
       );
 
-      // マイグレーションを実行（同期的に）
+      // Execute migration (synchronous)
       migration.execute(db);
 
-      // マイグレーションを完了としてマーク
+      // Mark migration as complete
       this.markMigrationComplete(migration.id);
     }
   }
 
   // ==========================================================================
-  // Server Repository関連のマイグレーション
+  // Server Repository related migrations
   // ==========================================================================
 
   /**
-   * server_type列を追加するマイグレーション
+   * Migration to add the server_type column
    */
   private migrateAddServerTypeColumn(db: SqliteManager): void {
     try {
-      // テーブルが存在するか確認
+      // Check if table exists
       const tableExists = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
@@ -194,12 +194,12 @@ export class MainDatabaseMigration {
         return;
       }
 
-      // テーブル情報を取得
+      // Get table info
       const tableInfo = db.all("PRAGMA table_info(servers)");
 
       const columnNames = tableInfo.map((col: any) => col.name);
 
-      // server_type列が存在しない場合は追加
+      // Add server_type column if it does not exist
       if (!columnNames.includes("server_type")) {
         console.log("Adding server_type column to servers");
         db.execute(
@@ -216,11 +216,11 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * remote_url列を追加するマイグレーション
+   * Migration to add the remote_url column
    */
   private migrateAddRemoteUrlColumn(db: SqliteManager): void {
     try {
-      // テーブルが存在するか確認
+      // Check if table exists
       const tableExists = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
@@ -231,12 +231,12 @@ export class MainDatabaseMigration {
         return;
       }
 
-      // テーブル情報を取得
+      // Get table info
       const tableInfo = db.all("PRAGMA table_info(servers)");
 
       const columnNames = tableInfo.map((col: any) => col.name);
 
-      // remote_url列が存在しない場合は追加
+      // Add remote_url column if it does not exist
       if (!columnNames.includes("remote_url")) {
         console.log("Adding remote_url column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN remote_url TEXT");
@@ -251,11 +251,11 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * bearer_token列を追加するマイグレーション
+   * Migration to add the bearer_token column
    */
   private migrateAddBearerTokenColumn(db: SqliteManager): void {
     try {
-      // テーブルが存在するか確認
+      // Check if table exists
       const tableExists = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
@@ -266,12 +266,12 @@ export class MainDatabaseMigration {
         return;
       }
 
-      // テーブル情報を取得
+      // Get table info
       const tableInfo = db.all("PRAGMA table_info(servers)");
 
       const columnNames = tableInfo.map((col: any) => col.name);
 
-      // bearer_token列が存在しない場合は追加
+      // Add bearer_token column if it does not exist
       if (!columnNames.includes("bearer_token")) {
         console.log("Adding bearer_token column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN bearer_token TEXT");
@@ -286,11 +286,11 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * input_params列を追加するマイグレーション
+   * Migration to add the input_params column
    */
   private migrateAddInputParamsColumn(db: SqliteManager): void {
     try {
-      // テーブルが存在するか確認
+      // Check if table exists
       const tableExists = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
@@ -301,12 +301,12 @@ export class MainDatabaseMigration {
         return;
       }
 
-      // テーブル情報を取得
+      // Get table info
       const tableInfo = db.all("PRAGMA table_info(servers)");
 
       const columnNames = tableInfo.map((col: any) => col.name);
 
-      // input_params列が存在しない場合は追加
+      // Add input_params column if it does not exist
       if (!columnNames.includes("input_params")) {
         console.log("Adding input_params column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN input_params TEXT");
@@ -321,11 +321,11 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * description列を追加するマイグレーション
+   * Migration to add the description column
    */
   private migrateAddDescriptionColumn(db: SqliteManager): void {
     try {
-      // テーブルが存在するか確認
+      // Check if table exists
       const tableExists = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
@@ -336,12 +336,12 @@ export class MainDatabaseMigration {
         return;
       }
 
-      // テーブル情報を取得
+      // Get table info
       const tableInfo = db.all("PRAGMA table_info(servers)");
 
       const columnNames = tableInfo.map((col: any) => col.name);
 
-      // description列が存在しない場合は追加
+      // Add description column if it does not exist
       if (!columnNames.includes("description")) {
         console.log("Adding description column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN description TEXT");
@@ -356,11 +356,11 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * version列を追加するマイグレーション
+   * Migration to add the version column
    */
   private migrateAddVersionColumn(db: SqliteManager): void {
     try {
-      // テーブルが存在するか確認
+      // Check if table exists
       const tableExists = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
@@ -371,12 +371,12 @@ export class MainDatabaseMigration {
         return;
       }
 
-      // テーブル情報を取得
+      // Get table info
       const tableInfo = db.all("PRAGMA table_info(servers)");
 
       const columnNames = tableInfo.map((col: any) => col.name);
 
-      // version列が存在しない場合は追加
+      // Add version column if it does not exist
       if (!columnNames.includes("version")) {
         console.log("Adding version column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN version TEXT");
@@ -391,11 +391,11 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * latest_version列を追加するマイグレーション
+   * Migration to add the latest_version column
    */
   private migrateAddLatestVersionColumn(db: SqliteManager): void {
     try {
-      // テーブルが存在するか確認
+      // Check if table exists
       const tableExists = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
@@ -406,12 +406,12 @@ export class MainDatabaseMigration {
         return;
       }
 
-      // テーブル情報を取得
+      // Get table info
       const tableInfo = db.all("PRAGMA table_info(servers)");
 
       const columnNames = tableInfo.map((col: any) => col.name);
 
-      // latest_version列が存在しない場合は追加
+      // Add latest_version column if it does not exist
       if (!columnNames.includes("latest_version")) {
         console.log("Adding latest_version column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN latest_version TEXT");
@@ -426,11 +426,11 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * verification_status列を追加するマイグレーション
+   * Migration to add the verification_status column
    */
   private migrateAddVerificationStatusColumn(db: SqliteManager): void {
     try {
-      // テーブルが存在するか確認
+      // Check if table exists
       const tableExists = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
@@ -441,12 +441,12 @@ export class MainDatabaseMigration {
         return;
       }
 
-      // テーブル情報を取得
+      // Get table info
       const tableInfo = db.all("PRAGMA table_info(servers)");
 
       const columnNames = tableInfo.map((col: any) => col.name);
 
-      // verification_status列が存在しない場合は追加
+      // Add verification_status column if it does not exist
       if (!columnNames.includes("verification_status")) {
         console.log("Adding verification_status column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN verification_status TEXT");
@@ -461,11 +461,11 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * required_params列を追加するマイグレーション
+   * Migration to add the required_params column
    */
   private migrateAddRequiredParamsColumn(db: SqliteManager): void {
     try {
-      // テーブルが存在するか確認
+      // Check if table exists
       const tableExists = db.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
         {},
@@ -476,12 +476,12 @@ export class MainDatabaseMigration {
         return;
       }
 
-      // テーブル情報を取得
+      // Get table info
       const tableInfo = db.all("PRAGMA table_info(servers)");
 
       const columnNames = tableInfo.map((col: any) => col.name);
 
-      // required_params列が存在しない場合は追加
+      // Add required_params column if it does not exist
       if (!columnNames.includes("required_params")) {
         console.log("Adding required_params column to servers");
         db.execute("ALTER TABLE servers ADD COLUMN required_params TEXT");
@@ -496,7 +496,7 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * tool_permissions列を追加するマイグレーション
+   * Migration to add the tool_permissions column
    */
   private migrateAddToolPermissionsColumn(db: SqliteManager): void {
     try {
@@ -527,24 +527,24 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * トークンテーブルをメインDBに確実に作成するマイグレーション
+   * Migration to ensure tokens table exists in main DB
    */
   private migrateEnsureTokensTableInMainDb(_db: SqliteManager): void {
-    // tokensテーブルの作成はTokenRepositoryで行うため、ここでは何もしない
+    // Tokens table creation is delegated to TokenRepository
     console.log("Creation of tokens table is delegated to TokenRepository");
   }
 
   // ==========================================================================
-  // マイグレーション管理ユーティリティ
+  // Migration management utilities
   // ==========================================================================
 
   /**
-   * マイグレーション管理テーブルの初期化
+   * Initialize the migration management table
    */
   private initMigrationTable(): void {
     const db = this.db;
 
-    // マイグレーション管理テーブルの作成
+    // Create migration management table
     db.execute(`
       CREATE TABLE IF NOT EXISTS migrations (
         id TEXT PRIMARY KEY,
@@ -554,25 +554,25 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * 実行済みマイグレーションのリストを取得
+   * Get the list of completed migrations
    */
   private getCompletedMigrations(): Set<string> {
     const db = this.db;
 
-    // 実行済みマイグレーションを取得
+    // Get completed migrations
     const rows = db.all<{ id: string }>("SELECT id FROM migrations");
 
-    // Set に変換して返す
+    // Convert to Set and return
     return new Set(rows.map((row: any) => row.id));
   }
 
   /**
-   * マイグレーションを記録
+   * Record a migration as complete
    */
   private markMigrationComplete(migrationId: string): void {
     const db = this.db;
 
-    // マイグレーションを記録
+    // Record migration
     db.execute(
       "INSERT INTO migrations (id, executed_at) VALUES (:id, :executedAt)",
       {
@@ -583,20 +583,19 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * hooksテーブルを追加するマイグレーション
+   * Migration to add the hooks table
    */
   private migrateAddHooksTable(_db: SqliteManager): void {
-    // HookRepositoryが初めて呼ばれた時に
-    // テーブルが作成されるため、ここでは何もしない
+    // Table is created when HookRepository is first called
     console.log("Creation of hooks table is delegated to HookRepository");
   }
 
   /**
-   * Projects関連のマイグレーション整理:
-   * - servers.project_id 列の追加（存在しなければ）
-   * - servers(project_id) のインデックス作成（存在しなければ）
+   * Projects-related migration:
+   * - Add servers.project_id column (if not exists)
+   * - Create index on servers(project_id) (if not exists)
    *
-   * 注意: projectsテーブルの作成はProjectRepository.initializeTable()に委譲
+   * Note: projects table creation is delegated to ProjectRepository.initializeTable()
    */
   private migrateProjectsBootstrap(db: SqliteManager): void {
     try {
@@ -624,7 +623,7 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * projects.optimization 列を追加するマイグレーション
+   * Migration to add the projects.optimization column
    */
   private migrateAddProjectOptimizationColumn(db: SqliteManager): void {
     try {
@@ -655,12 +654,12 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * agent_pathsテーブルを追加するマイグレーション
-   * 標準エージェント5つを初期データとして挿入
+   * Migration to add the agent_paths table.
+   * Inserts 5 standard agents as initial data.
    */
   private migrateAddAgentPathsTable(db: SqliteManager): void {
     try {
-      // テーブル作成
+      // Create table
       db.execute(`
         CREATE TABLE IF NOT EXISTS agent_paths (
           id TEXT PRIMARY KEY,
@@ -672,7 +671,7 @@ export class MainDatabaseMigration {
       `);
       console.log("agent_paths table created");
 
-      // 標準エージェントの初期データを挿入
+      // Insert default agent data
       const now = Date.now();
       const defaultAgents = [
         { name: "claude-code", path: "~/.claude/skills" },
@@ -704,7 +703,7 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * dev列を追加するマイグレーション（ホットリロード設定用）
+   * Migration to add the dev column (for hot reload configuration)
    */
   private migrateAddDevColumn(db: SqliteManager): void {
     try {
@@ -735,7 +734,7 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * client_appsテーブルを作成し、agent_pathsからデータを移行するマイグレーション
+   * Migration to create the client_apps table and migrate data from agent_paths
    */
   private migrateCreateClientAppsTable(db: SqliteManager): void {
     try {
@@ -819,8 +818,8 @@ export class MainDatabaseMigration {
   }
 
   /**
-   * client_skill_statesテーブルを作成するマイグレーション
-   * スキルとクライアント間の状態を追跡するジャンクションテーブル
+   * Migration to create the client_skill_states table.
+   * Junction table for tracking state between skills and clients.
    */
   private migrateCreateClientSkillStatesTable(db: SqliteManager): void {
     try {

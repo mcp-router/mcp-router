@@ -69,7 +69,7 @@ export interface SkillDetailsModalProps {
 /**
  * Mock data for development until backend is ready
  */
-export const MOCK_MARKETPLACE_SKILLS: MarketplaceSkill[] = [
+const MOCK_MARKETPLACE_SKILLS: MarketplaceSkill[] = [
   {
     id: "skill-1",
     name: "code-review",

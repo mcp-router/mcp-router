@@ -167,7 +167,7 @@ export function resolveGlobPath(
  * @param detectPaths Array of paths to check for the client executable/app
  * @returns true if at least one path exists
  */
-export function checkClientInstalled(detectPaths: string[]): boolean {
+function checkClientInstalled(detectPaths: string[]): boolean {
   for (const detectPath of detectPaths) {
     // Handle glob patterns anywhere in the path
     if (detectPath.includes("*")) {
@@ -196,7 +196,7 @@ export function checkClientInstalled(detectPaths: string[]): boolean {
  * @param configPath Path to the MCP configuration file
  * @returns true if the config file exists
  */
-export function checkMcpConfigExists(configPath: string | undefined): boolean {
+function checkMcpConfigExists(configPath: string | undefined): boolean {
   if (!configPath) {
     return false;
   }
@@ -209,7 +209,7 @@ export function checkMcpConfigExists(configPath: string | undefined): boolean {
  * @param skillsPath Path to the skills directory
  * @returns true if the skills directory exists
  */
-export function checkSkillsPathExists(skillsPath: string | undefined): boolean {
+function checkSkillsPathExists(skillsPath: string | undefined): boolean {
   if (!skillsPath) {
     return false;
   }
@@ -261,7 +261,7 @@ export function detectAllClients(): ClientDetectionResult[] {
  * @param clientId The client identifier
  * @returns Object with detect paths, config path, and skills path
  */
-export function getClientPaths(clientId: string): {
+function getClientPaths(clientId: string): {
   detectPaths: string[];
   mcpConfigPath: string | undefined;
   skillsPath: string | undefined;
@@ -278,7 +278,7 @@ export function getClientPaths(clientId: string): {
  *
  * Provides both static and instance methods for detecting installed clients.
  */
-export class ClientDetector {
+class ClientDetector {
   /**
    * Detect all standard clients' installation status (static)
    */

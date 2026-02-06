@@ -2,7 +2,7 @@ import { SingletonService } from "@/main/modules/singleton-service";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { logInfo } from "@/main/utils/logger";
 import { McpServerManagerRepository } from "./mcp-server-manager.repository";
-import { TokenManager } from "@/main/modules/mcp-apps-manager/token-manager";
+import { TokenManager } from "@/main/modules/client-apps/token-manager";
 
 /**
  * Service class for managing server information
@@ -41,9 +41,9 @@ export class ServerService extends SingletonService<
   }
 
   /**
-   * サーバ情報を追加する
-   * @param serverConfig サーバ設定情報
-   * @returns 追加されたサーバ情報
+   * Add server info
+   * @param serverConfig Server configuration
+   * @returns The added server info
    */
   public addServer(serverConfig: MCPServerConfig): MCPServer {
     try {
@@ -74,40 +74,40 @@ export class ServerService extends SingletonService<
 
       return server;
     } catch (error) {
-      return this.handleError("追加", error);
+      return this.handleError("add", error);
     }
   }
 
   /**
-   * 全てのサーバ情報を取得する
-   * @returns サーバ情報の配列
+   * Get all server info
+   * @returns Array of server info
    */
   public getAllServers(): MCPServer[] {
     try {
       return McpServerManagerRepository.getInstance().getAllServers();
     } catch (error) {
-      return this.handleError("取得", error, []);
+      return this.handleError("retrieval", error, []);
     }
   }
 
   /**
-   * 指定されたIDのサーバ情報を取得する
-   * @param id サーバID
-   * @returns サーバ情報（存在しない場合はundefined）
+   * Get server info by ID
+   * @param id Server ID
+   * @returns Server info (undefined if not found)
    */
   public getServerById(id: string): MCPServer | undefined {
     try {
       return McpServerManagerRepository.getInstance().getServerById(id);
     } catch (error) {
-      return this.handleError(`ID:${id}の取得`, error, undefined);
+      return this.handleError(`retrieval of ID:${id}`, error, undefined);
     }
   }
 
   /**
-   * サーバ情報を更新する
-   * @param id サーバID
-   * @param config 更新するサーバ設定情報
-   * @returns 更新されたサーバ情報（存在しない場合はundefined）
+   * Update server info
+   * @param id Server ID
+   * @param config Server configuration to update
+   * @returns Updated server info (undefined if not found)
    */
   public updateServer(
     id: string,
@@ -120,7 +120,7 @@ export class ServerService extends SingletonService<
       );
       if (result) {
         try {
-          logInfo(`サーバ "${result.name}" が更新されました (ID: ${id})`);
+          logInfo(`Server "${result.name}" updated (ID: ${id})`);
         } catch (logError) {
           // Logger worker may have exited - ignore logging errors
           console.log(`Server "${result.name}" updated (ID: ${id})`);
@@ -128,14 +128,14 @@ export class ServerService extends SingletonService<
       }
       return result;
     } catch (error) {
-      return this.handleError(`ID:${id}の更新`, error, undefined);
+      return this.handleError(`update of ID:${id}`, error, undefined);
     }
   }
 
   /**
-   * サーバ情報を削除する
-   * @param id サーバID
-   * @returns 削除に成功した場合はtrue、失敗した場合はfalse
+   * Delete server info
+   * @param id Server ID
+   * @returns true if deletion succeeded, false otherwise
    */
   public deleteServer(id: string): boolean {
     try {
@@ -144,7 +144,7 @@ export class ServerService extends SingletonService<
 
       if (result && server) {
         try {
-          logInfo(`サーバ "${server.name}" が削除されました (ID: ${id})`);
+          logInfo(`Server "${server.name}" deleted (ID: ${id})`);
         } catch (logError) {
           // Logger worker may have exited - ignore logging errors
           console.log(`Server "${server.name}" deleted (ID: ${id})`);
@@ -153,13 +153,13 @@ export class ServerService extends SingletonService<
 
       return result;
     } catch (error) {
-      return this.handleError(`ID:${id}の削除`, error, false);
+      return this.handleError(`deletion of ID:${id}`, error, false);
     }
   }
 }
 
 /**
- * ServerServiceのシングルトンインスタンスを取得
+ * Get the ServerService singleton instance
  */
 export function getServerService(): ServerService {
   return ServerService.getInstance();

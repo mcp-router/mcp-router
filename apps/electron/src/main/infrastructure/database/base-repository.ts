@@ -2,43 +2,43 @@ import { SqliteManager } from "./sqlite-manager";
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * リポジトリの基本クラス
- * SQLiteデータベースを使用したCRUD操作を提供
- * @template T エンティティの型
+ * Base repository class.
+ * Provides CRUD operations using SQLite database.
+ * @template T Entity type
  */
 export abstract class BaseRepository<T extends { id: string }> {
   protected db: SqliteManager;
   protected tableName: string;
 
   /**
-   * 現在のデータベースインスタンスを取得（外部から比較用）
+   * Get the current database instance (for external comparison)
    */
   public get database(): SqliteManager {
     return this.db;
   }
 
   /**
-   * コンストラクタ
-   * @param db SqliteManagerインスタンス
-   * @param tableName テーブル名
+   * Constructor
+   * @param db SqliteManager instance
+   * @param tableName Table name
    */
   constructor(db: SqliteManager, tableName: string) {
     this.db = db;
     this.tableName = tableName;
 
-    // テーブルの初期化
+    // Initialize table
     this.initializeTable();
   }
 
   /**
-   * テーブルを初期化する抽象メソッド
-   * 各サブクラスで実装が必要
+   * Abstract method to initialize the table.
+   * Must be implemented by each subclass.
    */
   protected abstract initializeTable(): void;
 
   /**
-   * エンティティのリストを取得
-   * @param options 取得オプション
+   * Get a list of entities
+   * @param options Query options
    */
   public getAll(options: any = {}): T[] {
     try {
@@ -55,11 +55,11 @@ export abstract class BaseRepository<T extends { id: string }> {
         return [];
       }
 
-      // SQLクエリを構築
+      // Build SQL query
       let sql = `SELECT * FROM ${this.tableName}`;
       const params: any = {};
 
-      // WHERE句を追加（オプション）
+      // Add WHERE clause (optional)
       if (options.where) {
         const whereClauses = Object.entries(options.where)
           .map(([key]) => `${key} = :${key}`)
@@ -68,14 +68,14 @@ export abstract class BaseRepository<T extends { id: string }> {
         if (whereClauses) {
           sql += ` WHERE ${whereClauses}`;
 
-          // パラメータを設定
+          // Set parameters
           Object.entries(options.where).forEach(([key, value]) => {
             params[key] = value;
           });
         }
       }
 
-      // ORDER BY句を追加（オプション）
+      // Add ORDER BY clause (optional)
       if (options.orderBy) {
         sql += ` ORDER BY ${options.orderBy}`;
 
@@ -84,7 +84,7 @@ export abstract class BaseRepository<T extends { id: string }> {
         }
       }
 
-      // LIMIT句を追加（オプション）
+      // Add LIMIT clause (optional)
       if (options.limit) {
         sql += ` LIMIT :limit`;
         params.limit = options.limit;
@@ -95,20 +95,20 @@ export abstract class BaseRepository<T extends { id: string }> {
         }
       }
 
-      // クエリを実行
+      // Execute query
       const rows = this.db.all<any>(sql, params);
 
-      // エンティティに変換
+      // Convert to entities
       return rows.map((row) => this.mapRowToEntity(row));
     } catch (error) {
-      console.error(`${this.tableName}の取得中にエラーが発生しました:`, error);
+      console.error(`Error retrieving from ${this.tableName}:`, error);
       throw error;
     }
   }
 
   /**
-   * IDでエンティティを取得
-   * @param id エンティティのID
+   * Get an entity by ID
+   * @param id Entity ID
    */
   public getById(id: string): T | undefined {
     try {
@@ -119,11 +119,11 @@ export abstract class BaseRepository<T extends { id: string }> {
         return undefined;
       }
 
-      // エンティティに変換
+      // Convert to entity
       return this.mapRowToEntity(row);
     } catch (error) {
       console.error(
-        `${this.tableName}のID:${id}の取得中にエラーが発生しました:`,
+        `Error retrieving ID:${id} from ${this.tableName}:`,
         error,
       );
       throw error;
@@ -131,9 +131,9 @@ export abstract class BaseRepository<T extends { id: string }> {
   }
 
   /**
-   * 条件に一致する最初のエンティティを取得
-   * @param whereClause WHERE句
-   * @param params パラメータ
+   * Get the first entity matching conditions
+   * @param whereClause WHERE clause
+   * @param params Parameters
    */
   public findOne(whereClause: string, params: any[] = []): T | null {
     try {
@@ -144,17 +144,17 @@ export abstract class BaseRepository<T extends { id: string }> {
         return null;
       }
 
-      // エンティティに変換
+      // Convert to entity
       return this.mapRowToEntity(row);
     } catch (error) {
-      console.error(`${this.tableName}の検索中にエラーが発生しました:`, error);
+      console.error(`Error searching in ${this.tableName}:`, error);
       throw error;
     }
   }
 
   /**
-   * IDでエンティティを取得（findByIdエイリアス）
-   * @param id エンティティのID
+   * Get an entity by ID (findById alias)
+   * @param id Entity ID
    */
   public findById(id: string): T | null {
     const result = this.getById(id);
@@ -162,78 +162,78 @@ export abstract class BaseRepository<T extends { id: string }> {
   }
 
   /**
-   * エンティティを追加
-   * @param data 追加するエンティティ
+   * Add an entity
+   * @param data Entity to add
    */
   public add(data: Omit<T, "id">): T {
     try {
-      // IDが指定されていない場合は生成
+      // Generate ID if not specified
       const entityWithId = {
         ...data,
         id: (data as any).id || uuidv4(),
       } as T;
 
-      // エンティティをデータベース行に変換
+      // Convert entity to database row
       const row = this.mapEntityToRow(entityWithId);
 
-      // カラム名と値のプレースホルダを生成
+      // Generate column names and value placeholders
       const columns = Object.keys(row).join(", ");
       const placeholders = Object.keys(row)
         .map((key) => `:${key}`)
         .join(", ");
 
-      // SQL文を構築
+      // Build SQL statement
       const sql = `INSERT INTO ${this.tableName} (${columns}) VALUES (${placeholders})`;
 
-      // クエリを実行
+      // Execute query
       this.db.execute(sql, row);
 
       return entityWithId;
     } catch (error) {
-      console.error(`${this.tableName}の追加中にエラーが発生しました:`, error);
+      console.error(`Error adding to ${this.tableName}:`, error);
       throw error;
     }
   }
 
   /**
-   * エンティティを更新
-   * @param id 更新対象のID
-   * @param data 更新データ
+   * Update an entity
+   * @param id ID of the entity to update
+   * @param data Update data
    */
   public update(id: string, data: Partial<T>): T | undefined {
     try {
-      // 既存のエンティティを取得
+      // Get existing entity
       const existingEntity = this.getById(id);
       if (!existingEntity) {
         return undefined;
       }
 
-      // 更新されたエンティティを作成
+      // Create updated entity
       const updatedEntity = {
         ...existingEntity,
         ...data,
-        id, // IDは上書きされないようにする
+        id, // Ensure ID is not overwritten
       };
 
-      // エンティティをデータベース行に変換
+      // Convert entity to database row
       const row = this.mapEntityToRow(updatedEntity);
 
-      // SET句を生成
+      // Generate SET clause
       const setClauses = Object.keys(row)
-        .filter((key) => key !== "id") // IDは更新しない
+        .filter((key) => key !== "id") // Don't update ID
         .map((key) => `${key} = :${key}`)
         .join(", ");
 
-      // SQL文を構築
+      // Build SQL statement
       const sql = `UPDATE ${this.tableName} SET ${setClauses} WHERE id = :id`;
 
-      // クエリを実行
+      // Execute query
       this.db.execute(sql, row);
 
       return updatedEntity;
     } catch (error) {
       console.error(
-        `${this.tableName}のID:${id}の更新中にエラーが発生しました:`,
+        `Error updating ID:${id} in ${this.tableName}:`,
         error,
       );
       throw error;
@@ -241,21 +241,21 @@ export abstract class BaseRepository<T extends { id: string }> {
   }
 
   /**
-   * エンティティを削除
-   * @param id 削除対象のID
+   * Delete an entity
+   * @param id ID of the entity to delete
    */
   public delete(id: string): boolean {
     try {
-      // SQL文を構築
+      // Build SQL statement
       const sql = `DELETE FROM ${this.tableName} WHERE id = :id`;
 
-      // クエリを実行
+      // Execute query
       this.db.execute(sql, { id });
 
       return true;
     } catch (error) {
       console.error(
-        `${this.tableName}のID:${id}の削除中にエラーが発生しました:`,
+        `Error deleting ID:${id} from ${this.tableName}:`,
         error,
       );
       return false;
@@ -263,16 +263,16 @@ export abstract class BaseRepository<T extends { id: string }> {
   }
 
   /**
-   * カウントを取得
-   * @param whereClause WHERE句（オプション）
+   * Get count
+   * @param whereClause WHERE clause (optional)
    */
   public count(whereClause?: { [key: string]: any }): number {
     try {
-      // SQLクエリを構築
+      // Build SQL query
       let sql = `SELECT COUNT(*) as count FROM ${this.tableName}`;
       const params: any = {};
 
-      // WHERE句を追加（オプション）
+      // Add WHERE clause (optional)
       if (whereClause) {
         const conditions = Object.entries(whereClause)
           .map(([key, _value]) => `${key} = :${key}`)
@@ -281,20 +281,20 @@ export abstract class BaseRepository<T extends { id: string }> {
         if (conditions) {
           sql += ` WHERE ${conditions}`;
 
-          // パラメータを設定
+          // Set parameters
           Object.entries(whereClause).forEach(([key, value]) => {
             params[key] = value;
           });
         }
       }
 
-      // クエリを実行
+      // Execute query
       const result = this.db.get<{ count: number }>(sql, params);
 
       return result?.count || 0;
     } catch (error) {
       console.error(
-        `${this.tableName}のカウント取得中にエラーが発生しました:`,
+        `Error getting count from ${this.tableName}:`,
         error,
       );
       throw error;
@@ -302,24 +302,24 @@ export abstract class BaseRepository<T extends { id: string }> {
   }
 
   /**
-   * トランザクションを実行
-   * @param callback トランザクション内で実行する関数
+   * Execute a transaction
+   * @param callback Function to execute within the transaction
    */
   public transaction<R>(callback: () => R): R {
     return this.db.transaction(callback);
   }
 
   /**
-   * データベース行をエンティティに変換する抽象メソッド
-   * 各サブクラスで実装が必要
-   * @param row データベース行
+   * Abstract method to convert a database row to an entity.
+   * Must be implemented by each subclass.
+   * @param row Database row
    */
   protected abstract mapRowToEntity(row: any): T;
 
   /**
-   * エンティティをデータベース行に変換する抽象メソッド
-   * 各サブクラスで実装が必要
-   * @param entity エンティティ
+   * Abstract method to convert an entity to a database row.
+   * Must be implemented by each subclass.
+   * @param entity Entity
    */
   protected abstract mapEntityToRow(entity: T): Record<string, any>;
 }

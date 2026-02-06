@@ -432,4 +432,3 @@ export const ProjectSettingsModal: React.FC<Props> = ({
   );
 };
 
-export default ProjectSettingsModal;

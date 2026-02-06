@@ -64,11 +64,11 @@ export class McpLoggerService extends SingletonService<
   }
 
   //--------------------------------------------------------------------------------
-  // リクエストログ関連メソッド
+  // Request log methods
   //--------------------------------------------------------------------------------
 
   /**
-   * リクエストログを追加
+   * Add a request log
    */
   public async addRequestLog(
     entry: RequestLogEntryInput,
@@ -76,7 +76,7 @@ export class McpLoggerService extends SingletonService<
     try {
       return await McpLoggerRepository.getInstance().addRequestLog(entry);
     } catch (error) {
-      return this.handleError("追加", error);
+      return this.handleError("add", error);
     }
   }
 
@@ -96,12 +96,12 @@ export class McpLoggerService extends SingletonService<
     if (clientServerName) {
       serverName = clientServerName;
 
-      // サーバ名からIDへの変換を試みる
+      // Try to convert server name to ID
       const serverIdFromName = this.getServerIdByName(clientServerName);
       if (serverIdFromName) {
         serverId = serverIdFromName;
       } else {
-        serverId = clientServerName; // IDが見つからない場合は名前をそのまま使用
+        serverId = clientServerName; // Use name as-is if ID not found
       }
     }
 
@@ -136,7 +136,7 @@ export class McpLoggerService extends SingletonService<
   }
 
   /**
-   * リクエストログを取得（カーソルベースページネーション、フィルタリング対応）
+   * Get request logs (cursor-based pagination with filtering)
    */
   public async getRequestLogs(
     options: RequestLogQueryOptions = {},
@@ -144,7 +144,7 @@ export class McpLoggerService extends SingletonService<
     try {
       return await McpLoggerRepository.getInstance().getRequestLogs(options);
     } catch (error) {
-      return this.handleError("取得", error, {
+      return this.handleError("retrieval", error, {
         logs: [],
         total: 0,
         hasMore: false,
@@ -154,11 +154,11 @@ export class McpLoggerService extends SingletonService<
 }
 
 /**
- * LogServiceのシングルトンインスタンスを取得
+ * Get the singleton instance of LogService
  */
 export function getLogService(): McpLoggerService {
   return McpLoggerService.getInstance();
 }
 
-// アプリケーション起動時にインスタンスを初期化
+// Initialize instance at application startup
 export const logService = McpLoggerService.getInstance();

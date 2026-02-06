@@ -8,7 +8,7 @@ import { ClientStatusIcon } from "./ClientStatusIcon";
 /**
  * Props for UnifiedSkillCard component
  */
-export interface UnifiedSkillCardProps {
+interface UnifiedSkillCardProps {
   /** The unified skill data to display */
   skill: UnifiedSkill;
   /** Callback when the card is clicked */
@@ -204,5 +204,3 @@ export const UnifiedSkillCard: React.FC<UnifiedSkillCardProps> = ({
     </Card>
   );
 };
-
-export default UnifiedSkillCard;

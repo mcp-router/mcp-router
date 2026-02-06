@@ -293,7 +293,7 @@ export const createServerStore = (
   }));
 
 // Utility selector creators
-export const createServerSelectors = <
+const createServerSelectors = <
   T extends ReturnType<typeof createServerStore>,
 >(
   useStore: T,

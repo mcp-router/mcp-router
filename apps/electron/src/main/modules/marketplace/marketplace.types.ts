@@ -62,7 +62,7 @@ export interface SkillsSearchOptions {
 /**
  * Raw skill data from skills.sh API
  */
-export interface RegistrySkillApiResponse {
+interface RegistrySkillApiResponse {
   /** Unique identifier */
   id: string;
   /** Skill ID (kebab-case) */

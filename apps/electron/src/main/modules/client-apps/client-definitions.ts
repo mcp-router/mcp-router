@@ -757,19 +757,6 @@ export function getClientById(
 }
 
 /**
- * Get a client definition by name (case-insensitive)
- */
-export function getClientByName(
-  name: string,
-): StandardClientDefinition | undefined {
-  const normalized = name.toLowerCase();
-  return STANDARD_CLIENTS.find(
-    (client) =>
-      client.id === normalized || client.name.toLowerCase() === normalized,
-  );
-}
-
-/**
  * Get the MCP config path for a client on the current platform
  */
 export function getClientMcpConfigPath(clientId: string): string | undefined {
@@ -802,25 +789,3 @@ export function getClientDetectPaths(clientId: string): string[] {
   return client.detectPaths[platform] || [];
 }
 
-/**
- * Get all client IDs
- */
-export function getStandardClientIds(): string[] {
-  return STANDARD_CLIENTS.map((client) => client.id);
-}
-
-/**
- * Get all clients that have MCP config support
- */
-export function getClientsWithMcpConfig(): StandardClientDefinition[] {
-  const platform = process.platform as "darwin" | "win32" | "linux";
-  return STANDARD_CLIENTS.filter((client) => client.mcpConfigPath[platform]);
-}
-
-/**
- * Get all clients that have skills support
- */
-export function getClientsWithSkills(): StandardClientDefinition[] {
-  const platform = process.platform as "darwin" | "win32" | "linux";
-  return STANDARD_CLIENTS.filter((client) => client.skillsPath[platform]);
-}

@@ -69,7 +69,7 @@ export default function WorkflowManager() {
     }
   }, [activeTab, loadModules, platformAPI]);
 
-  // URLパラメータからワークフローIDを取得して選択
+  // Get workflow ID from URL params and select it
   useEffect(() => {
     if (workflowId && workflows.length > 0) {
       const workflow = workflows.find((w) => w.id === workflowId);
@@ -96,14 +96,14 @@ export default function WorkflowManager() {
     }
   };
 
-  // ワークフローの妥当性チェック関数
+  // Workflow validity check function
   const checkWorkflowValidity = (
     workflow: WorkflowDefinition,
   ): { isValid: boolean; reason?: string } => {
     const nodes = workflow.nodes;
     const edges = workflow.edges;
 
-    // 必須ノードの存在確認
+    // Check for required nodes
     const startNode = nodes.find((n) => n.type === "start");
     const endNode = nodes.find((n) => n.type === "end");
     const mcpCallNode = nodes.find((n) => n.type === "mcp-call");
@@ -118,7 +118,7 @@ export default function WorkflowManager() {
       return { isValid: false, reason: "End node is missing" };
     }
 
-    // パスの存在確認用ヘルパー関数
+    // Helper function to check path existence
     const hasPath = (from: string, to: string): boolean => {
       const visited = new Set<string>();
       const queue = [from];
@@ -137,12 +137,12 @@ export default function WorkflowManager() {
       return false;
     };
 
-    // Start -> MCP Call のパス確認
+    // Check path from Start to MCP Call
     if (!hasPath(startNode.id, mcpCallNode.id)) {
       return { isValid: false, reason: "No path from Start to MCP Call" };
     }
 
-    // MCP Call -> End のパス確認
+    // Check path from MCP Call to End
     if (!hasPath(mcpCallNode.id, endNode.id)) {
       return { isValid: false, reason: "No path from MCP Call to End" };
     }
@@ -161,7 +161,7 @@ export default function WorkflowManager() {
       await loadWorkflows();
       setIsEditing(false);
       setSelectedWorkflow(null);
-      navigate("/workflows"); // URLをワークフロー一覧に戻す
+      navigate("/workflows"); // Navigate back to workflow list
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to save workflow";
@@ -195,7 +195,7 @@ export default function WorkflowManager() {
       if (workflowId) {
         await platformAPI.workflows.workflows.setActive(workflowId);
       } else {
-        // 指定されたタイプの全てのワークフローを無効化
+        // Disable all workflows of the specified type
         const activeWorkflow = workflows.find(
           (w) => w.workflowType === workflowType && w.enabled,
         );
@@ -203,7 +203,7 @@ export default function WorkflowManager() {
           await platformAPI.workflows.workflows.disable(activeWorkflow.id);
         }
       }
-      // ローカルのstateを直接更新して再レンダリングを最小限にする
+      // Update local state directly to minimize re-renders
       workflows.forEach((w) => {
         if (w.workflowType === workflowType) {
           updateWorkflow(w.id, { enabled: w.id === workflowId });
@@ -212,10 +212,10 @@ export default function WorkflowManager() {
     } catch (error: any) {
       console.error("Failed to set active workflow:", error);
 
-      // エラーメッセージを表示
+      // Display error message
       const errorMessage = error?.message || "Failed to set active workflow";
 
-      // ユーザーにエラーを通知（簡易的なアラート）
+      // Notify user of error (simple alert)
       if (errorMessage.includes("not valid")) {
         alert(
           `⚠️ Workflow validation failed:\n\n${errorMessage}\n\n` +
@@ -225,7 +225,7 @@ export default function WorkflowManager() {
         alert(`Error: ${errorMessage}`);
       }
 
-      // エラー時は元の状態を再取得
+      // Re-fetch original state on error
       await loadWorkflows();
     }
   };
@@ -248,13 +248,13 @@ export default function WorkflowManager() {
   const handleCreateWorkflow = () => {
     setSelectedWorkflow(null);
     setIsEditing(true);
-    navigate("/workflows/new"); // 新規作成時のURL
+    navigate("/workflows/new"); // URL for new workflow creation
   };
 
   const handleEditWorkflow = (workflow: WorkflowDefinition) => {
     setSelectedWorkflow(workflow);
     setIsEditing(true);
-    navigate(`/workflows/${workflow.id}`); // ワークフローIDをURLに反映
+    navigate(`/workflows/${workflow.id}`); // Reflect workflow ID in URL
   };
 
   if (isEditing) {
@@ -562,7 +562,7 @@ export default function WorkflowManager() {
             </div>
           )}
 
-          {/* Module List - 編集中は表示しない */}
+          {/* Module List - hide while editing */}
           {!isCreatingModule &&
             !editingModule &&
             (modules.length === 0 ? (

@@ -3,26 +3,26 @@ import { WorkflowDefinition } from "@mcp_router/shared";
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * Workflowリポジトリクラス
- * WorkflowDefinitionの永続化を管理
+ * Workflow repository class.
+ * Manages persistence of WorkflowDefinitions.
  */
 export class WorkflowRepository {
   private static instance: WorkflowRepository | null = null;
 
   /**
-   * コンストラクタ
+   * Constructor
    */
   private constructor() {
     this.initializeTable();
   }
 
   /**
-   * テーブルを初期化
+   * Initialize the table
    */
   private initializeTable(): void {
     const db = getSqliteManager();
     try {
-      // workflowsテーブルを作成
+      // Create workflows table
       db.execute(`
         CREATE TABLE IF NOT EXISTS workflows (
           id TEXT PRIMARY KEY,
@@ -37,7 +37,7 @@ export class WorkflowRepository {
         )
       `);
 
-      // インデックスを作成
+      // Create indexes
       db.execute(
         "CREATE INDEX IF NOT EXISTS idx_workflows_enabled ON workflows(enabled)",
       );
@@ -45,15 +45,15 @@ export class WorkflowRepository {
         "CREATE INDEX IF NOT EXISTS idx_workflows_type ON workflows(workflow_type)",
       );
 
-      console.log("[WorkflowRepository] テーブルの初期化が完了しました");
+      console.log("[WorkflowRepository] Table initialization completed");
     } catch (error) {
-      console.error("[WorkflowRepository] テーブルの初期化中にエラー:", error);
+      console.error("[WorkflowRepository] Error initializing table:", error);
       throw error;
     }
   }
 
   /**
-   * シングルトンインスタンスの取得
+   * Get the singleton instance
    */
   public static getInstance(): WorkflowRepository {
     if (!WorkflowRepository.instance) {
@@ -63,19 +63,19 @@ export class WorkflowRepository {
   }
 
   /**
-   * テスト用にインスタンスをリセット
+   * Reset the instance (for testing)
    */
   public static resetInstance(): void {
     WorkflowRepository.instance = null;
   }
 
   /**
-   * 全てのワークフローを取得
+   * Get all workflows
    */
   public getAllWorkflows(): WorkflowDefinition[] {
     const db = getSqliteManager();
     const rows = db.all(`
-      SELECT id, name, description, workflow_type, nodes, edges, 
+      SELECT id, name, description, workflow_type, nodes, edges,
              enabled, created_at, updated_at
       FROM workflows
       ORDER BY updated_at DESC
@@ -95,12 +95,12 @@ export class WorkflowRepository {
   }
 
   /**
-   * 有効なワークフローのみを取得
+   * Get only enabled workflows
    */
   public getEnabledWorkflows(): WorkflowDefinition[] {
     const db = getSqliteManager();
     const rows = db.all(`
-      SELECT id, name, description, workflow_type, nodes, edges, 
+      SELECT id, name, description, workflow_type, nodes, edges,
              enabled, created_at, updated_at
       FROM workflows
       WHERE enabled = 1
@@ -121,13 +121,13 @@ export class WorkflowRepository {
   }
 
   /**
-   * IDでワークフローを取得
+   * Get a workflow by ID
    */
   public getWorkflowById(id: string): WorkflowDefinition | null {
     const db = getSqliteManager();
     const row = db.get(
       `
-      SELECT id, name, description, workflow_type, nodes, edges, 
+      SELECT id, name, description, workflow_type, nodes, edges,
              enabled, created_at, updated_at
       FROM workflows
       WHERE id = :id
@@ -153,13 +153,13 @@ export class WorkflowRepository {
   }
 
   /**
-   * ワークフロータイプで取得
+   * Get workflows by type
    */
   public getWorkflowsByType(workflowType: string): WorkflowDefinition[] {
     const db = getSqliteManager();
     const rows = db.all(
       `
-      SELECT id, name, description, workflow_type, nodes, edges, 
+      SELECT id, name, description, workflow_type, nodes, edges,
              enabled, created_at, updated_at
       FROM workflows
       WHERE workflow_type = :workflowType
@@ -182,7 +182,7 @@ export class WorkflowRepository {
   }
 
   /**
-   * ワークフローを作成
+   * Create a workflow
    */
   public createWorkflow(
     workflow: Omit<WorkflowDefinition, "id" | "createdAt" | "updatedAt">,
@@ -201,7 +201,7 @@ export class WorkflowRepository {
     db.execute(
       `
       INSERT INTO workflows (
-        id, name, description, workflow_type, nodes, edges, 
+        id, name, description, workflow_type, nodes, edges,
         enabled, created_at, updated_at
       ) VALUES (
         :id, :name, :description, :workflowType, :nodes, :edges,
@@ -225,7 +225,7 @@ export class WorkflowRepository {
   }
 
   /**
-   * ワークフローを更新
+   * Update a workflow
    */
   public updateWorkflow(
     id: string,
@@ -273,7 +273,7 @@ export class WorkflowRepository {
   }
 
   /**
-   * 指定したワークフローを有効化し、同じタイプの他のワークフローを無効化
+   * Enable the specified workflow and disable other workflows of the same type
    */
   public setActiveWorkflow(id: string): boolean {
     const workflow = this.getWorkflowById(id);
@@ -283,7 +283,7 @@ export class WorkflowRepository {
 
     const db = getSqliteManager();
 
-    // 同じworkflowTypeの他の有効なワークフローを無効化
+    // Disable other enabled workflows of the same type
     db.execute(
       `
       UPDATE workflows
@@ -300,7 +300,7 @@ export class WorkflowRepository {
       },
     );
 
-    // 指定したワークフローを有効化
+    // Enable the specified workflow
     db.execute(
       `
       UPDATE workflows
@@ -318,7 +318,7 @@ export class WorkflowRepository {
   }
 
   /**
-   * 指定したワークフローを無効化
+   * Disable a workflow
    */
   public disableWorkflow(id: string): boolean {
     const workflow = this.getWorkflowById(id);
@@ -345,7 +345,7 @@ export class WorkflowRepository {
   }
 
   /**
-   * ワークフローを削除
+   * Delete a workflow
    */
   public deleteWorkflow(id: string): boolean {
     const db = getSqliteManager();
@@ -361,7 +361,7 @@ export class WorkflowRepository {
   }
 
   /**
-   * 全てのワークフローを削除（テスト用）
+   * Delete all workflows (for testing)
    */
   public deleteAllWorkflows(): void {
     const db = getSqliteManager();
@@ -370,7 +370,7 @@ export class WorkflowRepository {
 }
 
 /**
- * WorkflowRepositoryのシングルトンインスタンスを取得
+ * Get the singleton instance of WorkflowRepository
  */
 export function getWorkflowRepository(): WorkflowRepository {
   return WorkflowRepository.getInstance();

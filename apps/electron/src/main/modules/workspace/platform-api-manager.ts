@@ -11,10 +11,9 @@ import { getSharedConfigManager } from "../../infrastructure/shared-config-manag
 import { McpLoggerRepository } from "../mcp-logger/mcp-logger.repository";
 import { McpServerManagerRepository } from "../mcp-server-manager/mcp-server-manager.repository";
 import { SettingsRepository } from "../settings/settings.repository";
-import { McpAppsManagerRepository } from "../mcp-apps-manager/mcp-apps-manager.repository";
+import { TokenManagerRepository } from "../client-apps/token-manager.repository";
 import { WorkspaceRepository } from "./workspace.repository";
 import { ServerService } from "@/main/modules/mcp-server-manager/server-service";
-import { McpAppsManagerService } from "../mcp-apps-manager/mcp-apps-manager.service";
 import { McpLoggerService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import { SettingsService } from "../settings/settings.service";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
@@ -29,8 +28,8 @@ import { AgentPathRepository } from "../skills/agent-path.repository";
 import { UnifiedSkillsService } from "../skills/unified-skills.service";
 
 /**
- * Platform API管理クラス
- * ワークスペースに応じてPlatform APIの実装を切り替える
+ * Platform API management class.
+ * Switches Platform API implementation based on the active workspace.
  */
 export class PlatformAPIManager {
   private static instance: PlatformAPIManager | null = null;
@@ -47,28 +46,28 @@ export class PlatformAPIManager {
   }
 
   private constructor() {
-    // ワークスペース切り替えイベントをリッスン
+    // Listen for workspace switch events
     getWorkspaceService().onWorkspaceSwitched((workspace: Workspace) => {
       this.handleWorkspaceSwitch(workspace);
     });
   }
 
   /**
-   * メインウィンドウを設定
+   * Set the main window
    */
   setMainWindow(window: BrowserWindow): void {
     this.mainWindow = window;
   }
 
   /**
-   * MCPServerManager プロバイダを設定
+   * Set the MCPServerManager provider
    */
   setServerManagerProvider(provider: () => MCPServerManager): void {
     this.getServerManager = provider;
   }
 
   /**
-   * 初期化
+   * Initialize
    */
   async initialize(): Promise<void> {
     // Configure database provider to avoid circular dependencies
@@ -87,30 +86,30 @@ export class PlatformAPIManager {
       return await workspaceService.getWorkspaceDatabase(activeWorkspace.id);
     });
 
-    // アクティブなワークスペースを取得
+    // Get the active workspace
     const activeWorkspace = await getWorkspaceService().getActiveWorkspace();
     if (activeWorkspace) {
       this.currentWorkspace = activeWorkspace;
       await this.configureForWorkspace(activeWorkspace);
     } else {
-      // デフォルトワークスペースがない場合は作成
+      // Create a default workspace if none exists
       await getWorkspaceService().switchWorkspace("local-default");
     }
   }
 
   /**
-   * ワークスペースに応じた設定を適用
+   * Apply configuration for a given workspace
    */
   private async configureForWorkspace(workspace: Workspace): Promise<void> {
-    // 現在のデータベースをクローズ
+    // Close the current database
     if (this.currentDatabase) {
       this.currentDatabase.close();
       this.currentDatabase = null;
-      // グローバルなワークスペースデータベース参照をクリア
+      // Clear the global workspace database reference
       setWorkspaceDatabase(null);
     }
 
-    // 新しいデータベースを取得して設定
+    // Get and set the new database
     const newDatabase = await getWorkspaceService().getWorkspaceDatabase(
       workspace.id,
     );
@@ -118,18 +117,18 @@ export class PlatformAPIManager {
 
     getDatabaseContext().setCurrentDatabase(newDatabase);
 
-    // グローバルなワークスペースデータベース参照を設定
+    // Set the global workspace database reference
     setWorkspaceDatabase(newDatabase);
 
-    // マイグレーションを実行（全ワークスペースで実行）
+    // Run migrations (executed for all workspaces)
     const migration = new MainDatabaseMigration(newDatabase);
     migration.runMigrations();
 
-    // リポジトリをリセット（新しいデータベースを使用するように）
+    // Reset repositories (to use the new database)
     McpLoggerRepository.resetInstance();
     McpServerManagerRepository.resetInstance();
     SettingsRepository.resetInstance();
-    McpAppsManagerRepository.resetInstance();
+    TokenManagerRepository.resetInstance();
     WorkspaceRepository.resetInstance();
     WorkflowRepository.resetInstance();
     HookRepository.resetInstance();
@@ -137,9 +136,8 @@ export class PlatformAPIManager {
     ClientSkillStateRepository.resetInstance();
     AgentPathRepository.resetInstance();
 
-    // サービスのシングルトンインスタンスもリセット
+    // Also reset service singleton instances
     ServerService.resetInstance();
-    McpAppsManagerService.resetInstance();
     McpLoggerService.resetInstance();
     SettingsService.resetInstance();
     WorkflowService.resetInstance();
@@ -147,20 +145,20 @@ export class PlatformAPIManager {
     SkillService.resetInstance();
     UnifiedSkillsService.resetInstance();
 
-    // MCPServerManagerの再初期化をトリガー
+    // Trigger MCPServerManager re-initialization
     if (this.getServerManager) {
       const serverManager = this.getServerManager();
       if (
         serverManager &&
         typeof serverManager.initializeAsync === "function"
       ) {
-        // サーバーリストを再読み込み
+        // Reload the server list
         await serverManager.initializeAsync();
       }
     }
 
-    // 新しいワークスペースのサーバーIDを取得してトークンを同期
-    // リポジトリ経由で取得し、テーブル初期化を確実化する
+    // Get server IDs for the new workspace and sync tokens
+    // Retrieve via repository to ensure table initialization
     let serverList: string[] = [];
     try {
       const serverRepo = McpServerManagerRepository.getInstance();
@@ -176,42 +174,42 @@ export class PlatformAPIManager {
   }
 
   /**
-   * ワークスペース切り替えハンドラー
+   * Workspace switch handler
    */
   private async handleWorkspaceSwitch(workspace: Workspace): Promise<void> {
-    // 先に現在のワークスペースのサーバーを停止
+    // First stop the servers in the current workspace
     if (this.getServerManager) {
       const serverManager = this.getServerManager();
-      // 現在のワークスペースでサーバーを停止（ログは現在のDBに記録される）
+      // Stop servers in the current workspace (logs are written to the current DB)
       serverManager.clearAllServers();
     }
 
-    // その後、新しいワークスペースに切り替え
+    // Then switch to the new workspace
     this.currentWorkspace = workspace;
     await this.configureForWorkspace(workspace);
 
-    // レンダラープロセスに通知
+    // Notify the renderer process
     if (this.mainWindow) {
       this.mainWindow.webContents.send("workspace:switched", workspace);
     }
   }
 
   /**
-   * 現在のワークスペースを取得
+   * Get the current workspace
    */
   getCurrentWorkspace(): Workspace | null {
     return this.currentWorkspace;
   }
 
   /**
-   * 現在のワークスペースがリモートかどうか
+   * Check whether the current workspace is remote
    */
   isRemoteWorkspace(): boolean {
     return this.currentWorkspace?.type === "remote";
   }
 
   /**
-   * リモートAPIのベースURLを取得
+   * Get the remote API base URL
    */
   getRemoteApiUrl(): string | null {
     if (
@@ -224,14 +222,14 @@ export class PlatformAPIManager {
   }
 
   /**
-   * 現在のワークスペースのデータベースを取得
+   * Get the database for the current workspace
    */
   getCurrentDatabase(): SqliteManager | null {
     return this.currentDatabase;
   }
 
   /**
-   * ワークスペースを切り替え（外部から呼び出し可能）
+   * Switch workspace (callable externally)
    */
   async switchWorkspace(workspaceId: string): Promise<void> {
     await getWorkspaceService().switchWorkspace(workspaceId);
@@ -239,7 +237,7 @@ export class PlatformAPIManager {
 }
 
 /**
- * PlatformAPIManagerのシングルトンインスタンスを取得
+ * Get the PlatformAPIManager singleton instance
  */
 export function getPlatformAPIManager(): PlatformAPIManager {
   return PlatformAPIManager.getInstance();

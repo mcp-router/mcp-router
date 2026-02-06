@@ -44,7 +44,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         error:
           error instanceof Error
             ? error.message
-            : "ワークスペースの読み込みに失敗しました",
+            : "Failed to load workspaces",
         isLoading: false,
       });
     }
@@ -71,7 +71,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         error:
           error instanceof Error
             ? error.message
-            : "ワークスペースの作成に失敗しました",
+            : "Failed to create workspace",
         isLoading: false,
       });
       throw error;
@@ -90,7 +90,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       );
       set({ workspaces, isLoading: false });
 
-      // 現在のワークスペースが更新された場合
+      // If the current workspace was updated
       if (get().currentWorkspace?.id === id) {
         set({ currentWorkspace: updatedWorkspace });
       }
@@ -99,7 +99,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         error:
           error instanceof Error
             ? error.message
-            : "ワークスペースの更新に失敗しました",
+            : "Failed to update workspace",
         isLoading: false,
       });
       throw error;
@@ -117,7 +117,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         error:
           error instanceof Error
             ? error.message
-            : "ワークスペースの削除に失敗しました",
+            : "Failed to delete workspace",
         isLoading: false,
       });
       throw error;
@@ -193,7 +193,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         error:
           error instanceof Error
             ? error.message
-            : "ワークスペースの切り替えに失敗しました",
+            : "Failed to switch workspace",
         isLoading: false,
       });
       throw error;
@@ -257,7 +257,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   },
 }));
 
-// ワークスペース切り替えイベントのリスナー設定
+// Set up listener for workspace switch events
 if (typeof window !== "undefined" && window.electronAPI) {
   window.electronAPI.onWorkspaceSwitched((workspace: Workspace) => {
     useWorkspaceStore.getState().setCurrentWorkspace(workspace);

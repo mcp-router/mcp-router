@@ -32,7 +32,7 @@ let unifiedSkillsService: UnifiedSkillsService | null = null;
  * Get or create the UnifiedSkillsService instance
  * TODO: Replace with actual service implementation when Task #30 is complete
  */
-export function getUnifiedSkillsService(): UnifiedSkillsService {
+function getUnifiedSkillsService(): UnifiedSkillsService {
   if (!unifiedSkillsService) {
     throw new Error(
       "UnifiedSkillsService not initialized. Service implementation pending (Task #30).",

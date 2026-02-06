@@ -1,5 +1,7 @@
 # Connection Health Detection & Auto-Reconnect Implementation Plan
 
+> **STATUS: COMPLETED**
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Enable MCP Router to detect lost connections (SSE/HTTP) and automatically reconnect, updating UI status accordingly.

@@ -3,8 +3,8 @@ import { getHookRepository, HookRepository } from "./hook.repository";
 import vm from "vm";
 
 /**
- * Hook Moduleドメインサービス
- * Hook Moduleのビジネスロジックとバックエンドサービスを提供
+ * Hook Module domain service.
+ * Provides business logic and backend services for Hook Modules.
  */
 export class HookService {
   private static instance: HookService | null = null;
@@ -15,7 +15,7 @@ export class HookService {
   }
 
   /**
-   * シングルトンインスタンスの取得
+   * Get the singleton instance
    */
   public static getInstance(): HookService {
     if (!HookService.instance) {
@@ -25,43 +25,43 @@ export class HookService {
   }
 
   /**
-   * テスト用にインスタンスをリセット
+   * Reset the instance (for testing)
    */
   public static resetInstance(): void {
     HookService.instance = null;
   }
 
   /**
-   * 全てのHook Moduleを取得
+   * Get all Hook Modules
    */
   public async getAllHookModules(): Promise<HookModule[]> {
     return this.repository.getAllHookModules();
   }
 
   /**
-   * IDでHook Moduleを取得
+   * Get a Hook Module by ID
    */
   public async getHookModuleById(id: string): Promise<HookModule | null> {
     return this.repository.getHookModuleById(id);
   }
 
   /**
-   * 名前でHook Moduleを取得
+   * Get a Hook Module by name
    */
   public async getHookModuleByName(name: string): Promise<HookModule | null> {
     return this.repository.getHookModuleByName(name);
   }
 
   /**
-   * Hook Moduleを作成
+   * Create a Hook Module
    */
   public async createHookModule(
     module: Omit<HookModule, "id">,
   ): Promise<HookModule> {
-    // バリデーション
+    // Validate
     this.validateHookModule(module);
 
-    // スクリプトの構文チェック
+    // Syntax check the script
     const validation = await this.validateHookScript(module.script);
     if (!validation.valid) {
       throw new Error(`Invalid hook script: ${validation.error}`);
@@ -71,13 +71,13 @@ export class HookService {
   }
 
   /**
-   * Hook Moduleを更新
+   * Update a Hook Module
    */
   public async updateHookModule(
     id: string,
     updates: Partial<Omit<HookModule, "id">>,
   ): Promise<HookModule | null> {
-    // スクリプトが更新される場合はバリデーション
+    // Validate script if being updated
     if (updates.script) {
       const validation = await this.validateHookScript(updates.script);
       if (!validation.valid) {
@@ -85,7 +85,7 @@ export class HookService {
       }
     }
 
-    // 名前が更新される場合は重複チェック
+    // Check for duplicate name if name is being updated
     if (updates.name) {
       const existing = await this.getHookModuleByName(updates.name);
       if (existing && existing.id !== id) {
@@ -99,15 +99,15 @@ export class HookService {
   }
 
   /**
-   * Hook Moduleを削除
+   * Delete a Hook Module
    */
   public async deleteHookModule(id: string): Promise<boolean> {
-    // WorkflowでこのHookModuleが使用されているかチェック
+    // Check if this HookModule is used in any Workflow
     const { WorkflowService } = await import("./workflow.service");
     const workflowService = WorkflowService.getInstance();
     const workflows = await workflowService.getAllWorkflows();
 
-    // 使用しているWorkflowを検索
+    // Find workflows using this module
     const usingWorkflows: string[] = [];
     for (const workflow of workflows) {
       for (const node of workflow.nodes) {
@@ -120,7 +120,7 @@ export class HookService {
       }
     }
 
-    // 使用されている場合はエラーを投げる
+    // Throw error if in use
     if (usingWorkflows.length > 0) {
       throw new Error(
         `Cannot delete hook module. It is used by workflow(s): ${usingWorkflows.join(", ")}`,
@@ -131,15 +131,15 @@ export class HookService {
   }
 
   /**
-   * Hook Moduleをインポート（名前の重複を回避）
+   * Import a Hook Module (avoiding name duplicates)
    */
   public async importHookModule(
     module: Omit<HookModule, "id">,
   ): Promise<HookModule> {
-    // バリデーション
+    // Validate
     this.validateHookModule(module);
 
-    // スクリプトの構文チェック
+    // Syntax check the script
     const validation = await this.validateHookScript(module.script);
     if (!validation.valid) {
       throw new Error(`Invalid hook script: ${validation.error}`);
@@ -149,7 +149,7 @@ export class HookService {
   }
 
   /**
-   * Hook Moduleを実行（テスト用）
+   * Execute a Hook Module (for testing)
    */
   public async executeHookModule(id: string, context: any): Promise<any> {
     const module = await this.getHookModuleById(id);
@@ -161,11 +161,11 @@ export class HookService {
   }
 
   /**
-   * Hook スクリプトを実行
+   * Execute a hook script
    */
   public async executeHookScript(script: string, context: any): Promise<any> {
     try {
-      // サンドボックス環境を作成
+      // Create sandbox environment
       const sandbox = {
         context,
         console: {
@@ -173,7 +173,7 @@ export class HookService {
           error: (...args: any[]) => console.error(`[Hook]`, ...args),
           warn: (...args: any[]) => console.warn(`[Hook]`, ...args),
         },
-        // 必要に応じて他のグローバルオブジェクトを追加
+        // Add other global objects as needed
         JSON,
         Object,
         Array,
@@ -185,18 +185,18 @@ export class HookService {
         Promise,
       };
 
-      // スクリプトをラップして戻り値を取得
+      // Wrap script to capture return value
       const wrappedScript = `
         (async function() {
           ${script}
         })()
       `;
 
-      // VMコンテキストでスクリプトを実行
+      // Execute script in VM context
       const vmScript = new vm.Script(wrappedScript);
       const vmContext = vm.createContext(sandbox);
 
-      // タイムアウトを設定（5秒）
+      // Set timeout (5 seconds)
       const result = await vmScript.runInContext(vmContext, {
         timeout: 5000,
         displayErrors: true,
@@ -210,13 +210,13 @@ export class HookService {
   }
 
   /**
-   * Hook スクリプトのバリデーション
+   * Validate a hook script
    */
   public async validateHookScript(
     script: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      // 構文チェックのみ（実行はしない）
+      // Syntax check only (no execution)
       new vm.Script(script);
       return { valid: true };
     } catch (error: any) {
@@ -228,7 +228,7 @@ export class HookService {
   }
 
   /**
-   * Hook Moduleのバリデーション
+   * Validate a Hook Module
    */
   private validateHookModule(module: any): void {
     if (!module.name || module.name.trim().length === 0) {
@@ -239,12 +239,12 @@ export class HookService {
       throw new Error("Hook module script is required");
     }
 
-    // 名前の長さ制限
+    // Name length limit
     if (module.name.length > 100) {
       throw new Error("Hook module name is too long (max 100 characters)");
     }
 
-    // スクリプトのサイズ制限（1MB）
+    // Script size limit (1MB)
     if (module.script.length > 1024 * 1024) {
       throw new Error("Hook module script is too large (max 1MB)");
     }
@@ -252,7 +252,7 @@ export class HookService {
 }
 
 /**
- * HookServiceのシングルトンインスタンスを取得
+ * Get the singleton instance of HookService
  */
 export function getHookService(): HookService {
   return HookService.getInstance();

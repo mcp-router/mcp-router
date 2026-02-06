@@ -8,7 +8,7 @@ import { Workspace } from "@mcp_router/shared";
 export class WorkspaceRepository extends BaseRepository<Workspace> {
   private static instance: WorkspaceRepository | null = null;
   /**
-   * テーブル作成SQL
+   * Table creation SQL
    */
   private static readonly CREATE_TABLE_SQL = `
     CREATE TABLE IF NOT EXISTS workspaces (
@@ -25,7 +25,7 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
   `;
 
   /**
-   * インデックス作成SQL
+   * Index creation SQL
    */
   private static readonly INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_workspaces_active ON workspaces(isActive)",
@@ -42,7 +42,7 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
   }
 
   /**
-   * シングルトンインスタンスを取得
+   * Get singleton instance
    */
   public static getInstance(): WorkspaceRepository {
     const db = getSqliteManager();
@@ -56,34 +56,34 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
   }
 
   /**
-   * インスタンスをリセット
+   * Reset instance
    */
   public static resetInstance(): void {
     WorkspaceRepository.instance = null;
   }
 
   /**
-   * テーブルを初期化（BaseRepositoryの抽象メソッドを実装）
+   * Initialize table (implements BaseRepository abstract method)
    */
   protected initializeTable(): void {
     try {
-      // テーブルを作成
+      // Create table
       this.db.execute(WorkspaceRepository.CREATE_TABLE_SQL);
 
-      // インデックスを作成
+      // Create indexes
       WorkspaceRepository.INDEXES.forEach((indexSQL) => {
         this.db.execute(indexSQL);
       });
 
-      console.log("[WorkspaceRepository] テーブルの初期化が完了しました");
+      console.log("[WorkspaceRepository] Table initialization completed");
     } catch (error) {
-      console.error("[WorkspaceRepository] テーブルの初期化中にエラー:", error);
+      console.error("[WorkspaceRepository] Error during table initialization:", error);
       throw error;
     }
   }
 
   /**
-   * データベースから取得したレコードをWorkspaceオブジェクトに変換
+   * Convert a database row to a Workspace entity
    */
   protected mapRowToEntity(row: any): Workspace {
     return {
@@ -100,7 +100,7 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
   }
 
   /**
-   * Workspaceオブジェクトをデータベース保存用に変換
+   * Convert a Workspace entity to a database row for storage
    */
   protected mapEntityToRow(workspace: Workspace): any {
     return {
@@ -123,20 +123,20 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
   }
 
   /**
-   * アクティブワークスペースを取得
+   * Get the active workspace
    */
   getActiveWorkspace(): Workspace | null {
     return this.findOne("isActive = ?", [1]);
   }
 
   /**
-   * ワークスペースを切り替え
+   * Switch the active workspace
    */
   setActiveWorkspace(workspaceId: string): void {
     this.db.transaction(() => {
-      // 全てのワークスペースを非アクティブに
+      // Deactivate all workspaces
       this.db.execute("UPDATE workspaces SET isActive = 0");
-      // 指定されたワークスペースをアクティブに
+      // Activate the specified workspace
       this.db.execute(
         "UPDATE workspaces SET isActive = 1, lastUsedAt = :lastUsedAt WHERE id = :id",
         {
@@ -148,12 +148,12 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
   }
 
   /**
-   * 暗号化された認証情報を更新
+   * Update encrypted credentials
    */
   updateCredentials(workspaceId: string, encryptedToken: Buffer): void {
     const workspace = this.findById(workspaceId);
     if (!workspace) {
-      throw new Error("ワークスペースが見つかりません");
+      throw new Error("Workspace not found");
     }
 
     const remoteConfig: any = workspace.remoteConfig || {};
@@ -169,7 +169,7 @@ export class WorkspaceRepository extends BaseRepository<Workspace> {
   }
 
   /**
-   * 暗号化された認証情報を取得
+   * Get encrypted credentials
    */
   getCredentials(workspaceId: string): string | null {
     const workspace = this.findById(workspaceId);

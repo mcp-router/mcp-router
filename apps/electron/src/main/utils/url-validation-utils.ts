@@ -27,7 +27,7 @@ export interface URLValidationResult {
 /**
  * Validate a URL for safety (prevents SSRF)
  */
-export function validateExternalUrl(url: string): URLValidationResult {
+function validateExternalUrl(url: string): URLValidationResult {
   try {
     const parsed = new URL(url);
 

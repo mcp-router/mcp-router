@@ -256,7 +256,7 @@ export class MCPAggregator {
         },
         undefined,
         {
-          timeout: 60 * 60 * 1000, // 60分
+          timeout: 60 * 60 * 1000, // 60 minutes
           resetTimeoutOnProgress: true,
         },
       );

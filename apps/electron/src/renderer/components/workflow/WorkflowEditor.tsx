@@ -262,17 +262,17 @@ export default function WorkflowEditor({
   const onNodeClick = useCallback(
     (_event: React.MouseEvent, node: Node) => {
       setSelectedNode(node as WorkflowNode);
-      // ノードのラベルを設定
+      // Set node label
       const label = node.data?.label;
       setNodeLabel(typeof label === "string" ? label : "");
-      // Hookノードの場合、hookオブジェクトから設定を読み込む
+      // For Hook nodes, load settings from the hook object
       if (node.type === "hook") {
         const hook = node.data?.hook as WorkflowHook | undefined;
         if (hook && typeof hook === "object") {
           if (hook.hookModuleId) {
-            // HookModuleを参照している場合
+            // Referencing a HookModule
             setSelectedModuleId(hook.hookModuleId);
-            // モジュールからスクリプトを取得
+            // Get script from module
             platformAPI.workflows.hooks
               .get(hook.hookModuleId)
               .then((module) => {
@@ -281,7 +281,7 @@ export default function WorkflowEditor({
                 }
               });
           } else if (hook.script) {
-            // Inline Scriptの場合
+            // Inline Script case
             setSelectedModuleId("custom");
             setNodeScript(hook.script);
           } else {
@@ -423,7 +423,7 @@ export default function WorkflowEditor({
 
       {selectedNode && selectedNode.type === "hook" && (
         <div className="p-6 border-t bg-background/80 backdrop-blur-xl rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] border-primary/5 z-20">
-          {/* ヘッダーとボタン */}
+          {/* Header and buttons */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-4 flex-1">
               <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -442,7 +442,7 @@ export default function WorkflowEditor({
                 variant="ghost"
                 className="rounded-full px-6"
                 onClick={() => {
-                  // 元の値に戻す
+                  // Revert to original values
                   if (selectedNode) {
                     const label = selectedNode.data?.label;
                     setNodeLabel(typeof label === "string" ? label : "");
@@ -458,7 +458,7 @@ export default function WorkflowEditor({
                       setNodeScript(typeof script === "string" ? script : "");
                     }
                   }
-                  // 編集領域を閉じる
+                  // Close editing area
                   setSelectedNode(null);
                   setSelectedModuleId("");
                 }}
@@ -471,13 +471,13 @@ export default function WorkflowEditor({
                 variant="default"
                 className="rounded-full px-8 shadow-md shadow-primary/20"
                 onClick={() => {
-                  // 現在の編集内容を適用
+                  // Apply current edits
                   const updatedNodes = nodes.map((node: WorkflowNode) => {
                     if (node.id === selectedNode.id) {
                       let updatedHook = node.data?.hook;
                       if (updatedHook) {
                         if (selectedModuleId === "custom") {
-                          // Inline Scriptの場合
+                          // Inline Script case
                           updatedHook = {
                             ...updatedHook,
                             hookModuleId: undefined,
@@ -487,7 +487,7 @@ export default function WorkflowEditor({
                           selectedModuleId &&
                           selectedModuleId !== "manage"
                         ) {
-                          // HookModuleを参照する場合
+                          // Referencing a HookModule
                           updatedHook = {
                             ...updatedHook,
                             hookModuleId: selectedModuleId,
@@ -508,7 +508,7 @@ export default function WorkflowEditor({
                     return node;
                   });
                   setNodes(updatedNodes);
-                  // 編集領域を閉じる
+                  // Close editing area
                   setSelectedNode(null);
                   setSelectedModuleId("");
                 }}
@@ -520,7 +520,7 @@ export default function WorkflowEditor({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            {/* モジュール選択 */}
+            {/* Module selection */}
             <div className="md:col-span-4 space-y-4">
               <div className="space-y-2">
                 <Label
@@ -540,7 +540,7 @@ export default function WorkflowEditor({
                         setNodeLabel(module.name);
                       }
                     } else if (value === "custom") {
-                      // Inline Scriptモードに切り替え
+                      // Switch to Inline Script mode
                       setNodeScript("");
                     } else if (value === "manage") {
                       setModuleManagerOpen(true);
@@ -584,7 +584,7 @@ export default function WorkflowEditor({
               </div>
             </div>
 
-            {/* カスタムスクリプト編集 */}
+            {/* Custom script editing */}
             <div className="md:col-span-8 space-y-2">
               <Label
                 htmlFor="hook-script"

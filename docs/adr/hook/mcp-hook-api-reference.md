@@ -49,7 +49,7 @@ interface HookContext {
     // Error information
     error?: Error;         // Error information (Post-hook only)
 
-    // NOT IMPLEMENTED - Planned for future:
+    // WARNING: NOT IMPLEMENTED - Planned for future release.
     // clientId: string;              // Client ID - not currently passed
     // serverId?: string;             // Server ID - not currently passed
     // shared?: Record<string, any>;  // Shared data between Hooks - not currently implemented
@@ -65,7 +65,7 @@ Object for log output:
 
 ### Available Utility Functions
 
-> **NOTE**: The following utility functions are **NOT IMPLEMENTED** in the current sandbox environment. They are documented here for future reference.
+> **WARNING: NOT IMPLEMENTED** - The following utility functions are **NOT IMPLEMENTED** in the current sandbox environment. They are documented here for future reference only. Do not use them in hook scripts.
 
 #### `sleep(ms: number): Promise<void>` - NOT IMPLEMENTED
 Pauses processing for the specified number of milliseconds.
@@ -137,7 +137,7 @@ interface HookResult {
 }
 ```
 
-> **NOTE**: Return values are not currently validated for flow control. The `continue: false` flag and `error` object are captured but may not halt workflow execution in all cases. This behavior is planned for future enhancement.
+> **WARNING: NOT IMPLEMENTED** - Return values are not currently validated for flow control. The `continue: false` flag and `error` object are captured but may not halt workflow execution in all cases. This behavior is planned for future enhancement.
 
 ## Sample Code
 

@@ -4,7 +4,6 @@
 
 import { AuthAPI } from "./domains/auth-api";
 import { ServerAPI } from "./domains/server-api";
-import { AppAPI } from "./domains/app-api";
 import { PackageAPI } from "./domains/package-api";
 import { SettingsAPI } from "./domains/settings-api";
 import { CloudSyncAPI } from "./domains/cloud-sync-api";
@@ -26,9 +25,6 @@ export interface PlatformAPI {
 
   // Server management domain
   servers: ServerAPI;
-
-  // Application management domain (includes token management)
-  apps: AppAPI;
 
   // Package management domain (includes system utilities)
   packages: PackageAPI;

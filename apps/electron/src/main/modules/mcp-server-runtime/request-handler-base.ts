@@ -31,26 +31,26 @@ export abstract class RequestHandlerBase {
     handler: () => Promise<T>,
     additionalMetadata?: Record<string, any>,
   ): Promise<T> {
-    // Workflowの実行を試みる
+    // Try to execute via Workflow
     try {
-      // WorkflowServiceとWorkflowExecutorをインポート
+      // Import WorkflowService and WorkflowExecutor
       const { getWorkflowService } =
         await import("../workflow/workflow.service");
       const { WorkflowExecutor } =
         await import("../workflow/workflow-executor");
       const workflowService = getWorkflowService();
 
-      // 該当するWorkflowを取得（tools/list または tools/call）
+      // Get matching workflows (tools/list or tools/call)
       const workflowType = method; // "tools/list" or "tools/call"
       const workflows = await workflowService.getWorkflowsByType(workflowType);
 
-      // 有効かつ構造的に妥当なWorkflowをフィルタリング
+      // Filter for enabled and structurally valid workflows
       const validWorkflows = workflows.filter((w) => {
         if (!w.enabled) {
           return false;
         }
 
-        // Workflowの構造を検証（Start -> MCP Call -> End が接続されている）
+        // Validate workflow structure (Start -> MCP Call -> End connected)
         const isValid = WorkflowExecutor.isValidWorkflow(w);
         if (!isValid) {
           console.warn(
@@ -60,24 +60,24 @@ export abstract class RequestHandlerBase {
         return isValid;
       });
 
-      // 実行コンテキストを構築
+      // Build execution context
       const context = {
         method,
         params,
         clientId,
         timestamp: Date.now(),
-        mcpHandler: handler, // MCPハンドラーをコンテキストに追加
+        mcpHandler: handler, // Add MCP handler to context
         ...additionalMetadata,
       };
 
-      // 有効なWorkflowがある場合は実行
+      // Execute if valid workflows exist
       if (validWorkflows.length > 0) {
         console.log(
           `Found ${validWorkflows.length} valid workflows for ${method}`,
         );
 
-        // 最初の有効なWorkflowを実行（複数ある場合は最初のものを使用）
-        // TODO: 複数のWorkflow実行戦略を検討
+        // Execute the first valid workflow (use first one if multiple exist)
+        // TODO: Consider execution strategy for multiple workflows
         const workflow = validWorkflows[0];
 
         try {
@@ -87,13 +87,13 @@ export abstract class RequestHandlerBase {
             context,
           );
 
-          // Workflow内でMCPリクエストが実行された場合、その結果を返す
+          // Return MCP result if the MCP request was executed within the workflow
           if (result.mcpResult !== undefined) {
             console.log(`Workflow execution successful, returning MCP result`);
             return result.mcpResult as T;
           }
 
-          // MCPリクエストが実行されなかった場合はエラー
+          // Error if MCP request was not executed
           console.error(
             `Workflow ${workflow.name} did not execute MCP request`,
           );
@@ -102,7 +102,7 @@ export abstract class RequestHandlerBase {
           );
         } catch (error) {
           console.error(`Failed to execute workflow ${workflow.name}:`, error);
-          // Workflow実行に失敗した場合は、通常のハンドラーを実行
+          // Fall back to direct handler execution on workflow failure
           console.log(`Falling back to direct handler execution`);
           return await handler();
         }
@@ -110,11 +110,11 @@ export abstract class RequestHandlerBase {
         console.log(`No valid workflows found for ${method}`);
       }
     } catch (error) {
-      // Workflow設定のエラーはログに記録するが、MCPリクエストは継続
+      // Log workflow setup errors but continue with MCP request
       console.error(`Error setting up workflows for ${method}:`, error);
     }
 
-    // Workflowがない場合は通常のハンドラーを実行
+    // Execute handler directly when no workflow is available
     console.log(`Executing handler directly without workflow`);
     return await handler();
   }

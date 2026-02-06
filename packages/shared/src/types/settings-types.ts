@@ -3,84 +3,84 @@ import type { CloudSyncState } from "./cloud-sync";
 import type { SubscriptionStatus } from "./auth";
 
 /**
- * アプリケーション設定のインターフェース
+ * Application settings interface
  */
 export interface AppSettings {
   /**
-   * ユーザーID
+   * User ID
    */
   userId?: string;
 
   /**
-   * 認証トークン
+   * Authentication token
    */
   authToken?: string;
 
   /**
-   * ログイン日時
+   * Login date/time
    */
   loggedInAt?: string;
 
   /**
-   * サブスクリプションステータス
+   * Subscription status
    */
   subscriptionStatus?: SubscriptionStatus | null;
 
   /**
-   * プラン名
+   * Plan name
    */
   planName?: string | null;
 
   /**
-   * パッケージマネージャーオーバーレイの表示回数
+   * Number of times the package manager overlay has been displayed
    */
   packageManagerOverlayDisplayCount?: number;
 
   /**
-   * 外部アプリケーションからのMCP設定の読み込みを有効化するか
-   * デフォルト: true
+   * Whether to enable loading MCP configs from external applications
+   * Default: true
    */
   loadExternalMCPConfigs?: boolean;
 
   /**
-   * アナリティクスの送信を有効化するか
-   * デフォルト: true
+   * Whether to enable sending analytics
+   * Default: true
    */
   analyticsEnabled?: boolean;
 
   /**
-   * 自動アップデートを有効化するか
-   * デフォルト: true
+   * Whether to enable auto-updates
+   * Default: true
    */
   autoUpdateEnabled?: boolean;
 
   /**
-   * OS起動時にアプリのメインウィンドウを表示するか
-   * デフォルト: true
+   * Whether to show the app main window on OS startup
+   * Default: true
    */
   showWindowOnStartup?: boolean;
 
   /**
-   * アプリケーションのテーマ設定
-   * デフォルト: "system"
+   * Application theme setting
+   * Default: "system"
    */
   theme?: Theme;
 
   /**
-   * Cloud Syncの状態
+   * Cloud Sync state
    */
   cloudSync?: CloudSyncState;
 
   /**
-   * ツール名にソースサーバー名をプレフィックスとして付与するか
+   * Whether to prefix tool names with the source server name
    * Tool names will be prefixed with source server name (e.g., "krisp__search_meetings")
-   * デフォルト: true
+   * Default: true
    */
   prefixToolNames?: boolean;
 }
 
 /**
- * デフォルトのアプリケーション設定
+ * Default application settings
  */
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   userId: "",

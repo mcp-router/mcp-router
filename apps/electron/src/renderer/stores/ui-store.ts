@@ -34,7 +34,7 @@ interface UIStoreState extends UIState {
   showConfirmDialog: (title: string, content: string) => Promise<boolean>;
 }
 
-export const useUIStore = create<UIStoreState>((set, get) => ({
+const useUIStore = create<UIStoreState>((set, get) => ({
   // Initial state
   globalLoading: false,
   loadingMessage: "",

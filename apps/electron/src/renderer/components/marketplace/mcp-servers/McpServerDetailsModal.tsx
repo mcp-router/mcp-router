@@ -298,5 +298,3 @@ export const McpServerDetailsModal: React.FC<McpServerDetailsModalProps> = ({
     </Dialog>
   );
 };
-
-export default McpServerDetailsModal;

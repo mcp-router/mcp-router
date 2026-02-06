@@ -2,77 +2,53 @@ import { Token, TokenServerAccess } from "@mcp_router/shared";
 import { getSharedConfigManager } from "../../infrastructure/shared-config-manager";
 
 /**
- * トークン用リポジトリクラス
- * SharedConfigManagerを使用して共通設定ファイルで管理
+ * Token repository class
+ * Uses SharedConfigManager for shared config file management
  */
-export class McpAppsManagerRepository {
-  private static instance: McpAppsManagerRepository | null = null;
+export class TokenManagerRepository {
+  private static instance: TokenManagerRepository | null = null;
 
-  /**
-   * コンストラクタ
-   */
   private constructor() {
     console.log(
-      "[McpAppsManagerRepository] Using SharedConfigManager for token storage",
+      "[TokenManagerRepository] Using SharedConfigManager for token storage",
     );
   }
 
-  /**
-   * シングルトンインスタンスを取得
-   */
-  public static getInstance(): McpAppsManagerRepository {
-    if (!McpAppsManagerRepository.instance) {
-      McpAppsManagerRepository.instance = new McpAppsManagerRepository();
+  public static getInstance(): TokenManagerRepository {
+    if (!TokenManagerRepository.instance) {
+      TokenManagerRepository.instance = new TokenManagerRepository();
     }
-    return McpAppsManagerRepository.instance;
+    return TokenManagerRepository.instance;
   }
 
-  /**
-   * インスタンスをリセット
-   */
   public static resetInstance(): void {
-    McpAppsManagerRepository.instance = null;
+    TokenManagerRepository.instance = null;
   }
 
-  /**
-   * トークンを取得
-   */
   public getToken(id: string): Token | null {
     const manager = getSharedConfigManager();
     const token = manager.getToken(id);
     return token || null;
   }
 
-  /**
-   * トークンを保存
-   */
   public saveToken(token: Token): void {
     getSharedConfigManager().saveToken(token);
   }
 
-  /**
-   * トークンをリスト表示
-   */
   public listTokens(): Token[] {
     return getSharedConfigManager().getTokens();
   }
 
-  /**
-   * トークンを削除
-   */
   public deleteToken(id: string): boolean {
     try {
       getSharedConfigManager().deleteToken(id);
       return true;
     } catch (error) {
-      console.error(`トークン${id}の削除中にエラーが発生しました:`, error);
+      console.error(`Error deleting token ${id}:`, error);
       return false;
     }
   }
 
-  /**
-   * クライアントIDに関連付けられた全てのトークンを削除
-   */
   public deleteClientTokens(clientId: string): number {
     try {
       const manager = getSharedConfigManager();
@@ -81,16 +57,13 @@ export class McpAppsManagerRepository {
       return beforeCount;
     } catch (error) {
       console.error(
-        `クライアント${clientId}のトークン削除中にエラーが発生しました:`,
+        `Error deleting tokens for client ${clientId}:`,
         error,
       );
       throw error;
     }
   }
 
-  /**
-   * トークンのサーバアクセスを更新
-   */
   public updateTokenServerAccess(
     id: string,
     serverAccess: TokenServerAccess,
@@ -99,27 +72,23 @@ export class McpAppsManagerRepository {
       getSharedConfigManager().updateTokenServerAccess(id, serverAccess);
       return true;
     } catch (error) {
-      console.error(`トークン${id}の更新中にエラーが発生しました:`, error);
+      console.error(`Error updating token ${id}:`, error);
       return false;
     }
   }
 
-  /**
-   * クライアントIDに関連付けられたトークンを取得
-   */
   public getTokensByClientId(clientId: string): Token[] {
     try {
       return getSharedConfigManager().getTokensByClientId(clientId);
     } catch (error) {
       console.error(
-        `クライアントID ${clientId} のトークン取得中にエラーが発生しました:`,
+        `Error getting tokens for client ID ${clientId}:`,
         error,
       );
       throw error;
     }
   }
 
-  // BaseRepositoryとの互換性のためのメソッド
   public getById(id: string): Token | undefined {
     const manager = getSharedConfigManager();
     return manager.getToken(id);

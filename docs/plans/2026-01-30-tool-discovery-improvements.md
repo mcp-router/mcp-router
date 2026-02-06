@@ -1,5 +1,7 @@
 # Tool Discovery Improvements Implementation Plan
 
+> **STATUS: COMPLETED**
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Improve MCP Router tool discovery for 200+ tools across 10+ servers, with universal compatibility for Claude Desktop, Claude Code, Cursor (40 tool limit), OpenCode, Gemini CLI, and Codex.

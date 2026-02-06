@@ -21,7 +21,7 @@ export function parseErrorMessage(errorMessage: string): ParsedPaymentError {
     if (parsed.code === "insufficient_credits") {
       result.isPaymentError = true;
       result.code = parsed.code;
-      result.displayMessage = parsed.message || "クレジットが不足しています";
+      result.displayMessage = parsed.message || "Insufficient credits";
       result.purchaseUrl = "https://mcp-router.net/profile";
       return result;
     }
@@ -38,7 +38,7 @@ export function parseErrorMessage(errorMessage: string): ParsedPaymentError {
       errorMessage.toLowerCase().includes("payment required")
     ) {
       result.isPaymentError = true;
-      result.displayMessage = "クレジットが不足しています";
+      result.displayMessage = "Insufficient credits";
       result.purchaseUrl = "https://mcp-router.net/profile";
     }
   }

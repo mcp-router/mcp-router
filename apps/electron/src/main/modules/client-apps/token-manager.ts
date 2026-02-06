@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { McpAppsManagerRepository } from "./mcp-apps-manager.repository";
+import { TokenManagerRepository } from "./token-manager.repository";
 import {
   Token,
   TokenGenerateOptions,
@@ -8,33 +8,33 @@ import {
 } from "@mcp_router/shared";
 
 /**
- * トークン管理機能を提供するクラス
+ * Token management class
  */
 export class TokenManager {
   /**
-   * 新しいトークンを生成
+   * Generate a new token
    */
   public generateToken(options: TokenGenerateOptions): Token {
     const now = Math.floor(Date.now() / 1000);
     const clientId = options.clientId;
 
-    // 同じクライアントIDのトークンが存在する場合は削除
+    // Delete existing tokens for the same client ID
     const clientTokens =
-      McpAppsManagerRepository.getInstance().getTokensByClientId(clientId);
+      TokenManagerRepository.getInstance().getTokensByClientId(clientId);
     if (clientTokens.length > 0) {
-      McpAppsManagerRepository.getInstance().deleteClientTokens(clientId);
+      TokenManagerRepository.getInstance().deleteClientTokens(clientId);
     }
 
     // Only set expiration if explicitly requested
     const expiresAt = options.expiresIn ? now + options.expiresIn : undefined;
 
-    // より強固なランダム値を生成（24バイト = 192ビット）
+    // Generate strong random value (24 bytes = 192 bits)
     const randomBytes = crypto
       .randomBytes(24)
       .toString("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
-      .replace(/=/g, ""); // URL安全なBase64形式に変換
+      .replace(/=/g, ""); // URL-safe Base64
 
     const token: Token = {
       id: "mcpr_" + randomBytes,
@@ -44,8 +44,8 @@ export class TokenManager {
       expiresAt,
     };
 
-    // トークンを永続化
-    McpAppsManagerRepository.getInstance().saveToken(token);
+    // Persist the token
+    TokenManagerRepository.getInstance().saveToken(token);
     return token;
   }
 
@@ -53,7 +53,7 @@ export class TokenManager {
    * Validate token including expiration check
    */
   public validateToken(tokenId: string): TokenValidationResult {
-    const token = McpAppsManagerRepository.getInstance().getToken(tokenId);
+    const token = TokenManagerRepository.getInstance().getToken(tokenId);
 
     if (!token) {
       return {
@@ -80,7 +80,7 @@ export class TokenManager {
   }
 
   /**
-   * トークンからクライアントIDを取得
+   * Get client ID from token
    */
   public getClientIdFromToken(tokenId: string): string | null {
     const validation = this.validateToken(tokenId);
@@ -88,31 +88,31 @@ export class TokenManager {
   }
 
   /**
-   * トークンを削除
+   * Delete a token
    */
   public deleteToken(tokenId: string): boolean {
-    return McpAppsManagerRepository.getInstance().deleteToken(tokenId);
+    return TokenManagerRepository.getInstance().deleteToken(tokenId);
   }
 
   /**
-   * クライアントIDに関連付けられた全てのトークンを削除
+   * Delete all tokens for a client ID
    */
   public deleteClientTokens(clientId: string): number {
-    return McpAppsManagerRepository.getInstance().deleteClientTokens(clientId);
+    return TokenManagerRepository.getInstance().deleteClientTokens(clientId);
   }
 
   /**
-   * 全てのトークンをリスト表示
+   * List all tokens
    */
   public listTokens(): Token[] {
-    return McpAppsManagerRepository.getInstance().listTokens();
+    return TokenManagerRepository.getInstance().listTokens();
   }
 
   /**
-   * トークンのサーバアクセス権限を確認
+   * Check if a token has access to a server
    */
   public hasServerAccess(tokenId: string, serverId: string): boolean {
-    const token = McpAppsManagerRepository.getInstance().getToken(tokenId);
+    const token = TokenManagerRepository.getInstance().getToken(tokenId);
     if (!token) {
       return false;
     }
@@ -120,13 +120,13 @@ export class TokenManager {
   }
 
   /**
-   * トークンのサーバアクセス権限を更新
+   * Update token server access permissions
    */
   public updateTokenServerAccess(
     tokenId: string,
     serverAccess: TokenServerAccess,
   ): boolean {
-    return McpAppsManagerRepository.getInstance().updateTokenServerAccess(
+    return TokenManagerRepository.getInstance().updateTokenServerAccess(
       tokenId,
       serverAccess || {},
     );

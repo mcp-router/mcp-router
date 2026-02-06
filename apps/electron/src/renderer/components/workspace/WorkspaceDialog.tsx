@@ -48,7 +48,7 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
   }>({});
 
   useEffect(() => {
-    // エラーをクリア
+    // Clear errors
     setError(null);
   }, [setError]);
 
@@ -109,7 +109,7 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
         await switchWorkspace(newWorkspace.id);
       }
     } catch {
-      // エラーは store で設定される
+      // Error is set in the store
     } finally {
       setIsSubmitting(false);
     }

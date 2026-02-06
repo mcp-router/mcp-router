@@ -236,7 +236,7 @@ export function safeResolvePath(
  * @param filePath - The path to check
  * @returns true if the path is a symbolic link
  */
-export function isSymlink(filePath: string): boolean {
+function isSymlink(filePath: string): boolean {
   try {
     const stats = fs.lstatSync(filePath);
     return stats.isSymbolicLink();
@@ -252,7 +252,7 @@ export function isSymlink(filePath: string): boolean {
  * @param filePath - The path to resolve
  * @returns The resolved real path, or null on failure
  */
-export function getRealPath(filePath: string): string | null {
+function getRealPath(filePath: string): string | null {
   try {
     return fs.realpathSync(filePath);
   } catch {

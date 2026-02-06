@@ -57,7 +57,7 @@ export class DatabaseContext {
 }
 
 /**
- * データベースコンテキストのシングルトンインスタンスを取得
+ * Get the singleton instance of the database context
  */
 export function getDatabaseContext(): DatabaseContext {
   return DatabaseContext.getInstance();

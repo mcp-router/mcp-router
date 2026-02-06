@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { HookModule, PlatformAPI } from "@mcp_router/shared";
 import { toast } from "sonner";
 
-export interface HookStoreState {
+interface HookStoreState {
   // Hook modules state
   modules: HookModule[];
   editingModule: HookModule | null;
@@ -15,7 +15,7 @@ export interface HookStoreState {
   error: string | null;
 }
 
-export interface HookStoreActions {
+interface HookStoreActions {
   // Module management actions
   setModules: (modules: HookModule[]) => void;
   setEditingModule: (module: HookModule | null) => void;
@@ -48,7 +48,7 @@ export interface HookStoreActions {
   resetStore: () => void;
 }
 
-export type HookStore = HookStoreState & HookStoreActions;
+type HookStore = HookStoreState & HookStoreActions;
 
 const initialFormData: Partial<HookModule> = {
   name: "",

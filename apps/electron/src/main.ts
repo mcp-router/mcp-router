@@ -8,7 +8,6 @@ import started from "electron-squirrel-startup";
 import { updateElectronApp } from "update-electron-app";
 import { setApplicationMenu } from "@/main/ui/menu";
 import { createTray, updateTrayContextMenu } from "@/main/ui/tray";
-import { importExistingServerConfigurations } from "@/main/modules/mcp-apps-manager/mcp-config-importer";
 import { getPlatformAPIManager } from "@/main/modules/workspace/platform-api-manager";
 import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
@@ -70,7 +69,7 @@ app.on("second-instance", (_event, commandLine) => {
   }
 });
 
-// Squirrelの初回起動時の処理
+// Handle Squirrel first-launch events
 if (started) app.quit();
 
 // Global references
@@ -95,7 +94,7 @@ if (enableAutoUpdate && autoUpdateOptions) {
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string | undefined;
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 
-// グローバル変数の宣言（初期化は後で行う）
+// Global variable declarations (initialized later)
 let serverManager: MCPServerManager;
 let aggregatorServer: AggregatorServer;
 let mcpHttpServer: MCPHttpServer;
@@ -240,58 +239,58 @@ function setupTrayUpdateTimer(
 }
 
 /**
- * データベースの初期化を行う
+ * Initialize the database
  */
 async function initDatabase(): Promise<void> {
   try {
-    // 共通設定マネージャーを初期化（既存データからのマイグレーションを含む）
+    // Initialize the shared config manager (including migration from existing data)
     await getSharedConfigManager().initialize();
 
-    // ワークスペースサービスは自動的にメタデータベースを初期化する
+    // Workspace service automatically initializes the meta database
     const workspaceService = getWorkspaceService();
 
-    // アクティブなワークスペースを取得
+    // Get the active workspace
     const activeWorkspace = await workspaceService.getActiveWorkspace();
     if (!activeWorkspace) {
-      // デフォルトワークスペースがない場合は作成
+      // Create a default workspace if none exists
       await workspaceService.switchWorkspace("local-default");
     }
 
-    // ワークスペース固有のデータベースのマイグレーションは
-    // PlatformAPIManagerが初期化時に実行する
+    // Workspace-specific database migrations are run by
+    // PlatformAPIManager during initialization
   } catch (error) {
     console.error(
-      "データベースマイグレーション中にエラーが発生しました:",
+      "Error during database migration:",
       error,
     );
   }
 }
 
 /**
- * MCP関連サービスの初期化を行う
+ * Initialize MCP-related services
  */
 async function initMCPServices(): Promise<void> {
-  // Platform APIマネージャーの初期化（ワークスペースDBを設定）
-  // MCPServerManager プロバイダを先に設定（serverManager は後で代入される）
+  // Initialize Platform API manager (sets up workspace DB)
+  // Set MCPServerManager provider first (serverManager is assigned later)
   getPlatformAPIManager().setServerManagerProvider(() => serverManager);
   await getPlatformAPIManager().initialize();
 
-  // MCPServerManagerの初期化
+  // Initialize MCPServerManager
   serverManager = new MCPServerManager();
 
-  // データベースからサーバーリストを読み込む
+  // Load server list from database
   await serverManager.initializeAsync();
 
-  // Cloud SyncサービスにServerManagerを連携
+  // Link ServerManager to Cloud Sync service
   getCloudSyncService().initialize(() => serverManager);
 
   // Tool catalog service
   toolCatalogService = new ToolCatalogService(serverManager);
 
-  // AggregatorServerの初期化
+  // Initialize AggregatorServer
   aggregatorServer = new AggregatorServer(serverManager, toolCatalogService);
 
-  // HTTPサーバーの初期化とスタート
+  // Initialize and start HTTP server
   mcpHttpServer = new MCPHttpServer(serverManager, 3282, aggregatorServer);
   try {
     await mcpHttpServer.start();
@@ -299,43 +298,40 @@ async function initMCPServices(): Promise<void> {
     console.error("Failed to start MCP HTTP Server:", error);
   }
 
-  // 既存のMCPサーバー設定をインポート
-  await importExistingServerConfigurations();
-
-  // スキルのシンボリックリンクを検証・修復
+  // Verify and repair skill symlinks
   getSkillService().verifyAndRepairSymlinks();
 }
 
 /**
- * ユーザーインターフェース関連の初期化を行う
+ * Initialize the user interface
  */
 function initUI({
   showMainWindow = true,
 }: { showMainWindow?: boolean } = {}): void {
-  // メインウィンドウ作成
+  // Create main window
   createWindow({ showOnCreate: showMainWindow });
 
   if (!showMainWindow && process.platform === "darwin" && app.dock) {
     app.dock.hide();
   }
 
-  // Platform APIマネージャーにメインウィンドウを設定
+  // Set main window in Platform API manager
   if (mainWindow) {
     getPlatformAPIManager().setMainWindow(mainWindow);
   }
 
-  // システムトレイ作成
+  // Create system tray
   createTray(serverManager);
 
-  // トレイコンテキストメニューの定期更新を設定
+  // Set up periodic tray context menu updates
   setupTrayUpdateTimer(serverManager);
 }
 
 /**
- * アプリケーション全体の初期化を行う
+ * Initialize the entire application
  */
 async function initApplication(): Promise<void> {
-  // 環境設定を初期化
+  // Initialize environment settings
   initializeEnvironment();
   const DEV_CSP = `
     default-src 'self' 'unsafe-inline' http://localhost:* ws://localhost:*;
@@ -355,13 +351,13 @@ async function initApplication(): Promise<void> {
     });
   });
 
-  // アプリケーション名を設定
+  // Set application name
   app.setName("MCP Router");
 
-  // アプリケーションメニューを設定
+  // Set application menu
   setApplicationMenu();
 
-  // 起動時のウィンドウ表示設定を取得
+  // Get window visibility setting for startup
   const settingsService = getSettingsService();
   let showWindowOnStartup = true;
   try {
@@ -383,13 +379,13 @@ async function initApplication(): Promise<void> {
 
   applyLoginItemSettings(showWindowOnStartup);
 
-  // データベース初期化
+  // Initialize database
   await initDatabase();
 
-  // MCPサービス初期化
+  // Initialize MCP services
   await initMCPServices();
 
-  // IPC通信ハンドラの初期化
+  // Initialize IPC handlers
   setupIpcHandlers({
     getServerManager: () => serverManager,
   });
@@ -397,7 +393,7 @@ async function initApplication(): Promise<void> {
   const shouldShowMainWindow =
     (!launchedAtLogin || showWindowOnStartup) && !launchedWithHiddenFlag;
 
-  // UI初期化
+  // Initialize UI
   initUI({ showMainWindow: shouldShowMainWindow });
 
   // Cleanup old log files (30+ days)

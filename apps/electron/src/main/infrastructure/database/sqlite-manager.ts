@@ -6,19 +6,19 @@ import Database, {
 } from "better-sqlite3";
 
 /**
- * SQLiteデータベース管理クラス
- * BetterSQLite3のラッパーとして機能
+ * SQLite database management class.
+ * Acts as a wrapper around BetterSQLite3.
  */
 export class SqliteManager {
   private db: DatabaseType;
   private dbPath: string;
 
   /**
-   * コンストラクタ
-   * @param dbNameOrPath データベース名またはフルパス
+   * Constructor
+   * @param dbNameOrPath Database name or full path
    */
   constructor(dbNameOrPath: string) {
-    // フルパスが渡された場合はそのまま使用、それ以外はuserDataディレクトリに配置
+    // Use the full path as-is if provided, otherwise place in userData directory
     if (path.isAbsolute(dbNameOrPath)) {
       this.dbPath = dbNameOrPath;
     } else {
@@ -26,7 +26,7 @@ export class SqliteManager {
       this.dbPath = path.join(dbDir, `${dbNameOrPath}.db`);
     }
 
-    // ディレクトリが存在しない場合は作成
+    // Create directory if it does not exist
     try {
       const fs = require("fs");
       const dbDir = path.dirname(this.dbPath);
@@ -34,20 +34,20 @@ export class SqliteManager {
         fs.mkdirSync(dbDir, { recursive: true });
       }
     } catch (error) {
-      console.error("データベースディレクトリの作成に失敗しました:", error);
+      console.error("Failed to create database directory:", error);
       throw error;
     }
 
-    // データベース接続
+    // Connect to database
     try {
       this.db = new Database(this.dbPath);
 
-      // プラグマ設定
+      // Pragma settings
       this.db.pragma("journal_mode = WAL");
       this.db.pragma("foreign_keys = ON");
     } catch (error) {
       console.error(
-        `データベース '${dbNameOrPath}' の初期化に失敗しました:`,
+        `Failed to initialize database '${dbNameOrPath}':`,
         error,
       );
       throw error;
@@ -55,124 +55,124 @@ export class SqliteManager {
   }
 
   /**
-   * データベース接続インスタンスを取得
+   * Get the database connection instance
    */
   public getConnection(): DatabaseType {
     return this.db;
   }
 
   /**
-   * データベースファイルのパスを取得
+   * Get the database file path
    */
   public getDbPath(): string {
     return this.dbPath;
   }
 
   /**
-   * SQLクエリを実行（トランザクションなし）
-   * @param sql SQL文
-   * @param params パラメータ
+   * Execute an SQL query (no transaction)
+   * @param sql SQL statement
+   * @param params Parameters
    */
   public execute(sql: string, params: any = {}): RunResult {
     try {
       return this.db.prepare(sql).run(params);
     } catch (error) {
-      console.error("SQLクエリの実行に失敗しました:", error);
+      console.error("Failed to execute SQL query:", error);
       throw error;
     }
   }
 
   /**
-   * SQLクエリを実行し、結果を取得（単一行）
-   * @param sql SQL文
-   * @param params パラメータ
+   * Execute an SQL query and get the result (single row)
+   * @param sql SQL statement
+   * @param params Parameters
    */
   public get<T>(sql: string, params: any = {}): T | undefined {
     try {
       return this.db.prepare(sql).get(params) as T | undefined;
     } catch (error) {
-      console.error("SQLクエリの実行に失敗しました:", error);
+      console.error("Failed to execute SQL query:", error);
       throw error;
     }
   }
 
   /**
-   * SQLクエリを実行し、結果を取得（複数行）
-   * @param sql SQL文
-   * @param params パラメータ
+   * Execute an SQL query and get results (multiple rows)
+   * @param sql SQL statement
+   * @param params Parameters
    */
   public all<T>(sql: string, params: any = {}): T[] {
     try {
       return this.db.prepare(sql).all(params) as T[];
     } catch (error) {
-      console.error("SQLクエリの実行に失敗しました:", error);
+      console.error("Failed to execute SQL query:", error);
       throw error;
     }
   }
 
   /**
-   * トランザクションを実行
-   * @param callback トランザクション内で実行する関数
+   * Execute a transaction
+   * @param callback Function to execute within the transaction
    */
   public transaction<T>(callback: () => T): T {
     try {
-      // トランザクションの作成
+      // Create transaction
       const transaction = this.db.transaction(callback);
       return transaction();
     } catch (error) {
-      console.error("トランザクションの実行に失敗しました:", error);
+      console.error("Failed to execute transaction:", error);
       throw error;
     }
   }
 
   /**
-   * データベース接続を閉じる
+   * Close the database connection
    */
   public close(): void {
     try {
       this.db.close();
     } catch (error) {
-      console.error("データベース接続のクローズに失敗しました:", error);
+      console.error("Failed to close database connection:", error);
       throw error;
     }
   }
 
   /**
-   * ステートメントを準備
-   * @param sql SQL文
+   * Prepare a statement
+   * @param sql SQL statement
    */
   public prepare(sql: string): any {
     try {
       return this.db.prepare(sql);
     } catch (error) {
-      console.error("ステートメントの準備に失敗しました:", error);
+      console.error("Failed to prepare statement:", error);
       throw error;
     }
   }
 
   /**
-   * 複数のSQL文を実行
-   * @param sql SQL文（複数可）
+   * Execute multiple SQL statements
+   * @param sql SQL statements
    */
   public exec(sql: string): void {
     try {
       this.db.exec(sql);
     } catch (error) {
-      console.error("SQLの実行に失敗しました:", error);
+      console.error("Failed to execute SQL:", error);
       throw error;
     }
   }
 }
 
 /**
- * SQLiteManagerのシングルトンクラス
- * 単一のデータベースインスタンスを管理
+ * SqliteManager singleton class.
+ * Manages a single database instance.
  */
 class SqliteManagerSingleton {
   private static instance: SqliteManager | null = null;
 
   /**
-   * SQLiteManagerのシングルトンインスタンスを取得
+   * Get the SqliteManager singleton instance
    */
   public static getInstance(dbName = "mcprouter"): SqliteManager {
     if (!SqliteManagerSingleton.instance) {
@@ -182,11 +182,11 @@ class SqliteManagerSingleton {
   }
 }
 
-// グローバルなワークスペースデータベース参照
+// Global workspace database reference
 let currentWorkspaceDb: SqliteManager | null = null;
 
 /**
- * ワークスペースデータベースを設定（PlatformAPIManagerから呼び出される）
+ * Set the workspace database (called from PlatformAPIManager)
  */
 export function setWorkspaceDatabase(db: SqliteManager | null): void {
   console.log(
@@ -197,29 +197,29 @@ export function setWorkspaceDatabase(db: SqliteManager | null): void {
 }
 
 /**
- * 現在のワークスペースのSQLiteManagerインスタンスを取得
- * ワークスペース切り替えに対応
- * @param dbName データベース名
- * @param forceMain true の場合、ワークスペースが設定されていてもメインDBを返す
+ * Get the SqliteManager instance for the current workspace.
+ * Supports workspace switching.
+ * @param dbName Database name
+ * @param forceMain If true, returns main DB even if a workspace is set
  */
 export function getSqliteManager(
   dbName = "mcprouter",
   forceMain = false,
 ): SqliteManager {
-  // forceMainがtrueの場合、常にメインデータベースを使用
+  // If forceMain is true, always use the main database
   if (forceMain) {
     return SqliteManagerSingleton.getInstance(dbName);
   }
 
-  // ワークスペースデータベースが設定されている場合はそれを使用
-  // 注意: ワークスペースモードでは引数のdbNameは無視される
+  // Use workspace database if one is set
+  // Note: In workspace mode, the dbName argument is ignored
   if (currentWorkspaceDb) {
-    // デバッグログは開発時のみ（過度なログ出力を防ぐ）
+    // Debug log only during development (avoid excessive logging)
     // console.log("[getSqliteManager] Returning workspace DB (ignoring dbName:", dbName, ")");
     return currentWorkspaceDb;
   }
 
-  // フォールバック：従来のシングルトンパターン（初期化時のみ）
+  // Fallback: legacy singleton pattern (only during initialization)
   console.log(
     "[getSqliteManager] WARNING: No workspace DB set, falling back to singleton DB:",
     dbName,

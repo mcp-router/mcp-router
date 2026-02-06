@@ -117,7 +117,7 @@ export function setupMcpServerHandlers(
     },
   );
 
-  // ファイル/ディレクトリ選択ダイアログ
+  // File/directory selection dialog
   ipcMain.handle(
     "server:selectFile",
     async (

@@ -1,25 +1,25 @@
 /**
- * 環境判定のためのユーティリティ
+ * Utilities for environment detection
  */
 
 import { app } from "electron";
 
 /**
- * 環境タイプの定義
+ * Environment type definition
  */
 type EnvironmentType = "development" | "production";
 
 /**
- * 現在の環境タイプを保持する変数
- * デフォルトはapp.isPackagedの値に基づいて設定
+ * Variable holding the current environment type
+ * Defaults based on the value of app.isPackaged
  */
 let currentEnvironment: EnvironmentType = app.isPackaged
   ? "production"
   : "development";
 
 /**
- * 起動時引数から環境設定を初期化
- * --env=production または --env=development で指定可能
+ * Initialize environment settings from startup arguments
+ * Can be specified with --env=production or --env=development
  */
 export function initializeEnvironment(): void {
   const args = process.argv;
@@ -32,7 +32,7 @@ export function initializeEnvironment(): void {
     }
   }
 
-  // 環境変数からも取得できるようにする
+  // Also allow setting via environment variable
   if (process.env.ELECTRON_ENV === "production") {
     currentEnvironment = "production";
   } else if (process.env.ELECTRON_ENV === "development") {
@@ -41,14 +41,14 @@ export function initializeEnvironment(): void {
 }
 
 /**
- * 現在の環境がproductionかどうかを判定
+ * Check whether the current environment is production
  */
 export function isProduction(): boolean {
   return currentEnvironment === "production";
 }
 
 /**
- * 現在の環境がdevelopmentかどうかを判定
+ * Check whether the current environment is development
  */
 export function isDevelopment(): boolean {
   return currentEnvironment === "development";

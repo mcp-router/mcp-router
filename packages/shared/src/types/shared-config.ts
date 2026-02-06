@@ -1,29 +1,29 @@
 /**
- * 共通設定ファイルの型定義
- * ワークスペース間で共有される設定を管理
+ * Shared config file type definitions
+ * Manages settings shared across workspaces
  */
 
 import { AppSettings } from "./settings-types";
 import { Token, TokenServerAccess } from "./token-types";
 
 /**
- * 共通設定ファイルの構造
+ * Shared config file structure
  */
 export interface SharedConfig {
   /**
-   * アプリケーション全体の設定
+   * Application-wide settings
    */
   settings: AppSettings;
 
   /**
-   * MCP Apps（トークン）の設定
+   * MCP Apps (tokens) configuration
    */
   mcpApps: {
     tokens: Token[];
   };
 
   /**
-   * マイグレーション情報
+   * Migration metadata
    */
   _meta?: {
     version: string;
@@ -33,41 +33,41 @@ export interface SharedConfig {
 }
 
 /**
- * 共通設定マネージャーのインターフェース
+ * Shared config manager interface
  */
 export interface ISharedConfigManager {
   /**
-   * 設定を取得
+   * Get settings
    */
   getSettings(): AppSettings;
 
   /**
-   * 設定を保存
+   * Save settings
    */
   saveSettings(settings: AppSettings): void;
 
   /**
-   * トークンリストを取得
+   * Get list of tokens
    */
   getTokens(): Token[];
 
   /**
-   * トークンを保存
+   * Save a token
    */
   saveToken(token: Token): void;
 
   /**
-   * トークンを削除
+   * Delete a token
    */
   deleteToken(tokenId: string): void;
 
   /**
-   * クライアントIDに関連するトークンを削除
+   * Delete tokens associated with a client ID
    */
   deleteClientTokens(clientId: string): void;
 
   /**
-   * トークンのサーバーアクセスを更新
+   * Update token server access
    */
   updateTokenServerAccess(
     tokenId: string,
@@ -75,18 +75,18 @@ export interface ISharedConfigManager {
   ): void;
 
   /**
-   * 設定ファイルを初期化
+   * Initialize the config file
    */
   initialize(): Promise<void>;
 
   /**
-   * 既存データからマイグレーション
+   * Migrate from existing database
    */
   migrateFromDatabase(workspaceId: string): Promise<void>;
 
   /**
-   * ワークスペースのサーバーリストとトークンを同期
-   * 新しいサーバーがあれば自動的にトークンに追加
+   * Sync tokens with workspace server list
+   * Automatically adds new servers to tokens
    */
   syncTokensWithWorkspaceServers(serverList: string[]): void;
 }

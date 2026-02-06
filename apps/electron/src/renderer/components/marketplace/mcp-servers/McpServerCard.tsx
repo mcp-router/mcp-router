@@ -57,7 +57,7 @@ export interface RegistryServerWithMeta {
   };
 }
 
-export interface GitHubStats {
+interface GitHubStats {
   stars: number;
   forks: number;
   openIssues: number;
@@ -229,5 +229,3 @@ export const McpServerCard: React.FC<McpServerCardProps> = ({
     </Card>
   );
 };
-
-export default McpServerCard;

@@ -9,7 +9,7 @@ import {
 } from "@/main/modules/skills/skills-agent-paths";
 import { SkillRepository } from "@/main/modules/skills/skills.repository";
 import { getServerService } from "@/main/modules/mcp-server-manager/server-service";
-import { TokenManager } from "../mcp-apps-manager/token-manager";
+import { TokenManager } from "./token-manager";
 import {
   isPathContained,
   isPathAllowed,

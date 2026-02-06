@@ -80,6 +80,18 @@ Only relevant for filesystem-based MCP servers. Current mcp-router architecture 
 
 ---
 
+## MCP Protocol Version Header
+
+The `MCP-Protocol-Version` header is automatically handled by `@modelcontextprotocol/sdk` v1.25.2+ (enforced via pnpm override). No manual implementation required in mcp-router.
+
+The SDK transport layer handles:
+- **Client:** Sends header via `StreamableHTTPClientTransport.setProtocolVersion()`
+- **Server:** Validates header in `WebStandardStreamableHTTPServerTransport.validateProtocolVersion()`
+
+**Reference:** [MCP 2025-06-18 spec changelog](https://modelcontextprotocol.io/specification/2025-06-18/changelog)
+
+---
+
 ## Implementation Notes
 
 When revisiting these features, check:

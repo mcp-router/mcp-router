@@ -5,7 +5,7 @@ import type {
   WorkflowEdge,
 } from "@mcp_router/shared";
 
-export interface WorkflowStoreState {
+interface WorkflowStoreState {
   // Workflow state
   workflows: WorkflowDefinition[];
   selectedWorkflow: WorkflowDefinition | null;
@@ -25,7 +25,7 @@ export interface WorkflowStoreState {
   error: string | null;
 }
 
-export interface WorkflowStoreActions {
+interface WorkflowStoreActions {
   // Workflow management actions
   setWorkflows: (workflows: WorkflowDefinition[]) => void;
   setSelectedWorkflow: (workflow: WorkflowDefinition | null) => void;
@@ -57,7 +57,7 @@ export interface WorkflowStoreActions {
   resetStore: () => void;
 }
 
-export type WorkflowStore = WorkflowStoreState & WorkflowStoreActions;
+type WorkflowStore = WorkflowStoreState & WorkflowStoreActions;
 
 const initialState: WorkflowStoreState = {
   workflows: [],

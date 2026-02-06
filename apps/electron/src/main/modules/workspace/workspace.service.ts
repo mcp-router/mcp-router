@@ -34,7 +34,7 @@ export class WorkspaceService extends SingletonService<
   }
 
   private initializeMetaDatabase(): void {
-    // mcprouter.dbを使用するように変更
+    // Use mcprouter.db
     const metaDbPath = path.join(app.getPath("userData"), "mcprouter.db");
     this.metaDb = new SqliteManager(metaDbPath);
     this.createMetaTables();
@@ -67,7 +67,7 @@ export class WorkspaceService extends SingletonService<
       .get("local-default");
 
     if (!existing) {
-      // 既存のmcprouter.dbが存在するか確認
+      // Check if existing mcprouter.db exists
       const legacyDbPath = path.join(app.getPath("userData"), "mcprouter.db");
       const legacyDbExists = fsSync.existsSync(legacyDbPath);
 
@@ -76,7 +76,7 @@ export class WorkspaceService extends SingletonService<
           "[WorkspaceService] Using existing mcprouter.db as default workspace",
         );
 
-        // 既存のDBをそのまま使用する設定
+        // Configure to use existing DB as-is
         const defaultWorkspace: Workspace = {
           id: "local-default",
           name: "Local",
@@ -85,10 +85,10 @@ export class WorkspaceService extends SingletonService<
           createdAt: new Date(),
           lastUsedAt: new Date(),
           localConfig: {
-            databasePath: "mcprouter.db", // 既存のパスを使用
+            databasePath: "mcprouter.db", // Use existing path
           },
           displayInfo: {
-            // 既存データを使用していることを示す
+            // Indicates using existing data
             teamName: "Using existing data",
           },
         };
@@ -110,7 +110,7 @@ export class WorkspaceService extends SingletonService<
             JSON.stringify(defaultWorkspace.localConfig),
           );
       } else {
-        // 新規インストールの場合は新しいデータベースを作成
+        // For new installs, create a new database
         const defaultWorkspace: Workspace = {
           id: "local-default",
           name: "Local",
@@ -152,7 +152,7 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * ワークスペース一覧を取得
+   * Get workspace list
    */
   async list(): Promise<Workspace[]> {
     try {
@@ -167,7 +167,7 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * ワークスペースをIDで取得
+   * Get workspace by ID
    */
   async findById(id: string): Promise<Workspace | null> {
     try {
@@ -182,7 +182,7 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * 新しいワークスペースを作成
+   * Create a new workspace
    */
   async create(config: WorkspaceCreateConfig): Promise<Workspace> {
     try {
@@ -199,12 +199,12 @@ export class WorkspaceService extends SingletonService<
         remoteConfig: config.remoteConfig,
       };
 
-      // すべてのワークスペースにデータベースパスを設定（リモートも含む）
+      // Set database path for all workspaces (including remote)
       workspace.localConfig = {
         databasePath: path.join("workspaces", workspaceId, "database.db"),
       };
 
-      // リモートワークスペースの場合、設定を保存
+      // Save remote config if workspace is remote
       if (config.type === "remote" && config.remoteConfig) {
         workspace.remoteConfig = config.remoteConfig;
       }
@@ -237,7 +237,7 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * ワークスペースを更新
+   * Update a workspace
    */
   async update(id: string, updates: Partial<Workspace>): Promise<void> {
     try {
@@ -246,15 +246,13 @@ export class WorkspaceService extends SingletonService<
       const workspace = await this.findById(id);
       if (!workspace) throw new Error(`Workspace ${id} not found`);
 
-      // 認証トークンの更新処理は特に必要なし
-
       const updated = { ...workspace, ...updates, lastUsedAt: new Date() };
 
       this.metaDb
         .prepare(
           `
-        UPDATE workspaces 
-        SET name = ?, type = ?, isActive = ?, lastUsedAt = ?, 
+        UPDATE workspaces
+        SET name = ?, type = ?, isActive = ?, lastUsedAt = ?,
             localConfig = ?, remoteConfig = ?, displayInfo = ?
         WHERE id = ?
       `,
@@ -275,7 +273,7 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * 既存のデータベースから新しいワークスペースにデータをコピー
+   * Copy data from an existing database to a new workspace
    */
   async copyDataToNewWorkspace(
     sourceDbPath: string,
@@ -290,12 +288,12 @@ export class WorkspaceService extends SingletonService<
       const targetDb = await this.getWorkspaceDatabase(targetWorkspaceId);
       const sourceDb = new SqliteManager(sourceDbPath);
 
-      // テーブルごとにデータをコピー
+      // Copy data for each table
       const tables = ["servers", "logs", "settings", "tokens"];
 
       for (const table of tables) {
         try {
-          // ソーステーブルが存在するか確認
+          // Check if source table exists
           const tableExists = sourceDb.get(
             "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
             [table],
@@ -306,14 +304,14 @@ export class WorkspaceService extends SingletonService<
               `[WorkspaceService] Copying data from ${table} table...`,
             );
 
-            // データを取得
+            // Get data
             const rows = sourceDb.all(`SELECT * FROM ${table}`);
 
             if (rows.length > 0) {
-              // ターゲットテーブルをクリア
+              // Clear target table
               targetDb.exec(`DELETE FROM ${table}`);
 
-              // データを挿入
+              // Insert data
               for (const row of rows) {
                 const columns = Object.keys(row as object).join(", ");
                 const placeholders = Object.keys(row as object)
@@ -349,13 +347,13 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * ワークスペースを削除
+   * Delete a workspace
    */
   async delete(id: string): Promise<void> {
     try {
       if (!this.metaDb) throw new Error("Meta database not initialized");
 
-      // デフォルトワークスペースは削除できない
+      // Cannot delete the default workspace
       if (id === "local-default") {
         throw new Error("Cannot delete default local workspace");
       }
@@ -366,23 +364,23 @@ export class WorkspaceService extends SingletonService<
       }
 
       if (workspace.isActive) {
-        // アクティブなワークスペースを削除する場合は、デフォルトに切り替え
+        // If deleting the active workspace, switch to default
         await this.switchWorkspace("local-default");
       }
 
-      // データベースインスタンスをクローズ
+      // Close database instance
       if (this.databaseInstances.has(id)) {
         const db = this.databaseInstances.get(id);
         db?.close();
         this.databaseInstances.delete(id);
       }
 
-      // セッションの削除
+      // Remove session
       if (this.electronSessions.has(id)) {
         this.electronSessions.delete(id);
       }
 
-      // ワークスペースディレクトリを削除（ローカル・リモート両方）
+      // Delete workspace directory (both local and remote)
       if (workspace.localConfig?.databasePath) {
         const workspaceDir = path.dirname(
           path.join(
@@ -393,7 +391,7 @@ export class WorkspaceService extends SingletonService<
         await fs.rm(workspaceDir, { recursive: true, force: true });
       }
 
-      // メタデータから削除
+      // Delete from metadata
       this.metaDb.prepare("DELETE FROM workspaces WHERE id = ?").run(id);
     } catch (error) {
       this.handleError("delete", error);
@@ -401,7 +399,7 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * アクティブなワークスペースを取得
+   * Get the active workspace
    */
   async getActiveWorkspace(): Promise<Workspace | null> {
     try {
@@ -416,7 +414,7 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * 認証情報の取得
+   * Get credentials for a workspace
    */
   async getWorkspaceCredentials(workspaceId: string): Promise<string | null> {
     try {
@@ -428,21 +426,21 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * ワークスペース固有のデータベースを取得
+   * Get the workspace-specific database
    */
   async getWorkspaceDatabase(workspaceId: string): Promise<SqliteManager> {
     if (!this.databaseInstances.has(workspaceId)) {
       const workspace = await this.findById(workspaceId);
       if (!workspace) throw new Error(`Workspace ${workspaceId} not found`);
 
-      // ローカル・リモート両方のワークスペースでデータベースを作成
+      // Create database for both local and remote workspaces
       const dbPath =
         workspace.localConfig?.databasePath ||
         path.join("workspaces", workspaceId, "database.db");
 
       const fullPath = path.join(app.getPath("userData"), dbPath);
 
-      // ディレクトリが存在しない場合は作成
+      // Create directory if it doesn't exist
       await fs.mkdir(path.dirname(fullPath), { recursive: true });
 
       const db = new SqliteManager(fullPath);
@@ -456,7 +454,7 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * セッションの分離
+   * Get an isolated session for a workspace
    */
   getIsolatedSession(workspaceId: string): Electron.Session {
     if (!this.electronSessions.has(workspaceId)) {
@@ -468,7 +466,7 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * ワークスペース切り替え
+   * Switch workspace
    */
   async switchWorkspace(workspaceId: string): Promise<void> {
     try {
@@ -479,7 +477,7 @@ export class WorkspaceService extends SingletonService<
         throw new Error("Workspace not found");
       }
 
-      // 現在のDBをクローズ
+      // Close current DB
       const currentWorkspace = await this.getActiveWorkspace();
       if (currentWorkspace && this.databaseInstances.has(currentWorkspace.id)) {
         const currentDb = this.databaseInstances.get(currentWorkspace.id);
@@ -487,7 +485,7 @@ export class WorkspaceService extends SingletonService<
         this.databaseInstances.delete(currentWorkspace.id);
       }
 
-      // 新しいワークスペースをアクティブに
+      // Activate the new workspace
       this.metaDb.transaction(() => {
         this.metaDb!.prepare("UPDATE workspaces SET isActive = 0").run();
         this.metaDb!.prepare(
@@ -495,7 +493,7 @@ export class WorkspaceService extends SingletonService<
         ).run(new Date().toISOString(), workspaceId);
       });
 
-      // イベントを発火して、Platform APIの切り替えをトリガー
+      // Emit event to trigger Platform API switching
       this.eventEmitter.emit("workspace-switched", workspace);
     } catch (error) {
       this.handleError("switch", error);
@@ -503,14 +501,14 @@ export class WorkspaceService extends SingletonService<
   }
 
   /**
-   * ワークスペース切り替えイベントのリスナー登録
+   * Register listener for workspace switch events
    */
   onWorkspaceSwitched(callback: (workspace: Workspace) => void): void {
     this.eventEmitter.on("workspace-switched", callback);
   }
 
   /**
-   * ワークスペース切り替えイベントのリスナー解除
+   * Unregister listener for workspace switch events
    */
   offWorkspaceSwitched(callback: (workspace: Workspace) => void): void {
     this.eventEmitter.off("workspace-switched", callback);
@@ -531,25 +529,25 @@ export class WorkspaceService extends SingletonService<
   }
 
   private cleanup(): void {
-    // すべてのデータベースインスタンスをクローズ
+    // Close all database instances
     for (const [_, db] of this.databaseInstances) {
       db.close();
     }
     this.databaseInstances.clear();
 
-    // メタデータベースをクローズ
+    // Close meta database
     if (this.metaDb) {
       this.metaDb.close();
       this.metaDb = null;
     }
 
-    // セッションをクリア
+    // Clear sessions
     this.electronSessions.clear();
   }
 }
 
 /**
- * WorkspaceServiceのシングルトンインスタンスを取得
+ * Get the singleton instance of WorkspaceService
  */
 export function getWorkspaceService(): WorkspaceService {
   return WorkspaceService.getInstance();

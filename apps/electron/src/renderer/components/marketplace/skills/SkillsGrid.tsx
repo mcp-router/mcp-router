@@ -395,5 +395,3 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({
     </div>
   );
 };
-
-export default SkillsGrid;

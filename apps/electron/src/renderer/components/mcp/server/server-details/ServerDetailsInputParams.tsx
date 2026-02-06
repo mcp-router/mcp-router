@@ -39,7 +39,7 @@ const ServerDetailsInputParams: React.FC<ServerDetailsInputParamsProps> = ({
   const validateField = (key: string, param: MCPInputParam, value: string) => {
     const newErrors = { ...errors };
 
-    // 必須チェック
+    // Required field check
     if (param.required && !value.trim()) {
       newErrors[key] = t("validation.required");
     } else if (param.type === "number" && value.trim()) {

@@ -3,15 +3,15 @@ import { getWorkspaceService } from "@/main/modules/workspace/workspace.service"
 import type { WorkspaceCreateConfig } from "@mcp_router/shared";
 
 /**
- * ワークスペース関連のIPCハンドラーを登録
+ * Register IPC handlers for workspaces
  */
 export function setupWorkspaceHandlers(): void {
-  // ワークスペース一覧取得
+  // Get workspace list
   ipcMain.handle("workspace:list", async () => {
     return getWorkspaceService().list();
   });
 
-  // ワークスペース作成
+  // Create workspace
   ipcMain.handle(
     "workspace:create",
     async (_, config: WorkspaceCreateConfig) => {
@@ -19,34 +19,34 @@ export function setupWorkspaceHandlers(): void {
     },
   );
 
-  // ワークスペース更新
+  // Update workspace
   ipcMain.handle("workspace:update", async (_, id: string, updates: any) => {
     await getWorkspaceService().update(id, updates);
     return { success: true };
   });
 
-  // ワークスペース削除
+  // Delete workspace
   ipcMain.handle("workspace:delete", async (_, id: string) => {
     await getWorkspaceService().delete(id);
     return { success: true };
   });
 
-  // ワークスペース切り替え
+  // Switch workspace
   ipcMain.handle("workspace:switch", async (_, workspaceId: string) => {
     await getWorkspaceService().switchWorkspace(workspaceId);
 
-    // Platform APIマネージャーがワークスペース切り替えイベントをリッスンしているため、
-    // 自動的にPlatform APIの再初期化が行われる
+    // The Platform API Manager listens for workspace switch events,
+    // so Platform API re-initialization happens automatically
 
     return { success: true };
   });
 
-  // 現在のワークスペース取得
+  // Get current workspace
   ipcMain.handle("workspace:current", async () => {
     return getWorkspaceService().getActiveWorkspace();
   });
 
-  // ワークスペース認証情報取得（復号化）
+  // Get workspace credentials (decrypted)
   ipcMain.handle(
     "workspace:get-credentials",
     async (_, workspaceId: string) => {

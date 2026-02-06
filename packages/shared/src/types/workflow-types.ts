@@ -41,8 +41,8 @@ export interface WorkflowEdge {
  */
 export interface WorkflowHook {
   id: string;
-  hookModuleId?: string; // HookModuleへの参照
-  script?: string; // Inline Script用（hookModuleIdがない場合のみ使用）
+  hookModuleId?: string; // Reference to HookModule
+  script?: string; // For inline scripts (used only when hookModuleId is absent)
   blocking: boolean;
 }
 

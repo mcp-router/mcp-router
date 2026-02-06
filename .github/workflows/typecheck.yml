@@ -31,3 +31,9 @@ jobs:
         
       - name: Run typecheck
         run: pnpm run typecheck
+
+      - name: Run knip (unused code detection)
+        run: pnpm knip
+
+      - name: Run lint
+        run: pnpm lint:fix

@@ -12,18 +12,18 @@ import {
 import { usePlatformAPI } from "@/renderer/platform-api";
 
 interface ActivityDataParams {
-  /** ヒートマップ表示期間（日数） */
+  /** Heatmap display period (in days) */
   heatmapDays?: number;
-  /** 選択中の日付（YYYY-MM-DD形式） */
+  /** Selected date (YYYY-MM-DD format) */
   selectedDate?: string;
-  /** リフレッシュトリガー */
+  /** Refresh trigger */
   refreshTrigger?: number;
 }
 
-/** セッショングループ化の設定 */
-const SESSION_TIME_WINDOW_MS = 30 * 60 * 1000; // 30分以内のToolExecuteをグループ化
+/** Session grouping configuration */
+const SESSION_TIME_WINDOW_MS = 30 * 60 * 1000; // Group ToolExecute calls within 30 minutes
 
-/** アクティビティとして表示するrequestType */
+/** Request types displayed as activities */
 const ACTIVITY_TYPES: ActivityType[] = [
   "ToolDiscovery",
   "ToolExecute",
@@ -33,22 +33,22 @@ const ACTIVITY_TYPES: ActivityType[] = [
 ];
 
 interface ActivityDataResult {
-  /** ヒートマップデータ */
+  /** Heatmap data */
   heatmapData: HeatmapData;
-  /** 選択日のWord Cloudデータ */
+  /** Word cloud data for the selected date */
   wordCloudData: WordCloudItem[];
-  /** 選択日のActivityアイテム（セッションまたは単独エントリ） */
+  /** Activity items for the selected date (sessions or standalone entries) */
   activityItems: ActivityItem[];
-  /** ローディング状態 */
+  /** Loading state */
   loading: boolean;
-  /** エラー */
+  /** Error */
   error: string | null;
-  /** データ再取得 */
+  /** Refetch data */
   refetch: () => Promise<void>;
 }
 
 /**
- * RequestLogEntryからActivityLogEntryに変換
+ * Convert RequestLogEntry to ActivityLogEntry
  */
 const toActivityLogEntry = (log: RequestLogEntry): ActivityLogEntry | null => {
   const type = log.requestType as ActivityType;
@@ -71,7 +71,7 @@ const toActivityLogEntry = (log: RequestLogEntry): ActivityLogEntry | null => {
     const params = log.requestParams || {};
     const response = log.responseData;
 
-    // responseDataからdiscoveredToolsを抽出
+    // Extract discoveredTools from responseData
     let discoveredTools: ActivityLogEntry["discoveredTools"] = [];
     if (response?.content?.[0]?.text) {
       try {
@@ -112,7 +112,7 @@ const toActivityLogEntry = (log: RequestLogEntry): ActivityLogEntry | null => {
     };
   }
 
-  // CallTool: 直接ツール呼び出し
+  // CallTool: direct tool invocation
   if (type === "CallTool") {
     const params = log.requestParams || {};
     const toolName = params.name || "";
@@ -126,7 +126,7 @@ const toActivityLogEntry = (log: RequestLogEntry): ActivityLogEntry | null => {
     };
   }
 
-  // GetPrompt: プロンプト取得
+  // GetPrompt: prompt retrieval
   if (type === "GetPrompt") {
     const params = log.requestParams || {};
     const promptName = params.name || "";
@@ -140,7 +140,7 @@ const toActivityLogEntry = (log: RequestLogEntry): ActivityLogEntry | null => {
     };
   }
 
-  // ReadResource: リソース読み取り
+  // ReadResource: resource read
   if (type === "ReadResource") {
     const params = log.requestParams || {};
     const resourceUri = params.uri || "";
@@ -157,7 +157,7 @@ const toActivityLogEntry = (log: RequestLogEntry): ActivityLogEntry | null => {
 };
 
 /**
- * 日付文字列を取得（YYYY-MM-DD形式）
+ * Get date string (YYYY-MM-DD format)
  */
 const getDateString = (timestamp: number): string => {
   const date = new Date(timestamp);
@@ -165,14 +165,14 @@ const getDateString = (timestamp: number): string => {
 };
 
 /**
- * 時間（0-23）を取得
+ * Get hour (0-23)
  */
 const getHour = (timestamp: number): number => {
   return new Date(timestamp).getHours();
 };
 
 /**
- * Activity（ToolDiscovery/ToolExecute）データを取得・加工するフック
+ * Hook for fetching and processing activity (ToolDiscovery/ToolExecute) data
  */
 export const useActivityData = (
   params: ActivityDataParams,
@@ -184,7 +184,7 @@ export const useActivityData = (
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // データ取得
+  // Fetch data
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -194,14 +194,14 @@ export const useActivityData = (
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - heatmapDays);
 
-      // requestTypeフィルターなしで全ログを取得
+      // Get all logs without requestType filter
       const result = await platformAPI.logs.query({
         startDate,
         endDate,
         limit: 1000,
       });
 
-      // クライアント側でActivityType対象のみをフィルタ
+      // Filter for ActivityType targets on the client side
       const allLogs = (result.logs || [])
         .filter((log) =>
           ACTIVITY_TYPES.includes(log.requestType as ActivityType),
@@ -222,7 +222,7 @@ export const useActivityData = (
     fetchData();
   }, [fetchData]);
 
-  // ヒートマップデータを計算
+  // Calculate heatmap data
   const heatmapData = useMemo((): HeatmapData => {
     const cellMap = new Map<string, number>();
 
@@ -257,7 +257,7 @@ export const useActivityData = (
     return { cells, maxCount };
   }, [rawLogs]);
 
-  // 選択日のWord Cloudデータを計算
+  // Calculate word cloud data for the selected date
   const wordCloudData = useMemo((): WordCloudItem[] => {
     if (!selectedDate) return [];
 
@@ -283,7 +283,7 @@ export const useActivityData = (
       .sort((a, b) => b.value - a.value);
   }, [rawLogs, selectedDate]);
 
-  // 選択日のActivityアイテムを計算（セッショングループ化）
+  // Calculate activity items for the selected date (with session grouping)
   const activityItems = useMemo((): ActivityItem[] => {
     if (!selectedDate) return [];
 
@@ -291,15 +291,15 @@ export const useActivityData = (
       .filter((log) => getDateString(log.timestamp) === selectedDate)
       .map(toActivityLogEntry)
       .filter((entry): entry is ActivityLogEntry => entry !== null)
-      .sort((a, b) => a.timestamp - b.timestamp); // 時系列順にソート
+      .sort((a, b) => a.timestamp - b.timestamp); // Sort chronologically
 
     const items: ActivityItem[] = [];
     const usedExecuteIds = new Set<string>();
 
-    // ToolDiscoveryごとにセッションを構築
+    // Build sessions around each ToolDiscovery
     const discoveries = entries.filter((e) => e.type === "ToolDiscovery");
     const executes = entries.filter((e) => e.type === "ToolExecute");
-    // CallTool, GetPrompt, ReadResourceは単独エントリとして表示
+    // CallTool, GetPrompt, ReadResource are displayed as standalone entries
     const standaloneEntries = entries.filter(
       (e) =>
         e.type === "CallTool" ||
@@ -308,31 +308,31 @@ export const useActivityData = (
     );
 
     for (const discovery of discoveries) {
-      // このDiscoveryに関連するToolExecuteを探す
+      // Find ToolExecute entries related to this Discovery
       const relatedExecutes: ActivityLogEntry[] = [];
       const discoveredToolKeys = new Set(
         discovery.discoveredTools?.map((t) => t.toolKey) || [],
       );
 
       for (const exec of executes) {
-        // 既に使用済みのExecuteはスキップ
+        // Skip already used Execute entries
         if (usedExecuteIds.has(exec.id)) continue;
 
-        // 同じクライアントからのリクエストかチェック
+        // Check if from the same client
         if (exec.clientId !== discovery.clientId) continue;
 
-        // 時間範囲内かチェック（Discovery後〜30分以内）
+        // Check if within time range (after Discovery, within 30 minutes)
         const timeDiff = exec.timestamp - discovery.timestamp;
         if (timeDiff < 0 || timeDiff > SESSION_TIME_WINDOW_MS) continue;
 
-        // 発見されたツールを実行しているかチェック
+        // Check if executing a discovered tool
         if (exec.toolKey && discoveredToolKeys.has(exec.toolKey)) {
           relatedExecutes.push(exec);
           usedExecuteIds.add(exec.id);
         }
       }
 
-      // セッションとして追加
+      // Add as session
       const session: ActivitySession = {
         id: discovery.id,
         timestamp: discovery.timestamp,
@@ -345,19 +345,19 @@ export const useActivityData = (
       items.push({ type: "session", session });
     }
 
-    // 未使用のToolExecuteは単独エントリとして追加
+    // Add unused ToolExecute entries as standalone
     for (const exec of executes) {
       if (!usedExecuteIds.has(exec.id)) {
         items.push({ type: "standalone", entry: exec });
       }
     }
 
-    // CallTool, GetPrompt, ReadResourceも単独エントリとして追加
+    // Add CallTool, GetPrompt, ReadResource as standalone entries
     for (const entry of standaloneEntries) {
       items.push({ type: "standalone", entry });
     }
 
-    // 最新が上になるようにソート
+    // Sort with newest first
     return items.sort((a, b) => {
       const tsA =
         a.type === "session" ? a.session.timestamp : a.entry.timestamp;

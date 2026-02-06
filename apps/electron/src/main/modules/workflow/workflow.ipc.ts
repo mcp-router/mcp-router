@@ -3,10 +3,10 @@ import { getWorkflowService } from "@/main/modules/workflow/workflow.service";
 import type { WorkflowDefinition } from "@mcp_router/shared";
 
 /**
- * ワークフロー関連のIPCハンドラーを登録
+ * Register IPC handlers for Workflows
  */
 export function setupWorkflowHandlers(): void {
-  // ワークフロー一覧取得
+  // Get workflow list
   ipcMain.handle("workflow:list", async () => {
     try {
       return await getWorkflowService().getAllWorkflows();
@@ -16,7 +16,7 @@ export function setupWorkflowHandlers(): void {
     }
   });
 
-  // ワークフロー取得
+  // Get workflow
   ipcMain.handle("workflow:get", async (_, id: string) => {
     try {
       return await getWorkflowService().getWorkflowById(id);
@@ -26,7 +26,7 @@ export function setupWorkflowHandlers(): void {
     }
   });
 
-  // ワークフロー作成
+  // Create workflow
   ipcMain.handle(
     "workflow:create",
     async (
@@ -42,7 +42,7 @@ export function setupWorkflowHandlers(): void {
     },
   );
 
-  // ワークフロー更新
+  // Update workflow
   ipcMain.handle(
     "workflow:update",
     async (
@@ -59,7 +59,7 @@ export function setupWorkflowHandlers(): void {
     },
   );
 
-  // ワークフロー削除
+  // Delete workflow
   ipcMain.handle("workflow:delete", async (_, id: string) => {
     try {
       return await getWorkflowService().deleteWorkflow(id);
@@ -69,7 +69,7 @@ export function setupWorkflowHandlers(): void {
     }
   });
 
-  // ワークフローをアクティブに設定
+  // Set workflow as active
   ipcMain.handle("workflow:setActive", async (_, id: string) => {
     try {
       return await getWorkflowService().setActiveWorkflow(id);
@@ -79,7 +79,7 @@ export function setupWorkflowHandlers(): void {
     }
   });
 
-  // ワークフローを無効化
+  // Disable workflow
   ipcMain.handle("workflow:disable", async (_, id: string) => {
     try {
       return await getWorkflowService().disableWorkflow(id);
@@ -89,7 +89,7 @@ export function setupWorkflowHandlers(): void {
     }
   });
 
-  // ワークフロー実行
+  // Execute workflow
   ipcMain.handle("workflow:execute", async (_, id: string, context?: any) => {
     try {
       return await getWorkflowService().executeWorkflow(id, context);
@@ -99,7 +99,7 @@ export function setupWorkflowHandlers(): void {
     }
   });
 
-  // 有効なワークフロー取得
+  // Get enabled workflows
   ipcMain.handle("workflow:listEnabled", async () => {
     try {
       return await getWorkflowService().getEnabledWorkflows();
@@ -109,7 +109,7 @@ export function setupWorkflowHandlers(): void {
     }
   });
 
-  // タイプ別ワークフロー取得
+  // Get workflows by type
   ipcMain.handle("workflow:listByType", async (_, workflowType: string) => {
     try {
       return await getWorkflowService().getWorkflowsByType(workflowType);

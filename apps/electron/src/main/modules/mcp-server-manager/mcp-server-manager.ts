@@ -2,12 +2,49 @@ import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
 import { EventEmitter } from "events";
-import { MCPServer, MCPServerConfig, MCPTool } from "@mcp_router/shared";
+import { MCPServer, MCPServerConfig, MCPTool, MCPInputParam } from "@mcp_router/shared";
 import {
   getServerService,
   ServerService,
 } from "@/main/modules/mcp-server-manager/server-service";
-import { substituteArgsParameters } from "../mcp-apps-manager/mcp-apps-manager.service";
+
+/**
+ * Substitutes parameter placeholders in args with actual values from env and inputParams
+ */
+function substituteArgsParameters(
+  argsTemplate: string[],
+  env: Record<string, string>,
+  inputParams: Record<string, MCPInputParam>,
+): string[] {
+  return argsTemplate.map((arg) => {
+    const match = arg.match(/^\$\{(.+)\}$/);
+    if (match) {
+      const fullParamName = match[1];
+
+      if (fullParamName.startsWith("user_config.")) {
+        const paramName = fullParamName.substring("user_config.".length);
+        if (inputParams[paramName]) {
+          const param = inputParams[paramName];
+          if (param.default !== undefined) {
+            return String(param.default);
+          }
+        }
+      }
+
+      if (env[fullParamName]) {
+        return env[fullParamName];
+      }
+
+      if (inputParams[fullParamName]) {
+        const param = inputParams[fullParamName];
+        if (param.default !== undefined) {
+          return String(param.default);
+        }
+      }
+    }
+    return arg;
+  });
+}
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import { DevWatcherService } from "./dev-watcher.service";
 import { ReconnectingMCPClient } from "./reconnecting-mcp-client";
@@ -265,7 +302,7 @@ export class MCPServerManager {
     try {
       const {
         TokenManager,
-      } = require("@/main/modules/mcp-apps-manager/token-manager");
+      } = require("@/main/modules/client-apps/token-manager");
       const tokenManager = new TokenManager();
       const allTokens = tokenManager.listTokens();
 

@@ -20,7 +20,7 @@ export class MCPHttpServer {
   private serverManager: MCPServerManager;
   private aggregatorServer: AggregatorServer;
   private tokenValidator: TokenValidator;
-  // SSEセッション用のマップ
+  // Map for SSE sessions
   private sseSessions: Map<string, SSEServerTransport> = new Map();
   private sseSessionProjects: Map<string, string | null> = new Map();
 
@@ -34,7 +34,7 @@ export class MCPHttpServer {
       aggregatorServer || new AggregatorServer(serverManager);
     this.port = port;
     this.app = express();
-    // TokenValidatorはサーバー名とIDのマッピングが必要
+    // TokenValidator requires a server name-to-ID mapping
     this.tokenValidator = new TokenValidator(new Map());
     this.configureMiddleware();
     this.configureRoutes();
@@ -50,7 +50,7 @@ export class MCPHttpServer {
     // Enable CORS
     this.app.use(cors());
 
-    // 認証ミドルウェアの作成
+    // Create authentication middleware
     const authMiddleware = (
       req: express.Request,
       res: express.Response,
@@ -95,10 +95,10 @@ export class MCPHttpServer {
       next();
     };
 
-    // /mcp エンドポイントを直接ルートに設定し、バージョニングなしで公開
+    // Set /mcp endpoint as a direct route, exposed without versioning
     this.app.use("/mcp", authMiddleware);
 
-    // /mcp/sse エンドポイントを直接ルートに設定し、バージョニングなしで公開
+    // Set /mcp/sse endpoint as a direct route, exposed without versioning
     this.app.use("/mcp/sse", authMiddleware);
 
     // /api routes need authentication
@@ -185,7 +185,7 @@ export class MCPHttpServer {
   private configureMcpRoute(): void {
     // POST /mcp - Handle MCP requests (direct route without versioning)
     this.app.post("/mcp", async (req, res) => {
-      // オリジナルのリクエストボディをコピー
+      // Copy the original request body
       const modifiedBody = { ...req.body };
 
       try {
@@ -243,16 +243,16 @@ export class MCPHttpServer {
     // GET /mcp/sse - Handle SSE connection setup
     this.app.get("/mcp/sse", async (req, res) => {
       try {
-        // ヘッダーを設定
+        // Set headers
         res.setHeader("Content-Type", "text/event-stream");
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Connection", "keep-alive");
 
-        // SSEサーバートランスポートの作成
+        // Create SSE server transport
         const messageEndpoint = "/mcp/messages";
         const transport = new SSEServerTransport(messageEndpoint, res);
 
-        // ユニークなセッションIDを取得
+        // Get the unique session ID
         const sessionId = transport.sessionId;
 
         // Check if current workspace is remote
@@ -277,11 +277,11 @@ export class MCPHttpServer {
           return;
         }
 
-        // セッションの保存
+        // Save the session
         this.sseSessions.set(sessionId, transport);
         this.sseSessionProjects.set(sessionId, projectFilter);
 
-        // クライアントが切断したときのクリーンアップ
+        // Cleanup when the client disconnects
         res.on("close", () => {
           this.sseSessions.delete(sessionId);
           this.sseSessionProjects.delete(sessionId);
@@ -300,7 +300,7 @@ export class MCPHttpServer {
           await this.aggregatorServer.getAggregatorServer().connect(transport);
         }
 
-        // セッションID情報をクライアントに送信
+        // Send session ID info to the client
         res.write(`data: ${JSON.stringify({ sessionId })}\n\n`);
       } catch (error) {
         console.error("Error establishing SSE connection:", error);
@@ -313,7 +313,7 @@ export class MCPHttpServer {
     // POST /mcp/messages - Handle client-to-server messages
     this.app.post("/mcp/messages", async (req, res) => {
       try {
-        // セッションIDをクエリパラメータまたはヘッダーから取得
+        // Get session ID from query parameter or header
         const sessionId =
           (req.query.sessionId as string) ||
           (req.headers["mcp-session-id"] as string);
@@ -330,7 +330,7 @@ export class MCPHttpServer {
           return;
         }
 
-        // セッションを検索
+        // Look up the session
         const transport = this.sseSessions.get(sessionId);
         if (!transport) {
           res.status(404).json({
@@ -344,7 +344,7 @@ export class MCPHttpServer {
           return;
         }
 
-        // リクエストボディをコピー
+        // Copy the request body
         const modifiedBody = { ...req.body };
 
         let projectFilter: string | null;
@@ -375,7 +375,7 @@ export class MCPHttpServer {
         const token = req.headers["authorization"];
         this.attachRequestMetadata(modifiedBody, token, projectFilter);
 
-        // トランスポートでメッセージを処理
+        // Process the message via transport
         await transport.handlePostMessage(req, res, modifiedBody);
       } catch (error) {
         console.error("Error handling SSE message:", error);

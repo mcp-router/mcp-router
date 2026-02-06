@@ -3,7 +3,7 @@ import { IconSearch, IconX } from "@tabler/icons-react";
 import { Input, Button } from "@mcp_router/ui";
 import { cn } from "@/renderer/utils/tailwind-utils";
 
-export interface MarketplaceSearchProps {
+interface MarketplaceSearchProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -147,5 +147,3 @@ export const MarketplaceSearch: React.FC<MarketplaceSearchProps> = ({
     </div>
   );
 };
-
-export default MarketplaceSearch;

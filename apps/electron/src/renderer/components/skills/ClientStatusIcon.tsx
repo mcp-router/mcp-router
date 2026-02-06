@@ -3,7 +3,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@mcp_router/ui";
 import { IconApps } from "@tabler/icons-react";
 import { sanitizeSvgWithStyles } from "@/renderer/utils/svg-sanitizer";
 
-export interface ClientStatusIconProps {
+interface ClientStatusIconProps {
   clientId: string;
   clientName: string;
   clientIcon?: string;
@@ -130,5 +130,3 @@ export const ClientStatusIcon: React.FC<ClientStatusIconProps> = ({
 
   return iconContent;
 };
-
-export default ClientStatusIcon;

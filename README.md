@@ -7,7 +7,6 @@
 [![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289DA?style=flat&logo=discord)](https://discord.com/invite/dwG9jPrhxB)
 [![X](https://img.shields.io/badge/X(Twitter)-@mcp__router-1DA1F2?style=flat&logo=x)](https://x.com/mcp_router)
 
-[English | [日本語](https://github.com/mcp-router/mcp-router/blob/main/README_ja.md) | [中文](https://github.com/mcp-router/mcp-router/blob/main/README_zh.md)]
 
 </div>
 
@@ -84,7 +83,43 @@ Monitor and display detailed request logs
 <img src="https://raw.githubusercontent.com/mcp-router/mcp-router/main/public/images/readme/stats.png" alt="Logs and Statistics" width="600">
 
 
-## 🤝 Community
+## Development
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+
+### Setup
+
+```bash
+pnpm install   # Install dependencies
+pnpm dev       # Start development server
+pnpm build     # Build all packages
+pnpm typecheck # Type checking
+pnpm --filter @mcp_router/electron package  # Package for distribution
+```
+
+### Architecture
+
+Turborepo monorepo with pnpm workspaces:
+
+```
+apps/
+  electron/          # Main desktop app (Electron + React)
+  cli/               # CLI tool for connecting to MCP Router
+packages/
+  shared/            # Shared types, utilities, PlatformAPI interfaces
+  remote-api-types/  # Zod schemas for remote API
+  ui/                # Shared UI components (shadcn/ui)
+  tailwind-config/   # Shared Tailwind configuration
+```
+
+The Electron app uses Clean Architecture: main process modules (service/repository/IPC per feature), Zustand stores in the renderer, and SQLite persistence via better-sqlite3.
+
+For detailed architecture and contribution guidelines, see [CLAUDE.md](./CLAUDE.md).
+
+## Community
 
 Join our community to get help, share ideas, and stay updated:
 

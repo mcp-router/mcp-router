@@ -200,5 +200,3 @@ export const SkillCard: React.FC<SkillCardProps> = ({
     </Card>
   );
 };
-
-export default SkillCard;

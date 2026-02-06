@@ -1,6 +1,6 @@
 {
   "name": "@mcp_router/cli",
-  "version": "0.2.0",
+  "version": "0.10.0",
   "description": "CLI for MCP Router - connect to an MCP HTTP server",
   "main": "dist/mcpr.js",
   "engines": {
@@ -27,8 +27,8 @@
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "@types/node": "^22.18.5",
-    "typescript": "^5.9.2"
+    "@types/node": "^22.19.3",
+    "typescript": "^5.9.3"
   },
   "keywords": [
     "mcp",

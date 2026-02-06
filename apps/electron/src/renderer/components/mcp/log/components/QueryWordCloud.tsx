@@ -8,12 +8,12 @@ import { cn } from "@/renderer/utils/tailwind-utils";
 interface QueryWordCloudProps {
   data: WordCloudItem[];
   loading?: boolean;
-  /** 最大表示単語数 */
+  /** Maximum number of words to display */
   maxWords?: number;
 }
 
 /**
- * 頻度に応じたフォントサイズを計算
+ * Calculate font size based on frequency
  */
 const getFontSize = (value: number, maxValue: number): string => {
   if (maxValue === 0) return "text-sm";
@@ -27,7 +27,7 @@ const getFontSize = (value: number, maxValue: number): string => {
 };
 
 /**
- * 頻度に応じた色を返す
+ * Return a color based on frequency
  */
 const getWordColor = (value: number, maxValue: number): string => {
   if (maxValue === 0) return "text-muted-foreground";

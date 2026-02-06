@@ -140,16 +140,16 @@ export async function run(cmd: string, args: string[] = [], useShell = false) {
   }
 }
 
-// ユーザのシェルで読み込まれる環境変数を取得する非同期関数
+// Async function to retrieve environment variables loaded by the user's shell
 export async function getUserShellEnv() {
-  // Windowsの場合、シェル初期化ファイルの問題がないのでそのまま返す
+  // On Windows, there are no shell initialization file issues, so return as-is
   if (process.platform === "win32") {
     return { ...process.env };
   }
 
   try {
-    // ログインシェル( -l ) + 対話モード( -i )を実行し、envを取得する
-    // `DISABLE_AUTO_UPDATE` は oh-my-zsh の自動アップデートを防ぐための例
+    // Run a login shell (-l) + interactive mode (-i) and capture env
+    // `DISABLE_AUTO_UPDATE` prevents oh-my-zsh auto-update prompts
     const shell = detectDefaultShell();
     const { stdout } = await execa(
       shell,
@@ -162,9 +162,9 @@ export async function getUserShellEnv() {
       },
     );
 
-    // 出力は '_ENV_DELIMITER_env_vars_ENV_DELIMITER_' の形になるので、区切ってパースする
+    // Output format is '_ENV_DELIMITER_env_vars_ENV_DELIMITER_', so split and parse
     const parts = stdout.split(DELIMITER);
-    const rawEnv = parts[1] || ""; // 区切り文字の間の部分
+    const rawEnv = parts[1] || ""; // Content between the delimiters
 
     const shellEnv: { [key: string]: string } = {};
     for (const line of stripAnsi(rawEnv).split("\n")) {
@@ -180,7 +180,7 @@ export async function getUserShellEnv() {
 
     return shellEnv;
   } catch (error) {
-    // シェルの起動に失敗した場合は、Electron / Node.js の既存の環境変数を返す
+    // If shell startup fails, return existing Electron/Node.js environment variables
     // Augment PATH with common paths to help find npm/npx binaries
     console.warn(
       "[env-utils] Failed to capture shell environment, using fallback with augmented PATH:",

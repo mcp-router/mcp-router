@@ -2,14 +2,14 @@ import { AppSettings } from "@mcp_router/shared";
 import { getSharedConfigManager } from "../../infrastructure/shared-config-manager";
 
 /**
- * アプリケーション設定を管理するリポジトリ
- * SharedConfigManagerを使用して共通設定ファイルで管理
+ * Repository for managing application settings
+ * Uses SharedConfigManager for shared configuration file storage
  */
 export class SettingsRepository {
   private static instance: SettingsRepository | null = null;
 
   /**
-   * コンストラクタ
+   * Constructor
    */
   private constructor() {
     console.log(
@@ -18,7 +18,7 @@ export class SettingsRepository {
   }
 
   /**
-   * シングルトンインスタンスを取得
+   * Get singleton instance
    */
   public static getInstance(): SettingsRepository {
     if (!SettingsRepository.instance) {
@@ -28,28 +28,28 @@ export class SettingsRepository {
   }
 
   /**
-   * インスタンスをリセット
+   * Reset instance
    */
   public static resetInstance(): void {
     SettingsRepository.instance = null;
   }
 
   /**
-   * アプリケーション設定を取得
+   * Get application settings
    */
   public getSettings(): AppSettings {
     return getSharedConfigManager().getSettings();
   }
 
   /**
-   * 全ての設定を一度に保存
+   * Save all settings at once
    */
   public saveSettings(settings: AppSettings): boolean {
     try {
       getSharedConfigManager().saveSettings(settings);
       return true;
     } catch (error) {
-      console.error("設定の保存に失敗しました:", error);
+      console.error("Failed to save settings:", error);
       return false;
     }
   }

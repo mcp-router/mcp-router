@@ -1,5 +1,7 @@
 # MCP Spec 2025-11-25 Upgrade Implementation Plan
 
+> **STATUS: Phase 1 COMPLETED, Phases 2-5 DEFERRED**
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Upgrade mcp-router to MCP specification 2025-11-25, implementing tool annotations, structured output, OAuth RFC 8707, elicitation passthrough, and resource links.

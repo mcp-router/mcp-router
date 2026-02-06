@@ -1,6 +1,6 @@
 {
   "name": "@mcp_router/tailwind-config",
-  "version": "0.5.4",
+  "version": "0.10.0",
   "private": true,
   "main": "index.js",
   "files": [
@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
-    "@types/node": "^20.19.16",
+    "@types/node": "^22.19.3",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",

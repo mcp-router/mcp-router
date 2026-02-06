@@ -348,5 +348,3 @@ export const SkillDetailsModal: React.FC<SkillDetailsModalProps> = ({
     </Dialog>
   );
 };
-
-export default SkillDetailsModal;

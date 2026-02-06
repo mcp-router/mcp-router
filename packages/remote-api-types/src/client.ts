@@ -20,9 +20,9 @@ export interface RemoteAPIClientConfig {
 }
 
 /**
- * tRPCクライアントを作成
+ * Create a tRPC client
  *
- * 注意: サーバー側でRemoteAPIRouterインターフェースに準拠したtRPCルーターを実装してください。
+ * Note: The server side must implement a tRPC router that conforms to the RemoteAPIRouter interface.
  */
 export function createRemoteAPIClient(
   config: RemoteAPIClientConfig,
@@ -36,7 +36,7 @@ export function createRemoteAPIClient(
           authorization: `Bearer ${config.token}`,
           ...config.headers,
         }),
-        // 30秒のタイムアウト
+        // 30-second timeout
         fetch: (url, options) => {
           const controller = new AbortController();
           const timeout = setTimeout(() => controller.abort(), 30000);
@@ -53,7 +53,7 @@ export function createRemoteAPIClient(
   return client as unknown as RemoteAPIClient;
 }
 
-// 型安全なクライアントインターフェース
+// Type-safe client interface
 export interface RemoteAPIClient {
   servers: {
     list: {
