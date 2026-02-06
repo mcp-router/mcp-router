@@ -705,8 +705,7 @@ export class UnifiedSkillsService extends SingletonService<
       }
     } catch (error: unknown) {
       // Top-level error (skill not found, etc.)
-      const message =
-        error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : String(error);
       result.errors.push({
         clientId: "all",
         skillId,
@@ -807,7 +806,8 @@ export class UnifiedSkillsService extends SingletonService<
           await this.disableForClient(skillId, client.id);
           result.synced.push({ clientId: client.id, skillId });
         } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : String(error);
+          const message =
+            error instanceof Error ? error.message : String(error);
           result.errors.push({
             clientId: client.id,
             skillId,
@@ -888,7 +888,8 @@ export class UnifiedSkillsService extends SingletonService<
                   });
                 }
               } catch (error: unknown) {
-                const message = error instanceof Error ? error.message : String(error);
+                const message =
+                  error instanceof Error ? error.message : String(error);
                 result.failed.push({
                   clientId: client.id,
                   skillName: skill.name,

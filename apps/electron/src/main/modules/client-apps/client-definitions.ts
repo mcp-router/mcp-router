@@ -788,4 +788,3 @@ export function getClientDetectPaths(clientId: string): string[] {
   const platform = process.platform as "darwin" | "win32" | "linux";
   return client.detectPaths[platform] || [];
 }
-

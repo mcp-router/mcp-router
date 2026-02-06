@@ -46,10 +46,7 @@ export class SqliteManager {
       this.db.pragma("journal_mode = WAL");
       this.db.pragma("foreign_keys = ON");
     } catch (error) {
-      console.error(
-        `Failed to initialize database '${dbNameOrPath}':`,
-        error,
-      );
+      console.error(`Failed to initialize database '${dbNameOrPath}':`, error);
       throw error;
     }
   }

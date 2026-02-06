@@ -158,7 +158,7 @@ describe("path-security", () => {
     });
 
     it("should reject paths outside home directory", () => {
-      const result = validateSkillSymlinkTarget("/etc/skills");
+      const result = validateSkillSymlinkTarget("/tmp/skills");
       expect(result.valid).toBe(false);
       expect(result.error).toContain("home directory");
     });

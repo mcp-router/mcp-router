@@ -122,10 +122,7 @@ export abstract class BaseRepository<T extends { id: string }> {
       // Convert to entity
       return this.mapRowToEntity(row);
     } catch (error) {
-      console.error(
-        `Error retrieving ID:${id} from ${this.tableName}:`,
-        error,
-      );
+      console.error(`Error retrieving ID:${id} from ${this.tableName}:`, error);
       throw error;
     }
   }
@@ -232,10 +229,7 @@ export abstract class BaseRepository<T extends { id: string }> {
 
       return updatedEntity;
     } catch (error) {
-      console.error(
-        `Error updating ID:${id} in ${this.tableName}:`,
-        error,
-      );
+      console.error(`Error updating ID:${id} in ${this.tableName}:`, error);
       throw error;
     }
   }
@@ -254,10 +248,7 @@ export abstract class BaseRepository<T extends { id: string }> {
 
       return true;
     } catch (error) {
-      console.error(
-        `Error deleting ID:${id} from ${this.tableName}:`,
-        error,
-      );
+      console.error(`Error deleting ID:${id} from ${this.tableName}:`, error);
       return false;
     }
   }
@@ -293,10 +284,7 @@ export abstract class BaseRepository<T extends { id: string }> {
 
       return result?.count || 0;
     } catch (error) {
-      console.error(
-        `Error getting count from ${this.tableName}:`,
-        error,
-      );
+      console.error(`Error getting count from ${this.tableName}:`, error);
       throw error;
     }
   }

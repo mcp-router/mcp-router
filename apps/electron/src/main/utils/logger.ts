@@ -88,4 +88,3 @@ export const safeConsoleError = safeLog(console.error.bind(console));
  * Safe console.warn wrapper that handles EPIPE errors gracefully.
  */
 const safeConsoleWarn = safeLog(console.warn.bind(console));
-

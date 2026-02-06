@@ -56,10 +56,7 @@ export class TokenManagerRepository {
       manager.deleteClientTokens(clientId);
       return beforeCount;
     } catch (error) {
-      console.error(
-        `Error deleting tokens for client ${clientId}:`,
-        error,
-      );
+      console.error(`Error deleting tokens for client ${clientId}:`, error);
       throw error;
     }
   }
@@ -81,10 +78,7 @@ export class TokenManagerRepository {
     try {
       return getSharedConfigManager().getTokensByClientId(clientId);
     } catch (error) {
-      console.error(
-        `Error getting tokens for client ID ${clientId}:`,
-        error,
-      );
+      console.error(`Error getting tokens for client ID ${clientId}:`, error);
       throw error;
     }
   }

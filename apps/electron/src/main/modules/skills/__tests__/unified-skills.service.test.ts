@@ -1,40 +1,43 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { promises as fsPromises } from "fs";
 
-// Mock dependencies
-const mockSkillRepo = {
-  getById: vi.fn(),
-  getAll: vi.fn(),
-  findByName: vi.fn(),
-  add: vi.fn(),
-  update: vi.fn(),
-  delete: vi.fn(),
-};
-
-const mockStateRepo = {
-  findBySkillAndClient: vi.fn(),
-  findBySkill: vi.fn(),
-  add: vi.fn(),
-  update: vi.fn(),
-  delete: vi.fn(),
-};
-
-const mockFileManager = {
-  getSkillsDirectory: vi.fn().mockReturnValue("/mock/skills"),
-  getSkillPath: vi.fn().mockImplementation((name) => `/mock/skills/${name}`),
-  createSymlink: vi.fn().mockReturnValue(true),
-  removeSymlink: vi.fn().mockReturnValue(true),
-  verifySymlink: vi.fn().mockReturnValue("active"),
-  readSkillMd: vi.fn().mockReturnValue("# Skill Content"),
-  writeSkillMd: vi.fn(),
-  copyFolderToSkills: vi.fn(),
-};
-
-const mockClientAppService = {
-  list: vi.fn().mockResolvedValue([]),
-  get: vi.fn(),
-  discoverSkillsFromClients: vi.fn().mockResolvedValue([]),
-};
+// Use vi.hoisted to ensure mocks are available when vi.mock factories run (hoisted above declarations)
+const { mockSkillRepo, mockStateRepo, mockFileManager, mockClientAppService } =
+  vi.hoisted(() => ({
+    mockSkillRepo: {
+      getById: vi.fn(),
+      getAll: vi.fn(),
+      findByName: vi.fn(),
+      add: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+    mockStateRepo: {
+      findBySkillAndClient: vi.fn(),
+      findBySkill: vi.fn(),
+      add: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+    mockFileManager: {
+      getSkillsDirectory: vi.fn().mockReturnValue("/mock/skills"),
+      getSkillPath: vi
+        .fn()
+        .mockImplementation((name: string) => `/mock/skills/${name}`),
+      createSymlink: vi.fn().mockReturnValue(true),
+      removeSymlink: vi.fn().mockReturnValue(true),
+      verifySymlink: vi.fn().mockReturnValue("active"),
+      readSkillMd: vi.fn().mockReturnValue("# Skill Content"),
+      readSkillMdAsync: vi.fn().mockResolvedValue("# Skill Content"),
+      writeSkillMd: vi.fn(),
+      copyFolderToSkills: vi.fn(),
+    },
+    mockClientAppService: {
+      list: vi.fn().mockResolvedValue([]),
+      get: vi.fn(),
+      discoverSkillsFromClients: vi.fn().mockResolvedValue([]),
+    },
+  }));
 
 vi.mock("../skills.repository", () => ({
   SkillRepository: {
@@ -51,7 +54,11 @@ vi.mock("../client-skill-state.repository", () => ({
 }));
 
 vi.mock("../skills-file-manager", () => ({
-  SkillsFileManager: vi.fn().mockImplementation(() => mockFileManager),
+  SkillsFileManager: class {
+    constructor() {
+      Object.assign(this, mockFileManager);
+    }
+  },
 }));
 
 vi.mock("@/main/modules/client-apps/client-app.service", () => ({
@@ -60,7 +67,14 @@ vi.mock("@/main/modules/client-apps/client-app.service", () => ({
 
 vi.mock("@/main/modules/client-apps/client-detector", () => ({
   resolveGlobPath: vi.fn().mockReturnValue([]),
-  expandHomePath: vi.fn().mockImplementation((p) => p),
+  expandHomePath: vi.fn().mockImplementation((p: string) => p),
+}));
+
+vi.mock("@/main/utils/logger", () => ({
+  logInfo: vi.fn(),
+  logError: vi.fn(),
+  safeConsoleLog: vi.fn(),
+  safeConsoleError: vi.fn(),
 }));
 
 vi.mock("fs", () => ({
@@ -256,7 +270,8 @@ describe("UnifiedSkillsService", () => {
           isSymlink: false,
         },
       ]);
-      (fsPromises.lstat as any).mockRejectedValue({ code: "ENOENT" });
+      const enoent = Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+      (fsPromises.lstat as any).mockRejectedValue(enoent);
 
       await expect(
         service.adoptSkill("test-skill", "client-1"),
@@ -278,7 +293,9 @@ describe("UnifiedSkillsService", () => {
         isSymbolicLink: () => true,
         isDirectory: () => false,
       });
-      (fsPromises.realpath as any).mockRejectedValue({ code: "ENOENT" });
+      (fsPromises.realpath as any).mockRejectedValue(
+        Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+      );
 
       await expect(
         service.adoptSkill("test-skill", "client-1"),

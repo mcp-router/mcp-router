@@ -27,6 +27,11 @@ vi.mock("fs", () => ({
     readlinkSync: vi.fn(),
     readdirSync: vi.fn(),
     copyFileSync: vi.fn(),
+    promises: {
+      lstat: vi.fn(),
+      readlink: vi.fn(),
+      access: vi.fn(),
+    },
   },
 }));
 
@@ -139,6 +144,9 @@ describe("SkillsFileManager", () => {
       (isPathContained as any).mockReturnValue(true);
       (validateSkillSymlinkTarget as any).mockReturnValue({ valid: true });
       (fs.existsSync as any).mockReturnValue(false);
+      (fs.lstatSync as any).mockImplementation(() => {
+        throw new Error("ENOENT");
+      });
 
       const result = fileManager.createSymlink(
         path.join(mockSkillsDir, "my-skill"),
@@ -242,40 +250,44 @@ describe("SkillsFileManager", () => {
   });
 
   describe("verifySymlink", () => {
-    it("should return 'active' for valid symlink", () => {
-      (fs.lstatSync as any).mockReturnValue({ isSymbolicLink: () => true });
-      (fs.readlinkSync as any).mockReturnValue("/target/path");
-      (fs.existsSync as any).mockReturnValue(true);
+    it("should return 'active' for valid symlink", async () => {
+      (fs.promises.lstat as any).mockResolvedValue({
+        isSymbolicLink: () => true,
+      });
+      (fs.promises.readlink as any).mockResolvedValue("/target/path");
+      (fs.promises.access as any).mockResolvedValue(undefined);
 
-      const result = fileManager.verifySymlink("/path/to/symlink");
+      const result = await fileManager.verifySymlink("/path/to/symlink");
 
       expect(result).toBe("active");
     });
 
-    it("should return 'broken' for symlink with missing target", () => {
-      (fs.lstatSync as any).mockReturnValue({ isSymbolicLink: () => true });
-      (fs.readlinkSync as any).mockReturnValue("/missing/target");
-      (fs.existsSync as any).mockReturnValue(false);
+    it("should return 'broken' for symlink with missing target", async () => {
+      (fs.promises.lstat as any).mockResolvedValue({
+        isSymbolicLink: () => true,
+      });
+      (fs.promises.readlink as any).mockResolvedValue("/missing/target");
+      (fs.promises.access as any).mockRejectedValue(new Error("ENOENT"));
 
-      const result = fileManager.verifySymlink("/path/to/symlink");
+      const result = await fileManager.verifySymlink("/path/to/symlink");
 
       expect(result).toBe("broken");
     });
 
-    it("should return 'none' for non-symlink", () => {
-      (fs.lstatSync as any).mockReturnValue({ isSymbolicLink: () => false });
+    it("should return 'none' for non-symlink", async () => {
+      (fs.promises.lstat as any).mockResolvedValue({
+        isSymbolicLink: () => false,
+      });
 
-      const result = fileManager.verifySymlink("/path/to/regular");
+      const result = await fileManager.verifySymlink("/path/to/regular");
 
       expect(result).toBe("none");
     });
 
-    it("should return 'none' for non-existent path", () => {
-      (fs.lstatSync as any).mockImplementation(() => {
-        throw new Error("ENOENT");
-      });
+    it("should return 'none' for non-existent path", async () => {
+      (fs.promises.lstat as any).mockRejectedValue(new Error("ENOENT"));
 
-      const result = fileManager.verifySymlink("/nonexistent");
+      const result = await fileManager.verifySymlink("/nonexistent");
 
       expect(result).toBe("none");
     });

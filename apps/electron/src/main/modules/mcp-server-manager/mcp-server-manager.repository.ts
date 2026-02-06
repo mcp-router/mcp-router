@@ -139,11 +139,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   protected mapRowToEntity(row: any): MCPServer {
     try {
       // Parse data fields
-      const env = this.safeParseJSON<Record<string, any>>(
-        row.env,
-        "env",
-        {},
-      );
+      const env = this.safeParseJSON<Record<string, any>>(row.env, "env", {});
       const requiredParams: string[] = row.required_params
         ? JSON.parse(row.required_params)
         : [];
@@ -322,10 +318,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
     try {
       return this.getById(id);
     } catch (error) {
-      console.error(
-        `Error retrieving server with ID: ${id}:`,
-        error,
-      );
+      console.error(`Error retrieving server with ID: ${id}:`, error);
       throw error;
     }
   }
@@ -376,7 +369,10 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         updated_at: Date.now(),
       };
     } catch (error) {
-      console.error("Error converting server data (mapEntityToRowForUpdate):", error);
+      console.error(
+        "Error converting server data (mapEntityToRowForUpdate):",
+        error,
+      );
       throw error;
     }
   }
@@ -434,10 +430,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
       this.db.execute(sql, row);
       return updatedServer;
     } catch (error) {
-      console.error(
-        `Error updating server with ID: ${id}:`,
-        error,
-      );
+      console.error(`Error updating server with ID: ${id}:`, error);
       throw error;
     }
   }
@@ -462,10 +455,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
 
       return result;
     } catch (error) {
-      console.error(
-        `Error deleting server with ID: ${id}:`,
-        error,
-      );
+      console.error(`Error deleting server with ID: ${id}:`, error);
       throw error;
     }
   }

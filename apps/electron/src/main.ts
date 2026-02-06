@@ -259,10 +259,7 @@ async function initDatabase(): Promise<void> {
     // Workspace-specific database migrations are run by
     // PlatformAPIManager during initialization
   } catch (error) {
-    console.error(
-      "Error during database migration:",
-      error,
-    );
+    console.error("Error during database migration:", error);
   }
 }
 

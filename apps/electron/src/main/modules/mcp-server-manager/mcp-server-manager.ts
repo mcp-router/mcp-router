@@ -2,7 +2,12 @@ import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
 import { EventEmitter } from "events";
-import { MCPServer, MCPServerConfig, MCPTool, MCPInputParam } from "@mcp_router/shared";
+import {
+  MCPServer,
+  MCPServerConfig,
+  MCPTool,
+  MCPInputParam,
+} from "@mcp_router/shared";
 import {
   getServerService,
   ServerService,

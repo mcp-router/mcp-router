@@ -23,6 +23,7 @@
     "publish:npm": "pnpm publish --access public"
   },
   "dependencies": {
+    "@mcp_router/shared": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.25.1",
     "node-fetch": "^3.3.2"
   },

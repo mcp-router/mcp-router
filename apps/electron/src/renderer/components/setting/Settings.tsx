@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@mcp_router/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@mcp_router/ui";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@mcp_router/ui";
 import { Button } from "@mcp_router/ui";
 import { Switch } from "@mcp_router/ui";
 import { Input } from "@mcp_router/ui";

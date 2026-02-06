@@ -160,7 +160,7 @@ export function validateSkillName(name: string): {
   valid: boolean;
   error?: string;
 } {
-  if (!name || typeof name !== "string") {
+  if (name == null || typeof name !== "string") {
     return { valid: false, error: "Skill name must be a non-empty string" };
   }
 
@@ -189,20 +189,20 @@ export function validateSkillName(name: string): {
     };
   }
 
+  // Prevent hidden files/directories
+  if (trimmed.startsWith(".")) {
+    return {
+      valid: false,
+      error: "Skill name cannot start with a dot",
+    };
+  }
+
   // Only allow safe characters: letters, numbers, underscores, hyphens
   if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
     return {
       valid: false,
       error:
         "Skill name can only contain letters, numbers, underscores, and hyphens",
-    };
-  }
-
-  // Prevent hidden files/directories
-  if (trimmed.startsWith(".")) {
-    return {
-      valid: false,
-      error: "Skill name cannot start with a dot",
     };
   }
 

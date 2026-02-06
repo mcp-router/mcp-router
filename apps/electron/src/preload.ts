@@ -221,8 +221,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
   syncSkills: (skillId?: string) =>
     ipcRenderer.invoke("skill:sync-to-all", skillId),
   verifySkills: () => ipcRenderer.invoke("skill:verify-and-repair"),
-  updateUnifiedSkill: (id: string, updates: { name?: string; content?: string; globalSync?: boolean; projectId?: string | null }) =>
-    ipcRenderer.invoke("skill:update-unified", id, updates),
+  updateUnifiedSkill: (
+    id: string,
+    updates: {
+      name?: string;
+      content?: string;
+      globalSync?: boolean;
+      projectId?: string | null;
+    },
+  ) => ipcRenderer.invoke("skill:update-unified", id, updates),
   enableForClient: (skillId: string, clientId: string) =>
     ipcRenderer.invoke("skill:enable-for-client", skillId, clientId),
   disableForClient: (skillId: string, clientId: string) =>

@@ -223,9 +223,7 @@ export const createAuthStore = (
   }));
 
 // Utility selector creators
-const createAuthSelectors = <
-  T extends ReturnType<typeof createAuthStore>,
->(
+const createAuthSelectors = <T extends ReturnType<typeof createAuthStore>>(
   useStore: T,
 ) => ({
   useIsLoggedIn: () =>

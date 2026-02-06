@@ -42,9 +42,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     } catch (error) {
       set({
         error:
-          error instanceof Error
-            ? error.message
-            : "Failed to load workspaces",
+          error instanceof Error ? error.message : "Failed to load workspaces",
         isLoading: false,
       });
     }
@@ -69,9 +67,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     } catch (error) {
       set({
         error:
-          error instanceof Error
-            ? error.message
-            : "Failed to create workspace",
+          error instanceof Error ? error.message : "Failed to create workspace",
         isLoading: false,
       });
       throw error;
@@ -97,9 +93,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     } catch (error) {
       set({
         error:
-          error instanceof Error
-            ? error.message
-            : "Failed to update workspace",
+          error instanceof Error ? error.message : "Failed to update workspace",
         isLoading: false,
       });
       throw error;
@@ -115,9 +109,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     } catch (error) {
       set({
         error:
-          error instanceof Error
-            ? error.message
-            : "Failed to delete workspace",
+          error instanceof Error ? error.message : "Failed to delete workspace",
         isLoading: false,
       });
       throw error;
@@ -191,9 +183,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     } catch (error) {
       set({
         error:
-          error instanceof Error
-            ? error.message
-            : "Failed to switch workspace",
+          error instanceof Error ? error.message : "Failed to switch workspace",
         isLoading: false,
       });
       throw error;
