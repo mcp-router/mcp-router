@@ -49,7 +49,7 @@ export interface MarketplaceSearchOptions {
 
 // Skills Registry Types
 
-export type SkillsSortOption = "trending" | "popular" | "recent";
+export type SkillsSortOption = "downloads" | "name" | "nameDesc";
 
 export interface SkillsSearchOptions {
   search?: string;
@@ -106,6 +106,8 @@ export interface RegistrySkill {
 
 export interface SkillsRegistryResponse {
   skills: RegistrySkill[];
-  /** Indicates if more results are available for pagination */
-  hasMore: boolean;
+  metadata: {
+    nextCursor: string | null;
+    count: number;
+  };
 }

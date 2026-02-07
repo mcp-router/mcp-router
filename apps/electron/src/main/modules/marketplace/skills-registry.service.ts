@@ -14,8 +14,9 @@ import type {
   SkillsRegistryResponse,
 } from "./marketplace.types";
 
-const SKILLS_REGISTRY_BASE = "https://skills.sh/api";
+const SKILLS_REGISTRY_BASE = "https://skills.sh";
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const DEFAULT_SEARCH_QUERY = "ai";
 
 interface CacheEntry<T> {
   data: T;
@@ -24,6 +25,64 @@ interface CacheEntry<T> {
 
 export class SkillsRegistryService {
   private cache: Map<string, CacheEntry<unknown>> = new Map();
+
+  private normalizeSkillsResponse(raw: unknown): SkillsRegistryResponse {
+    const asObject = (value: unknown): Record<string, unknown> | null =>
+      value && typeof value === "object"
+        ? (value as Record<string, unknown>)
+        : null;
+
+    const root = asObject(raw);
+    const dataObj = root ? asObject(root.data) : null;
+
+    const skillsCandidate =
+      (root?.skills as unknown) ??
+      (dataObj?.skills as unknown) ??
+      (Array.isArray(raw) ? raw : []);
+    const skills = Array.isArray(skillsCandidate) ? skillsCandidate : [];
+
+    const metadataCandidate =
+      (root?.metadata as unknown) ?? (dataObj?.metadata as unknown);
+    const metadataObj = asObject(metadataCandidate);
+    const hasMoreCandidate =
+      (root?.hasMore as unknown) ?? (dataObj?.hasMore as unknown);
+    const nextCursorCandidate =
+      (root?.nextCursor as unknown) ?? (dataObj?.nextCursor as unknown);
+
+    const nextCursor =
+      typeof metadataObj?.nextCursor === "string"
+        ? metadataObj.nextCursor
+        : typeof nextCursorCandidate === "string"
+          ? nextCursorCandidate
+          : null;
+
+    const rootCount =
+      typeof root?.count === "number"
+        ? root.count
+        : typeof dataObj?.count === "number"
+          ? dataObj.count
+          : undefined;
+
+    const count =
+      typeof metadataObj?.count === "number"
+        ? metadataObj.count
+        : typeof rootCount === "number"
+          ? rootCount
+          : skills.length;
+
+    const hasMore =
+      typeof hasMoreCandidate === "boolean"
+        ? hasMoreCandidate
+        : nextCursor !== null;
+
+    return {
+      skills: skills as RegistrySkill[],
+      metadata: {
+        nextCursor: hasMore ? nextCursor : null,
+        count,
+      },
+    };
+  }
 
   /**
    * Search skills from the skills.sh registry
@@ -56,14 +115,26 @@ export class SkillsRegistryService {
       return cached.data;
     }
 
+    const normalizedSearch = options.search?.trim() ?? "";
+
+    // skills.sh search endpoint requires at least 2 chars.
+    // For empty queries, use a broad default to populate the marketplace.
+    if (normalizedSearch.length > 0 && normalizedSearch.length < 2) {
+      return {
+        skills: [],
+        metadata: {
+          nextCursor: null,
+          count: 0,
+        },
+      };
+    }
+
     const params = new URLSearchParams();
-    if (options.search) params.set("search", options.search);
+    params.set("q", normalizedSearch || DEFAULT_SEARCH_QUERY);
     if (options.limit) params.set("limit", String(options.limit));
     if (options.cursor) params.set("cursor", options.cursor);
-    // Note: sort parameter support depends on skills.sh API implementation
-    if (options.sort) params.set("sort", options.sort);
 
-    const url = `${SKILLS_REGISTRY_BASE}/skills${params.toString() ? `?${params}` : ""}`;
+    const url = `${SKILLS_REGISTRY_BASE}/api/search?${params}`;
 
     try {
       const controller = new AbortController();
@@ -77,20 +148,28 @@ export class SkillsRegistryService {
 
       if (!response.ok) {
         if (response.status === 404) {
-          return { skills: [], hasMore: false };
+          return {
+            skills: [],
+            metadata: {
+              nextCursor: null,
+              count: 0,
+            },
+          };
         }
         throw new Error("Failed to load skills data");
       }
 
-      const data = (await response.json()) as SkillsRegistryResponse;
+      const raw = (await response.json()) as unknown;
+      const data = this.normalizeSkillsResponse(raw);
       this.cache.set(cacheKey, { data, timestamp: Date.now() });
       return data;
     } catch (error: unknown) {
       if (error instanceof Error && error.name === "AbortError") {
         throw new Error("Request timeout. Please check your connection.");
       }
+      const details = error instanceof Error ? error.message : String(error);
       throw new Error(
-        "Failed to connect to skills registry. Please try again.",
+        `Failed to connect to skills registry. Please try again. (${details})`,
       );
     }
   }

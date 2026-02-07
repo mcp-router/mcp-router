@@ -12,21 +12,16 @@ import {
   SelectValue,
 } from "@mcp_router/ui";
 import { AlertCircle, ChevronLeft, ChevronRight, Search } from "lucide-react";
-import { McpServerCard, RegistryServerWithMeta } from "./McpServerCard";
+import {
+  McpServerCard,
+  RegistryServerWithMeta,
+  RegistryResponse,
+} from "./McpServerCard";
 import type { GitHubStats } from "@mcp_router/shared";
 import { McpServerDetailsModal } from "./McpServerDetailsModal";
 import { cn } from "@/renderer/utils/tailwind-utils";
 import { usePlatformAPI } from "@/renderer/platform-api";
-
-type SortOption = "stars" | "recent" | "updated" | "verified" | "name";
-
-interface RegistryResponse {
-  servers: RegistryServerWithMeta[];
-  metadata: {
-    nextCursor: string | null;
-    count: number;
-  };
-}
+import { sortMcpServers, type McpServerSortOption } from "./sort-mcp-servers";
 
 interface McpServerGridProps {
   searchQuery?: string;
@@ -34,6 +29,8 @@ interface McpServerGridProps {
 }
 
 const ITEMS_PER_PAGE = 12;
+const FETCH_LIMIT = 100;
+const MAX_SERVER_PAGES = 30;
 
 export const McpServerGrid: React.FC<McpServerGridProps> = ({
   searchQuery = "",
@@ -44,12 +41,8 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
   const [servers, setServers] = useState<RegistryServerWithMeta[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [prevCursors, setPrevCursors] = useState<string[]>([]);
-  const [currentCursor, setCurrentCursor] = useState<string | undefined>(
-    undefined,
-  );
-  const [sortOption, setSortOption] = useState<SortOption>("stars");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [sortOption, setSortOption] = useState<McpServerSortOption>("stars");
   const [githubStats, setGithubStats] = useState<
     Record<string, GitHubStats | null>
   >({});
@@ -59,81 +52,93 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
     useState<RegistryServerWithMeta | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchServers = useCallback(
-    async (cursor?: string) => {
-      setIsLoading(true);
-      setError(null);
+  const fetchServers = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
 
-      try {
+    try {
+      const dedupedServers: RegistryServerWithMeta[] = [];
+      const seenServerNames = new Set<string>();
+      let cursor: string | undefined = undefined;
+      let pageCount = 0;
+
+      do {
         const response: RegistryResponse =
           await window.electronAPI.marketplaceSearch({
             search: searchQuery || undefined,
-            limit: ITEMS_PER_PAGE,
+            limit: FETCH_LIMIT,
             cursor,
           });
 
-        setServers(response.servers);
-        setNextCursor(response.metadata.nextCursor);
-      } catch (err) {
-        console.error("Failed to fetch marketplace servers:", err);
-        setError(err instanceof Error ? err.message : "Failed to load servers");
-        setServers([]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [searchQuery],
-  );
+        const responseServers = Array.isArray(response.servers)
+          ? response.servers
+          : [];
+
+        for (const server of responseServers) {
+          const serverName = server?.server?.name;
+          if (!serverName || seenServerNames.has(serverName)) {
+            continue;
+          }
+          seenServerNames.add(serverName);
+          dedupedServers.push(server);
+        }
+
+        cursor = response.metadata.nextCursor || undefined;
+        pageCount += 1;
+      } while (cursor && pageCount < MAX_SERVER_PAGES);
+
+      setServers(dedupedServers);
+      setCurrentPage(0);
+    } catch (err) {
+      console.error("Failed to fetch marketplace servers:", err);
+      setError(err instanceof Error ? err.message : "Failed to load servers");
+      setServers([]);
+      setCurrentPage(0);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchQuery]);
 
   // Fetch servers when search query changes
   useEffect(() => {
-    // Reset pagination when search changes
-    setPrevCursors([]);
-    setCurrentCursor(undefined);
     fetchServers();
   }, [searchQuery, fetchServers]);
 
-  // Fetch GitHub stats for servers with repositories
+  // Fetch GitHub stats for all loaded servers in the background
   useEffect(() => {
-    if (servers.length === 0) return;
+    if (servers.length === 0) {
+      return;
+    }
 
+    // Find all repository URLs that don't have stats yet
     const repoUrls = servers
       .map((s) => s.server.repository?.url)
-      .filter((url): url is string => !!url);
+      .filter((url): url is string => !!url && githubStats[url] === undefined);
 
-    if (repoUrls.length === 0) return;
+    if (repoUrls.length === 0) {
+      return;
+    }
+
+    // Process in batches of 50 to avoid huge IPC messages
+    const BATCH_SIZE = 50;
+    const batch = repoUrls.slice(0, BATCH_SIZE);
 
     platformAPI.marketplace.servers
-      .getGitHubStatsBatch(repoUrls)
+      .getGitHubStatsBatch(batch)
       .then((stats) => {
-        setGithubStats(stats);
+        setGithubStats((previous) => ({ ...previous, ...stats }));
       })
       .catch((err) => {
         console.error("Failed to fetch GitHub stats:", err);
       });
-  }, [servers, platformAPI]);
+  }, [servers, platformAPI, githubStats]);
 
   const handleNextPage = () => {
-    if (nextCursor) {
-      // Save current cursor for going back
-      if (currentCursor) {
-        setPrevCursors((prev) => [...prev, currentCursor]);
-      } else {
-        setPrevCursors((prev) => [...prev, ""]);
-      }
-      setCurrentCursor(nextCursor);
-      fetchServers(nextCursor);
-    }
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
   };
 
   const handlePrevPage = () => {
-    if (prevCursors.length > 0) {
-      const newPrevCursors = [...prevCursors];
-      const prevCursor = newPrevCursors.pop();
-      setPrevCursors(newPrevCursors);
-      setCurrentCursor(prevCursor || undefined);
-      fetchServers(prevCursor || undefined);
-    }
+    setCurrentPage((prev) => Math.max(prev - 1, 0));
   };
 
   const handleServerClick = (server: RegistryServerWithMeta) => {
@@ -149,43 +154,21 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
 
   // Sort servers based on selected option
   const sortedServers = useMemo(() => {
-    const sorted = [...servers];
-    const getMeta = (s: RegistryServerWithMeta) =>
-      s._meta?.["io.modelcontextprotocol.registry/official"];
-    const getStars = (s: RegistryServerWithMeta) =>
-      githubStats[s.server.repository?.url || ""]?.stars || 0;
-
-    switch (sortOption) {
-      case "stars":
-        return sorted.sort((a, b) => getStars(b) - getStars(a));
-      case "recent":
-        return sorted.sort((a, b) => {
-          const aDate = getMeta(a)?.publishedAt || "";
-          const bDate = getMeta(b)?.publishedAt || "";
-          return new Date(bDate).getTime() - new Date(aDate).getTime();
-        });
-      case "updated":
-        return sorted.sort((a, b) => {
-          const aDate = getMeta(a)?.updatedAt || getMeta(a)?.publishedAt || "";
-          const bDate = getMeta(b)?.updatedAt || getMeta(b)?.publishedAt || "";
-          return new Date(bDate).getTime() - new Date(aDate).getTime();
-        });
-      case "verified":
-        return sorted.sort((a, b) => {
-          const aVerified = getMeta(a)?.status === "verified" ? 1 : 0;
-          const bVerified = getMeta(b)?.status === "verified" ? 1 : 0;
-          return bVerified - aVerified;
-        });
-      case "name":
-        return sorted.sort((a, b) => {
-          const aName = a.server.title || a.server.name;
-          const bName = b.server.title || b.server.name;
-          return aName.localeCompare(bName);
-        });
-      default:
-        return sorted;
-    }
+    return sortMcpServers(servers, sortOption, githubStats);
   }, [servers, sortOption, githubStats]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(sortedServers.length / ITEMS_PER_PAGE),
+  );
+  const paginatedServers = useMemo(() => {
+    const start = currentPage * ITEMS_PER_PAGE;
+    return sortedServers.slice(start, start + ITEMS_PER_PAGE);
+  }, [sortedServers, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [sortOption]);
 
   // Loading skeleton grid
   if (isLoading) {
@@ -230,7 +213,7 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
         <p className="text-muted-foreground text-center max-w-md mb-4">
           {error}
         </p>
-        <Button onClick={() => fetchServers(currentCursor)} variant="outline">
+        <Button onClick={() => fetchServers()} variant="outline">
           {t("common.retry", { defaultValue: "Retry" })}
         </Button>
       </div>
@@ -272,7 +255,7 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
         </p>
         <Select
           value={sortOption}
-          onValueChange={(value) => setSortOption(value as SortOption)}
+          onValueChange={(value) => setSortOption(value as McpServerSortOption)}
         >
           <SelectTrigger className="w-[160px]" aria-label="Sort servers">
             <SelectValue />
@@ -293,14 +276,14 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
                 defaultValue: "Recently Updated",
               })}
             </SelectItem>
-            <SelectItem value="verified">
-              {t("marketplace.servers.sortVerified", {
-                defaultValue: "Verified First",
-              })}
-            </SelectItem>
             <SelectItem value="name">
               {t("marketplace.servers.sortName", {
                 defaultValue: "Name (A-Z)",
+              })}
+            </SelectItem>
+            <SelectItem value="nameDesc">
+              {t("marketplace.servers.sortNameDesc", {
+                defaultValue: "Name (Z-A)",
               })}
             </SelectItem>
           </SelectContent>
@@ -309,7 +292,7 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
 
       {/* Server Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {sortedServers.map((server) => (
+        {paginatedServers.map((server) => (
           <McpServerCard
             key={server.server.name}
             server={server}
@@ -320,13 +303,13 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
       </div>
 
       {/* Pagination Controls */}
-      {(prevCursors.length > 0 || nextCursor) && (
+      {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4 pt-4">
           <Button
             variant="outline"
             size="sm"
             onClick={handlePrevPage}
-            disabled={prevCursors.length === 0}
+            disabled={currentPage === 0}
             className="flex items-center gap-1"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -336,7 +319,7 @@ export const McpServerGrid: React.FC<McpServerGridProps> = ({
             variant="outline"
             size="sm"
             onClick={handleNextPage}
-            disabled={!nextCursor}
+            disabled={currentPage >= totalPages - 1}
             className="flex items-center gap-1"
           >
             {t("common.next", { defaultValue: "Next" })}

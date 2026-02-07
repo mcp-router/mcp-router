@@ -57,6 +57,14 @@ export interface RegistryServerWithMeta {
   };
 }
 
+export interface RegistryResponse {
+  servers: RegistryServerWithMeta[];
+  metadata: {
+    nextCursor: string | null;
+    count: number;
+  };
+}
+
 interface GitHubStats {
   stars: number;
   forks: number;

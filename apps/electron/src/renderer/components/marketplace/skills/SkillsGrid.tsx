@@ -21,6 +21,8 @@ import type {
   MarketplaceSkill,
   SkillSortOption,
 } from "./types";
+import { mapMarketplaceSkillsFromResponse } from "./map-marketplace-skills";
+import { sortMarketplaceSkills } from "./sort-marketplace-skills";
 
 /**
  * Skeleton card component for loading state
@@ -85,37 +87,6 @@ const EmptyState: React.FC<{ searchQuery: string }> = ({ searchQuery }) => {
 };
 
 /**
- * Sorts skills based on the selected sort option
- */
-function sortSkills(
-  skills: MarketplaceSkill[],
-  sortOption: SkillSortOption,
-): MarketplaceSkill[] {
-  const sorted = [...skills];
-
-  switch (sortOption) {
-    case "popular":
-      return sorted.sort((a, b) => b.installCount - a.installCount);
-    case "trending":
-      // For trending, we use a combination of recent updates and install count
-      return sorted.sort((a, b) => {
-        const aScore =
-          new Date(a.updatedAt).getTime() / 1000000000 + a.installCount / 10000;
-        const bScore =
-          new Date(b.updatedAt).getTime() / 1000000000 + b.installCount / 10000;
-        return bScore - aScore;
-      });
-    case "recent":
-      return sorted.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-    default:
-      return sorted;
-  }
-}
-
-/**
  * SkillsGrid component displays a grid of marketplace skills
  * Supports search filtering, sorting, and responsive layout
  */
@@ -129,7 +100,7 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({
   // State
   const [skills, setSkills] = useState<MarketplaceSkill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [sortOption, setSortOption] = useState<SkillSortOption>("popular");
+  const [sortOption, setSortOption] = useState<SkillSortOption>("downloads");
   const [installedSkillIds, setInstalledSkillIds] = useState<Set<string>>(
     new Set(),
   );
@@ -148,40 +119,9 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({
     try {
       const response = await platformAPI.marketplace.skills.search({
         search: searchQuery.trim() || undefined,
-        limit: 50,
+        limit: 100,
       });
-      // Handle skills.sh API response format:
-      // { skills: [{ id, skillId, name, installs, source }, ...] }
-      const mappedSkills = response.skills.map((item: any) => {
-        // Check if item has a nested 'skill' property or is the skill directly
-        const skill = item.skill ?? item;
-        const meta = item._meta ?? {};
-
-        // Extract author from source (e.g., "vercel-labs/skills" -> "vercel-labs")
-        const source = skill.source || skill.topSource || "";
-        const author = source.split("/")[0] || "Unknown";
-
-        // Construct GitHub repository URL for SKILL.md fetching
-        // Format: https://github.com/{source} with skill path skills/{skillId}/SKILL.md
-        const skillId = skill.skillId || skill.name;
-        const repositoryUrl = source
-          ? `https://github.com/${source}#skill:${skillId}`
-          : skill.repository?.url;
-
-        return {
-          id: skill.id,
-          name: skill.name || skillId,
-          description: skill.description || "No description available",
-          author: skill.author || author,
-          version: skill.version || "1.0.0",
-          installCount: skill.installs ?? meta.downloads ?? 0,
-          tags: skill.tags || [],
-          repositoryUrl,
-          compatibility: [],
-          createdAt: meta.publishedAt || new Date().toISOString(),
-          updatedAt: meta.publishedAt || new Date().toISOString(),
-        } as MarketplaceSkill;
-      });
+      const mappedSkills = mapMarketplaceSkillsFromResponse(response as any);
       setSkills(mappedSkills);
     } catch (error) {
       console.error("Failed to load marketplace skills:", error);
@@ -231,7 +171,7 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({
     }
 
     // Apply sorting
-    return sortSkills(filtered, sortOption);
+    return sortMarketplaceSkills(filtered, sortOption);
   }, [skills, searchQuery, sortOption]);
 
   // Check if a skill is installed
@@ -344,16 +284,20 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="popular">
-              {t("marketplace.skills.sortPopular", { defaultValue: "Popular" })}
-            </SelectItem>
-            <SelectItem value="trending">
-              {t("marketplace.skills.sortTrending", {
-                defaultValue: "Trending",
+            <SelectItem value="downloads">
+              {t("marketplace.skills.sortDownloads", {
+                defaultValue: "Most Installs",
               })}
             </SelectItem>
-            <SelectItem value="recent">
-              {t("marketplace.skills.sortRecent", { defaultValue: "Recent" })}
+            <SelectItem value="name">
+              {t("marketplace.skills.sortName", {
+                defaultValue: "Name (A-Z)",
+              })}
+            </SelectItem>
+            <SelectItem value="nameDesc">
+              {t("marketplace.skills.sortNameDesc", {
+                defaultValue: "Name (Z-A)",
+              })}
             </SelectItem>
           </SelectContent>
         </Select>

@@ -18,8 +18,6 @@ import {
   IconUser,
   IconStar,
   IconBrandGithub,
-  IconCalendar,
-  IconRefresh,
   IconExternalLink,
 } from "@tabler/icons-react";
 import type { SkillDetailsModalProps, SkillCompatibility } from "./types";
@@ -49,17 +47,6 @@ function getCompatibilityLabel(compat: SkillCompatibility): string {
     "roo-code": "Roo Code",
   };
   return labels[compat] || compat;
-}
-
-/**
- * Formats ISO date string to readable format
- */
-function formatDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
 }
 
 /**
@@ -213,27 +200,6 @@ export const SkillDetailsModal: React.FC<SkillDetailsModalProps> = ({
                 </div>
               </div>
 
-              {/* Dates */}
-              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <IconCalendar className="h-4 w-4" />
-                  <span>
-                    {t("marketplace.skills.created", {
-                      defaultValue: "Created",
-                    })}
-                    : {formatDate(skill.createdAt)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <IconRefresh className="h-4 w-4" />
-                  <span>
-                    {t("marketplace.skills.updated", {
-                      defaultValue: "Updated",
-                    })}
-                    : {formatDate(skill.updatedAt)}
-                  </span>
-                </div>
-              </div>
 
               {/* Tags */}
               <div>
