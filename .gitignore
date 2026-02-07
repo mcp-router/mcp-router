@@ -76,6 +76,9 @@ yarn.lock
 .yarn/
 .pnpm-store/
 
+# Reports
+.reports/
+
 # Turborepo
 .turbo/
 
