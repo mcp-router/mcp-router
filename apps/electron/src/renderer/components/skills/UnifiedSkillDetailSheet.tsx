@@ -10,12 +10,6 @@ import {
   Button,
   Badge,
   Textarea,
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -33,8 +27,13 @@ import {
   IconPlayerStop,
   IconDownload,
 } from "@tabler/icons-react";
+import { Switch } from "@mcp_router/ui";
 import { usePlatformAPI } from "@/renderer/platform-api";
-import type { UnifiedSkill, ClientSkillSummary } from "@mcp_router/shared";
+import type {
+  UnifiedSkill,
+  ClientSkillSummary,
+  SkillSyncResult,
+} from "@mcp_router/shared";
 import { toast } from "sonner";
 import { sanitizeSvgWithStyles } from "@/renderer/utils/svg-sanitizer";
 import { cn } from "@/renderer/utils/tailwind-utils";
@@ -73,11 +72,47 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
 
   // Loading states for actions
   const [isActionLoading, setIsActionLoading] = useState(false);
-  const [isSyncLoading, setIsSyncLoading] = useState(false);
   const [loadingClientId, setLoadingClientId] = useState<string | null>(null);
 
   // Delete confirmation dialog state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const isDiscoveredSkill = skill?.source === "discovered";
+
+  const getSyncSummary = useCallback(
+    (result: SkillSyncResult) =>
+      t("skills.unified.syncSummary", {
+        synced: result.synced.length,
+        skipped: result.skipped.length,
+        errors: result.errors.length,
+      }),
+    [t],
+  );
+
+  const showSyncResultToast = useCallback(
+    (
+      result: SkillSyncResult,
+      successKey: "skills.unified.enabledAll" | "skills.unified.disabledAll",
+    ) => {
+      const summary = getSyncSummary(result);
+      const firstError = result.errors[0]?.error;
+
+      if (result.errors.length > 0) {
+        toast.error(t("skills.unified.bulkPartialOrFailed"), {
+          description: firstError ? `${summary}\n${firstError}` : summary,
+        });
+        return;
+      }
+
+      if (result.synced.length === 0) {
+        toast(t("skills.unified.noChanges"), { description: summary });
+        return;
+      }
+
+      toast.success(t(successKey), { description: summary });
+    },
+    [getSyncSummary, t],
+  );
 
   // Load content on-demand when skill changes (lazy loading optimization)
   useEffect(() => {
@@ -150,6 +185,7 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
   );
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (isDiscoveredSkill) return;
     const newContent = e.target.value;
     setContent(newContent);
     setIsSaved(false);
@@ -167,90 +203,47 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
     }
   };
 
-  // Client skill actions
-  const handleEnableForClient = async (clientId: string) => {
+  // Client skill toggle handler
+  const handleToggleClient = async (clientId: string, enabled: boolean) => {
     if (!skill) return;
-    setLoadingClientId(clientId);
-    try {
-      await platformAPI.skills.unified.enableForClient(skill.id, clientId);
-      toast.success(t("skills.unified.enabledForClient"));
-      onUpdate();
-    } catch (error) {
-      console.error("Failed to enable skill for client:", error);
-      toast.error(t("skills.unified.enableError"));
-    } finally {
-      setLoadingClientId(null);
+    if (isDiscoveredSkill) {
+      toast.error(t("skills.unified.adoptRequired"));
+      return;
     }
-  };
-
-  const handleDisableForClient = async (clientId: string) => {
-    if (!skill) return;
     setLoadingClientId(clientId);
     try {
-      await platformAPI.skills.unified.disableForClient(skill.id, clientId);
-      toast.success(t("skills.unified.disabledForClient"));
+      if (enabled) {
+        await platformAPI.skills.unified.enableForClient(skill.id, clientId);
+      } else {
+        await platformAPI.skills.unified.disableForClient(skill.id, clientId);
+      }
       onUpdate();
     } catch (error) {
-      console.error("Failed to disable skill for client:", error);
-      toast.error(t("skills.unified.disableError"));
-    } finally {
-      setLoadingClientId(null);
-    }
-  };
-
-  const handleRemoveFromClient = async (clientId: string) => {
-    if (!skill) return;
-    setLoadingClientId(clientId);
-    try {
-      await platformAPI.skills.unified.removeFromClient(skill.id, clientId);
-      toast.success(t("skills.unified.removedFromClient"));
-      onUpdate();
-    } catch (error) {
-      console.error("Failed to remove skill from client:", error);
-      toast.error(t("skills.unified.removeError"));
-    } finally {
-      setLoadingClientId(null);
-    }
-  };
-
-  const handleInstallToClient = async (clientId: string) => {
-    if (!skill) return;
-    setLoadingClientId(clientId);
-    try {
-      // Install is the same as enable - it creates the symlink
-      await platformAPI.skills.unified.enableForClient(skill.id, clientId);
-      toast.success(t("skills.unified.installedToClient"));
-      onUpdate();
-    } catch (error) {
-      console.error("Failed to install skill to client:", error);
-      toast.error(t("skills.unified.installError"));
+      console.error(
+        `Failed to ${enabled ? "enable" : "disable"} skill for client:`,
+        error,
+      );
+      toast.error(
+        enabled
+          ? t("skills.unified.enableError")
+          : t("skills.unified.disableError"),
+      );
     } finally {
       setLoadingClientId(null);
     }
   };
 
   // Bulk actions
-  const handleSyncToAll = async () => {
-    if (!skill) return;
-    setIsSyncLoading(true);
-    try {
-      await platformAPI.skills.unified.sync(skill.id);
-      toast.success(t("skills.unified.syncedToAll"));
-      onUpdate();
-    } catch (error) {
-      console.error("Failed to sync skill to all clients:", error);
-      toast.error(t("skills.unified.syncError"));
-    } finally {
-      setIsSyncLoading(false);
-    }
-  };
-
   const handleEnableAll = async () => {
     if (!skill) return;
+    if (isDiscoveredSkill) {
+      toast.error(t("skills.unified.adoptRequired"));
+      return;
+    }
     setIsActionLoading(true);
     try {
-      await platformAPI.skills.unified.enableAll(skill.id);
-      toast.success(t("skills.unified.enabledAll"));
+      const result = await platformAPI.skills.unified.enableAll(skill.id);
+      showSyncResultToast(result, "skills.unified.enabledAll");
       onUpdate();
     } catch (error) {
       console.error("Failed to enable skill for all clients:", error);
@@ -262,10 +255,14 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
 
   const handleDisableAll = async () => {
     if (!skill) return;
+    if (isDiscoveredSkill) {
+      toast.error(t("skills.unified.adoptRequired"));
+      return;
+    }
     setIsActionLoading(true);
     try {
-      await platformAPI.skills.unified.disableAll(skill.id);
-      toast.success(t("skills.unified.disabledAll"));
+      const result = await platformAPI.skills.unified.disableAll(skill.id);
+      showSyncResultToast(result, "skills.unified.disabledAll");
       onUpdate();
     } catch (error) {
       console.error("Failed to disable skill for all clients:", error);
@@ -277,6 +274,10 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
 
   const handleDeleteSkill = async () => {
     if (!skill) return;
+    if (isDiscoveredSkill) {
+      toast.error(t("skills.unified.deleteDiscoveredError"));
+      return;
+    }
     setIsActionLoading(true);
     try {
       await platformAPI.skills.delete(skill.id);
@@ -292,43 +293,51 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
     }
   };
 
-  // Get status badge variant based on client skill state
-  const getStatusBadge = (state: ClientSkillSummary["state"]) => {
-    switch (state) {
-      case "enabled":
-        return (
-          <Badge className="h-6 rounded-full px-3 text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-            {t("skills.unified.status.enabled")}
-          </Badge>
-        );
-      case "disabled":
-        return (
-          <Badge
-            variant="secondary"
-            className="h-6 rounded-full px-3 text-[10px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-600 border-orange-500/20"
-          >
-            {t("skills.unified.status.disabled")}
-          </Badge>
-        );
-      case "not-installed":
-        return (
-          <Badge
-            variant="outline"
-            className="h-6 rounded-full px-3 text-[10px] font-black uppercase tracking-widest border-border/60 text-muted-foreground"
-          >
-            {t("skills.unified.status.notInstalled")}
-          </Badge>
-        );
-      default:
-        return (
-          <Badge
-            variant="outline"
-            className="h-6 rounded-full px-3 text-[10px]"
-          >
-            {state}
-          </Badge>
-        );
+  const handleAdoptSkill = async () => {
+    if (!skill || skill.source !== "discovered") return;
+    if (!skill.originClientId) {
+      toast.error(t("skills.unified.adoptError"));
+      return;
     }
+
+    setIsActionLoading(true);
+    try {
+      await platformAPI.skills.unified.adopt({
+        skillName: skill.name,
+        sourceClientId: skill.originClientId,
+      });
+      toast.success(t("skills.unified.adoptSuccess"));
+      onClose();
+      onUpdate();
+    } catch (error) {
+      console.error("Failed to adopt skill:", error);
+      toast.error(t("skills.unified.adoptError"));
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  // Get status label for a client
+  const getStatusLabel = (clientState: ClientSkillSummary) => {
+    if (!clientState.installed) {
+      return (
+        <span className="text-[11px] font-medium text-muted-foreground">
+          {t("skills.unified.status.notInstalled")}
+        </span>
+      );
+    }
+    if (clientState.state === "enabled") {
+      return (
+        <span className="text-[11px] font-semibold text-emerald-600">
+          {t("skills.unified.status.enabled")}
+        </span>
+      );
+    }
+    return (
+      <span className="text-[11px] font-medium text-muted-foreground">
+        {t("skills.unified.status.disabled")}
+      </span>
+    );
   };
 
   // Render client icon from SVG string (sanitized to prevent XSS)
@@ -361,98 +370,33 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
     );
   };
 
-  // Render action buttons based on client state
-  const renderClientActions = (clientState: ClientSkillSummary) => {
-    const isLoading = loadingClientId === clientState.clientId;
+  // Render toggle switch for a client
+  const renderClientToggle = (clientState: ClientSkillSummary) => {
+    if (!clientState.installed) return null;
 
-    switch (clientState.state) {
-      case "enabled":
-        return (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleDisableForClient(clientState.clientId)}
-              disabled={isLoading}
-              className="rounded-full h-9 px-4 font-bold border-border/60 hover:bg-orange-500/5 hover:text-orange-600 hover:border-orange-500/20"
-              aria-label={t("skills.unified.actions.disable")}
-            >
-              {isLoading ? (
-                <IconRefresh className="w-4 h-4 animate-spin" />
-              ) : (
-                <IconPlayerStop className="w-4 h-4" />
-              )}
-              <span className="ml-2 hidden sm:inline text-xs">
-                {t("skills.unified.actions.disable")}
-              </span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleRemoveFromClient(clientState.clientId)}
-              disabled={isLoading}
-              className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              aria-label={t("skills.unified.actions.remove")}
-            >
-              <IconTrash className="w-4 h-4" />
-            </Button>
-          </div>
-        );
-      case "disabled":
-        return (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleEnableForClient(clientState.clientId)}
-              disabled={isLoading}
-              className="rounded-full h-9 px-4 font-bold border-border/60 hover:bg-emerald-500/5 hover:text-emerald-600 hover:border-emerald-500/20"
-              aria-label={t("skills.unified.actions.enable")}
-            >
-              {isLoading ? (
-                <IconRefresh className="w-4 h-4 animate-spin" />
-              ) : (
-                <IconPlayerPlay className="w-4 h-4" />
-              )}
-              <span className="ml-2 hidden sm:inline text-xs">
-                {t("skills.unified.actions.enable")}
-              </span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleRemoveFromClient(clientState.clientId)}
-              disabled={isLoading}
-              className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              aria-label={t("skills.unified.actions.remove")}
-            >
-              <IconTrash className="w-4 h-4" />
-            </Button>
-          </div>
-        );
-      case "not-installed":
-        return (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleInstallToClient(clientState.clientId)}
-            disabled={isLoading}
-            className="rounded-full h-9 px-5 font-bold border-border/60 hover:bg-primary/5 shadow-sm"
-            aria-label={t("skills.unified.actions.install")}
-          >
-            {isLoading ? (
-              <IconRefresh className="w-4 h-4 animate-spin" />
-            ) : (
-              <IconDownload className="w-4 h-4" />
-            )}
-            <span className="ml-2 text-xs">
-              {t("skills.unified.actions.install")}
-            </span>
-          </Button>
-        );
-      default:
-        return null;
-    }
+    const isLoading = loadingClientId === clientState.clientId;
+    const isEnabled = clientState.state === "enabled";
+
+    return (
+      <div className="flex items-center gap-2">
+        {isLoading && (
+          <IconRefresh className="w-4 h-4 animate-spin text-muted-foreground" />
+        )}
+        <Switch
+          checked={isEnabled}
+          onCheckedChange={(checked) =>
+            handleToggleClient(clientState.clientId, checked)
+          }
+          disabled={isLoading || isDiscoveredSkill}
+          className={cn(isEnabled && "data-[state=checked]:bg-emerald-500")}
+          aria-label={
+            isEnabled
+              ? t("skills.unified.actions.disable")
+              : t("skills.unified.actions.enable")
+          }
+        />
+      </div>
+    );
   };
 
   if (!skill) {
@@ -503,7 +447,11 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
                   className="flex items-center gap-2 text-xs font-bold"
                   aria-live="polite"
                 >
-                  {isLoadingContent ? (
+                  {isDiscoveredSkill ? (
+                    <span className="text-muted-foreground">
+                      {t("skills.unified.discoveredReadOnly")}
+                    </span>
+                  ) : isLoadingContent ? (
                     <div className="flex items-center gap-1.5 text-primary">
                       <IconRefresh className="w-3.5 h-3.5 animate-spin" />
                       <span>{t("skills.unified.loading")}</span>
@@ -530,7 +478,7 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
                   id="skill-content"
                   value={content}
                   onChange={handleContentChange}
-                  disabled={isLoadingContent}
+                  disabled={isLoadingContent || isDiscoveredSkill}
                   className="min-h-[300px] font-mono text-sm resize-none rounded-3xl border-border/40 bg-muted/10 focus:bg-background p-6 shadow-sm transition-all"
                   placeholder={t("skills.unified.contentPlaceholder")}
                   aria-label={t("skills.unified.contentLabel")}
@@ -539,36 +487,42 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
               </div>
             </div>
 
-            {/* Client Installation Section */}
+            {/* Client Status Section */}
             <div className="space-y-4">
               <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                {t("skills.unified.clientInstallations")}
+                {t("skills.unified.clientStatus")}
               </h3>
               {skill.clientStates && skill.clientStates.length > 0 ? (
                 <div className="grid gap-3">
-                  {skill.clientStates.map((clientState) => (
-                    <div
-                      key={clientState.clientId}
-                      className="flex items-center justify-between p-5 bg-card/40 rounded-2xl border border-border/40 soft-shadow hover:bg-card/60 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="bg-muted/50 p-2.5 rounded-xl shadow-inner">
-                          {renderClientIcon(clientState.clientIcon)}
-                        </div>
-                        <div>
-                          <div className="font-bold tracking-tight">
-                            {clientState.clientName}
+                  {[...(skill.clientStates || [])]
+                    .sort((a, b) => {
+                      if (a.installed === b.installed) return 0;
+                      return a.installed ? -1 : 1;
+                    })
+                    .map((clientState) => (
+                      <div
+                        key={clientState.clientId}
+                        className={cn(
+                          "flex items-center justify-between p-5 bg-card/40 rounded-2xl border border-border/40 soft-shadow hover:bg-card/60 transition-colors",
+                          !clientState.installed && "opacity-40",
+                        )}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="bg-muted/50 p-2.5 rounded-xl shadow-inner">
+                            {renderClientIcon(clientState.clientIcon)}
                           </div>
-                          <div className="mt-1">
-                            {getStatusBadge(clientState.state)}
+                          <div>
+                            <div className="font-bold tracking-tight">
+                              {clientState.clientName}
+                            </div>
+                            <div className="mt-0.5">
+                              {getStatusLabel(clientState)}
+                            </div>
                           </div>
                         </div>
+                        {renderClientToggle(clientState)}
                       </div>
-                      <div className="flex items-center gap-2">
-                        {renderClientActions(clientState)}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               ) : (
                 <div className="py-12 flex flex-col items-center justify-center bg-muted/10 rounded-3xl border border-dashed border-border/40">
@@ -583,52 +537,58 @@ const UnifiedSkillDetailSheet: React.FC<UnifiedSkillDetailSheetProps> = ({
           {/* Bulk Actions Footer - Fixed at bottom */}
           <SheetFooter className="p-8 border-t border-border/40 flex-shrink-0 flex-col sm:flex-row gap-4 bg-background/80 backdrop-blur-md">
             <div className="flex flex-wrap gap-2 flex-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSyncToAll}
-                disabled={isSyncLoading || isActionLoading}
-                className="rounded-full h-10 px-5 font-bold border-border/60 hover:bg-primary/5"
-              >
-                <IconRefresh
-                  className={cn(
-                    "w-4 h-4 mr-2",
-                    isSyncLoading && "animate-spin",
-                  )}
-                />
-                {t("skills.unified.bulkActions.syncToAll")}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleEnableAll}
-                disabled={isActionLoading}
-                className="rounded-full h-10 px-5 font-bold border-border/60 hover:bg-emerald-500/5 hover:text-emerald-600 hover:border-emerald-500/20"
-              >
-                <IconPlayerPlay className="w-4 h-4 mr-2" />
-                {t("skills.unified.bulkActions.enableAll")}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDisableAll}
-                disabled={isActionLoading}
-                className="rounded-full h-10 px-5 font-bold border-border/60 hover:bg-orange-500/5 hover:text-orange-600 hover:border-orange-500/20"
-              >
-                <IconPlayerStop className="w-4 h-4 mr-2" />
-                {t("skills.unified.bulkActions.disableAll")}
-              </Button>
+              {isDiscoveredSkill ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAdoptSkill}
+                  disabled={isActionLoading}
+                  className="rounded-full h-10 px-5 font-bold border-border/60 hover:bg-primary/5"
+                >
+                  <IconDownload className="w-4 h-4 mr-2" />
+                  {t("skills.unified.bulkActions.adopt")}
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEnableAll}
+                    disabled={isActionLoading}
+                    className="rounded-full h-10 px-5 font-bold border-border/60 hover:bg-emerald-500/5 hover:text-emerald-600 hover:border-emerald-500/20"
+                  >
+                    {isActionLoading ? (
+                      <IconRefresh className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <IconPlayerPlay className="w-4 h-4 mr-2" />
+                    )}
+                    {t("skills.unified.bulkActions.enableAll")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDisableAll}
+                    disabled={isActionLoading}
+                    className="rounded-full h-10 px-5 font-bold border-border/60 hover:bg-orange-500/5 hover:text-orange-600 hover:border-orange-500/20"
+                  >
+                    <IconPlayerStop className="w-4 h-4 mr-2" />
+                    {t("skills.unified.bulkActions.disableAll")}
+                  </Button>
+                </>
+              )}
             </div>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setIsDeleteDialogOpen(true)}
-              disabled={isActionLoading}
-              className="rounded-full h-10 px-6 font-bold shadow-lg shadow-destructive/10"
-            >
-              <IconTrash className="w-4 h-4 mr-2" />
-              {t("skills.unified.bulkActions.delete")}
-            </Button>
+            {!isDiscoveredSkill && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                disabled={isActionLoading}
+                className="rounded-full h-10 px-6 font-bold shadow-lg shadow-destructive/10"
+              >
+                <IconTrash className="w-4 h-4 mr-2" />
+                {t("skills.unified.bulkActions.delete")}
+              </Button>
+            )}
           </SheetFooter>
         </SheetContent>
       </Sheet>

@@ -1,4 +1,4 @@
-import { promises as fsPromises } from "fs";
+import fs, { promises as fsPromises } from "fs";
 import path from "path";
 import { SingletonService } from "@/main/modules/singleton-service";
 import { SkillRepository } from "./skills.repository";
@@ -38,6 +38,7 @@ export class UnifiedSkillsService extends SingletonService<
   UnifiedSkillsService
 > {
   private fileManager: SkillsFileManager;
+  private hasRunCleanup = false;
 
   protected constructor() {
     super();
@@ -86,12 +87,13 @@ export class UnifiedSkillsService extends SingletonService<
       // Process local skills in parallel (they take precedence)
       const localUnified = await Promise.all(
         localSkills.map(async (skill) => {
-          const clientStates = await this.buildClientStates(
-            skill.id,
-            skill.name,
-            clients,
-          );
-          return this.buildLocalUnifiedSkill(skill, clientStates, null);
+          const [clientStates, content] = await Promise.all([
+            this.buildClientStates(skill.id, skill.name, clients),
+            this.fileManager.readSkillMdAsync(
+              this.fileManager.getSkillPath(skill.name),
+            ),
+          ]);
+          return this.buildLocalUnifiedSkill(skill, clientStates, content);
         }),
       );
 
@@ -117,27 +119,66 @@ export class UnifiedSkillsService extends SingletonService<
         return true;
       });
 
+      // Group discovered skills by name to avoid duplicate cards when the
+      // same skill exists in multiple client directories.
+      const groupedDiscovered = new Map<string, DiscoveredSkill[]>();
+      for (const discovered of filteredDiscovered) {
+        const key = discovered.skillName.toLowerCase();
+        const existing = groupedDiscovered.get(key) ?? [];
+        existing.push(discovered);
+        groupedDiscovered.set(key, existing);
+      }
+
       // Process discovered skills in parallel
       const discoveredUnified = await Promise.all(
-        filteredDiscovered.map(async (discovered) => {
+        Array.from(groupedDiscovered.values()).map(async (group) => {
+          const primary = group.find((d) => d.hasSkillMd) ?? group[0];
+          if (!primary) {
+            throw new Error("Discovered skill group is unexpectedly empty");
+          }
+
           const clientStates = await this.buildClientStatesForDiscovered(
-            discovered,
+            primary,
             clients,
+            group,
           );
-          const discoveredId = `discovered:${discovered.sourceClientId}:${discovered.skillName}`;
+          const discoveredId = `discovered:${primary.sourceClientId}:${primary.skillName}`;
+
+          let content: string | null = null;
+          const contentSource = group.find((d) => d.hasSkillMd);
+          if (contentSource) {
+            try {
+              const skillMdPath = path.join(
+                contentSource.skillPath,
+                "SKILL.md",
+              );
+              content = await fsPromises.readFile(skillMdPath, "utf-8");
+            } catch {
+              // Failed to read content
+            }
+          }
+
           return this.buildDiscoveredUnifiedSkill(
             discoveredId,
-            discovered.skillName,
-            discovered.sourceClientId,
+            primary.skillName,
+            primary.sourceClientId,
             clientStates,
-            null,
+            content,
           );
         }),
       );
 
       unifiedSkills.push(...discoveredUnified);
-      for (const discovered of filteredDiscovered) {
-        processedNames.add(discovered.skillName.toLowerCase());
+      for (const groupedName of groupedDiscovered.keys()) {
+        processedNames.add(groupedName);
+      }
+
+      // Run cleanup once per session (fire-and-forget)
+      if (!this.hasRunCleanup) {
+        this.hasRunCleanup = true;
+        this.cleanupUninstalledClients().catch((err) => {
+          console.warn("Failed to cleanup uninstalled clients:", err);
+        });
       }
 
       return unifiedSkills;
@@ -398,6 +439,12 @@ export class UnifiedSkillsService extends SingletonService<
         throw new Error(`Client not found: ${clientId}`);
       }
 
+      if (client.installed === false) {
+        throw new Error(
+          `Client ${client.name} is not installed on this system`,
+        );
+      }
+
       if (!client.skillsPath) {
         throw new Error(`Client ${client.name} has no skills path configured`);
       }
@@ -413,11 +460,22 @@ export class UnifiedSkillsService extends SingletonService<
       // Create symlink in each resolved path, tracking success
       const skillPath = this.fileManager.getSkillPath(skill.name);
       let allSucceeded = true;
+      const failedPaths: string[] = [];
       for (const targetDir of resolvedPaths) {
         const targetPath = path.join(targetDir, skill.name);
+        // Skip symlink creation if a real directory already exists (externally managed)
+        try {
+          const stats = await fsPromises.lstat(targetPath);
+          if (stats.isDirectory() && !stats.isSymbolicLink()) {
+            continue;
+          }
+        } catch {
+          // Path doesn't exist, proceed with symlink creation
+        }
         const success = this.fileManager.createSymlink(skillPath, targetPath);
         if (!success) {
           allSucceeded = false;
+          failedPaths.push(targetPath);
           console.warn(`Failed to create symlink at ${targetPath}`);
         }
       }
@@ -446,6 +504,15 @@ export class UnifiedSkillsService extends SingletonService<
           createdAt: now,
           updatedAt: now,
         } as Omit<ClientSkillState, "id">);
+      }
+
+      if (!allSucceeded) {
+        const [firstFailedPath] = failedPaths;
+        const extraCount = Math.max(failedPaths.length - 1, 0);
+        const extraText = extraCount > 0 ? ` (+${extraCount} more)` : "";
+        throw new Error(
+          `Failed to create one or more skill symlinks for ${client.name}: ${firstFailedPath}${extraText}`,
+        );
       }
     } catch (error) {
       this.handleError("enableForClient", error);
@@ -690,6 +757,15 @@ export class UnifiedSkillsService extends SingletonService<
           continue;
         }
 
+        if (client.installed === false) {
+          result.skipped.push({
+            clientId: client.id,
+            skillId,
+            reason: "Client not installed",
+          });
+          continue;
+        }
+
         try {
           this.enableForClientWithData(skill, client);
           result.synced.push({ clientId: client.id, skillId });
@@ -802,6 +878,15 @@ export class UnifiedSkillsService extends SingletonService<
           continue;
         }
 
+        if (client.installed === false) {
+          result.skipped.push({
+            clientId: client.id,
+            skillId,
+            reason: "Client not installed",
+          });
+          continue;
+        }
+
         try {
           await this.disableForClient(skillId, client.id);
           result.synced.push({ clientId: client.id, skillId });
@@ -857,7 +942,7 @@ export class UnifiedSkillsService extends SingletonService<
         const skillPath = this.fileManager.getSkillPath(skill.name);
 
         for (const client of clients) {
-          if (!client.skillsPath) {
+          if (!client.skillsPath || client.installed === false) {
             continue;
           }
 
@@ -905,6 +990,56 @@ export class UnifiedSkillsService extends SingletonService<
     }
 
     return result;
+  }
+
+  /**
+   * Remove zombie symlinks and database records for uninstalled clients.
+   * Only removes symlinks that point back to the router's skills directory.
+   */
+  public async cleanupUninstalledClients(): Promise<{
+    removed: string[];
+    errors: string[];
+  }> {
+    const removed: string[] = [];
+    const errors: string[] = [];
+    const clientAppService = getClientAppService();
+    const stateRepo = ClientSkillStateRepository.getInstance();
+    const clients = await clientAppService.list();
+    const routerSkillsDir = this.fileManager.getSkillsDirectory();
+
+    for (const client of clients) {
+      if (client.installed === true || !client.skillsPath) continue;
+
+      const resolvedPaths = this.resolveClientSkillsPath(client.skillsPath);
+      for (const skillsDir of resolvedPaths) {
+        try {
+          const entries = await fsPromises.readdir(skillsDir);
+          for (const entry of entries) {
+            const entryPath = path.join(skillsDir, entry);
+            try {
+              const stats = await fsPromises.lstat(entryPath);
+              if (stats.isSymbolicLink()) {
+                const target = await fsPromises.readlink(entryPath);
+                // Only remove symlinks pointing to router's skills directory
+                if (target.startsWith(routerSkillsDir)) {
+                  await fsPromises.unlink(entryPath);
+                  removed.push(entryPath);
+                }
+              }
+            } catch (e) {
+              errors.push(`${entryPath}: ${e}`);
+            }
+          }
+        } catch {
+          // Skills dir doesn't exist for this uninstalled client, skip
+        }
+      }
+
+      // Clean up database state records for this uninstalled client
+      stateRepo.deleteByClient(client.id);
+    }
+
+    return { removed, errors };
   }
 
   // ==========================================================================
@@ -965,6 +1100,10 @@ export class UnifiedSkillsService extends SingletonService<
   private enableForClientWithData(skill: Skill, client: ClientApp): void {
     const stateRepo = ClientSkillStateRepository.getInstance();
 
+    if (client.installed === false) {
+      throw new Error(`Client ${client.name} is not installed`);
+    }
+
     if (!client.skillsPath) {
       throw new Error(`Client ${client.name} has no skills path configured`);
     }
@@ -978,11 +1117,22 @@ export class UnifiedSkillsService extends SingletonService<
 
     const skillPath = this.fileManager.getSkillPath(skill.name);
     let allSucceeded = true;
+    const failedPaths: string[] = [];
     for (const targetDir of resolvedPaths) {
       const targetPath = path.join(targetDir, skill.name);
+      // Skip symlink creation if a real directory already exists (externally managed)
+      try {
+        const stats = fs.lstatSync(targetPath);
+        if (stats.isDirectory() && !stats.isSymbolicLink()) {
+          continue;
+        }
+      } catch {
+        // Path doesn't exist, proceed with symlink creation
+      }
       const success = this.fileManager.createSymlink(skillPath, targetPath);
       if (!success) {
         allSucceeded = false;
+        failedPaths.push(targetPath);
         console.warn(`Failed to create symlink at ${targetPath}`);
       }
     }
@@ -1010,6 +1160,15 @@ export class UnifiedSkillsService extends SingletonService<
         createdAt: now,
         updatedAt: now,
       } as Omit<ClientSkillState, "id">);
+    }
+
+    if (!allSucceeded) {
+      const [firstFailedPath] = failedPaths;
+      const extraCount = Math.max(failedPaths.length - 1, 0);
+      const extraText = extraCount > 0 ? ` (+${extraCount} more)` : "";
+      throw new Error(
+        `Failed to create one or more skill symlinks for ${client.name}: ${firstFailedPath}${extraText}`,
+      );
     }
   }
 
@@ -1056,6 +1215,23 @@ export class UnifiedSkillsService extends SingletonService<
               }
             } else if (dbState?.state === "disabled") {
               state = "disabled";
+            } else {
+              // Check if skill exists as a real directory (externally managed)
+              const hasRealDir = await Promise.all(
+                resolvedPaths.map(async (resolvedPath) => {
+                  const targetPath = path.join(resolvedPath, skillName);
+                  try {
+                    const stats = await fsPromises.lstat(targetPath);
+                    return stats.isDirectory() && !stats.isSymbolicLink();
+                  } catch {
+                    return false;
+                  }
+                }),
+              );
+              if (hasRealDir.some(Boolean)) {
+                symlinkStatus = "active";
+                state = "enabled";
+              }
             }
           }
         }
@@ -1064,6 +1240,7 @@ export class UnifiedSkillsService extends SingletonService<
           clientId: client.id,
           clientName: client.name,
           clientIcon: client.icon,
+          installed: client.installed,
           state,
           isManaged: dbState?.isManaged ?? symlinkStatus === "active",
           symlinkStatus,
@@ -1080,16 +1257,40 @@ export class UnifiedSkillsService extends SingletonService<
   private async buildClientStatesForDiscovered(
     discovered: DiscoveredSkill,
     clients: ClientApp[],
+    relatedDiscovered: DiscoveredSkill[] = [discovered],
   ): Promise<ClientSkillSummary[]> {
+    const discoveredByClient = new Map<string, DiscoveredSkill[]>();
+    for (const item of relatedDiscovered) {
+      const existing = discoveredByClient.get(item.sourceClientId) ?? [];
+      existing.push(item);
+      discoveredByClient.set(item.sourceClientId, existing);
+    }
+
     const clientStates = await Promise.all(
       clients.map(async (client) => {
         let state: ClientSkillStateType = "not-installed";
         let symlinkStatus: SymlinkStatus = "none";
 
         // Check if this client is the source of the discovered skill
-        if (client.id === discovered.sourceClientId) {
+        const discoveredInClient = discoveredByClient.get(client.id) ?? [];
+        if (discoveredInClient.length > 0) {
           state = "enabled";
-          symlinkStatus = discovered.isSymlink ? "active" : "none";
+          const symlinkPaths = discoveredInClient
+            .filter((item) => item.isSymlink)
+            .map((item) => item.skillPath);
+
+          if (symlinkPaths.length > 0) {
+            const statuses = await Promise.all(
+              symlinkPaths.map((symlinkPath) =>
+                this.fileManager.verifySymlink(symlinkPath),
+              ),
+            );
+            if (statuses.some((s) => s === "active")) {
+              symlinkStatus = "active";
+            } else if (statuses.some((s) => s === "broken")) {
+              symlinkStatus = "broken";
+            }
+          }
         } else if (client.skillsPath) {
           // Check if the skill exists in this client's path
           const resolvedPaths = this.resolveClientSkillsPath(client.skillsPath);
@@ -1115,6 +1316,7 @@ export class UnifiedSkillsService extends SingletonService<
           clientId: client.id,
           clientName: client.name,
           clientIcon: client.icon,
+          installed: client.installed,
           state,
           isManaged: false, // Discovered skills are not managed until adopted
           symlinkStatus,

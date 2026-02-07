@@ -67,10 +67,10 @@ export interface UnifiedSkillsAPI {
   disableForClient: (skillId: string, clientId: string) => Promise<void>;
 
   // Enable skill for all clients
-  enableAll: (skillId: string) => Promise<void>;
+  enableAll: (skillId: string) => Promise<SkillSyncResult>;
 
   // Disable skill for all clients
-  disableAll: (skillId: string) => Promise<void>;
+  disableAll: (skillId: string) => Promise<SkillSyncResult>;
 
   // Remove skill from a specific client
   removeFromClient: (skillId: string, clientId: string) => Promise<void>;

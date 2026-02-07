@@ -165,6 +165,7 @@ export interface ClientSkillSummary {
   clientId: string;
   clientName: string;
   clientIcon?: string;
+  installed: boolean;
   state: ClientSkillStateType;
   isManaged: boolean;
   symlinkStatus: SymlinkStatus;

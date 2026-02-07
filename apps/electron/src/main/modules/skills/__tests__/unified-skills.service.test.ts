@@ -18,6 +18,7 @@ const { mockSkillRepo, mockStateRepo, mockFileManager, mockClientAppService } =
       add: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      deleteByClient: vi.fn(),
     },
     mockFileManager: {
       getSkillsDirectory: vi.fn().mockReturnValue("/mock/skills"),
@@ -96,6 +97,11 @@ describe("UnifiedSkillsService", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFileManager.createSymlink.mockReturnValue(true);
+    mockFileManager.removeSymlink.mockReturnValue(true);
+    mockFileManager.verifySymlink.mockReturnValue("active");
+    mockClientAppService.list.mockResolvedValue([]);
+    mockClientAppService.discoverSkillsFromClients.mockResolvedValue([]);
     UnifiedSkillsService.resetInstance();
     service = UnifiedSkillsService.getInstance();
   });
@@ -156,6 +162,38 @@ describe("UnifiedSkillsService", () => {
       expect(result[0].source).toBe("local");
       expect(result[0].clientStates).toBeDefined();
     });
+
+    it("should deduplicate discovered skills by name across clients", async () => {
+      mockSkillRepo.getAll.mockReturnValue([]);
+      mockClientAppService.list.mockResolvedValue([
+        { id: "client-1", name: "Claude", skillsPath: null, installed: true },
+        { id: "client-2", name: "Cursor", skillsPath: null, installed: true },
+      ]);
+      mockClientAppService.discoverSkillsFromClients.mockResolvedValue([
+        {
+          skillName: "shared-skill",
+          skillPath: "/path/client-1/shared-skill",
+          sourceClientId: "client-1",
+          sourceClientName: "Claude",
+          hasSkillMd: false,
+          isSymlink: false,
+        },
+        {
+          skillName: "shared-skill",
+          skillPath: "/path/client-2/shared-skill",
+          sourceClientId: "client-2",
+          sourceClientName: "Cursor",
+          hasSkillMd: false,
+          isSymlink: false,
+        },
+      ]);
+
+      const result = await service.listUnified();
+
+      expect(result).toHaveLength(1);
+      expect(result[0].source).toBe("discovered");
+      expect(result[0].name).toBe("shared-skill");
+    });
   });
 
   describe("enableForClient", () => {
@@ -207,6 +245,25 @@ describe("UnifiedSkillsService", () => {
       await expect(
         service.enableForClient("skill-1", "client-1"),
       ).rejects.toThrow("no skills path");
+    });
+
+    it("should throw error when symlink creation fails", async () => {
+      mockSkillRepo.getById.mockReturnValue({
+        id: "skill-1",
+        name: "test-skill",
+        enabled: true,
+      });
+      mockClientAppService.get.mockResolvedValue({
+        id: "client-1",
+        name: "Claude",
+        skillsPath: "/home/user/.claude/skills",
+      });
+      mockStateRepo.findBySkillAndClient.mockReturnValue(null);
+      mockFileManager.createSymlink.mockReturnValue(false);
+
+      await expect(
+        service.enableForClient("skill-1", "client-1"),
+      ).rejects.toThrow("Failed to create one or more skill symlinks");
     });
   });
 
@@ -420,6 +477,26 @@ describe("UnifiedSkillsService", () => {
 
       expect(result.skipped).toHaveLength(1);
       expect(result.skipped[0].reason).toContain("No skills path");
+    });
+
+    it("should report errors when symlink creation fails", async () => {
+      mockSkillRepo.getById.mockReturnValue({
+        id: "skill-1",
+        name: "test-skill",
+      });
+      mockClientAppService.list.mockResolvedValue([
+        { id: "client-1", name: "Claude", skillsPath: "/path1" },
+      ]);
+      mockStateRepo.findBySkillAndClient.mockReturnValue(null);
+      mockFileManager.createSymlink.mockReturnValue(false);
+
+      const result = await service.syncToAllClients("skill-1");
+
+      expect(result.synced).toHaveLength(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].error).toContain(
+        "Failed to create one or more skill symlinks",
+      );
     });
   });
 
