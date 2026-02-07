@@ -62,7 +62,7 @@ export interface StandardClientDefinition {
     linux?: string[];
   };
   // Config format
-  configFormat: "json" | "toml" | "env-only";
+  configFormat: "json" | "yaml" | "toml" | "env-only";
 }
 
 /**

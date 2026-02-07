@@ -191,12 +191,8 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
       mcpConfigPath: {
         darwin: path.join(
           HOME,
-          "Library",
-          "Application Support",
-          "Code",
-          "User",
-          "globalStorage",
-          "saoudrizwan.claude-dev",
+          ".cline",
+          "data",
           "settings",
           "cline_mcp_settings.json",
         ),
@@ -240,6 +236,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
             "globalStorage",
             "saoudrizwan.claude-dev",
           ),
+          path.join(HOME, ".cline", "data", "settings"),
         ],
         win32: [
           path.join(HOME, ".vscode", "extensions", "saoudrizwan.claude-dev-*"),
@@ -613,9 +610,9 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
       name: "Continue",
       icon: "continue",
       mcpConfigPath: {
-        darwin: path.join(HOME, ".continue", "config.json"),
-        win32: path.join(HOME, ".continue", "config.json"),
-        linux: path.join(HOME, ".continue", "config.json"),
+        darwin: path.join(HOME, ".continue", "config.yaml"),
+        win32: path.join(HOME, ".continue", "config.yaml"),
+        linux: path.join(HOME, ".continue", "config.yaml"),
       },
       skillsPath: {
         darwin: path.join(HOME, ".continue", "skills"),
@@ -634,7 +631,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
           path.join(HOME, ".vscode", "extensions", "continue.continue-*"),
         ],
       },
-      configFormat: "json",
+      configFormat: "yaml",
     },
 
     // -------------------------------------------------------------------------
@@ -668,7 +665,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
           path.join(HOME, ".local", "bin", "goose"),
         ],
       },
-      configFormat: "json", // Note: Goose actually uses YAML but we use json for compatibility
+      configFormat: "yaml",
     },
 
     // -------------------------------------------------------------------------
@@ -679,7 +676,38 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
       name: "Roo Code",
       icon: "roocode",
       mcpConfigPath: {
-        // Roo Code uses environment-based configuration
+        darwin: path.join(
+          HOME,
+          "Library",
+          "Application Support",
+          "Code",
+          "User",
+          "globalStorage",
+          "rooveterinaryinc.roo-cline",
+          "settings",
+          "cline_mcp_settings.json",
+        ),
+        win32: path.join(
+          HOME,
+          "AppData",
+          "Roaming",
+          "Code",
+          "User",
+          "globalStorage",
+          "rooveterinaryinc.roo-cline",
+          "settings",
+          "cline_mcp_settings.json",
+        ),
+        linux: path.join(
+          HOME,
+          ".config",
+          "Code",
+          "User",
+          "globalStorage",
+          "rooveterinaryinc.roo-cline",
+          "settings",
+          "cline_mcp_settings.json",
+        ),
       },
       skillsPath: {
         darwin: path.join(HOME, ".roo", "skills"),
@@ -713,7 +741,7 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
           ),
         ],
       },
-      configFormat: "env-only",
+      configFormat: "json",
     },
 
     // -------------------------------------------------------------------------
