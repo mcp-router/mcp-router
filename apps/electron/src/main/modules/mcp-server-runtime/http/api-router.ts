@@ -3,6 +3,18 @@ import type { MCPServerManager } from "../../mcp-server-manager/mcp-server-manag
 import { getMarketplaceService } from "../../marketplace/marketplace.service";
 import { getEventBridge } from "../event-bridge";
 
+function getRouteParam(value: string | string[] | undefined): string | null {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (Array.isArray(value) && value.length > 0) {
+    return value[0];
+  }
+
+  return null;
+}
+
 export function createApiRouter(serverManager: MCPServerManager): Router {
   const router = Router();
 
@@ -31,7 +43,11 @@ export function createApiRouter(serverManager: MCPServerManager): Router {
   // POST /api/servers/:id/start - Start a server
   router.post("/servers/:id/start", async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const id = getRouteParam(req.params.id);
+      if (!id) {
+        res.status(400).json({ error: "Server ID is required" });
+        return;
+      }
       const result = await serverManager.startServer(id, "REST API");
       res.json({ success: true, result });
     } catch (error) {
@@ -45,7 +61,11 @@ export function createApiRouter(serverManager: MCPServerManager): Router {
   // POST /api/servers/:id/stop - Stop a server
   router.post("/servers/:id/stop", (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const id = getRouteParam(req.params.id);
+      if (!id) {
+        res.status(400).json({ error: "Server ID is required" });
+        return;
+      }
       const result = serverManager.stopServer(id, "REST API");
       res.json({ success: true, result });
     } catch (error) {
@@ -58,7 +78,11 @@ export function createApiRouter(serverManager: MCPServerManager): Router {
   // GET /api/servers/:id/tools - List server tools
   router.get("/servers/:id/tools", async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const id = getRouteParam(req.params.id);
+      if (!id) {
+        res.status(400).json({ error: "Server ID is required" });
+        return;
+      }
       const tools = await serverManager.listServerTools(id);
       res.json({ tools });
     } catch (error) {
@@ -137,7 +161,13 @@ export function createApiRouter(serverManager: MCPServerManager): Router {
     async (req: Request, res: Response) => {
       try {
         const service = getMarketplaceService();
-        const details = await service.getServerDetails(req.params.serverName);
+        const serverName = getRouteParam(req.params.serverName);
+        if (!serverName) {
+          res.status(400).json({ error: "Server name is required" });
+          return;
+        }
+
+        const details = await service.getServerDetails(serverName);
         if (!details) {
           res.status(404).json({ error: "Server not found" });
           return;

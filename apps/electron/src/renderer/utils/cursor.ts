@@ -35,15 +35,3 @@ export function decodeCursor(cursor: string): CursorData | null {
     return null;
   }
 }
-
-/**
- * Constant representing an empty cursor
- */
-const EMPTY_CURSOR = "";
-
-/**
- * Check whether a cursor is empty
- */
-function isEmptyCursor(cursor?: string): boolean {
-  return !cursor || cursor === EMPTY_CURSOR;
-}

@@ -34,7 +34,6 @@ export const testData = {
     },
     language: {
       english: "en",
-      japanese: "ja",
     },
   },
 };

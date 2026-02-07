@@ -157,6 +157,69 @@ describe("path-security", () => {
       expect(result.valid).toBe(true);
     });
 
+    it("should accept paths in .codeium directory (Windsurf legacy)", () => {
+      const result = validateSkillSymlinkTarget(
+        path.join(homeDir, ".codeium", "windsurf", "skills"),
+      );
+      expect(result.valid).toBe(true);
+    });
+
+    it("should accept paths in .windsurf directory", () => {
+      const result = validateSkillSymlinkTarget(
+        path.join(homeDir, ".windsurf", "skills"),
+      );
+      expect(result.valid).toBe(true);
+    });
+
+    it("should accept paths in .codex directory", () => {
+      const result = validateSkillSymlinkTarget(
+        path.join(homeDir, ".codex", "skills"),
+      );
+      expect(result.valid).toBe(true);
+    });
+
+    it("should accept paths in .gemini directory", () => {
+      const result = validateSkillSymlinkTarget(
+        path.join(homeDir, ".gemini", "skills"),
+      );
+      expect(result.valid).toBe(true);
+    });
+
+    it("should accept paths in .copilot directory", () => {
+      const result = validateSkillSymlinkTarget(
+        path.join(homeDir, ".copilot", "skills"),
+      );
+      expect(result.valid).toBe(true);
+    });
+
+    it("should accept paths in .factory directory", () => {
+      const result = validateSkillSymlinkTarget(
+        path.join(homeDir, ".factory", "skills"),
+      );
+      expect(result.valid).toBe(true);
+    });
+
+    it("should accept paths in .continue directory", () => {
+      const result = validateSkillSymlinkTarget(
+        path.join(homeDir, ".continue", "skills"),
+      );
+      expect(result.valid).toBe(true);
+    });
+
+    it("should accept paths in .roo directory", () => {
+      const result = validateSkillSymlinkTarget(
+        path.join(homeDir, ".roo", "skills"),
+      );
+      expect(result.valid).toBe(true);
+    });
+
+    it("should accept paths in .trae directory", () => {
+      const result = validateSkillSymlinkTarget(
+        path.join(homeDir, ".trae", "skills"),
+      );
+      expect(result.valid).toBe(true);
+    });
+
     it("should reject paths outside home directory", () => {
       const result = validateSkillSymlinkTarget("/tmp/skills");
       expect(result.valid).toBe(false);

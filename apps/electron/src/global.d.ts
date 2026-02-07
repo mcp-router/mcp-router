@@ -223,8 +223,8 @@ declare global {
       enableForClient: (skillId: string, clientId: string) => Promise<void>;
       disableForClient: (skillId: string, clientId: string) => Promise<void>;
       removeFromClient: (skillId: string, clientId: string) => Promise<void>;
-      enableAll: (skillId: string) => Promise<void>;
-      disableAll: (skillId: string) => Promise<void>;
+      enableAll: (skillId: string) => Promise<SkillSyncResult>;
+      disableAll: (skillId: string) => Promise<SkillSyncResult>;
 
       // Marketplace
       marketplaceSearch: (options?: {

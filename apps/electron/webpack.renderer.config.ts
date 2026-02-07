@@ -5,7 +5,21 @@ import { rules } from "./webpack.rules";
 import { plugins } from "./webpack.plugins";
 
 const devServerPort = Number(process.env.WEBPACK_DEV_SERVER_PORT || 9000);
-const devServerHost = process.env.WEBPACK_DEV_SERVER_HOST || "127.0.0.1";
+const requestedDevServerHost =
+  process.env.WEBPACK_DEV_SERVER_HOST || "127.0.0.1";
+
+// Electron renderer cannot reliably connect to 0.0.0.0/:: as a browser host.
+// Normalize wildcard hosts to loopback while preserving explicit host overrides.
+const isWildcardHost =
+  requestedDevServerHost === "0.0.0.0" || requestedDevServerHost === "::";
+const devServerHost =
+  isWildcardHost ? "127.0.0.1" : requestedDevServerHost;
+
+if (isWildcardHost) {
+  console.warn(
+    `[webpack.renderer] WEBPACK_DEV_SERVER_HOST=${requestedDevServerHost} is not a browser-reachable host for Electron; using ${devServerHost} instead.`,
+  );
+}
 
 rules.push({
   test: /\.css$/,

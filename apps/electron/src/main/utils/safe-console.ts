@@ -23,4 +23,3 @@ function safeLog<T extends (...args: unknown[]) => void>(fn: T): T {
 
 export const safeConsoleLog = safeLog(console.log.bind(console));
 export const safeConsoleError = safeLog(console.error.bind(console));
-export const safeConsoleWarn = safeLog(console.warn.bind(console));

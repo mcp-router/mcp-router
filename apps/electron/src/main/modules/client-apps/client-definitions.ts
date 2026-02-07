@@ -288,8 +288,8 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
       detectPaths: {
         darwin: [
           "/Applications/Windsurf.app",
-          // Fallback: check if config directory exists (for web/container installs)
-          path.join(HOME, ".codeium", "windsurf", "mcp_config.json"),
+          // Windsurf creates ~/.windsurf/ itself
+          path.join(HOME, ".windsurf"),
         ],
         win32: [
           path.join(
@@ -300,13 +300,8 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
             "windsurf",
             "Windsurf.exe",
           ),
-          path.join(HOME, ".codeium", "windsurf", "mcp_config.json"),
         ],
-        linux: [
-          "/usr/bin/windsurf",
-          "/usr/local/bin/windsurf",
-          path.join(HOME, ".codeium", "windsurf", "mcp_config.json"),
-        ],
+        linux: ["/usr/bin/windsurf", "/usr/local/bin/windsurf"],
       },
       configFormat: "json",
     },
@@ -423,13 +418,17 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
       },
       detectPaths: {
         darwin: [
-          "/usr/local/bin/gh",
-          path.join(HOME, ".local", "bin", "gh"),
-          // Homebrew-installed gh
-          "/opt/homebrew/bin/gh",
+          path.join(HOME, ".vscode", "extensions", "github.copilot-*"),
+          path.join(HOME, ".vscode", "extensions", "github.copilot-chat-*"),
         ],
-        win32: [path.join(HOME, "AppData", "Local", "GitHub CLI", "gh.exe")],
-        linux: ["/usr/bin/gh", "/usr/local/bin/gh"],
+        win32: [
+          path.join(HOME, ".vscode", "extensions", "github.copilot-*"),
+          path.join(HOME, ".vscode", "extensions", "github.copilot-chat-*"),
+        ],
+        linux: [
+          path.join(HOME, ".vscode", "extensions", "github.copilot-*"),
+          path.join(HOME, ".vscode", "extensions", "github.copilot-chat-*"),
+        ],
       },
       configFormat: "env-only",
     },
@@ -588,7 +587,8 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
       detectPaths: {
         darwin: [
           "/Applications/Factory.app",
-          path.join(HOME, ".factory", "mcp.json"),
+          // Factory creates ~/.factory/ itself
+          path.join(HOME, ".factory"),
         ],
         win32: [
           path.join(
@@ -599,9 +599,8 @@ export const STANDARD_CLIENTS: readonly StandardClientDefinition[] =
             "Factory",
             "Factory.exe",
           ),
-          path.join(HOME, ".factory", "mcp.json"),
         ],
-        linux: ["/usr/bin/factory", path.join(HOME, ".factory", "mcp.json")],
+        linux: ["/usr/bin/factory"],
       },
       configFormat: "json",
     },

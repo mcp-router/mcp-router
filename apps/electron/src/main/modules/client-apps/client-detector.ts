@@ -213,6 +213,10 @@ function checkSkillsPathExists(skillsPath: string | undefined): boolean {
   if (!skillsPath) {
     return false;
   }
+  const expandedPath = expandHomePath(skillsPath);
+  if (expandedPath.includes("*")) {
+    return resolveGlobPath(expandedPath).length > 0;
+  }
   return pathExists(skillsPath);
 }
 

@@ -1,10 +1,5 @@
 // apps/electron/src/main/utils/logger.ts
 import { logger } from "./logger-factory";
-export {
-  safeConsoleLog,
-  safeConsoleError,
-  safeConsoleWarn,
-} from "./safe-console";
 
 /**
  * INFO level log

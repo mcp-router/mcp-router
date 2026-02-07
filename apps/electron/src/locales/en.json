@@ -22,7 +22,9 @@
     "send": "Send",
     "refresh": "Refresh",
     "edit": "Edit",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "previous": "Previous",
+    "next": "Next"
   },
   "feedback": {
     "placeholder": "Feedback or suggestions?",
@@ -396,7 +398,8 @@
       "status": {
         "enabled": "Enabled",
         "disabled": "Disabled",
-        "notInstalled": "Not Installed"
+        "notInstalled": "Not Installed",
+        "available": "Available"
       },
       "actions": {
         "enable": "Enable",
@@ -421,29 +424,29 @@
       "all": "All",
       "discovered": "Discovered",
       "local": "Local",
-      "sheetDescription": "Manage skill content and client installation",
+      "sheetDescription": "Manage skill content and per-client status",
       "contentLabel": "SKILL.md Content",
       "contentPlaceholder": "# Skill Name\n\nDescribe your skill here...",
-      "clientInstallations": "Client Installations",
+      "clientStatus": "Clients",
       "noClients": "No clients configured",
       "saveError": "Failed to save skill content",
       "saving": "Saving...",
       "saved": "Saved",
       "unsaved": "Unsaved changes",
-      "enabledForClient": "Skill enabled for client",
-      "disabledForClient": "Skill disabled for client",
       "enableError": "Failed to enable skill",
       "disableError": "Failed to disable skill",
-      "removedFromClient": "Skill removed from client",
-      "removeError": "Failed to remove skill",
-      "installedToClient": "Skill installed to client",
-      "installError": "Failed to install skill",
-      "syncedToAll": "Skill synced to all clients",
-      "syncError": "Failed to sync skill",
+      "syncSummary": "{{synced}} enabled, {{skipped}} skipped, {{errors}} errors",
+      "bulkPartialOrFailed": "Completed with issues",
+      "noChanges": "No changes were needed",
       "enabledAll": "Skill enabled in all clients",
       "enableAllError": "Failed to enable skill in all clients",
       "disabledAll": "Skill disabled in all clients",
       "disableAllError": "Failed to disable skill in all clients",
+      "adoptRequired": "Adopt this discovered skill first to manage it",
+      "adoptSuccess": "Skill adopted into your library",
+      "adoptError": "Failed to adopt discovered skill",
+      "deleteDiscoveredError": "Discovered skills cannot be deleted here",
+      "discoveredReadOnly": "Discovered skill (read-only until adopted)",
       "deleted": "Skill deleted successfully",
       "deleteError": "Failed to delete skill",
       "status": {
@@ -453,25 +456,21 @@
       },
       "actions": {
         "enable": "Enable",
-        "disable": "Disable",
-        "install": "Install",
-        "remove": "Remove"
+        "disable": "Disable"
       },
       "bulkActions": {
-        "syncToAll": "Sync to All",
-        "enableAll": "Enable All",
-        "disableAll": "Disable All",
+        "enableAll": "Enable All Clients",
+        "disableAll": "Disable All Clients",
+        "adopt": "Adopt Skill",
         "delete": "Delete Skill"
-      },
-      "table": {
-        "client": "Client",
-        "status": "Status",
-        "actions": "Actions"
       },
       "deleteDialog": {
         "title": "Delete Skill",
         "description": "Are you sure you want to delete \"{{name}}\"? This will remove the skill from all clients and cannot be undone."
-      }
+      },
+      "noDescription": "No description found in SKILL.md",
+      "viewDetails": "View details for {{name}}",
+      "clientStates": "Client status"
     },
     "viewDetails": "View details for {{name}}",
     "enabledInClients": "Enabled in {{count}} of {{total}} clients",
@@ -566,7 +565,13 @@
       "noResults": "No servers found",
       "loading": "Loading servers...",
       "official": "Official",
-      "verified": "Verified"
+      "verified": "Verified",
+      "count": "{{count}} servers",
+      "sortStars": "Most Stars",
+      "sortRecent": "Recently Added",
+      "sortUpdated": "Recently Updated",
+      "sortName": "Name (A-Z)",
+      "sortNameDesc": "Name (Z-A)"
     },
     "skills": {
       "title": "Skills",
@@ -574,7 +579,10 @@
       "installed": "Installed",
       "noResults": "No skills found",
       "loading": "Loading skills...",
-      "installs": "installs"
+      "installs": "installs",
+      "sortDownloads": "Most Installs",
+      "sortName": "Name (A-Z)",
+      "sortNameDesc": "Name (Z-A)"
     }
   }
 }

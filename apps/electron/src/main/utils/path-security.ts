@@ -20,11 +20,19 @@ const ALLOWED_SKILL_BASES = [
   ".claude",
   ".cursor",
   ".cline",
-  ".windsurf",
+  ".codeium", // Windsurf (legacy path ~/.codeium/windsurf/)
+  ".windsurf", // Windsurf (current path ~/.windsurf/)
+  ".codex",
+  ".copilot", // VS Code / GitHub Copilot
+  ".gemini", // Gemini CLI and Antigravity
   ".vscode",
-  ".config",
-  "Library/Application Support",
-  "AppData",
+  ".config", // OpenCode, Goose, and other XDG-compliant tools
+  ".factory",
+  ".continue",
+  ".roo",
+  ".trae",
+  "Library/Application Support", // macOS app data (Claude Desktop, Cline)
+  "AppData", // Windows app data
 ];
 
 /**

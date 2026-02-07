@@ -15,7 +15,7 @@ i18n
     },
     lng: "en",
     fallbackLng: "en",
-    debug: process.env.NODE_ENV === "development",
+    debug: false,
 
     // Common namespace used around the app
     ns: ["translation"],
