@@ -63,4 +63,3 @@ export interface SkillDetailsModalProps {
   readmeContent?: string | null;
   isLoadingReadme?: boolean;
 }
-

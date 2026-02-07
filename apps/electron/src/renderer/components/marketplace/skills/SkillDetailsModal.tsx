@@ -200,7 +200,6 @@ export const SkillDetailsModal: React.FC<SkillDetailsModalProps> = ({
                 </div>
               </div>
 
-
               {/* Tags */}
               <div>
                 <h4 className="text-sm font-medium mb-2">

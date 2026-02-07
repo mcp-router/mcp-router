@@ -112,14 +112,14 @@ export class RequestHandlers extends RequestHandlerBase {
 
   /**
    * Check if tool catalog is enabled for the given project.
-   * Catalog mode is now the DEFAULT - exposes meta-tools (tool_discovery,
+   * Catalog mode is opt-in - when enabled, exposes meta-tools (tool_discovery,
    * tool_execute, tool_capabilities) instead of all tools directly.
    * This provides better token efficiency and works within client tool limits.
    */
   private isToolCatalogEnabled(_projectId: string | null): boolean {
-    // Catalog mode is now always enabled by default
-    // This exposes only meta-tools, with actual tools accessed via tool_discovery/tool_execute
-    return true;
+    // Catalog mode is opt-in, disabled by default
+    // When enabled, exposes only meta-tools, with actual tools accessed via tool_discovery/tool_execute
+    return false;
   }
 
   /**
@@ -592,30 +592,28 @@ export class RequestHandlers extends RequestHandlerBase {
   }
 
   /**
-   * Get all tools from all servers (internal implementation for legacy mode)
+   * Get all tools from all servers (internal implementation for legacy mode).
+   * Queries all servers in parallel with a per-server timeout.
    */
   private async getAllToolsInternal(
     token?: string,
     projectId?: string | null,
   ): Promise<any[]> {
+    const PER_SERVER_TIMEOUT_MS = 10_000;
     const normalizedProjectId = this.normalizeProjectId(projectId);
     const toolMap = this.ensureToolMap(normalizedProjectId);
     toolMap.clear();
-    const allTools: any[] = [];
+    const shouldPrefix = this.shouldPrefixToolNames();
 
+    // Build list of eligible servers
+    const eligible: { serverId: string; client: any; serverName: string; server: any }[] = [];
     for (const [serverId, client] of this.clients.entries()) {
       const server = this.servers.get(serverId);
       const serverName = server?.name || serverId;
       const isRunning = this.serverStatusMap.get(serverName);
 
-      if (!isRunning || !client) {
-        continue;
-      }
-
-      if (!this.matchesProject(server, normalizedProjectId)) {
-        continue;
-      }
-
+      if (!isRunning || !client) continue;
+      if (!this.matchesProject(server, normalizedProjectId)) continue;
       if (token) {
         try {
           this.tokenValidator.validateTokenAndAccess(token, serverName);
@@ -623,42 +621,56 @@ export class RequestHandlers extends RequestHandlerBase {
           continue;
         }
       }
+      eligible.push({ serverId, client, serverName, server });
+    }
 
-      try {
-        const tools = await client.getClient().listTools();
+    // Query all servers in parallel with per-server timeout
+    const results = await Promise.allSettled(
+      eligible.map(async ({ client, serverName, server }) => {
+        const tools = await Promise.race([
+          client.getClient().listTools(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Timed out after ${PER_SERVER_TIMEOUT_MS}ms`)), PER_SERVER_TIMEOUT_MS),
+          ),
+        ]);
 
         if (!tools.tools || tools.tools.length === 0) {
-          continue;
+          return [];
         }
 
-        const permissions = (server?.toolPermissions ?? {}) as Record<
-          string,
-          boolean
-        >;
+        const permissions = (server?.toolPermissions ?? {}) as Record<string, boolean>;
+        const serverTools: any[] = [];
 
-        const shouldPrefix = this.shouldPrefixToolNames();
         for (const tool of tools.tools) {
-          if (permissions[tool.name] === false) {
-            continue;
-          }
+          if (permissions[tool.name] === false) continue;
 
           const prefixedName = shouldPrefix
             ? prefixToolName(serverName, tool.name)
             : tool.name;
 
-          const toolWithSource = {
+          serverTools.push({
             ...tool,
             name: prefixedName,
             sourceServer: serverName,
-          };
-
-          toolMap.set(prefixedName, serverName);
-          allTools.push(toolWithSource);
+          });
         }
-      } catch (error: any) {
+        return serverTools;
+      }),
+    );
+
+    // Collect results from fulfilled promises
+    const allTools: any[] = [];
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      if (result.status === "fulfilled") {
+        for (const tool of result.value) {
+          toolMap.set(tool.name, eligible[i].serverName);
+          allTools.push(tool);
+        }
+      } else {
         console.error(
-          `[MCPServerManager] Failed to get tools from server ${serverName}:`,
-          error,
+          `[MCPServerManager] Failed to get tools from server ${eligible[i].serverName}:`,
+          result.reason,
         );
       }
     }

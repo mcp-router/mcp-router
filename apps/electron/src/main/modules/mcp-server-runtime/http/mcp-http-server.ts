@@ -216,10 +216,9 @@ export class MCPHttpServer {
         // Append metadata for downstream handlers
         const token = req.headers["authorization"];
         this.attachRequestMetadata(modifiedBody, token, projectFilter);
-        // For local workspaces, use local aggregator
-        await this.aggregatorServer
-          .getTransport()
-          .handleRequest(req, res, modifiedBody);
+        // Create a fresh transport per request (SDK requires single-use in stateless mode)
+        const transport = await this.aggregatorServer.createRequestTransport();
+        await transport.handleRequest(req, res, modifiedBody);
       } catch (error) {
         console.error("Error handling MCP request:", error);
         if (!res.headersSent) {
@@ -287,18 +286,9 @@ export class MCPHttpServer {
           this.sseSessionProjects.delete(sessionId);
         });
 
-        if (platformManager.isRemoteWorkspace()) {
-          // For remote workspaces, we need to connect to remote aggregator
-          // Note: This requires implementing a remote aggregator SSE endpoint
-          // For now, we'll use the local aggregator but log a warning
-          console.warn(
-            "Remote aggregator SSE not yet implemented, using local aggregator",
-          );
-          await this.aggregatorServer.getAggregatorServer().connect(transport);
-        } else {
-          // For local workspaces, connect to local aggregator server
-          await this.aggregatorServer.getAggregatorServer().connect(transport);
-        }
+        // Create a fresh Server per SSE connection (SDK only allows one transport per Server)
+        const sseServer = this.aggregatorServer.createSseServer();
+        await sseServer.connect(transport);
 
         // Send session ID info to the client
         res.write(`data: ${JSON.stringify({ sessionId })}\n\n`);
@@ -399,7 +389,7 @@ export class MCPHttpServer {
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        this.server = this.app.listen(this.port, () => {
+        this.server = this.app.listen(this.port, "127.0.0.1", () => {
           resolve();
         });
 

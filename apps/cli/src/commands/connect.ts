@@ -339,7 +339,7 @@ class HttpMcpBridgeServer {
   async start(): Promise<void> {
     try {
       // First check if the HTTP server is running
-      // await this.testConnection();
+      await this.testConnection();
 
       // Create and connect the stdio transport
       const transport = new StdioServerTransport();
@@ -396,7 +396,7 @@ class HttpMcpBridgeServer {
         }
 
         const testUrl = new URL(this.baseUrl);
-        testUrl.pathname = `${testUrl.pathname.replace(/\/+$/, "")}/api/test`;
+        testUrl.pathname = "/api/health";
 
         response = await fetch(testUrl, {
           signal: controller.signal,
