@@ -1,0 +1,25 @@
+{
+  "name": "@mcp_router/gemini-sanitizer",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build --force",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.js",
+    "lint:fix": "eslint . --ext .ts,.js --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "knip": "cd ../.. && knip --workspace packages/gemini-sanitizer"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.19.16",
+    "jest": "^29.7.0",
+    "typescript": "^5.9.2"
+  }
+}
