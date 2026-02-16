@@ -94,9 +94,11 @@ MCP Router runs an HTTP server for client connections:
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/mcp` | POST | Streamable HTTP transport |
+| `/mcp` | POST | Streamable HTTP transport (per-request Server+Transport) |
 | `/mcp/sse` | GET | SSE connection setup |
 | `/mcp/messages` | POST | SSE client messages |
+| `/api/health` | GET | Health check (returns `{"status":"healthy"}`) |
+| `/api/*` | Various | REST API routes (servers, tools, etc.) |
 
 ## Common Issues and Fixes
 

@@ -28,8 +28,9 @@ apps/electron/src/main/
     │   └── mcp-logger.repository.ts   # Request logs repository
     ├── mcp-server-manager/
     │   └── mcp-server-manager.repository.ts  # Server repository
-    ├── mcp-apps-manager/
-    │   └── mcp-apps-manager.repository.ts    # Token repository (file-based)
+    ├── client-apps/
+    │   ├── client-app.repository.ts          # Client app repository (SQLite)
+    │   └── token-manager.repository.ts       # Token repository (file-based)
     ├── settings/
     │   └── settings.repository.ts     # Settings repository (file-based)
     ├── workspace/
@@ -215,9 +216,10 @@ const stmt = this.db.prepare("INSERT INTO servers VALUES (?, ?, ?)");
 | AgentPathRepository | agent_paths | SQLite | Yes |
 | ProjectRepository | projects | SQLite | Yes |
 | SettingsRepository | N/A | SharedConfigManager (file-based) | No |
-| McpAppsManagerRepository | N/A | SharedConfigManager (file-based) | No |
+| TokenManagerRepository | N/A | SharedConfigManager (file-based) | No |
+| ClientAppRepository | client_apps | SQLite | Yes |
 
-Note: SettingsRepository and McpAppsManagerRepository use SharedConfigManager for file-based storage instead of SQLite.
+Note: SettingsRepository and TokenManagerRepository use SharedConfigManager for file-based storage instead of SQLite.
 
 ## Update History
 - **January 2026**: Updated documentation to reflect actual implementation
@@ -225,7 +227,7 @@ Note: SettingsRepository and McpAppsManagerRepository use SharedConfigManager fo
   - Replaced RepositoryFactory pattern with singleton getInstance() pattern
   - Updated schema management to reflect inline CREATE_TABLE_SQL pattern
   - Added missing repositories: ProjectRepository, SkillRepository, AgentPathRepository, WorkflowRepository
-  - Noted that SettingsRepository and McpAppsManagerRepository use SharedConfigManager (file-based)
+  - Noted that SettingsRepository and TokenManagerRepository use SharedConfigManager (file-based)
   - Corrected table name: hooks to hook_modules
 - **August 2025**: Initial architecture documentation
 

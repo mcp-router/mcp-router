@@ -65,7 +65,7 @@ protected initializeTable(): void {
 The `main-database-migration.ts` file handles ALTER TABLE operations for existing tables. New table creation is handled by repository initialization.
 
 ### 4. File-Based Storage for Configuration Data
-Some repositories (SettingsRepository, McpAppsManagerRepository) use SharedConfigManager for file-based JSON storage instead of SQLite, keeping configuration data portable and human-readable.
+Some repositories (SettingsRepository, TokenManagerRepository) use SharedConfigManager for file-based JSON storage instead of SQLite, keeping configuration data portable and human-readable.
 
 ## Implementation Details
 
@@ -84,10 +84,10 @@ Some repositories (SettingsRepository, McpAppsManagerRepository) use SharedConfi
 | ClientSkillStateRepository | client_skill_states | SQLite | Yes |
 | ProjectRepository | projects | SQLite | Yes |
 | SettingsRepository | N/A | SharedConfigManager (file-based) | No |
-| McpAppsManagerRepository | N/A | SharedConfigManager (file-based) | No |
+| TokenManagerRepository | N/A | SharedConfigManager (file-based) | No |
 
 ### File-Based Repositories
-SettingsRepository and McpAppsManagerRepository use SharedConfigManager for file-based JSON storage:
+SettingsRepository and TokenManagerRepository use SharedConfigManager for file-based JSON storage:
 
 ```typescript
 export class SettingsRepository {
@@ -161,7 +161,7 @@ Create schema definitions by reverse-engineering from the database.
   - Removed references to non-existent DATABASE_SCHEMA object and schema/tables/ directory
   - Updated to reflect inline CREATE_TABLE_SQL pattern per repository
   - Corrected repository-table mapping
-  - Added documentation for file-based repositories (SettingsRepository, McpAppsManagerRepository)
+  - Added documentation for file-based repositories (SettingsRepository, TokenManagerRepository)
   - Corrected table name: hooks to hook_modules
 - **August 2025**: Initial schema management documentation
 

@@ -133,7 +133,7 @@ Key steps:
 4. Expose in `preload.ts`
 5. Implement Platform API
 6. Register singleton reset in `platform-api-manager.ts`
-7. Add translations in `locales/{en,ja,zh}.json`
+7. Add translations in `locales/en.json`
 
 ## Code Quality Tools
 

@@ -38,12 +38,12 @@ Server-Side Request Forgery (SSRF) via URL Injection
 ### Affected Locations
 - apps/electron/src/main/utils/fetch-utils.ts
 - apps/electron/src/main/modules/workspace/platform-api-manager.ts
-- apps/electron/src/main/modules/mcp-apps-manager/mcp-client.ts
+- apps/electron/src/main/modules/mcp-server-manager/reconnecting-mcp-client.ts
 - apps/electron/src/main/modules/mcp-server-manager/mcp-server-manager.ts
 - apps/electron/src/main/modules/mcp-server-manager/mcp-server-manager.ipc.ts
 - apps/electron/src/main/modules/system/system-handler.ts
 
-Line 29-31 in fetch-utils.ts: const url = path.startsWith('http') ? path : `${apiBaseUrl}${path.startsWith('/') ? '' : '/'}${path}`; return fetch(url, options); OR Line 50 in mcp-client.ts: const transport = new StreamableHTTPClientTransport(new URL(server.remoteUrl)) OR Line 199 in platform-api-manager.ts: return this.currentWorkspace.remoteConfig.apiUrl;
+Line 29-31 in fetch-utils.ts: const url = path.startsWith('http') ? path : `${apiBaseUrl}${path.startsWith('/') ? '' : '/'}${path}`; return fetch(url, options); OR Line 50 in reconnecting-mcp-client.ts: const transport = new StreamableHTTPClientTransport(new URL(server.remoteUrl)) OR Line 199 in platform-api-manager.ts: return this.currentWorkspace.remoteConfig.apiUrl;
 
 ### Description
 Multiple SSRF vulnerabilities due to insufficient URL validation: 1) The `fetchWithToken` function allows arbitrary URLs if the path starts with 'http'. 2) Remote workspace configuration allows arbitrary `apiUrl` values that are directly used for API requests. 3) MCP server connections accept user-provided `remoteUrl` parameters without validation. 4) Server configuration testing and feedback submission make requests to attacker-controlled endpoints. This enables access to internal services, network scanning, credential extraction, and data access to cloud metadata endpoints.
@@ -60,7 +60,7 @@ To fix this vulnerability, implement the following measures: • Enforce strict 
 Token Management and Access Control Bypass Vulnerabilities
 
 ### Affected Locations
-- apps/electron/src/main/modules/mcp-apps-manager/token-manager.ts
+- apps/electron/src/main/modules/client-apps/token-manager.ts
 - apps/electron/src/main/infrastructure/shared-config-manager.ts
 - apps/electron/src/main/modules/mcp-server-manager/server-service.ts
 - apps/electron/src/main/modules/mcp-server-manager/mcp-server-manager.ipc.ts
@@ -243,12 +243,12 @@ Added `validateExternalUrl()` and `validateElicitationUrl()` functions that bloc
 
 **Files:**
 - `packages/shared/src/types/token-types.ts`
-- `apps/electron/src/main/modules/mcp-apps-manager/token-manager.ts`
+- `apps/electron/src/main/modules/client-apps/token-manager.ts`
 
 Tokens now have:
 - Optional `expiresAt` field (UNIX timestamp)
-- Default expiration of 24 hours when generated
-- `validateToken()` checks expiration before returning valid
+- No default expiration (the original 24-hour default was removed in v0.7.0 as too aggressive)
+- `validateToken()` checks expiration before returning valid, if `expiresAt` is set
 
 ### RFC 8707 Resource Indicators (Preparation)
 
@@ -362,16 +362,16 @@ The following is a line-by-line remediation checklist for all identified securit
 ### 2. SSRF (URL Injection) (Critical)
 
 - `apps/electron/src/main/utils/fetch-utils.ts:28` -- Deprecate allowing arbitrary URLs starting with http/https. Only allow allowlist-based base URL concatenation.
-- `apps/electron/src/main/modules/mcp-apps-manager/mcp-client.ts:50` -- Validate scheme/host/path before new URL(server.remoteUrl) (https only, prohibit internal/local, etc.).
-- `apps/electron/src/main/modules/mcp-apps-manager/mcp-client.ts:81` -- Similarly validate remoteUrl for SSE.
+- `apps/electron/src/main/modules/mcp-server-manager/reconnecting-mcp-client.ts:50` -- Validate scheme/host/path before new URL(server.remoteUrl) (https only, prohibit internal/local, etc.).
+- `apps/electron/src/main/modules/mcp-server-manager/reconnecting-mcp-client.ts:81` -- Similarly validate remoteUrl for SSE.
 - `apps/electron/src/main/modules/workspace/platform-api-manager.ts:208` -- Validate remoteConfig.apiUrl at save/read time before adoption (allowed domains/schemes).
 - `apps/electron/src/main/modules/mcp-server-manager/mcp-server-manager.ipc.ts:26` -- Strict validation of remoteUrl/bearerToken during add/update (protocol, port, prohibit private addresses).
 - `apps/electron/src/main/modules/system/system-handler.ts:30` -- Only allow fixed feedback submission destinations. Strict validation if made configurable in the future.
 
 ### 3. Token Management/Access Control Bypass (Critical)
 
-- `apps/electron/src/main/modules/mcp-apps-manager/token-manager.ts:46` -- Add expiration/revocation/scope validation to validateToken.
-- `apps/electron/src/main/modules/mcp-apps-manager/token-manager.ts:13` -- Add expiration/rotation attributes like expiresAt to generated tokens.
+- `apps/electron/src/main/modules/client-apps/token-manager.ts:46` -- Add expiration/revocation/scope validation to validateToken.
+- `apps/electron/src/main/modules/client-apps/token-manager.ts:13` -- Add expiration/rotation attributes like expiresAt to generated tokens.
 - `apps/electron/src/main/modules/mcp-server-manager/server-service.ts:41` -- Remove automatic permission granting to all tokens for new servers (change to explicit permission flow).
 - `apps/electron/src/main/infrastructure/shared-config-manager.ts:351` -- Deprecate batch permission granting via syncTokensWithWorkspaceServers / change to consent-based.
 - `apps/electron/src/main/infrastructure/shared-config-manager.ts:222` -- Deprecate "grant all servers" during migration (migrate with least privilege).
@@ -408,7 +408,7 @@ The following is a line-by-line remediation checklist for all identified securit
 - `apps/electron/src/main/modules/mcp-server-runtime/http/mcp-http-server.ts:56` -- Unify dual/inconsistent Bearer token processing (consolidate pre/post processing).
 - `apps/electron/src/main/modules/mcp-server-runtime/http/mcp-http-server.ts:110` -- Strengthen resolveProjectFilter validation (format/length/existence check, don't skip validation even for remote).
 - `apps/electron/src/main/modules/mcp-server-runtime/http/mcp-http-server.ts:47` -- Limit cors() to allowed origins. Add size limit with express.json({limit}).
-- `apps/electron/src/main/modules/mcp-server-runtime/http/mcp-http-server.ts:390` -- Change listen(port) to listen(port, '127.0.0.1') (local bind). Also consider TLS introduction.
+- `apps/electron/src/main/modules/mcp-server-runtime/http/mcp-http-server.ts:392` -- ~~Change listen(port) to listen(port, '127.0.0.1')~~ **DONE** (localhost bind implemented). Consider TLS introduction.
 - `apps/electron/src/main/modules/mcp-server-runtime/http/mcp-http-server.ts:145` -- Deprecate/minimize _meta.token assignment (don't flow sensitive information to downstream/logs).
 
 ### 8. Workflow DoS/Information Leakage (High)
@@ -421,5 +421,5 @@ The following is a line-by-line remediation checklist for all identified securit
 ### Supplementary (Recommended Cross-Cutting Measures)
 
 - `apps/electron/src/main.ts:295` -- CSP should prohibit unsafe-eval/unsafe-inline in production. Relax only during development.
-- `apps/electron/src/renderer/components/mcp/apps/McpAppsManager.tsx:303` -- Remove dangerouslySetInnerHTML or apply strict sanitization (XSS countermeasures).
+- ~~`McpAppsManager.tsx:303` -- Remove dangerouslySetInnerHTML or apply strict sanitization~~ **DONE** (component removed; SVG sanitization now applied in `ClientStatusIcon.tsx` and `UnifiedSkillDetailSheet.tsx`).
 - Introduce input schema validation (zod, etc.), authorization guards, and rate limiting to all IPCs. Always mask sensitive information in logs.

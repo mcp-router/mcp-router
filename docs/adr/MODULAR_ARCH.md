@@ -1,7 +1,7 @@
 # ADR: Refactoring to Modular Architecture
 
 ## Status
-Partially Implemented (January 2025)
+Implemented
 
 ## Context
 
@@ -46,7 +46,7 @@ apps/electron/src/main/
 │   │
 │   ├── marketplace/        # Marketplace module
 │   │
-│   ├── mcp-apps-manager/   # MCP app management module
+│   ├── client-apps/        # Client app management module (MCP config + Skills paths)
 │   │
 │   ├── mcp-logger/         # MCP logging module
 │   │
@@ -220,17 +220,17 @@ describe('AuthService', () => {
 ## Migration Plan
 
 ### Phase 1: Preparation
-- [ ] Create new directory structure
-- [ ] Prepare common features (shared)
-- [ ] Build dependency injection mechanism
+- [x] Create new directory structure
+- [x] Prepare common features (shared)
+- [x] Build dependency injection mechanism
 
 ### Phase 2: Gradual Migration
-- [ ] Sequential migration of each module
+- [x] Sequential migration of each module
 
 ### Phase 3: Cleanup
-- [ ] Delete old structure
-- [ ] Update documentation
-- [ ] Final testing
+- [x] Delete old structure
+- [x] Update documentation
+- [x] Final testing
 
 ## References
 

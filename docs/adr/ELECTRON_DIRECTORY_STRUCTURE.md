@@ -24,8 +24,6 @@ apps/electron/src/
 │   │   ├── client-apps/    # Unified client app management (MCP + Skills)
 │   │   ├── cloud-sync/     # Cloud synchronization
 │   │   ├── marketplace/    # Marketplace
-│   │   ├── mcp-apps-manager/ # MCP app management (legacy, being replaced by client-apps)
-│   │   │   └── (mcp-client, token-manager, etc.)
 │   │   ├── mcp-logger/     # MCP log management
 │   │   ├── mcp-server-manager/ # MCP server management
 │   │   │   └── dxt-processor/ # DXT data processing
@@ -102,10 +100,16 @@ apps/electron/src/
     - MCP Apps UI
     - Server management UI
   - State management (Zustand)
+    - server-store
+    - auth-store
+    - theme-store
+    - workspace-store
+    - ui-store
+    - server-editing-store
+    - view-preferences-store
+    - project-store
     - hook-store
     - workflow-store
-    - theme-store
-    - view-preferences-store
   - Platform API abstraction
   - UI logic
 
@@ -123,7 +127,7 @@ TypeScript path aliases are used to make imports clear:
 ```typescript
 // Module layer
 import { ServerService } from "@/main/modules/mcp-server-manager/server-service";
-import { WorkspaceService } from "@/main/modules/workspace/workspace-service";
+import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 
 // Infrastructure layer
 import { BaseRepository } from "@/main/infrastructure/database/base-repository";
@@ -167,14 +171,14 @@ src/
 ## Update History
 - **February 2026**: Added client-apps module and marketplace UI components
   - Added `client-apps/` module for unified client app management (combines MCP config + Skills paths)
-  - Marked `mcp-apps-manager/` as legacy (being replaced by client-apps)
+  - Removed `mcp-apps-manager/` module (fully replaced by client-apps)
   - Added `marketplace/` directory with `mcp-servers/`, `shared/`, and `skills/` subdirectories
   - Added `shared/` subdirectory for shared marketplace components (MarketplaceSearch, etc.)
   - Added `skills/` directory for local skills management UI
 - **September 2025**: Reflected migration to module layer
   - Changed domain layer to modules layer
   - Deprecated application layer and integrated its functionality into modules layer
-  - Reflected new module structure (mcp-apps-manager, mcp-server-manager, etc.)
+  - Reflected new module structure (client-apps, mcp-server-manager, etc.)
   - Added workflow (including hook management), system, and mcp-logger modules
 - **August 2025**: Updated to match actual directory structure
   - Added MCP Hook System-related directories

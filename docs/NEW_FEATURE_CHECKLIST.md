@@ -259,10 +259,8 @@ async function initMCPServices(): Promise<void> {
 
 Add translation keys to all language files.
 
-**Files:**
+**File:**
 - `apps/electron/src/locales/en.json`
-- `apps/electron/src/locales/ja.json`
-- `apps/electron/src/locales/zh.json`
 
 ```json
 {
@@ -280,8 +278,6 @@ Add translation keys to all language files.
 
 **Verification Points:**
 - [ ] Added to en.json
-- [ ] Added to ja.json
-- [ ] Added to zh.json
 - [ ] Removed unused translation keys
 
 ---
@@ -362,8 +358,6 @@ Document design decisions, architecture, and key implementation details.
 | Frontend | `apps/electron/src/renderer/components/App.tsx` | Route addition |
 | Frontend | `apps/electron/src/renderer/components/Sidebar.tsx` | Menu addition |
 | i18n | `apps/electron/src/locales/en.json` | English translation |
-| i18n | `apps/electron/src/locales/ja.json` | Japanese translation |
-| i18n | `apps/electron/src/locales/zh.json` | Chinese translation |
 | Docs | `docs/adr/xxx/XXX_DESIGN.md` | Design documentation |
 
 ---

@@ -13,8 +13,6 @@ apps/electron/src/main/modules/skills/
 ├── agent-path.repository.ts          # Agent path DB operations
 ├── client-skill-state.repository.ts  # Per-client skill state DB operations
 ├── skills-agent-paths.ts             # Agent path utilities
-├── skills-errors.ts                  # Structured error classes
-├── skills-error-mapper.ts            # Node.js to SkillsError mapping
 ├── skills-file-manager.ts            # File system operations
 ├── skills.repository.ts              # Skill DB operations
 ├── skills.service.ts                 # Business logic
@@ -335,7 +333,7 @@ class SkillAlreadyExistsError extends SkillsError { code = 'SKILL_ALREADY_EXISTS
 
 ### Error Mapping
 
-Node.js filesystem errors are mapped to structured errors via `skills-error-mapper.ts`:
+Node.js filesystem errors are mapped to structured errors inline within the skills service:
 
 - `EACCES` → `PermissionDeniedError`
 - `ENOENT` → `PathNotFoundError`
@@ -354,39 +352,7 @@ Frontend error utilities in `skills-error-utils.ts` provide:
 
 ### Zustand Store
 
-The renderer process uses a Zustand store (`skills-store.ts`) following the `server-store.ts` pattern:
-
-```typescript
-interface SkillsStoreState {
-  // Data
-  skills: UnifiedSkill[];
-  clientApps: ClientApp[];
-
-  // Loading states
-  isLoading: boolean;
-  isRefreshing: boolean;
-  isUpdating: string[];
-
-  // Error state
-  error: string | null;
-
-  // UI state
-  searchQuery: string;
-  selectedClientIds: Set<string>;
-  selectedSkillId: string | null;
-
-  // Actions
-  fetchSkills: () => Promise<void>;
-  createSkill: (name: string) => Promise<UnifiedSkill>;
-  updateSkill: (id: string, updates: {...}) => Promise<UnifiedSkill>;
-  deleteSkill: (id: string) => Promise<void>;
-  enableForClient: (skillId: string, clientId: string) => Promise<void>;
-  disableForClient: (skillId: string, clientId: string) => Promise<void>;
-  // ... etc
-}
-```
-
-The store factory (`createSkillsStore`) accepts a `getPlatformAPI` function for dependency injection during testing.
+Skills state is managed directly in the renderer components using the Platform API. There is no dedicated Zustand store for skills; instead, components call the `unified` sub-API methods directly and manage local state as needed.
 
 ## Testing
 
@@ -419,4 +385,4 @@ Located in `apps/electron/e2e/specs/skills.spec.ts`:
 2. **Skill Export**: Skill export/backup functionality (import is already implemented)
 3. **Skill Templates**: Pre-defined skill templates
 4. **Cloud Sync**: Skill synchronization via cloud
-5. **Store Integration**: Complete SkillsManager migration to Zustand store
+5. **Dedicated Store**: Consider adding a Zustand store for skills state management

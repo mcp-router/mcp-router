@@ -101,6 +101,5 @@ When revisiting these features, check:
 3. **Client Support** - Do Claude Desktop/Cursor/etc. support these capabilities?
 
 ### Related Files
-- `docs/plans/2026-01-29-mcp-spec-upgrade.md` - Original implementation plan
 - `docs/SECURITY.md` - Security mitigations implemented
 - `packages/shared/src/types/` - Type definitions to extend
