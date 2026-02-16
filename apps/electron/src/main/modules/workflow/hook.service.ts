@@ -1,5 +1,6 @@
 import { HookModule } from "@mcp_router/shared";
 import { getHookRepository, HookRepository } from "./hook.repository";
+import { getServerService } from "@/main/modules/mcp-server-manager/server-service";
 import vm from "vm";
 
 /**
@@ -173,7 +174,35 @@ export class HookService {
           error: (...args: any[]) => console.error(`[Hook]`, ...args),
           warn: (...args: any[]) => console.warn(`[Hook]`, ...args),
         },
-        // Add other global objects as needed
+        // Utility functions
+        sleep: (ms: number): Promise<void> => {
+          const capped = Math.min(Math.max(0, ms), 5000);
+          return new Promise((resolve) => setTimeout(resolve, capped));
+        },
+        getServerInfo: (
+          serverId: string,
+        ): {
+          id: string;
+          name: string;
+          type: string;
+          status: string;
+          enabled: boolean;
+        } | null => {
+          try {
+            const server = getServerService().getServerById(serverId);
+            if (!server) return null;
+            return {
+              id: server.id,
+              name: server.name,
+              type: server.serverType,
+              status: server.status,
+              enabled: !server.disabled,
+            };
+          } catch {
+            return null;
+          }
+        },
+        // Global objects
         JSON,
         Object,
         Array,
@@ -183,6 +212,7 @@ export class HookService {
         Date,
         Math,
         Promise,
+        setTimeout,
       };
 
       // Wrap script to capture return value

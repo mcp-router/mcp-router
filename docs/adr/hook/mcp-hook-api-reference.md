@@ -65,26 +65,26 @@ Object for log output:
 
 ### Available Utility Functions
 
-> **WARNING: NOT IMPLEMENTED** - The following utility functions are **NOT IMPLEMENTED** in the current sandbox environment. They are documented here for future reference only. Do not use them in hook scripts.
-
-#### `sleep(ms: number): Promise<void>` - NOT IMPLEMENTED
-Pauses processing for the specified number of milliseconds.
+#### `sleep(ms: number): Promise<void>` - IMPLEMENTED
+Pauses processing for the specified number of milliseconds. The delay is capped at 5000ms to stay within the hook timeout.
 
 ```javascript
-// NOT AVAILABLE IN CURRENT SANDBOX
 await sleep(1000); // Wait 1 second
+await sleep(10000); // Capped to 5000ms
 ```
 
-#### `getServerInfo(serverId: string): object` - NOT IMPLEMENTED
-Gets server information (currently a simplified implementation).
+#### `getServerInfo(serverId: string): object | null` - IMPLEMENTED
+Returns basic server metadata. Returns `null` if the server is not found. Does not expose sensitive data (tokens, URLs, environment variables).
 
 ```javascript
-// NOT AVAILABLE IN CURRENT SANDBOX
 const serverInfo = getServerInfo(context.metadata.serverId);
-console.log("Server name:", serverInfo.name);
+if (serverInfo) {
+  console.log("Server:", serverInfo.name, "Status:", serverInfo.status);
+}
+// Returns: { id, name, type, status, enabled }
 ```
 
-#### `fetch(url: string, options?: object): Promise<Response>` - NOT IMPLEMENTED
+#### `fetch(url: string, options?: object): Promise<Response>` - NOT IMPLEMENTED (needs security review)
 Sends HTTPS requests. For security reasons, the following restrictions apply:
 - Only HTTPS URLs are allowed (HTTP is not allowed)
 - Timeout is 3 seconds
