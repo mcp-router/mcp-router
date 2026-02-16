@@ -6,6 +6,7 @@ import type { PlatformAPI } from "@mcp_router/shared";
 import type {
   AuthAPI,
   ServerAPI,
+  ServerStatus,
   PackageAPI,
   SettingsAPI,
   CloudSyncAPI,
@@ -77,17 +78,22 @@ class ElectronPlatformAPI implements PlatformAPI {
         return servers.find((s: any) => s.id === id) || null;
       },
       create: (input) => window.electronAPI.addMcpServer(input),
-      update: (id, updates) =>
-        window.electronAPI.updateMcpServerConfig(id, updates),
+      update: async (id, updates) => {
+        const result = await window.electronAPI.updateMcpServerConfig(id, updates);
+        if (!result) throw new Error(`Server not found: ${id}`);
+        return result;
+      },
       updateToolPermissions: (id, permissions) =>
         window.electronAPI.updateToolPermissions(id, permissions),
-      delete: (id) => window.electronAPI.removeMcpServer(id),
+      delete: async (id) => {
+        await window.electronAPI.removeMcpServer(id);
+      },
       start: (id) => window.electronAPI.startMcpServer(id),
       stop: (id) => window.electronAPI.stopMcpServer(id),
       getStatus: async (id) => {
         const servers = await window.electronAPI.listMcpServers();
-        const server = servers.find((s: any) => s.id === id);
-        return server?.status || { type: "stopped" };
+        const server = servers.find((s) => s.id === id);
+        return { type: (server?.status ?? "stopped") as ServerStatus["type"] };
       },
       selectFile: (options) => window.electronAPI.serverSelectFile(options),
     };

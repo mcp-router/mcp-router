@@ -7,8 +7,10 @@ import type {
   CloudSyncStatus,
   MCPTool,
   MCPServer,
+  MCPServerConfig,
   Project,
   ProjectOptimization,
+  RequestLogEntry,
   Skill,
   SkillWithContent,
   CreateSkillInput,
@@ -28,6 +30,9 @@ import type {
   UpdateClientAppInput,
   TokenServerAccess,
   DiscoveredSkill,
+  Workspace,
+  WorkspaceCreateConfig,
+  WorkspaceUpdateConfig,
 } from "@mcp_router/shared";
 import {
   CreateServerInput,
@@ -35,6 +40,33 @@ import {
   HookModule,
 } from "@mcp_router/shared";
 import { ServerPackageUpdates } from "./lib/utils/backend/package-version-resolver";
+
+/** File/directory selection dialog options */
+interface FileSelectOptions {
+  title?: string;
+  mode?: "file" | "directory";
+  filters?: { name: string; extensions: string[] }[];
+}
+
+/** File/directory selection dialog result */
+interface FileSelectResult {
+  success: boolean;
+  path?: string;
+  canceled?: boolean;
+  error?: string;
+}
+
+/** Workflow execution result returned by the workflow executor */
+interface WorkflowExecutionResult {
+  workflowId: string;
+  workflowName: string;
+  status: "completed" | "error";
+  executedAt: number;
+  context: Record<string, unknown>;
+  results: Record<string, unknown>;
+  mcpResult?: unknown;
+  error?: string;
+}
 
 declare global {
   interface Window {
@@ -45,7 +77,7 @@ declare global {
       getAuthStatus: (forceRefresh?: boolean) => Promise<{
         authenticated: boolean;
         userId?: string;
-        user?: any;
+        user?: Record<string, unknown>;
         token?: string;
       }>;
       handleAuthToken: (token: string, state?: string) => Promise<boolean>;
@@ -53,17 +85,17 @@ declare global {
         callback: (status: {
           loggedIn: boolean;
           userId?: string;
-          user?: any;
+          user?: Record<string, unknown>;
         }) => void,
       ) => () => void;
 
-      listMcpServers: () => Promise<any>;
+      listMcpServers: () => Promise<MCPServer[]>;
       startMcpServer: (id: string) => Promise<boolean>;
       stopMcpServer: (id: string) => Promise<boolean>;
-      addMcpServer: (input: CreateServerInput) => Promise<any>;
-      serverSelectFile: (options: any) => Promise<any>;
-      removeMcpServer: (id: string) => Promise<any>;
-      updateMcpServerConfig: (id: string, config: any) => Promise<any>;
+      addMcpServer: (input: CreateServerInput) => Promise<MCPServer>;
+      serverSelectFile: (options?: FileSelectOptions) => Promise<FileSelectResult>;
+      removeMcpServer: (id: string) => Promise<boolean>;
+      updateMcpServerConfig: (id: string, config: Partial<MCPServerConfig>) => Promise<MCPServer | undefined>;
       listMcpServerTools: (id: string) => Promise<MCPTool[]>;
       updateToolPermissions: (
         id: string,
@@ -80,7 +112,7 @@ declare global {
         cursor?: string;
         limit?: number;
       }) => Promise<{
-        logs: any[];
+        logs: RequestLogEntry[];
         total: number;
         nextCursor?: string;
         hasMore: boolean;
@@ -144,19 +176,21 @@ declare global {
       getPlatform: () => Promise<"darwin" | "win32" | "linux">;
 
       // Workspace Management
-      listWorkspaces: () => Promise<any[]>;
-      createWorkspace: (config: any) => Promise<any>;
+      listWorkspaces: () => Promise<Workspace[]>;
+      createWorkspace: (config: WorkspaceCreateConfig) => Promise<Workspace>;
       updateWorkspace: (
         id: string,
-        updates: any,
+        updates: Partial<WorkspaceUpdateConfig>,
       ) => Promise<{ success: boolean }>;
       deleteWorkspace: (id: string) => Promise<{ success: boolean }>;
       switchWorkspace: (id: string) => Promise<{ success: boolean }>;
-      getCurrentWorkspace: () => Promise<any>;
+      getCurrentWorkspace: () => Promise<Workspace | null>;
       getWorkspaceCredentials: (
         id: string,
       ) => Promise<{ token: string | null }>;
-      onWorkspaceSwitched: (callback: (workspace: any) => void) => () => void;
+      onWorkspaceSwitched: (
+        callback: (workspace: Workspace) => void,
+      ) => () => void;
 
       // Projects Management
       listProjects: () => Promise<Project[]>;
@@ -183,7 +217,10 @@ declare global {
       deleteWorkflow: (id: string) => Promise<boolean>;
       setActiveWorkflow: (id: string) => Promise<boolean>;
       disableWorkflow: (id: string) => Promise<boolean>;
-      executeWorkflow: (id: string, context?: any) => Promise<any>;
+      executeWorkflow: (
+        id: string,
+        context?: Record<string, unknown>,
+      ) => Promise<WorkflowExecutionResult>;
       getEnabledWorkflows: () => Promise<WorkflowDefinition[]>;
       getWorkflowsByType: (
         workflowType: string,
@@ -198,7 +235,10 @@ declare global {
         updates: Partial<Omit<HookModule, "id">>,
       ) => Promise<HookModule | null>;
       deleteHookModule: (id: string) => Promise<boolean>;
-      executeHookModule: (id: string, context: any) => Promise<any>;
+      executeHookModule: (
+        id: string,
+        context: Record<string, unknown>,
+      ) => Promise<unknown>;
       importHookModule: (module: Omit<HookModule, "id">) => Promise<HookModule>;
       validateHookScript: (
         script: string,

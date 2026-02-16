@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { cn } from "@/renderer/utils/tailwind-utils";
 import { IconServer, IconSearch } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
@@ -13,6 +13,16 @@ import { ServerModals } from "./ServerModals";
 const Home: React.FC = () => {
   const { t } = useTranslation();
   const state = useServerFiltering();
+
+  const handleOpenSettings = useCallback(
+    () => state.setIsHomeSettingsOpen(true),
+    [state.setIsHomeSettingsOpen],
+  );
+
+  const handleCloseErrorModal = useCallback(
+    () => state.setErrorModalOpen(false),
+    [state.setErrorModalOpen],
+  );
 
   // Show login screen for remote workspaces if not authenticated
   if (state.currentWorkspace?.type === "remote" && !state.isAuthenticated) {
@@ -30,7 +40,7 @@ const Home: React.FC = () => {
         selectedProjectId={state.selectedProjectId}
         setSelectedProjectId={state.setSelectedProjectId}
         projects={state.projects}
-        onOpenSettings={() => state.setIsHomeSettingsOpen(true)}
+        onOpenSettings={handleOpenSettings}
       />
 
       <div
@@ -97,7 +107,7 @@ const Home: React.FC = () => {
       <ServerModals
         errorServer={state.errorServer}
         errorModalOpen={state.errorModalOpen}
-        onCloseErrorModal={() => state.setErrorModalOpen(false)}
+        onCloseErrorModal={handleCloseErrorModal}
         isHomeSettingsOpen={state.isHomeSettingsOpen}
         setIsHomeSettingsOpen={state.setIsHomeSettingsOpen}
         projects={state.projects}

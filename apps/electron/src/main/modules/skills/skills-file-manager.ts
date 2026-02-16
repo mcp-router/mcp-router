@@ -69,6 +69,8 @@ export class SkillsFileManager {
    * Security: Validates skill name to prevent path traversal
    */
   async createSkillDirectory(name: string): Promise<string> {
+    await this.initPromise;
+
     // Validate skill name for security
     const validation = validateSkillName(name);
     if (!validation.valid) {
@@ -82,22 +84,8 @@ export class SkillsFileManager {
       throw new Error(`Invalid skill path: path traversal detected`);
     }
 
-    try {
-      await fsPromises.access(skillPath);
+    if (await this.pathExists(skillPath)) {
       throw new Error(`Skill directory already exists: ${name}`);
-    } catch (err: unknown) {
-      // If access threw because path doesn't exist, that's what we want
-      if (
-        err instanceof Error &&
-        (err as NodeJS.ErrnoException).code === "ENOENT"
-      ) {
-        // Good - path doesn't exist, proceed
-      } else if (err instanceof Error && err.message.includes("already exists")) {
-        throw err;
-      } else {
-        // Re-throw unexpected errors
-        throw err;
-      }
     }
 
     await fsPromises.mkdir(skillPath, { recursive: true });
@@ -133,6 +121,7 @@ export class SkillsFileManager {
    * Security: Validates that target path is in an allowed location
    */
   async createSymlink(sourcePath: string, targetPath: string): Promise<boolean> {
+    await this.initPromise;
     try {
       // Validate source is within skills directory
       if (!isPathContained(this.skillsDir, sourcePath)) {
@@ -209,6 +198,7 @@ export class SkillsFileManager {
    * Security: Only removes symlinks, not regular files or directories
    */
   async removeSymlink(symlinkPath: string): Promise<boolean> {
+    await this.initPromise;
     try {
       if (await this.isSymlinkExists(symlinkPath)) {
         // Verify it's actually a symlink before removing
@@ -235,6 +225,7 @@ export class SkillsFileManager {
    * Verify symlink status
    */
   async verifySymlink(symlinkPath: string): Promise<SymlinkStatus> {
+    await this.initPromise;
     try {
       const lstats = await fsPromises.lstat(symlinkPath);
       if (!lstats.isSymbolicLink()) {
@@ -260,6 +251,7 @@ export class SkillsFileManager {
    * Security: Validates path is within skills directory before deletion
    */
   async deleteSkillDirectory(skillPath: string): Promise<boolean> {
+    await this.initPromise;
     try {
       // Critical security check: ensure path is within skills directory
       if (!isPathContained(this.skillsDir, skillPath)) {
@@ -297,6 +289,7 @@ export class SkillsFileManager {
     oldPath: string,
     newName: string,
   ): Promise<string | null> {
+    await this.initPromise;
     try {
       // Validate new name
       const nameValidation = validateSkillName(newName);
@@ -352,6 +345,7 @@ export class SkillsFileManager {
    * Check if a skill directory exists
    */
   async skillExists(name: string): Promise<boolean> {
+    await this.initPromise;
     // Validate name before checking
     const validation = validateSkillName(name);
     if (!validation.valid) {
@@ -389,6 +383,7 @@ export class SkillsFileManager {
    * Security: Validates path is within skills directory
    */
   async readSkillMd(skillPath: string): Promise<string | null> {
+    await this.initPromise;
     // Validate path is within skills directory
     if (!isPathContained(this.skillsDir, skillPath)) {
       console.error(
@@ -444,6 +439,7 @@ export class SkillsFileManager {
    * Security: Validates path is within skills directory
    */
   async writeSkillMd(skillPath: string, content: string): Promise<void> {
+    await this.initPromise;
     // Validate path is within skills directory
     if (!isPathContained(this.skillsDir, skillPath)) {
       throw new Error(
@@ -471,6 +467,7 @@ export class SkillsFileManager {
    * - Does not follow symlinks (copies symlinks as-is or skips them)
    */
   async copyFolderToSkills(sourcePath: string, name: string): Promise<string> {
+    await this.initPromise;
     // Validate skill name
     const nameValidation = validateSkillName(name);
     if (!nameValidation.valid) {

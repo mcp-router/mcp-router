@@ -299,8 +299,7 @@ class SharedConfigManager implements ISharedConfigManager {
    */
   saveSettings(settings: AppSettings): void {
     this.config.settings = {
-      ...DEFAULT_APP_SETTINGS,
-      ...this.config.settings,
+      ...this.getSettings(),
       ...settings,
     };
     this.saveConfig();

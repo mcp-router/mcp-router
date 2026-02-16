@@ -60,5 +60,5 @@ export function decryptString(value: string): string {
  * Check whether a value is already encrypted (has the enc: prefix).
  */
 export function isEncrypted(value: string): boolean {
-  return value.startsWith(ENCRYPTED_PREFIX);
+  return typeof value === 'string' && value.startsWith(ENCRYPTED_PREFIX);
 }

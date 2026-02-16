@@ -107,9 +107,6 @@ export interface UpdateServerInput {
   disabled?: boolean;
 }
 
-/** Input for router_get_settings tool (no params) */
-export type GetSettingsInput = Record<string, never>;
-
 /** Input for router_update_settings tool */
 export interface UpdateSettingsInput {
   /** Whether to enable tool catalog mode */
@@ -123,9 +120,6 @@ export interface UpdateSettingsInput {
   /** Whether to show window on startup */
   showWindowOnStartup?: boolean;
 }
-
-/** Input for router_list_workspaces tool (no params) */
-export type ListWorkspacesInput = Record<string, never>;
 
 /** Input for router_switch_workspace tool */
 export interface SwitchWorkspaceInput {
