@@ -77,6 +77,14 @@ export interface AppSettings {
    * Default: true
    */
   prefixToolNames?: boolean;
+
+  /**
+   * Whether to enable tool catalog mode
+   * When enabled, exposes meta-tools (tool_discovery, tool_execute, tool_capabilities)
+   * instead of individual tools from each server
+   * Default: false
+   */
+  toolCatalogEnabled?: boolean;
 }
 
 /**
@@ -98,4 +106,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
     enabled: false,
   },
   prefixToolNames: true,
+  toolCatalogEnabled: false,
 };

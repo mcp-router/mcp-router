@@ -117,9 +117,7 @@ export class RequestHandlers extends RequestHandlerBase {
    * This provides better token efficiency and works within client tool limits.
    */
   private isToolCatalogEnabled(_projectId: string | null): boolean {
-    // Catalog mode is opt-in, disabled by default
-    // When enabled, exposes only meta-tools, with actual tools accessed via tool_discovery/tool_execute
-    return false;
+    return getSharedConfigManager().getSettings().toolCatalogEnabled === true;
   }
 
   /**
