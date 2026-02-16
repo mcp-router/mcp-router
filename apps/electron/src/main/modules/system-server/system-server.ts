@@ -13,9 +13,16 @@ import type {
   RemoveServerInput,
   ToggleServerInput,
   ListToolsInput,
+  StartServerInput,
+  StopServerInput,
+  UpdateServerInput,
+  UpdateSettingsInput,
+  SwitchWorkspaceInput,
   ServerSummary,
   ToolSummary,
 } from "./system-server.types";
+import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
+import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 
 /**
  * MCP Server that exposes router management as MCP tools.
@@ -72,6 +79,20 @@ export class SystemServer {
         return this.handleToggleServer(args as unknown as ToggleServerInput);
       case "router_list_tools":
         return this.handleListTools(args as unknown as ListToolsInput);
+      case "router_start_server":
+        return this.handleStartServer(args as unknown as StartServerInput);
+      case "router_stop_server":
+        return this.handleStopServer(args as unknown as StopServerInput);
+      case "router_update_server":
+        return this.handleUpdateServer(args as unknown as UpdateServerInput);
+      case "router_get_settings":
+        return this.handleGetSettings();
+      case "router_update_settings":
+        return this.handleUpdateSettings(args as unknown as UpdateSettingsInput);
+      case "router_list_workspaces":
+        return this.handleListWorkspaces();
+      case "router_switch_workspace":
+        return this.handleSwitchWorkspace(args as unknown as SwitchWorkspaceInput);
       default:
         throw new McpError(
           ErrorCode.MethodNotFound,
@@ -225,6 +246,105 @@ export class SystemServer {
           return this.handleListTools({
             server: args.server as string | undefined,
           });
+        }
+        case "router_start_server": {
+          const server = args.server;
+          if (typeof server !== "string" || server.trim().length === 0) {
+            throw new McpError(ErrorCode.InvalidParams, "server must be a non-empty string");
+          }
+          return this.handleStartServer({ server });
+        }
+        case "router_stop_server": {
+          const server = args.server;
+          if (typeof server !== "string" || server.trim().length === 0) {
+            throw new McpError(ErrorCode.InvalidParams, "server must be a non-empty string");
+          }
+          return this.handleStopServer({ server });
+        }
+        case "router_update_server": {
+          const server = args.server;
+          if (typeof server !== "string" || server.trim().length === 0) {
+            throw new McpError(ErrorCode.InvalidParams, "server must be a non-empty string");
+          }
+          if (args.name !== undefined) {
+            if (typeof args.name !== "string" || args.name.trim().length === 0) {
+              throw new McpError(ErrorCode.InvalidParams, "name must be a non-empty string");
+            }
+            if (args.name.length > 255) {
+              throw new McpError(ErrorCode.InvalidParams, "name must be at most 255 characters");
+            }
+          }
+          if (args.command !== undefined && typeof args.command !== "string") {
+            throw new McpError(ErrorCode.InvalidParams, "command must be a string");
+          }
+          if (args.args !== undefined) {
+            if (!Array.isArray(args.args) || !args.args.every((a: unknown) => typeof a === "string")) {
+              throw new McpError(ErrorCode.InvalidParams, "args must be an array of strings");
+            }
+          }
+          if (args.env !== undefined) {
+            if (typeof args.env !== "object" || args.env === null || Array.isArray(args.env)) {
+              throw new McpError(ErrorCode.InvalidParams, "env must be an object");
+            }
+            for (const [key, value] of Object.entries(args.env as Record<string, unknown>)) {
+              if (typeof key !== "string" || typeof value !== "string") {
+                throw new McpError(
+                  ErrorCode.InvalidParams,
+                  "env must be a Record<string, string> (all keys and values must be strings)",
+                );
+              }
+            }
+          }
+          if (args.autoStart !== undefined && typeof args.autoStart !== "boolean") {
+            throw new McpError(ErrorCode.InvalidParams, "autoStart must be a boolean");
+          }
+          if (args.disabled !== undefined && typeof args.disabled !== "boolean") {
+            throw new McpError(ErrorCode.InvalidParams, "disabled must be a boolean");
+          }
+          return this.handleUpdateServer({
+            server,
+            name: args.name as string | undefined,
+            command: args.command as string | undefined,
+            args: args.args as string[] | undefined,
+            env: args.env as Record<string, string> | undefined,
+            autoStart: args.autoStart as boolean | undefined,
+            disabled: args.disabled as boolean | undefined,
+          });
+        }
+        case "router_get_settings": {
+          return this.handleGetSettings();
+        }
+        case "router_update_settings": {
+          const VALID_SETTING_KEYS = [
+            "toolCatalogEnabled",
+            "prefixToolNames",
+            "loadExternalMCPConfigs",
+            "autoUpdateEnabled",
+            "showWindowOnStartup",
+          ];
+          // Validate that only known keys are provided and all are booleans
+          for (const [key, value] of Object.entries(args)) {
+            if (!VALID_SETTING_KEYS.includes(key)) {
+              throw new McpError(
+                ErrorCode.InvalidParams,
+                `Unknown setting: ${key}. Valid settings: ${VALID_SETTING_KEYS.join(", ")}`,
+              );
+            }
+            if (typeof value !== "boolean") {
+              throw new McpError(ErrorCode.InvalidParams, `${key} must be a boolean`);
+            }
+          }
+          return this.handleUpdateSettings(args as unknown as UpdateSettingsInput);
+        }
+        case "router_list_workspaces": {
+          return this.handleListWorkspaces();
+        }
+        case "router_switch_workspace": {
+          const workspaceId = args.workspaceId;
+          if (typeof workspaceId !== "string" || workspaceId.trim().length === 0) {
+            throw new McpError(ErrorCode.InvalidParams, "workspaceId must be a non-empty string");
+          }
+          return this.handleSwitchWorkspace({ workspaceId });
         }
         default:
           throw new McpError(
@@ -454,6 +574,180 @@ export class SystemServer {
     return { content: [{ type: "text" as const, text: JSON.stringify(results, null, 2) }] };
   }
 
+  private async handleStartServer(input: StartServerInput) {
+    const server = this.resolveServer(input.server);
+    if (!server) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Server not found: ${input.server}`,
+      );
+    }
+
+    try {
+      await this.serverManager.startServer(server.id);
+      const updated = this.serverManager.getServers().find((s) => s.id === server.id);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify({
+              id: server.id,
+              name: server.name,
+              status: updated?.status ?? "running",
+            }),
+          },
+        ],
+      };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to start server "${server.name}": ${message}`,
+      );
+    }
+  }
+
+  private async handleStopServer(input: StopServerInput) {
+    const server = this.resolveServer(input.server);
+    if (!server) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Server not found: ${input.server}`,
+      );
+    }
+
+    const stopped = this.serverManager.stopServer(server.id);
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify({
+            id: server.id,
+            name: server.name,
+            stopped,
+            status: stopped ? "stopped" : server.status,
+          }),
+        },
+      ],
+    };
+  }
+
+  private async handleUpdateServer(input: UpdateServerInput) {
+    const server = this.resolveServer(input.server);
+    if (!server) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Server not found: ${input.server}`,
+      );
+    }
+
+    const { server: _serverIdOrName, ...updateFields } = input;
+    const updated = this.serverManager.updateServer(server.id, updateFields);
+    if (!updated) {
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to update server "${server.name}"`,
+      );
+    }
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify({
+            id: updated.id,
+            name: updated.name,
+            status: updated.status,
+            autoStart: updated.autoStart,
+            disabled: updated.disabled,
+          }),
+        },
+      ],
+    };
+  }
+
+  private async handleGetSettings() {
+    const settings = getSharedConfigManager().getSettings();
+    // Only expose agent-relevant settings (not auth tokens, user IDs, etc.)
+    const safeSettings = {
+      toolCatalogEnabled: settings.toolCatalogEnabled,
+      prefixToolNames: settings.prefixToolNames,
+      loadExternalMCPConfigs: settings.loadExternalMCPConfigs,
+      autoUpdateEnabled: settings.autoUpdateEnabled,
+      showWindowOnStartup: settings.showWindowOnStartup,
+      theme: settings.theme,
+    };
+
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify(safeSettings, null, 2) }],
+    };
+  }
+
+  private async handleUpdateSettings(input: UpdateSettingsInput) {
+    const configManager = getSharedConfigManager();
+    const currentSettings = configManager.getSettings();
+    const updatedSettings = { ...currentSettings, ...input };
+    configManager.saveSettings(updatedSettings);
+
+    // Return the updated safe subset
+    const saved = configManager.getSettings();
+    const safeSettings = {
+      toolCatalogEnabled: saved.toolCatalogEnabled,
+      prefixToolNames: saved.prefixToolNames,
+      loadExternalMCPConfigs: saved.loadExternalMCPConfigs,
+      autoUpdateEnabled: saved.autoUpdateEnabled,
+      showWindowOnStartup: saved.showWindowOnStartup,
+      theme: saved.theme,
+    };
+
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify(safeSettings, null, 2) }],
+    };
+  }
+
+  private async handleListWorkspaces() {
+    const workspaceService = getWorkspaceService();
+    const workspaces = await workspaceService.list();
+    const results = workspaces.map((ws) => ({
+      id: ws.id,
+      name: ws.name,
+      type: ws.type,
+      isActive: ws.isActive,
+      createdAt: ws.createdAt.toISOString(),
+      lastUsedAt: ws.lastUsedAt.toISOString(),
+    }));
+
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify(results, null, 2) }],
+    };
+  }
+
+  private async handleSwitchWorkspace(input: SwitchWorkspaceInput) {
+    const workspaceService = getWorkspaceService();
+    const target = await workspaceService.findById(input.workspaceId);
+    if (!target) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Workspace not found: ${input.workspaceId}`,
+      );
+    }
+
+    await workspaceService.switchWorkspace(input.workspaceId);
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify({
+            switched: true,
+            workspaceId: target.id,
+            workspaceName: target.name,
+          }),
+        },
+      ],
+    };
+  }
+
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
@@ -612,6 +906,145 @@ const SYSTEM_TOOLS = [
             "Server ID or name. If omitted, lists tools from all running servers.",
         },
       },
+    },
+  },
+  // --- P0: Server lifecycle tools ---
+  {
+    name: "router_start_server",
+    description:
+      "Start an MCP server by name or ID. The server must not be disabled.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        server: {
+          type: "string",
+          description: "Server ID or name.",
+        },
+      },
+      required: ["server"],
+    },
+  },
+  {
+    name: "router_stop_server",
+    description:
+      "Stop a running MCP server by name or ID.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        server: {
+          type: "string",
+          description: "Server ID or name.",
+        },
+      },
+      required: ["server"],
+    },
+  },
+  {
+    name: "router_update_server",
+    description:
+      "Update an MCP server's configuration. Only the provided fields are changed; omitted fields remain unchanged.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        server: {
+          type: "string",
+          description: "Server ID or name to update.",
+        },
+        name: {
+          type: "string",
+          description: "New display name for the server.",
+        },
+        command: {
+          type: "string",
+          description: "New command for local servers.",
+        },
+        args: {
+          type: "array",
+          items: { type: "string" },
+          description: "New arguments for the command (local servers only).",
+        },
+        env: {
+          type: "object",
+          additionalProperties: { type: "string" },
+          description: "New environment variables for the server process.",
+        },
+        autoStart: {
+          type: "boolean",
+          description: "Whether to auto-start the server on app launch.",
+        },
+        disabled: {
+          type: "boolean",
+          description: "Whether the server is disabled.",
+        },
+      },
+      required: ["server"],
+    },
+  },
+  // --- P1: Settings tools ---
+  {
+    name: "router_get_settings",
+    description:
+      "Return current router settings (toolCatalogEnabled, prefixToolNames, etc.).",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "router_update_settings",
+    description:
+      "Update router settings. Only the provided fields are changed; omitted fields remain unchanged.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        toolCatalogEnabled: {
+          type: "boolean",
+          description:
+            "Enable tool catalog mode (meta-tools instead of individual tools).",
+        },
+        prefixToolNames: {
+          type: "boolean",
+          description:
+            "Prefix tool names with server name (e.g., 'krisp__search_meetings').",
+        },
+        loadExternalMCPConfigs: {
+          type: "boolean",
+          description: "Load MCP configs from external applications.",
+        },
+        autoUpdateEnabled: {
+          type: "boolean",
+          description: "Enable auto-updates.",
+        },
+        showWindowOnStartup: {
+          type: "boolean",
+          description: "Show the app window on OS startup.",
+        },
+      },
+    },
+  },
+  // --- P1: Workspace tools ---
+  {
+    name: "router_list_workspaces",
+    description:
+      "List all available workspaces with their ID, name, type, and active status.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "router_switch_workspace",
+    description:
+      "Switch to a different workspace by ID. This changes the active workspace for the router.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        workspaceId: {
+          type: "string",
+          description: "ID of the workspace to switch to.",
+        },
+      },
+      required: ["workspaceId"],
     },
   },
 ];

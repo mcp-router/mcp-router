@@ -57,7 +57,7 @@ export function setupSkillHandlers(): void {
 
   ipcMain.handle("skill:delete", async (_evt, id: string) => {
     if (!id) throw new Error("Missing skill id");
-    service.delete(id);
+    await service.delete(id);
   });
 
   // Actions
@@ -89,7 +89,7 @@ export function setupSkillHandlers(): void {
 
   ipcMain.handle("skill:deleteAgentPath", async (_evt, id: string) => {
     if (!id) throw new Error("Missing agent path id");
-    service.deleteAgentPath(id);
+    await service.deleteAgentPath(id);
   });
 
   ipcMain.handle("skill:selectAgentPathFolder", async () => {

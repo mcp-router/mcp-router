@@ -631,7 +631,7 @@ class ClientAppService extends SingletonService<
       if (skill.enabled) {
         const skillPath = this.skillsFileManager.getSkillPath(skill.name);
         const targetPath = getSymlinkTargetPath(client.skillsPath, skill.name);
-        this.skillsFileManager.createSymlink(skillPath, targetPath);
+        await this.skillsFileManager.createSymlink(skillPath, targetPath);
       }
     }
   }
@@ -649,7 +649,7 @@ class ClientAppService extends SingletonService<
 
     for (const skill of skills) {
       const targetPath = getSymlinkTargetPath(client.skillsPath, skill.name);
-      this.skillsFileManager.removeSymlink(targetPath);
+      await this.skillsFileManager.removeSymlink(targetPath);
     }
   }
 
@@ -677,7 +677,7 @@ class ClientAppService extends SingletonService<
           }
 
           const targetPath = getSymlinkTargetPath(client.skillsPath, skillName);
-          this.skillsFileManager.createSymlink(skillPath, targetPath);
+          await this.skillsFileManager.createSymlink(skillPath, targetPath);
         }
       }
     } catch (error) {
@@ -696,7 +696,7 @@ class ClientAppService extends SingletonService<
       for (const client of clients) {
         if (client.skillsPath) {
           const targetPath = getSymlinkTargetPath(client.skillsPath, skillName);
-          this.skillsFileManager.removeSymlink(targetPath);
+          await this.skillsFileManager.removeSymlink(targetPath);
         }
       }
     } catch (error) {

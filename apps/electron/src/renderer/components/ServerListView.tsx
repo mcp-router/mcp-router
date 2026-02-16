@@ -37,7 +37,7 @@ interface ServerListViewProps {
   onDeleteServer: (server: MCPServer, e: React.MouseEvent) => void;
 }
 
-export const ServerListView: React.FC<ServerListViewProps> = ({
+export const ServerListView: React.FC<ServerListViewProps> = React.memo(({
   filteredServers,
   selectedProjectId,
   projects,
@@ -166,7 +166,9 @@ export const ServerListView: React.FC<ServerListViewProps> = ({
       </div>
     </ScrollArea>
   );
-};
+});
+
+ServerListView.displayName = "ServerListView";
 
 // Internal row component to reduce duplication between unassigned and project sections
 const ServerListRow: React.FC<{

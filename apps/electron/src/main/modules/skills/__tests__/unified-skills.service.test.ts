@@ -21,17 +21,25 @@ const { mockSkillRepo, mockStateRepo, mockFileManager, mockClientAppService } =
       deleteByClient: vi.fn(),
     },
     mockFileManager: {
+      ready: vi.fn().mockResolvedValue(undefined),
       getSkillsDirectory: vi.fn().mockReturnValue("/mock/skills"),
       getSkillPath: vi
         .fn()
         .mockImplementation((name: string) => `/mock/skills/${name}`),
-      createSymlink: vi.fn().mockReturnValue(true),
-      removeSymlink: vi.fn().mockReturnValue(true),
-      verifySymlink: vi.fn().mockReturnValue("active"),
-      readSkillMd: vi.fn().mockReturnValue("# Skill Content"),
+      createSymlink: vi.fn().mockResolvedValue(true),
+      removeSymlink: vi.fn().mockResolvedValue(true),
+      verifySymlink: vi.fn().mockResolvedValue("active"),
+      readSkillMd: vi.fn().mockResolvedValue("# Skill Content"),
       readSkillMdAsync: vi.fn().mockResolvedValue("# Skill Content"),
-      writeSkillMd: vi.fn(),
-      copyFolderToSkills: vi.fn(),
+      readSkillMdFromPath: vi.fn().mockResolvedValue("# Skill Content"),
+      writeSkillMd: vi.fn().mockResolvedValue(undefined),
+      copyFolderToSkills: vi.fn().mockResolvedValue("/mock/skills/copied"),
+      createSkillDirectory: vi.fn().mockResolvedValue("/mock/skills/new-skill"),
+      deleteSkillDirectory: vi.fn().mockResolvedValue(true),
+      renameSkillDirectory: vi.fn().mockResolvedValue("/mock/skills/renamed"),
+      skillExists: vi.fn().mockResolvedValue(false),
+      extractFolderName: vi.fn().mockImplementation((p: string) => p.split("/").pop()),
+      openInFinder: vi.fn(),
     },
     mockClientAppService: {
       list: vi.fn().mockResolvedValue([]),
@@ -97,9 +105,9 @@ describe("UnifiedSkillsService", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFileManager.createSymlink.mockReturnValue(true);
-    mockFileManager.removeSymlink.mockReturnValue(true);
-    mockFileManager.verifySymlink.mockReturnValue("active");
+    mockFileManager.createSymlink.mockResolvedValue(true);
+    mockFileManager.removeSymlink.mockResolvedValue(true);
+    mockFileManager.verifySymlink.mockResolvedValue("active");
     mockClientAppService.list.mockResolvedValue([]);
     mockClientAppService.discoverSkillsFromClients.mockResolvedValue([]);
     UnifiedSkillsService.resetInstance();
@@ -209,7 +217,7 @@ describe("UnifiedSkillsService", () => {
         skillsPath: "/home/user/.claude/skills",
       });
       mockStateRepo.findBySkillAndClient.mockReturnValue(null);
-      mockFileManager.createSymlink.mockReturnValue(true);
+      mockFileManager.createSymlink.mockResolvedValue(true);
 
       await service.enableForClient("skill-1", "client-1");
 
@@ -259,7 +267,7 @@ describe("UnifiedSkillsService", () => {
         skillsPath: "/home/user/.claude/skills",
       });
       mockStateRepo.findBySkillAndClient.mockReturnValue(null);
-      mockFileManager.createSymlink.mockReturnValue(false);
+      mockFileManager.createSymlink.mockResolvedValue(false);
 
       await expect(
         service.enableForClient("skill-1", "client-1"),
@@ -431,9 +439,9 @@ describe("UnifiedSkillsService", () => {
       mockSkillRepo.findByName.mockReturnValue(null);
       mockClientAppService.list.mockResolvedValue([]);
       (fsPromises.rename as any).mockResolvedValue(undefined);
-      mockFileManager.writeSkillMd.mockImplementation(() => {
-        throw new Error("Write failed");
-      });
+      mockFileManager.writeSkillMd.mockRejectedValue(
+        new Error("Write failed"),
+      );
 
       await expect(
         service.updateUnified("skill-1", {
@@ -488,7 +496,7 @@ describe("UnifiedSkillsService", () => {
         { id: "client-1", name: "Claude", skillsPath: "/path1" },
       ]);
       mockStateRepo.findBySkillAndClient.mockReturnValue(null);
-      mockFileManager.createSymlink.mockReturnValue(false);
+      mockFileManager.createSymlink.mockResolvedValue(false);
 
       const result = await service.syncToAllClients("skill-1");
 
@@ -508,8 +516,8 @@ describe("UnifiedSkillsService", () => {
       mockClientAppService.list.mockResolvedValue([
         { id: "client-1", name: "Claude", skillsPath: "/home/.claude/skills" },
       ]);
-      mockFileManager.verifySymlink.mockReturnValue("broken");
-      mockFileManager.createSymlink.mockReturnValue(true);
+      mockFileManager.verifySymlink.mockResolvedValue("broken");
+      mockFileManager.createSymlink.mockResolvedValue(true);
 
       const result = await service.verifyAndRepairAll();
 

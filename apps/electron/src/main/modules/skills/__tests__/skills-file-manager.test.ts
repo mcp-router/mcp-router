@@ -12,7 +12,7 @@ vi.mock("electron", () => ({
   },
 }));
 
-// Mock fs module
+// Mock fs module - now using promises for async operations
 vi.mock("fs", () => ({
   default: {
     existsSync: vi.fn(),
@@ -28,9 +28,18 @@ vi.mock("fs", () => ({
     readdirSync: vi.fn(),
     copyFileSync: vi.fn(),
     promises: {
-      lstat: vi.fn(),
-      readlink: vi.fn(),
       access: vi.fn(),
+      mkdir: vi.fn(),
+      writeFile: vi.fn(),
+      readFile: vi.fn(),
+      unlink: vi.fn(),
+      rm: vi.fn(),
+      rename: vi.fn(),
+      lstat: vi.fn(),
+      symlink: vi.fn(),
+      readlink: vi.fn(),
+      readdir: vi.fn(),
+      copyFile: vi.fn(),
     },
   },
 }));
@@ -52,33 +61,55 @@ import {
   validateSkillSymlinkTarget,
 } from "@/main/utils/path-security";
 
+const fsPromises = fs.promises;
+
 describe("SkillsFileManager", () => {
   let fileManager: SkillsFileManager;
   const mockSkillsDir = "/mock/user/data/skills";
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Setup default mocks
-    (fs.existsSync as any).mockReturnValue(false);
+    // Default: directory doesn't exist (access throws ENOENT), mkdir succeeds
+    (fsPromises.access as any).mockRejectedValue(
+      Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+    );
+    (fsPromises.mkdir as any).mockResolvedValue(undefined);
+    (fsPromises.writeFile as any).mockResolvedValue(undefined);
+    (fsPromises.readFile as any).mockResolvedValue("");
+    (fsPromises.unlink as any).mockResolvedValue(undefined);
+    (fsPromises.rm as any).mockResolvedValue(undefined);
+    (fsPromises.rename as any).mockResolvedValue(undefined);
+    (fsPromises.symlink as any).mockResolvedValue(undefined);
+    (fsPromises.readlink as any).mockResolvedValue("");
+    (fsPromises.readdir as any).mockResolvedValue([]);
+    (fsPromises.copyFile as any).mockResolvedValue(undefined);
+    (fsPromises.lstat as any).mockRejectedValue(
+      Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+    );
+
     fileManager = new SkillsFileManager();
   });
 
-  describe("constructor", () => {
-    it("should create skills directory if it does not exist", () => {
-      (fs.existsSync as any).mockReturnValue(false);
-      new SkillsFileManager();
+  describe("constructor and ready()", () => {
+    it("should create skills directory if it does not exist", async () => {
+      (fsPromises.access as any).mockRejectedValue(
+        Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+      );
+      const fm = new SkillsFileManager();
+      await fm.ready();
 
-      expect(fs.mkdirSync).toHaveBeenCalledWith(mockSkillsDir, {
+      expect(fsPromises.mkdir).toHaveBeenCalledWith(mockSkillsDir, {
         recursive: true,
       });
     });
 
-    it("should not recreate directory if it exists", () => {
+    it("should not recreate directory if it exists", async () => {
       vi.clearAllMocks();
-      (fs.existsSync as any).mockReturnValue(true);
-      new SkillsFileManager();
+      (fsPromises.access as any).mockResolvedValue(undefined);
+      const fm = new SkillsFileManager();
+      await fm.ready();
 
-      expect(fs.mkdirSync).not.toHaveBeenCalled();
+      expect(fsPromises.mkdir).not.toHaveBeenCalled();
     });
   });
 
@@ -89,18 +120,21 @@ describe("SkillsFileManager", () => {
   });
 
   describe("createSkillDirectory", () => {
-    it("should create skill directory with SKILL.md", () => {
-      (fs.existsSync as any).mockReturnValue(false);
+    it("should create skill directory with SKILL.md", async () => {
+      // access throws ENOENT = path doesn't exist (what we want)
+      (fsPromises.access as any).mockRejectedValue(
+        Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+      );
       (validateSkillName as any).mockReturnValue({ valid: true });
       (isPathContained as any).mockReturnValue(true);
 
-      const result = fileManager.createSkillDirectory("my-skill");
+      const result = await fileManager.createSkillDirectory("my-skill");
 
-      expect(fs.mkdirSync).toHaveBeenCalledWith(
+      expect(fsPromises.mkdir).toHaveBeenCalledWith(
         path.join(mockSkillsDir, "my-skill"),
         { recursive: true },
       );
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
+      expect(fsPromises.writeFile).toHaveBeenCalledWith(
         path.join(mockSkillsDir, "my-skill", "SKILL.md"),
         expect.stringContaining("# my-skill"),
         "utf-8",
@@ -108,52 +142,56 @@ describe("SkillsFileManager", () => {
       expect(result).toBe(path.join(mockSkillsDir, "my-skill"));
     });
 
-    it("should throw error for invalid skill name", () => {
+    it("should throw error for invalid skill name", async () => {
       (validateSkillName as any).mockReturnValue({
         valid: false,
         error: "Invalid name",
       });
 
-      expect(() => fileManager.createSkillDirectory("../bad")).toThrow(
-        "Invalid name",
-      );
+      await expect(
+        fileManager.createSkillDirectory("../bad"),
+      ).rejects.toThrow("Invalid name");
     });
 
-    it("should throw error if directory already exists", () => {
+    it("should throw error if directory already exists", async () => {
       (validateSkillName as any).mockReturnValue({ valid: true });
       (isPathContained as any).mockReturnValue(true);
-      (fs.existsSync as any).mockReturnValue(true);
+      // access succeeds = path exists
+      (fsPromises.access as any).mockResolvedValue(undefined);
 
-      expect(() => fileManager.createSkillDirectory("existing")).toThrow(
-        "already exists",
-      );
+      await expect(
+        fileManager.createSkillDirectory("existing"),
+      ).rejects.toThrow("already exists");
     });
 
-    it("should throw error for path traversal", () => {
+    it("should throw error for path traversal", async () => {
       (validateSkillName as any).mockReturnValue({ valid: true });
       (isPathContained as any).mockReturnValue(false);
 
-      expect(() => fileManager.createSkillDirectory("skill")).toThrow(
-        "path traversal",
-      );
+      await expect(
+        fileManager.createSkillDirectory("skill"),
+      ).rejects.toThrow("path traversal");
     });
   });
 
   describe("createSymlink", () => {
-    it("should create symlink for valid paths", () => {
+    it("should create symlink for valid paths", async () => {
       (isPathContained as any).mockReturnValue(true);
       (validateSkillSymlinkTarget as any).mockReturnValue({ valid: true });
-      (fs.existsSync as any).mockReturnValue(false);
-      (fs.lstatSync as any).mockImplementation(() => {
-        throw new Error("ENOENT");
-      });
+      // pathExists returns false (access throws), isSymlinkExists returns false (lstat throws)
+      (fsPromises.access as any).mockRejectedValue(
+        Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+      );
+      (fsPromises.lstat as any).mockRejectedValue(
+        Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+      );
 
-      const result = fileManager.createSymlink(
+      const result = await fileManager.createSymlink(
         path.join(mockSkillsDir, "my-skill"),
         path.join("/home/user/.claude/skills", "my-skill"),
       );
 
-      expect(fs.symlinkSync).toHaveBeenCalledWith(
+      expect(fsPromises.symlink).toHaveBeenCalledWith(
         path.join(mockSkillsDir, "my-skill"),
         path.join("/home/user/.claude/skills", "my-skill"),
         "dir",
@@ -161,26 +199,26 @@ describe("SkillsFileManager", () => {
       expect(result).toBe(true);
     });
 
-    it("should return false if source is outside skills directory", () => {
+    it("should return false if source is outside skills directory", async () => {
       (isPathContained as any).mockReturnValue(false);
 
-      const result = fileManager.createSymlink(
+      const result = await fileManager.createSymlink(
         "/other/path",
         "/home/user/.claude/skills/my-skill",
       );
 
       expect(result).toBe(false);
-      expect(fs.symlinkSync).not.toHaveBeenCalled();
+      expect(fsPromises.symlink).not.toHaveBeenCalled();
     });
 
-    it("should return false if target path is not allowed", () => {
+    it("should return false if target path is not allowed", async () => {
       (isPathContained as any).mockReturnValue(true);
       (validateSkillSymlinkTarget as any).mockReturnValue({
         valid: false,
         error: "Not allowed",
       });
 
-      const result = fileManager.createSymlink(
+      const result = await fileManager.createSymlink(
         path.join(mockSkillsDir, "my-skill"),
         "/etc/skills/my-skill",
       );
@@ -188,62 +226,72 @@ describe("SkillsFileManager", () => {
       expect(result).toBe(false);
     });
 
-    it("should remove existing symlink before creating new one", () => {
+    it("should remove existing symlink before creating new one", async () => {
       (isPathContained as any).mockReturnValue(true);
       (validateSkillSymlinkTarget as any).mockReturnValue({ valid: true });
-      (fs.existsSync as any).mockReturnValue(true);
-      (fs.lstatSync as any).mockReturnValue({ isSymbolicLink: () => true });
+      // pathExists returns true (access succeeds)
+      (fsPromises.access as any).mockResolvedValue(undefined);
+      (fsPromises.lstat as any).mockResolvedValue({
+        isSymbolicLink: () => true,
+      });
 
-      fileManager.createSymlink(
+      await fileManager.createSymlink(
         path.join(mockSkillsDir, "my-skill"),
         "/home/user/.claude/skills/my-skill",
       );
 
-      expect(fs.unlinkSync).toHaveBeenCalled();
-      expect(fs.symlinkSync).toHaveBeenCalled();
+      expect(fsPromises.unlink).toHaveBeenCalled();
+      expect(fsPromises.symlink).toHaveBeenCalled();
     });
 
-    it("should not overwrite non-symlink files", () => {
+    it("should not overwrite non-symlink files", async () => {
       (isPathContained as any).mockReturnValue(true);
       (validateSkillSymlinkTarget as any).mockReturnValue({ valid: true });
-      (fs.existsSync as any).mockReturnValue(true);
-      (fs.lstatSync as any).mockReturnValue({ isSymbolicLink: () => false });
+      // pathExists returns true (access succeeds)
+      (fsPromises.access as any).mockResolvedValue(undefined);
+      (fsPromises.lstat as any).mockResolvedValue({
+        isSymbolicLink: () => false,
+      });
 
-      const result = fileManager.createSymlink(
+      const result = await fileManager.createSymlink(
         path.join(mockSkillsDir, "my-skill"),
         "/home/user/.claude/skills/my-skill",
       );
 
       expect(result).toBe(false);
-      expect(fs.symlinkSync).not.toHaveBeenCalled();
+      expect(fsPromises.symlink).not.toHaveBeenCalled();
     });
   });
 
   describe("removeSymlink", () => {
-    it("should remove existing symlink", () => {
-      (fs.lstatSync as any).mockReturnValue({ isSymbolicLink: () => true });
+    it("should remove existing symlink", async () => {
+      (fsPromises.lstat as any).mockResolvedValue({
+        isSymbolicLink: () => true,
+      });
 
-      const result = fileManager.removeSymlink("/path/to/symlink");
+      const result = await fileManager.removeSymlink("/path/to/symlink");
 
-      expect(fs.unlinkSync).toHaveBeenCalledWith("/path/to/symlink");
+      expect(fsPromises.unlink).toHaveBeenCalledWith("/path/to/symlink");
       expect(result).toBe(true);
     });
 
-    it("should return false for non-symlink files", () => {
-      (fs.lstatSync as any).mockReturnValue({ isSymbolicLink: () => false });
+    it("should return false for non-symlink files", async () => {
+      (fsPromises.lstat as any).mockResolvedValue({
+        isSymbolicLink: () => false,
+      });
 
-      const result = fileManager.removeSymlink("/path/to/regular-file");
+      const result = await fileManager.removeSymlink("/path/to/regular-file");
 
-      expect(fs.unlinkSync).not.toHaveBeenCalled();
+      expect(fsPromises.unlink).not.toHaveBeenCalled();
       expect(result).toBe(false);
     });
 
-    it("should return true for non-existent paths", () => {
-      (fs.lstatSync as any).mockImplementation(() => {
-        throw new Error("ENOENT");
-      });
+    it("should return true for non-existent paths", async () => {
+      (fsPromises.lstat as any).mockRejectedValue(
+        Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+      );
 
-      const result = fileManager.removeSymlink("/nonexistent/path");
+      const result = await fileManager.removeSymlink("/nonexistent/path");
 
       expect(result).toBe(true);
     });
@@ -251,11 +299,11 @@ describe("SkillsFileManager", () => {
 
   describe("verifySymlink", () => {
     it("should return 'active' for valid symlink", async () => {
-      (fs.promises.lstat as any).mockResolvedValue({
+      (fsPromises.lstat as any).mockResolvedValue({
         isSymbolicLink: () => true,
       });
-      (fs.promises.readlink as any).mockResolvedValue("/target/path");
-      (fs.promises.access as any).mockResolvedValue(undefined);
+      (fsPromises.readlink as any).mockResolvedValue("/target/path");
+      (fsPromises.access as any).mockResolvedValue(undefined);
 
       const result = await fileManager.verifySymlink("/path/to/symlink");
 
@@ -263,11 +311,11 @@ describe("SkillsFileManager", () => {
     });
 
     it("should return 'broken' for symlink with missing target", async () => {
-      (fs.promises.lstat as any).mockResolvedValue({
+      (fsPromises.lstat as any).mockResolvedValue({
         isSymbolicLink: () => true,
       });
-      (fs.promises.readlink as any).mockResolvedValue("/missing/target");
-      (fs.promises.access as any).mockRejectedValue(new Error("ENOENT"));
+      (fsPromises.readlink as any).mockResolvedValue("/missing/target");
+      (fsPromises.access as any).mockRejectedValue(new Error("ENOENT"));
 
       const result = await fileManager.verifySymlink("/path/to/symlink");
 
@@ -275,7 +323,7 @@ describe("SkillsFileManager", () => {
     });
 
     it("should return 'none' for non-symlink", async () => {
-      (fs.promises.lstat as any).mockResolvedValue({
+      (fsPromises.lstat as any).mockResolvedValue({
         isSymbolicLink: () => false,
       });
 
@@ -285,7 +333,7 @@ describe("SkillsFileManager", () => {
     });
 
     it("should return 'none' for non-existent path", async () => {
-      (fs.promises.lstat as any).mockRejectedValue(new Error("ENOENT"));
+      (fsPromises.lstat as any).mockRejectedValue(new Error("ENOENT"));
 
       const result = await fileManager.verifySymlink("/nonexistent");
 
@@ -294,66 +342,68 @@ describe("SkillsFileManager", () => {
   });
 
   describe("deleteSkillDirectory", () => {
-    it("should delete directory within skills folder", () => {
+    it("should delete directory within skills folder", async () => {
       (isPathContained as any).mockReturnValue(true);
-      (fs.existsSync as any).mockReturnValue(true);
+      (fsPromises.access as any).mockResolvedValue(undefined);
 
-      const result = fileManager.deleteSkillDirectory(
+      const result = await fileManager.deleteSkillDirectory(
         path.join(mockSkillsDir, "my-skill"),
       );
 
-      expect(fs.rmSync).toHaveBeenCalledWith(
+      expect(fsPromises.rm).toHaveBeenCalledWith(
         path.join(mockSkillsDir, "my-skill"),
         { recursive: true, force: true },
       );
       expect(result).toBe(true);
     });
 
-    it("should return false for path outside skills directory", () => {
+    it("should return false for path outside skills directory", async () => {
       (isPathContained as any).mockReturnValue(false);
 
-      const result = fileManager.deleteSkillDirectory("/other/path");
+      const result = await fileManager.deleteSkillDirectory("/other/path");
 
-      expect(fs.rmSync).not.toHaveBeenCalled();
+      expect(fsPromises.rm).not.toHaveBeenCalled();
       expect(result).toBe(false);
     });
 
-    it("should not delete the skills directory itself", () => {
+    it("should not delete the skills directory itself", async () => {
       (isPathContained as any).mockReturnValue(true);
 
-      const result = fileManager.deleteSkillDirectory(mockSkillsDir);
+      const result = await fileManager.deleteSkillDirectory(mockSkillsDir);
 
-      expect(fs.rmSync).not.toHaveBeenCalled();
+      expect(fsPromises.rm).not.toHaveBeenCalled();
       expect(result).toBe(false);
     });
   });
 
   describe("readSkillMd", () => {
-    it("should read SKILL.md from valid path", () => {
+    it("should read SKILL.md from valid path", async () => {
       (isPathContained as any).mockReturnValue(true);
-      (fs.existsSync as any).mockReturnValue(true);
-      (fs.readFileSync as any).mockReturnValue("# Skill Content");
+      (fsPromises.access as any).mockResolvedValue(undefined);
+      (fsPromises.readFile as any).mockResolvedValue("# Skill Content");
 
-      const result = fileManager.readSkillMd(
+      const result = await fileManager.readSkillMd(
         path.join(mockSkillsDir, "my-skill"),
       );
 
       expect(result).toBe("# Skill Content");
     });
 
-    it("should return null for path outside skills directory", () => {
+    it("should return null for path outside skills directory", async () => {
       (isPathContained as any).mockReturnValue(false);
 
-      const result = fileManager.readSkillMd("/other/path");
+      const result = await fileManager.readSkillMd("/other/path");
 
       expect(result).toBeNull();
     });
 
-    it("should return null if SKILL.md does not exist", () => {
+    it("should return null if SKILL.md does not exist", async () => {
       (isPathContained as any).mockReturnValue(true);
-      (fs.existsSync as any).mockReturnValue(false);
+      (fsPromises.access as any).mockRejectedValue(
+        Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+      );
 
-      const result = fileManager.readSkillMd(
+      const result = await fileManager.readSkillMd(
         path.join(mockSkillsDir, "my-skill"),
       );
 
@@ -362,68 +412,72 @@ describe("SkillsFileManager", () => {
   });
 
   describe("writeSkillMd", () => {
-    it("should write SKILL.md content", () => {
+    it("should write SKILL.md content", async () => {
       (isPathContained as any).mockReturnValue(true);
 
-      fileManager.writeSkillMd(
+      await fileManager.writeSkillMd(
         path.join(mockSkillsDir, "my-skill"),
         "# New Content",
       );
 
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
+      expect(fsPromises.writeFile).toHaveBeenCalledWith(
         path.join(mockSkillsDir, "my-skill", "SKILL.md"),
         "# New Content",
         "utf-8",
       );
     });
 
-    it("should throw for path outside skills directory", () => {
+    it("should throw for path outside skills directory", async () => {
       (isPathContained as any).mockReturnValue(false);
 
-      expect(() => fileManager.writeSkillMd("/other/path", "content")).toThrow(
-        "Security",
-      );
+      await expect(
+        fileManager.writeSkillMd("/other/path", "content"),
+      ).rejects.toThrow("Security");
     });
   });
 
   describe("copyFolderToSkills", () => {
-    it("should copy folder to skills directory", () => {
+    it("should copy folder to skills directory", async () => {
       (validateSkillName as any).mockReturnValue({ valid: true });
       (isPathContained as any).mockReturnValue(true);
       (isPathAllowed as any).mockReturnValue(true);
-      (fs.existsSync as any).mockReturnValue(false);
-      (fs.readdirSync as any).mockReturnValue([]);
+      // Destination doesn't exist (access throws)
+      (fsPromises.access as any).mockRejectedValue(
+        Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+      );
+      (fsPromises.readdir as any).mockResolvedValue([]);
 
-      const result = fileManager.copyFolderToSkills(
+      const result = await fileManager.copyFolderToSkills(
         "/home/user/my-skill",
         "my-skill",
       );
 
-      expect(fs.mkdirSync).toHaveBeenCalledWith(
+      expect(fsPromises.mkdir).toHaveBeenCalledWith(
         path.join(mockSkillsDir, "my-skill"),
         { recursive: true },
       );
       expect(result).toBe(path.join(mockSkillsDir, "my-skill"));
     });
 
-    it("should throw for invalid skill name", () => {
+    it("should throw for invalid skill name", async () => {
       (validateSkillName as any).mockReturnValue({
         valid: false,
         error: "Invalid",
       });
 
-      expect(() =>
+      await expect(
         fileManager.copyFolderToSkills("/source", "bad name"),
-      ).toThrow("Invalid");
+      ).rejects.toThrow("Invalid");
     });
 
-    it("should throw if destination already exists", () => {
+    it("should throw if destination already exists", async () => {
       (validateSkillName as any).mockReturnValue({ valid: true });
-      (fs.existsSync as any).mockReturnValue(true);
+      // Destination exists (access succeeds)
+      (fsPromises.access as any).mockResolvedValue(undefined);
 
-      expect(() =>
+      await expect(
         fileManager.copyFolderToSkills("/source", "existing"),
-      ).toThrow("already exists");
+      ).rejects.toThrow("already exists");
     });
   });
 });

@@ -29,7 +29,10 @@ interface ServerModalsProps {
   setIsHomeSettingsOpen: (open: boolean) => void;
   projects: Project[];
   onCreateProject: (input: { name: string }) => Promise<Project>;
-  onRenameProject: (id: string, updates: { name: string }) => Promise<Project>;
+  onRenameProject: (
+    id: string,
+    updates: { name?: string; optimization?: ProjectOptimization },
+  ) => Promise<Project>;
   onDeleteProject: (id: string) => Promise<void>;
   onUpdateProjectOptimization: (
     id: string,
@@ -56,7 +59,7 @@ interface ServerModalsProps {
   onConfirmDelete: () => Promise<void>;
 }
 
-export const ServerModals: React.FC<ServerModalsProps> = ({
+export const ServerModals: React.FC<ServerModalsProps> = React.memo(({
   errorServer,
   errorModalOpen,
   onCloseErrorModal,
@@ -213,4 +216,6 @@ export const ServerModals: React.FC<ServerModalsProps> = ({
       </AlertDialog>
     </>
   );
-};
+});
+
+ServerModals.displayName = "ServerModals";

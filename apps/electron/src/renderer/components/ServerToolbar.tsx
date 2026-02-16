@@ -30,7 +30,7 @@ interface ServerToolbarProps {
   onOpenSettings: () => void;
 }
 
-export const ServerToolbar: React.FC<ServerToolbarProps> = ({
+export const ServerToolbar: React.FC<ServerToolbarProps> = React.memo(({
   searchQuery,
   setSearchQuery,
   serverViewMode,
@@ -135,4 +135,6 @@ export const ServerToolbar: React.FC<ServerToolbarProps> = ({
       </Button>
     </div>
   );
-};
+});
+
+ServerToolbar.displayName = "ServerToolbar";

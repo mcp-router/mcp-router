@@ -101,8 +101,8 @@ const Home: React.FC = () => {
         isHomeSettingsOpen={state.isHomeSettingsOpen}
         setIsHomeSettingsOpen={state.setIsHomeSettingsOpen}
         projects={state.projects}
-        onCreateProject={state.handleCreateProject}
-        onRenameProject={state.handleRenameProject}
+        onCreateProject={state.createProject}
+        onRenameProject={state.updateProjectInStore}
         onDeleteProject={state.handleDeleteProject}
         onUpdateProjectOptimization={state.handleUpdateProjectOptimization}
         advancedSettingsServer={state.advancedSettingsServer}

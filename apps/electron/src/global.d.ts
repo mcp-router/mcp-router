@@ -19,6 +19,15 @@ import type {
   AdoptSkillInput,
   SkillSyncResult,
   SkillVerifyResult,
+  AgentPath,
+  CreateAgentPathInput,
+  ClientApp,
+  ClientAppResult,
+  ClientDetectionResult,
+  CreateClientAppInput,
+  UpdateClientAppInput,
+  TokenServerAccess,
+  DiscoveredSkill,
 } from "@mcp_router/shared";
 import {
   CreateServerInput,
@@ -91,8 +100,6 @@ declare global {
       setCloudSyncPassphrase: (passphrase: string) => Promise<void>;
       syncCloudNow: () => Promise<CloudSyncStatus>;
 
-      [key: string]: any;
-
       // Command checking
       checkCommandExists: (command: string) => Promise<boolean>;
 
@@ -133,6 +140,9 @@ declare global {
       }>;
       restartApp: () => Promise<boolean>;
 
+      // System
+      getPlatform: () => Promise<"darwin" | "win32" | "linux">;
+
       // Workspace Management
       listWorkspaces: () => Promise<any[]>;
       createWorkspace: (config: any) => Promise<any>;
@@ -147,7 +157,6 @@ declare global {
         id: string,
       ) => Promise<{ token: string | null }>;
       onWorkspaceSwitched: (callback: (workspace: any) => void) => () => void;
-      onWorkspaceConfigChanged: (callback: (config: any) => void) => () => void;
 
       // Projects Management
       listProjects: () => Promise<Project[]>;
@@ -206,6 +215,12 @@ declare global {
       deleteSkill: (id: string) => Promise<void>;
       openSkillFolder: (id?: string) => Promise<void>;
       importSkill: () => Promise<Skill>;
+
+      // Agent Path Management
+      listAgentPaths: () => Promise<AgentPath[]>;
+      createAgentPath: (input: CreateAgentPathInput) => Promise<AgentPath>;
+      deleteAgentPath: (id: string) => Promise<void>;
+      selectAgentPathFolder: () => Promise<string>;
 
       // Unified Skills (per-client state management)
       listUnifiedSkills: () => Promise<UnifiedSkill[]>;
@@ -294,6 +309,23 @@ declare global {
       } | null>;
       marketplaceReadme: (repoUrl: string) => Promise<string | null>;
       marketplaceClearCache: () => Promise<{ success: boolean }>;
+      marketplaceGitHubStats: (repoUrl: string) => Promise<{
+        stars: number;
+        forks: number;
+        openIssues: number;
+        watchers: number;
+      } | null>;
+      marketplaceGitHubStatsBatch: (repoUrls: string[]) => Promise<
+        Record<
+          string,
+          {
+            stars: number;
+            forks: number;
+            openIssues: number;
+            watchers: number;
+          } | null
+        >
+      >;
       marketplaceSkillsSearch: (options?: {
         search?: string;
         limit?: number;
@@ -348,6 +380,28 @@ declare global {
         skillId?: string;
         error?: string;
       }>;
+
+      // Client Apps Management
+      listClientApps: () => Promise<ClientApp[]>;
+      getClientApp: (id: string) => Promise<ClientApp | null>;
+      createClientApp: (input: CreateClientAppInput) => Promise<ClientAppResult>;
+      updateClientApp: (
+        id: string,
+        input: UpdateClientAppInput,
+      ) => Promise<ClientAppResult>;
+      deleteClientApp: (id: string) => Promise<ClientAppResult>;
+      detectClientApps: () => Promise<ClientDetectionResult[]>;
+      configureClientApp: (id: string) => Promise<ClientAppResult>;
+      updateClientAppServerAccess: (
+        id: string,
+        serverAccess: TokenServerAccess,
+      ) => Promise<ClientAppResult>;
+      selectClientAppFolder: () => Promise<{
+        success: boolean;
+        path: string | null;
+        message?: string;
+      }>;
+      discoverSkillsFromClients: () => Promise<DiscoveredSkill[]>;
     };
   }
 }

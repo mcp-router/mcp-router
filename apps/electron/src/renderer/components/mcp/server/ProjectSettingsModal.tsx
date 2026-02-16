@@ -39,7 +39,7 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   projects: Project[];
   onCreateProject: (input: { name: string }) => Promise<Project>;
-  onRenameProject: (id: string, updates: { name: string }) => Promise<Project>;
+  onRenameProject: (id: string, updates: { name?: string; optimization?: ProjectOptimization }) => Promise<Project>;
   onDeleteProject: (id: string) => Promise<void>;
   onUpdateProjectOptimization: (
     id: string,

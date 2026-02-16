@@ -334,7 +334,7 @@ export class UnifiedSkillsService extends SingletonService<
         const skillPath =
           newSkillPath ?? this.fileManager.getSkillPath(effectiveSkillName);
         try {
-          this.fileManager.writeSkillMd(skillPath, updates.content);
+          await this.fileManager.writeSkillMd(skillPath, updates.content);
         } catch (contentError) {
           // Rollback rename if content write fails
           if (renameSucceeded && newSkillPath) {
@@ -369,8 +369,8 @@ export class UnifiedSkillsService extends SingletonService<
               const oldTarget = path.join(targetDir, skill.name);
               const newTarget = path.join(targetDir, updateData.name);
               // Non-fatal: log failures for repair via verifyAndRepairAll()
-              const removeSuccess = this.fileManager.removeSymlink(oldTarget);
-              const createSuccess = this.fileManager.createSymlink(
+              const removeSuccess = await this.fileManager.removeSymlink(oldTarget);
+              const createSuccess = await this.fileManager.createSymlink(
                 newSkillPath,
                 newTarget,
               );
@@ -481,7 +481,7 @@ export class UnifiedSkillsService extends SingletonService<
       // Remove symlink from each resolved path
       for (const targetDir of resolvedPaths) {
         const targetPath = path.join(targetDir, skill.name);
-        this.fileManager.removeSymlink(targetPath);
+        await this.fileManager.removeSymlink(targetPath);
       }
 
       // Update or create state record
@@ -666,7 +666,7 @@ export class UnifiedSkillsService extends SingletonService<
       const normalizedName = this.validateAndNormalizeName(skillName);
 
       // Copy skill folder to router's skills directory
-      this.fileManager.copyFolderToSkills(discovered.skillPath, normalizedName);
+      await this.fileManager.copyFolderToSkills(discovered.skillPath, normalizedName);
 
       // Create database entry
       const now = Date.now();
@@ -931,7 +931,7 @@ export class UnifiedSkillsService extends SingletonService<
             } else if (status === "broken" || status === "none") {
               // Attempt repair
               try {
-                this.fileManager.createSymlink(skillPath, targetPath);
+                await this.fileManager.createSymlink(skillPath, targetPath);
                 result.repaired++;
 
                 // Update state record
@@ -1106,7 +1106,7 @@ export class UnifiedSkillsService extends SingletonService<
       } catch {
         // Path doesn't exist, proceed with symlink creation
       }
-      const success = this.fileManager.createSymlink(skillPath, targetPath);
+      const success = await this.fileManager.createSymlink(skillPath, targetPath);
       if (!success) {
         allSucceeded = false;
         failedPaths.push(targetPath);

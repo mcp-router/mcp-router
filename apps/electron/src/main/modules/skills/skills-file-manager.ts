@@ -10,6 +10,8 @@ import {
   validateCopyOperation,
 } from "@/main/utils/path-security";
 
+const fsPromises = fs.promises;
+
 /**
  * Maximum depth for recursive directory operations to prevent
  * infinite loops from circular symlinks
@@ -19,6 +21,8 @@ const MAX_RECURSION_DEPTH = 50;
 /**
  * Skills file system operations manager
  *
+ * All filesystem operations are async to avoid blocking the Electron main process.
+ *
  * Security features:
  * - Path containment validation prevents directory traversal
  * - Symlink-aware copy operations prevent symlink attacks
@@ -26,10 +30,19 @@ const MAX_RECURSION_DEPTH = 50;
  */
 export class SkillsFileManager {
   private skillsDir: string;
+  private initPromise: Promise<void>;
 
   constructor() {
     this.skillsDir = path.join(app.getPath("userData"), "skills");
-    this.ensureDirectory(this.skillsDir);
+    this.initPromise = this.ensureDirectory(this.skillsDir);
+  }
+
+  /**
+   * Wait for initialization (directory creation) to complete.
+   * Callers should await this before performing operations.
+   */
+  async ready(): Promise<void> {
+    return this.initPromise;
   }
 
   /**
@@ -42,9 +55,11 @@ export class SkillsFileManager {
   /**
    * Ensure a directory exists
    */
-  private ensureDirectory(dirPath: string): void {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
+  private async ensureDirectory(dirPath: string): Promise<void> {
+    try {
+      await fsPromises.access(dirPath);
+    } catch {
+      await fsPromises.mkdir(dirPath, { recursive: true });
     }
   }
 
@@ -53,7 +68,7 @@ export class SkillsFileManager {
    *
    * Security: Validates skill name to prevent path traversal
    */
-  createSkillDirectory(name: string): string {
+  async createSkillDirectory(name: string): Promise<string> {
     // Validate skill name for security
     const validation = validateSkillName(name);
     if (!validation.valid) {
@@ -67,15 +82,33 @@ export class SkillsFileManager {
       throw new Error(`Invalid skill path: path traversal detected`);
     }
 
-    if (fs.existsSync(skillPath)) {
+    try {
+      await fsPromises.access(skillPath);
       throw new Error(`Skill directory already exists: ${name}`);
+    } catch (err: unknown) {
+      // If access threw because path doesn't exist, that's what we want
+      if (
+        err instanceof Error &&
+        (err as NodeJS.ErrnoException).code === "ENOENT"
+      ) {
+        // Good - path doesn't exist, proceed
+      } else if (err instanceof Error && err.message.includes("already exists")) {
+        throw err;
+      } else {
+        // Re-throw unexpected errors
+        throw err;
+      }
     }
 
-    fs.mkdirSync(skillPath, { recursive: true });
+    await fsPromises.mkdir(skillPath, { recursive: true });
 
     // Create SKILL.md template
     const skillMdContent = this.generateSkillMdTemplate(name);
-    fs.writeFileSync(path.join(skillPath, "SKILL.md"), skillMdContent, "utf-8");
+    await fsPromises.writeFile(
+      path.join(skillPath, "SKILL.md"),
+      skillMdContent,
+      "utf-8",
+    );
 
     return skillPath;
   }
@@ -99,7 +132,7 @@ export class SkillsFileManager {
    *
    * Security: Validates that target path is in an allowed location
    */
-  createSymlink(sourcePath: string, targetPath: string): boolean {
+  async createSymlink(sourcePath: string, targetPath: string): Promise<boolean> {
     try {
       // Validate source is within skills directory
       if (!isPathContained(this.skillsDir, sourcePath)) {
@@ -118,14 +151,14 @@ export class SkillsFileManager {
 
       // Ensure parent directory exists
       const targetDir = path.dirname(targetPath);
-      this.ensureDirectory(targetDir);
+      await this.ensureDirectory(targetDir);
 
       // Remove existing symlink or file if exists
-      if (fs.existsSync(targetPath) || this.isSymlinkExists(targetPath)) {
+      if (await this.pathExists(targetPath) || await this.isSymlinkExists(targetPath)) {
         // Only remove if it's a symlink, not a regular file/directory
-        const stats = fs.lstatSync(targetPath);
+        const stats = await fsPromises.lstat(targetPath);
         if (stats.isSymbolicLink()) {
-          fs.unlinkSync(targetPath);
+          await fsPromises.unlink(targetPath);
         } else {
           console.error(
             `Security: Cannot overwrite non-symlink at target path: ${targetPath}`,
@@ -135,7 +168,7 @@ export class SkillsFileManager {
       }
 
       // Create symlink
-      fs.symlinkSync(sourcePath, targetPath, "dir");
+      await fsPromises.symlink(sourcePath, targetPath, "dir");
       return true;
     } catch (error) {
       console.error(
@@ -147,11 +180,23 @@ export class SkillsFileManager {
   }
 
   /**
+   * Check if a path exists (follows symlinks)
+   */
+  private async pathExists(filePath: string): Promise<boolean> {
+    try {
+      await fsPromises.access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Check if a symlink exists (even if broken)
    */
-  private isSymlinkExists(linkPath: string): boolean {
+  private async isSymlinkExists(linkPath: string): Promise<boolean> {
     try {
-      fs.lstatSync(linkPath);
+      await fsPromises.lstat(linkPath);
       return true;
     } catch {
       return false;
@@ -163,18 +208,18 @@ export class SkillsFileManager {
    *
    * Security: Only removes symlinks, not regular files or directories
    */
-  removeSymlink(symlinkPath: string): boolean {
+  async removeSymlink(symlinkPath: string): Promise<boolean> {
     try {
-      if (this.isSymlinkExists(symlinkPath)) {
+      if (await this.isSymlinkExists(symlinkPath)) {
         // Verify it's actually a symlink before removing
-        const stats = fs.lstatSync(symlinkPath);
+        const stats = await fsPromises.lstat(symlinkPath);
         if (!stats.isSymbolicLink()) {
           console.error(
             `Security: Refusing to remove non-symlink: ${symlinkPath}`,
           );
           return false;
         }
-        fs.unlinkSync(symlinkPath);
+        await fsPromises.unlink(symlinkPath);
       }
       return true;
     } catch (error) {
@@ -187,19 +232,19 @@ export class SkillsFileManager {
   }
 
   /**
-   * Verify symlink status (async)
+   * Verify symlink status
    */
   async verifySymlink(symlinkPath: string): Promise<SymlinkStatus> {
     try {
-      const lstats = await fs.promises.lstat(symlinkPath);
+      const lstats = await fsPromises.lstat(symlinkPath);
       if (!lstats.isSymbolicLink()) {
         return "none";
       }
 
       // Check if target exists
-      const targetPath = await fs.promises.readlink(symlinkPath);
+      const targetPath = await fsPromises.readlink(symlinkPath);
       try {
-        await fs.promises.access(targetPath);
+        await fsPromises.access(targetPath);
         return "active";
       } catch {
         return "broken";
@@ -214,7 +259,7 @@ export class SkillsFileManager {
    *
    * Security: Validates path is within skills directory before deletion
    */
-  deleteSkillDirectory(skillPath: string): boolean {
+  async deleteSkillDirectory(skillPath: string): Promise<boolean> {
     try {
       // Critical security check: ensure path is within skills directory
       if (!isPathContained(this.skillsDir, skillPath)) {
@@ -230,8 +275,8 @@ export class SkillsFileManager {
         return false;
       }
 
-      if (fs.existsSync(skillPath)) {
-        fs.rmSync(skillPath, { recursive: true, force: true });
+      if (await this.pathExists(skillPath)) {
+        await fsPromises.rm(skillPath, { recursive: true, force: true });
       }
       return true;
     } catch (error) {
@@ -248,7 +293,10 @@ export class SkillsFileManager {
    *
    * Security: Validates both old and new paths are within skills directory
    */
-  renameSkillDirectory(oldPath: string, newName: string): string | null {
+  async renameSkillDirectory(
+    oldPath: string,
+    newName: string,
+  ): Promise<string | null> {
     try {
       // Validate new name
       const nameValidation = validateSkillName(newName);
@@ -268,11 +316,11 @@ export class SkillsFileManager {
         throw new Error(`Invalid new path: path traversal detected`);
       }
 
-      if (fs.existsSync(newPath)) {
+      if (await this.pathExists(newPath)) {
         throw new Error(`Skill directory already exists: ${newName}`);
       }
 
-      fs.renameSync(oldPath, newPath);
+      await fsPromises.rename(oldPath, newPath);
       return newPath;
     } catch (error) {
       console.error(
@@ -303,14 +351,14 @@ export class SkillsFileManager {
   /**
    * Check if a skill directory exists
    */
-  skillExists(name: string): boolean {
+  async skillExists(name: string): Promise<boolean> {
     // Validate name before checking
     const validation = validateSkillName(name);
     if (!validation.valid) {
       return false;
     }
 
-    return fs.existsSync(path.join(this.skillsDir, name));
+    return this.pathExists(path.join(this.skillsDir, name));
   }
 
   /**
@@ -340,28 +388,7 @@ export class SkillsFileManager {
    *
    * Security: Validates path is within skills directory
    */
-  readSkillMd(skillPath: string): string | null {
-    // Validate path is within skills directory
-    if (!isPathContained(this.skillsDir, skillPath)) {
-      console.error(
-        `Security: Cannot read from outside skills directory: ${skillPath}`,
-      );
-      return null;
-    }
-
-    const skillMdPath = path.join(skillPath, "SKILL.md");
-    if (!fs.existsSync(skillMdPath)) {
-      return null;
-    }
-    return fs.readFileSync(skillMdPath, "utf-8");
-  }
-
-  /**
-   * Read SKILL.md content from managed skills directory (async)
-   *
-   * Security: Validates path is within skills directory
-   */
-  async readSkillMdAsync(skillPath: string): Promise<string | null> {
+  async readSkillMd(skillPath: string): Promise<string | null> {
     // Validate path is within skills directory
     if (!isPathContained(this.skillsDir, skillPath)) {
       console.error(
@@ -372,11 +399,22 @@ export class SkillsFileManager {
 
     const skillMdPath = path.join(skillPath, "SKILL.md");
     try {
-      await fs.promises.access(skillMdPath);
-      return await fs.promises.readFile(skillMdPath, "utf-8");
+      await fsPromises.access(skillMdPath);
+      return await fsPromises.readFile(skillMdPath, "utf-8");
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Read SKILL.md content from managed skills directory (async)
+   *
+   * Security: Validates path is within skills directory
+   *
+   * @deprecated Use readSkillMd instead (now async)
+   */
+  async readSkillMdAsync(skillPath: string): Promise<string | null> {
+    return this.readSkillMd(skillPath);
   }
 
   /**
@@ -384,7 +422,7 @@ export class SkillsFileManager {
    *
    * Security: Validates path is within user's home directory and is allowed
    */
-  readSkillMdFromPath(skillPath: string): string | null {
+  async readSkillMdFromPath(skillPath: string): Promise<string | null> {
     // Security: Validate path is allowed (within home directory, not a system path)
     if (!isPathAllowed(skillPath)) {
       console.error(`Security: Cannot read from forbidden path: ${skillPath}`);
@@ -392,11 +430,12 @@ export class SkillsFileManager {
     }
 
     const skillMdPath = path.join(skillPath, "SKILL.md");
-    if (!fs.existsSync(skillMdPath)) {
+    try {
+      await fsPromises.access(skillMdPath);
+      return await fsPromises.readFile(skillMdPath, "utf-8");
+    } catch {
       return null;
     }
-
-    return fs.readFileSync(skillMdPath, "utf-8");
   }
 
   /**
@@ -404,7 +443,7 @@ export class SkillsFileManager {
    *
    * Security: Validates path is within skills directory
    */
-  writeSkillMd(skillPath: string, content: string): void {
+  async writeSkillMd(skillPath: string, content: string): Promise<void> {
     // Validate path is within skills directory
     if (!isPathContained(this.skillsDir, skillPath)) {
       throw new Error(
@@ -413,7 +452,7 @@ export class SkillsFileManager {
     }
 
     const skillMdPath = path.join(skillPath, "SKILL.md");
-    fs.writeFileSync(skillMdPath, content, "utf-8");
+    await fsPromises.writeFile(skillMdPath, content, "utf-8");
   }
 
   /**
@@ -431,7 +470,7 @@ export class SkillsFileManager {
    * - Validates source is not a forbidden system path
    * - Does not follow symlinks (copies symlinks as-is or skips them)
    */
-  copyFolderToSkills(sourcePath: string, name: string): string {
+  async copyFolderToSkills(sourcePath: string, name: string): Promise<string> {
     // Validate skill name
     const nameValidation = validateSkillName(name);
     if (!nameValidation.valid) {
@@ -450,12 +489,12 @@ export class SkillsFileManager {
       throw new Error(copyValidation.error);
     }
 
-    if (fs.existsSync(destPath)) {
+    if (await this.pathExists(destPath)) {
       throw new Error(`Skill directory already exists: ${name}`);
     }
 
     // Copy directory recursively with symlink safety
-    this.copyDirectoryRecursive(sourcePath, destPath, 0);
+    await this.copyDirectoryRecursive(sourcePath, destPath, 0);
 
     return destPath;
   }
@@ -468,11 +507,11 @@ export class SkillsFileManager {
    * - Skips symlinks to prevent symlink attacks
    * - Validates paths at each level
    */
-  private copyDirectoryRecursive(
+  private async copyDirectoryRecursive(
     source: string,
     destination: string,
     depth: number,
-  ): void {
+  ): Promise<void> {
     // Prevent infinite recursion (e.g., from circular symlinks)
     if (depth > MAX_RECURSION_DEPTH) {
       throw new Error(
@@ -485,9 +524,9 @@ export class SkillsFileManager {
       throw new Error(`Cannot copy from forbidden path: ${source}`);
     }
 
-    fs.mkdirSync(destination, { recursive: true });
+    await fsPromises.mkdir(destination, { recursive: true });
 
-    const entries = fs.readdirSync(source, { withFileTypes: true });
+    const entries = await fsPromises.readdir(source, { withFileTypes: true });
 
     for (const entry of entries) {
       const srcPath = path.join(source, entry.name);
@@ -500,9 +539,9 @@ export class SkillsFileManager {
       }
 
       if (entry.isDirectory()) {
-        this.copyDirectoryRecursive(srcPath, destPath, depth + 1);
+        await this.copyDirectoryRecursive(srcPath, destPath, depth + 1);
       } else if (entry.isFile()) {
-        fs.copyFileSync(srcPath, destPath);
+        await fsPromises.copyFile(srcPath, destPath);
       }
       // Skip other types (sockets, FIFOs, etc.)
     }

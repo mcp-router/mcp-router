@@ -65,17 +65,20 @@ export class SkillService extends SingletonService<
    *
    * @deprecated Use list() for listing and getContent() for content loading
    */
-  listWithContent(): SkillWithContent[] {
+  async listWithContent(): Promise<SkillWithContent[]> {
     try {
       const repo = SkillRepository.getInstance();
       const skills = repo.getAll({ orderBy: "name" });
 
-      return skills.map((skill) => ({
-        ...skill,
-        content: this.fileManager.readSkillMd(
-          this.fileManager.getSkillPath(skill.name),
-        ),
-      }));
+      const results = await Promise.all(
+        skills.map(async (skill) => ({
+          ...skill,
+          content: await this.fileManager.readSkillMd(
+            this.fileManager.getSkillPath(skill.name),
+          ),
+        })),
+      );
+      return results;
     } catch (error) {
       return this.handleError("listWithContent", error, []);
     }
@@ -98,7 +101,7 @@ export class SkillService extends SingletonService<
    *
    * Performance optimization: Load content on-demand instead of with list()
    */
-  getContent(id: string): string | null {
+  async getContent(id: string): Promise<string | null> {
     try {
       const repo = SkillRepository.getInstance();
       const skill = repo.getById(id);
@@ -108,7 +111,7 @@ export class SkillService extends SingletonService<
       }
 
       const skillPath = this.fileManager.getSkillPath(skill.name);
-      return this.fileManager.readSkillMd(skillPath);
+      return await this.fileManager.readSkillMd(skillPath);
     } catch (error) {
       return this.handleError("getContent", error, null);
     }
@@ -117,7 +120,7 @@ export class SkillService extends SingletonService<
   /**
    * Get skill with content by ID
    */
-  getWithContent(id: string): SkillWithContent | null {
+  async getWithContent(id: string): Promise<SkillWithContent | null> {
     try {
       const repo = SkillRepository.getInstance();
       const skill = repo.getById(id);
@@ -127,7 +130,7 @@ export class SkillService extends SingletonService<
       }
 
       const skillPath = this.fileManager.getSkillPath(skill.name);
-      const content = this.fileManager.readSkillMd(skillPath);
+      const content = await this.fileManager.readSkillMd(skillPath);
 
       return {
         ...skill,
@@ -144,9 +147,9 @@ export class SkillService extends SingletonService<
    * This allows loading content from skills that are not managed by the router
    * but were discovered in client directories.
    */
-  getContentFromPath(skillPath: string): string | null {
+  async getContentFromPath(skillPath: string): Promise<string | null> {
     try {
-      return this.fileManager.readSkillMdFromPath(skillPath);
+      return await this.fileManager.readSkillMdFromPath(skillPath);
     } catch (error) {
       return this.handleError("getContentFromPath", error, null);
     }
@@ -155,7 +158,7 @@ export class SkillService extends SingletonService<
   /**
    * Create a new skill with automatic symlink creation
    */
-  create(input: CreateSkillInput): Skill {
+  async create(input: CreateSkillInput): Promise<Skill> {
     try {
       const repo = SkillRepository.getInstance();
       const name = this.validateAndNormalizeName(input.name);
@@ -167,7 +170,7 @@ export class SkillService extends SingletonService<
       }
 
       // Create skill directory
-      this.fileManager.createSkillDirectory(name);
+      await this.fileManager.createSkillDirectory(name);
 
       const now = Date.now();
       const skill = repo.add({
@@ -179,7 +182,7 @@ export class SkillService extends SingletonService<
       } as Omit<Skill, "id">);
 
       // Create symlinks for all agents
-      this.createSymlinksForAllAgents(skill.name);
+      await this.createSymlinksForAllAgents(skill.name);
 
       return skill;
     } catch (error) {
@@ -190,7 +193,7 @@ export class SkillService extends SingletonService<
   /**
    * Update a skill (including enabled state and content)
    */
-  update(id: string, updates: UpdateSkillInput): Skill {
+  async update(id: string, updates: UpdateSkillInput): Promise<Skill> {
     try {
       const repo = SkillRepository.getInstance();
       const existing = repo.getById(id);
@@ -212,11 +215,14 @@ export class SkillService extends SingletonService<
         }
 
         // Remove old symlinks before rename
-        this.removeSymlinksForAllAgents(existing.name);
+        await this.removeSymlinksForAllAgents(existing.name);
 
         // Rename directory
         const oldPath = this.fileManager.getSkillPath(existing.name);
-        const newPath = this.fileManager.renameSkillDirectory(oldPath, name);
+        const newPath = await this.fileManager.renameSkillDirectory(
+          oldPath,
+          name,
+        );
 
         if (!newPath) {
           throw new Error(`Failed to rename skill directory`);
@@ -226,14 +232,14 @@ export class SkillService extends SingletonService<
 
         // Create new symlinks with updated name
         if (nextEnabled) {
-          this.createSymlinksForAllAgents(nextName);
+          await this.createSymlinksForAllAgents(nextName);
         }
       }
 
       // Handle content update
       if (updates.content !== undefined) {
         const skillPath = this.fileManager.getSkillPath(nextName);
-        this.fileManager.writeSkillMd(skillPath, updates.content);
+        await this.fileManager.writeSkillMd(skillPath, updates.content);
       }
 
       // Handle enabled state change
@@ -244,10 +250,10 @@ export class SkillService extends SingletonService<
         nextEnabled = updates.enabled;
         if (nextEnabled) {
           // Create symlinks for all agents
-          this.createSymlinksForAllAgents(nextName);
+          await this.createSymlinksForAllAgents(nextName);
         } else {
           // Remove all symlinks
-          this.removeSymlinksForAllAgents(nextName);
+          await this.removeSymlinksForAllAgents(nextName);
         }
       }
 
@@ -276,7 +282,7 @@ export class SkillService extends SingletonService<
   /**
    * Delete a skill and all its symlinks
    */
-  delete(id: string): void {
+  async delete(id: string): Promise<void> {
     try {
       const repo = SkillRepository.getInstance();
       const skill = repo.getById(id);
@@ -286,11 +292,11 @@ export class SkillService extends SingletonService<
       }
 
       // Remove all symlinks
-      this.removeSymlinksForAllAgents(skill.name);
+      await this.removeSymlinksForAllAgents(skill.name);
 
       // Delete skill directory
       const skillPath = this.fileManager.getSkillPath(skill.name);
-      this.fileManager.deleteSkillDirectory(skillPath);
+      await this.fileManager.deleteSkillDirectory(skillPath);
 
       // Clean up client skill state records
       ClientSkillStateRepository.getInstance().deleteBySkill(id);
@@ -360,7 +366,7 @@ export class SkillService extends SingletonService<
       }
 
       // Copy folder to skills directory
-      this.fileManager.copyFolderToSkills(sourcePath, normalizedName);
+      await this.fileManager.copyFolderToSkills(sourcePath, normalizedName);
 
       const now = Date.now();
       const skill = repo.add({
@@ -372,7 +378,7 @@ export class SkillService extends SingletonService<
       } as Omit<Skill, "id">);
 
       // Create symlinks for all agents
-      this.createSymlinksForAllAgents(skill.name);
+      await this.createSymlinksForAllAgents(skill.name);
 
       return skill;
     } catch (error) {
@@ -383,7 +389,7 @@ export class SkillService extends SingletonService<
   /**
    * Verify all symlinks and repair broken ones on startup
    */
-  verifyAndRepairSymlinks(): void {
+  async verifyAndRepairSymlinks(): Promise<void> {
     try {
       const repo = SkillRepository.getInstance();
       const skills = repo.getAll();
@@ -391,10 +397,10 @@ export class SkillService extends SingletonService<
       for (const skill of skills) {
         if (skill.enabled) {
           // Recreate symlinks for enabled skills (this also repairs broken ones)
-          this.createSymlinksForAllAgents(skill.name);
+          await this.createSymlinksForAllAgents(skill.name);
         } else {
           // Ensure symlinks are removed for disabled skills
-          this.removeSymlinksForAllAgents(skill.name);
+          await this.removeSymlinksForAllAgents(skill.name);
         }
       }
     } catch (error) {
@@ -407,13 +413,13 @@ export class SkillService extends SingletonService<
    *
    * Performance note: Uses cached agent paths to avoid repeated DB queries
    */
-  private createSymlinksForAllAgents(skillName: string): void {
+  private async createSymlinksForAllAgents(skillName: string): Promise<void> {
     const skillPath = this.fileManager.getSkillPath(skillName);
     const agentPaths = this.getCachedAgentPaths();
 
     for (const agentPath of agentPaths) {
       const targetPath = getSymlinkTargetPath(agentPath.path, skillName);
-      this.fileManager.createSymlink(skillPath, targetPath);
+      await this.fileManager.createSymlink(skillPath, targetPath);
     }
   }
 
@@ -422,12 +428,12 @@ export class SkillService extends SingletonService<
    *
    * Performance note: Uses cached agent paths to avoid repeated DB queries
    */
-  private removeSymlinksForAllAgents(skillName: string): void {
+  private async removeSymlinksForAllAgents(skillName: string): Promise<void> {
     const agentPaths = this.getCachedAgentPaths();
 
     for (const agentPath of agentPaths) {
       const targetPath = getSymlinkTargetPath(agentPath.path, skillName);
-      this.fileManager.removeSymlink(targetPath);
+      await this.fileManager.removeSymlink(targetPath);
     }
   }
 
@@ -437,14 +443,14 @@ export class SkillService extends SingletonService<
    * Performance optimization: Caches agent paths and creates symlinks
    * for multiple skills in a single operation
    */
-  batchCreateSymlinks(skillNames: string[]): void {
+  async batchCreateSymlinks(skillNames: string[]): Promise<void> {
     const agentPaths = this.getCachedAgentPaths();
 
     for (const skillName of skillNames) {
       const skillPath = this.fileManager.getSkillPath(skillName);
       for (const agentPath of agentPaths) {
         const targetPath = getSymlinkTargetPath(agentPath.path, skillName);
-        this.fileManager.createSymlink(skillPath, targetPath);
+        await this.fileManager.createSymlink(skillPath, targetPath);
       }
     }
   }
@@ -455,13 +461,13 @@ export class SkillService extends SingletonService<
    * Performance optimization: Caches agent paths and removes symlinks
    * for multiple skills in a single operation
    */
-  batchRemoveSymlinks(skillNames: string[]): void {
+  async batchRemoveSymlinks(skillNames: string[]): Promise<void> {
     const agentPaths = this.getCachedAgentPaths();
 
     for (const skillName of skillNames) {
       for (const agentPath of agentPaths) {
         const targetPath = getSymlinkTargetPath(agentPath.path, skillName);
-        this.fileManager.removeSymlink(targetPath);
+        await this.fileManager.removeSymlink(targetPath);
       }
     }
   }
@@ -525,7 +531,7 @@ export class SkillService extends SingletonService<
    * Security: Validates that the path is in an allowed location to prevent
    * symlinks being created in sensitive system directories.
    */
-  createAgentPath(input: CreateAgentPathInput): AgentPath {
+  async createAgentPath(input: CreateAgentPathInput): Promise<AgentPath> {
     try {
       const repo = AgentPathRepository.getInstance();
       const name = input.name.trim();
@@ -570,7 +576,7 @@ export class SkillService extends SingletonService<
         if (skill.enabled) {
           const skillPath = this.fileManager.getSkillPath(skill.name);
           const targetPath = getSymlinkTargetPath(pathValue, skill.name);
-          this.fileManager.createSymlink(skillPath, targetPath);
+          await this.fileManager.createSymlink(skillPath, targetPath);
         }
       }
 
@@ -583,7 +589,7 @@ export class SkillService extends SingletonService<
   /**
    * Delete an agent path
    */
-  deleteAgentPath(id: string): void {
+  async deleteAgentPath(id: string): Promise<void> {
     try {
       const repo = AgentPathRepository.getInstance();
       const agentPath = repo.getById(id);
@@ -597,7 +603,7 @@ export class SkillService extends SingletonService<
       const skills = skillRepo.getAll();
       for (const skill of skills) {
         const targetPath = getSymlinkTargetPath(agentPath.path, skill.name);
-        this.fileManager.removeSymlink(targetPath);
+        await this.fileManager.removeSymlink(targetPath);
       }
 
       // Delete from database

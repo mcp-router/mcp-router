@@ -76,3 +76,59 @@ export interface ToolSummary {
   serverName: string;
   serverId: string;
 }
+
+/** Input for router_start_server tool */
+export interface StartServerInput {
+  /** Server ID or name */
+  server: string;
+}
+
+/** Input for router_stop_server tool */
+export interface StopServerInput {
+  /** Server ID or name */
+  server: string;
+}
+
+/** Input for router_update_server tool */
+export interface UpdateServerInput {
+  /** Server ID or name */
+  server: string;
+  /** New display name */
+  name?: string;
+  /** New command (local servers) */
+  command?: string;
+  /** New arguments (local servers) */
+  args?: string[];
+  /** New environment variables */
+  env?: Record<string, string>;
+  /** Whether to auto-start on launch */
+  autoStart?: boolean;
+  /** Whether the server is disabled */
+  disabled?: boolean;
+}
+
+/** Input for router_get_settings tool (no params) */
+export type GetSettingsInput = Record<string, never>;
+
+/** Input for router_update_settings tool */
+export interface UpdateSettingsInput {
+  /** Whether to enable tool catalog mode */
+  toolCatalogEnabled?: boolean;
+  /** Whether to prefix tool names with server name */
+  prefixToolNames?: boolean;
+  /** Whether to load external MCP configs */
+  loadExternalMCPConfigs?: boolean;
+  /** Whether to enable auto-updates */
+  autoUpdateEnabled?: boolean;
+  /** Whether to show window on startup */
+  showWindowOnStartup?: boolean;
+}
+
+/** Input for router_list_workspaces tool (no params) */
+export type ListWorkspacesInput = Record<string, never>;
+
+/** Input for router_switch_workspace tool */
+export interface SwitchWorkspaceInput {
+  /** Workspace ID to switch to */
+  workspaceId: string;
+}

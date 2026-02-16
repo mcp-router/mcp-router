@@ -10,6 +10,12 @@ import {
   TokenServerAccess,
 } from "@mcp_router/shared";
 import { SqliteManager } from "./database/sqlite-manager";
+import {
+  encryptString,
+  decryptString,
+  isEncrypted,
+  isEncryptionAvailable,
+} from "@/main/utils/safe-storage";
 
 /**
  * Shared configuration file manager.
@@ -54,20 +60,45 @@ class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * Load the configuration file
+   * Load the configuration file.
+   * Decrypts sensitive fields (authToken, token IDs) after reading from disk.
+   * If plaintext tokens are found and encryption is available, they will be
+   * encrypted on the next save (transparent migration).
    */
   private loadConfig(): SharedConfig {
+    let needsResave = false;
     try {
       if (fs.existsSync(this.configPath)) {
         const data = fs.readFileSync(this.configPath, "utf-8");
         const config = JSON.parse(data);
 
+        // Decrypt authToken if present
+        if (config.settings?.authToken) {
+          if (isEncrypted(config.settings.authToken)) {
+            config.settings.authToken = decryptString(
+              config.settings.authToken,
+            );
+          } else if (config.settings.authToken && isEncryptionAvailable()) {
+            // Plaintext token found with encryption available - migrate on next save
+            needsResave = true;
+          }
+        }
+
         // Normalize existing token data (fix invalid data after migration)
         if (config.mcpApps?.tokens) {
           config.mcpApps.tokens = config.mcpApps.tokens.map((token: any) => {
+            // Decrypt token ID if encrypted
+            let tokenId = token.id;
+            if (isEncrypted(tokenId)) {
+              tokenId = decryptString(tokenId);
+            } else if (tokenId && isEncryptionAvailable()) {
+              // Plaintext token ID found - migrate on next save
+              needsResave = true;
+            }
+
             // Normalize field names
             const normalizedToken: Token = {
-              id: token.id,
+              id: tokenId,
               clientId: token.clientId || token.client_id,
               issuedAt: token.issuedAt || token.issued_at,
               serverAccess: {},
@@ -83,7 +114,19 @@ class SharedConfigManager implements ISharedConfigManager {
           });
         }
 
-        return config;
+        // Store the config (in-memory values are always plaintext)
+        const result = config as SharedConfig;
+
+        // If we found plaintext secrets and encryption is available, re-save to encrypt them
+        if (needsResave) {
+          this.config = result;
+          this.saveConfig();
+          console.log(
+            "[SharedConfigManager] Migrated plaintext tokens to encrypted storage",
+          );
+        }
+
+        return result;
       }
     } catch (error) {
       console.error("[SharedConfigManager] Failed to load config:", error);
@@ -103,7 +146,9 @@ class SharedConfigManager implements ISharedConfigManager {
   }
 
   /**
-   * Save the configuration file
+   * Save the configuration file.
+   * Encrypts sensitive fields (authToken, token IDs) before writing to disk.
+   * The in-memory config always retains plaintext values.
    */
   private saveConfig(): void {
     try {
@@ -117,10 +162,30 @@ class SharedConfigManager implements ISharedConfigManager {
         this.config._meta.lastModified = new Date().toISOString();
       }
 
+      // Create a deep copy for disk serialization with encrypted sensitive fields
+      const configForDisk = JSON.parse(JSON.stringify(this.config));
+
+      // Encrypt authToken before writing
+      if (configForDisk.settings?.authToken) {
+        configForDisk.settings.authToken = encryptString(
+          configForDisk.settings.authToken,
+        );
+      }
+
+      // Encrypt token IDs before writing
+      if (configForDisk.mcpApps?.tokens) {
+        configForDisk.mcpApps.tokens = configForDisk.mcpApps.tokens.map(
+          (token: Token) => ({
+            ...token,
+            id: encryptString(token.id),
+          }),
+        );
+      }
+
       // Write to file with restricted permissions (owner read/write only)
       fs.writeFileSync(
         this.configPath,
-        JSON.stringify(this.config, null, 2),
+        JSON.stringify(configForDisk, null, 2),
         { encoding: "utf-8", mode: 0o600 },
       );
     } catch (error) {

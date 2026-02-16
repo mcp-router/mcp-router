@@ -16,34 +16,59 @@ import {
 export function useServerFiltering() {
   const { t } = useTranslation();
 
-  // Store subscriptions
-  const {
-    servers,
-    startServer,
-    stopServer,
-    deleteServer,
-    refreshServers,
-    updateServerConfig,
-    updateServerToolPermissions,
-  } = useServerStore();
-  const { searchQuery, setSearchQuery, expandedServerId } =
-    useServerUIStore();
-  const { currentWorkspace } = useWorkspaceStore();
-  const { isAuthenticated, login } = useAuthStore();
-  const { serverViewMode, setServerViewMode } = useViewPreferencesStore();
-  const {
-    projects,
-    list: listProjects,
-    create: createProject,
-    update: updateProjectInStore,
-    delete: deleteProjectInStore,
-    collapsedByProjectId,
-    setCollapsed,
-    selectedProjectId,
-    setSelectedProjectId,
-  } = useProjectStore();
-  const { initializeFromServer, setIsAdvancedEditing } =
-    useServerEditingStore();
+  // Granular store selectors - only subscribe to the specific slices needed
+  const servers = useServerStore((state) => state.servers);
+  const startServer = useServerStore((state) => state.startServer);
+  const stopServer = useServerStore((state) => state.stopServer);
+  const deleteServer = useServerStore((state) => state.deleteServer);
+  const refreshServers = useServerStore((state) => state.refreshServers);
+  const updateServerConfig = useServerStore(
+    (state) => state.updateServerConfig,
+  );
+  const updateServerToolPermissions = useServerStore(
+    (state) => state.updateServerToolPermissions,
+  );
+
+  const searchQuery = useServerUIStore((state) => state.searchQuery);
+  const setSearchQuery = useServerUIStore((state) => state.setSearchQuery);
+  const expandedServerId = useServerUIStore((state) => state.expandedServerId);
+
+  const currentWorkspace = useWorkspaceStore(
+    (state) => state.currentWorkspace,
+  );
+
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const login = useAuthStore((state) => state.login);
+
+  const serverViewMode = useViewPreferencesStore(
+    (state) => state.serverViewMode,
+  );
+  const setServerViewMode = useViewPreferencesStore(
+    (state) => state.setServerViewMode,
+  );
+
+  const projects = useProjectStore((state) => state.projects);
+  const listProjects = useProjectStore((state) => state.list);
+  const createProject = useProjectStore((state) => state.create);
+  const updateProjectInStore = useProjectStore((state) => state.update);
+  const deleteProjectInStore = useProjectStore((state) => state.delete);
+  const collapsedByProjectId = useProjectStore(
+    (state) => state.collapsedByProjectId,
+  );
+  const setCollapsed = useProjectStore((state) => state.setCollapsed);
+  const selectedProjectId = useProjectStore(
+    (state) => state.selectedProjectId,
+  );
+  const setSelectedProjectId = useProjectStore(
+    (state) => state.setSelectedProjectId,
+  );
+
+  const initializeFromServer = useServerEditingStore(
+    (state) => state.initializeFromServer,
+  );
+  const setIsAdvancedEditing = useServerEditingStore(
+    (state) => state.setIsAdvancedEditing,
+  );
 
   // Filtered servers memo
   const filteredServers = React.useMemo(() => {
@@ -141,20 +166,6 @@ export function useServerFiltering() {
   }, [servers]);
 
   // Project handlers
-  const handleCreateProject = useCallback(
-    async (input: { name: string }) => {
-      return await createProject(input);
-    },
-    [createProject],
-  );
-
-  const handleRenameProject = useCallback(
-    async (id: string, updates: { name: string }) => {
-      return await updateProjectInStore(id, updates);
-    },
-    [updateProjectInStore],
-  );
-
   const handleDeleteProject = useCallback(
     async (id: string) => {
       await deleteProjectInStore(id);
@@ -212,8 +223,8 @@ export function useServerFiltering() {
     openErrorModal,
     requestDelete,
     exportServersToFile,
-    handleCreateProject,
-    handleRenameProject,
+    createProject,
+    updateProjectInStore,
     handleDeleteProject,
     handleUpdateProjectOptimization,
 

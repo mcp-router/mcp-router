@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 priority: p3
 issue_id: "035"
 tags: [code-review, security]
@@ -26,11 +26,12 @@ Replace with DOMPurify: `DOMPurify.sanitize(svgContent, { USE_PROFILES: { svg: t
 
 ## Acceptance Criteria
 
-- [ ] Regex-based sanitizer replaced with DOMPurify
-- [ ] All SVG injection points use DOMPurify-based sanitization
+- [x] Regex-based sanitizer replaced with DOMPurify
+- [x] All SVG injection points use DOMPurify-based sanitization
 
 ## Work Log
 
 | Date | Action |
 |------|--------|
 | 2026-02-16 | Created from multi-agent code review |
+| 2026-02-16 | Replaced regex sanitizer with DOMPurify 3.3.1; removed all regex patterns; verified 3 callers unchanged |

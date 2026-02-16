@@ -23,7 +23,7 @@ interface ServerGridViewProps {
   onError: (server: MCPServer, e: React.MouseEvent) => void;
 }
 
-export const ServerGridView: React.FC<ServerGridViewProps> = ({
+export const ServerGridView: React.FC<ServerGridViewProps> = React.memo(({
   filteredServers,
   selectedProjectId,
   projects,
@@ -181,4 +181,6 @@ export const ServerGridView: React.FC<ServerGridViewProps> = ({
       </div>
     </ScrollArea>
   );
-};
+});
+
+ServerGridView.displayName = "ServerGridView";

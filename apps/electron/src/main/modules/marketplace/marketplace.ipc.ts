@@ -143,7 +143,7 @@ export function setupMarketplaceHandlers(): void {
       }
 
       // Only create skill if we have valid content
-      const skill = skillService.create({
+      const skill = await skillService.create({
         name: options.targetName || options.skillId,
         projectId: options.projectId ?? undefined,
       });

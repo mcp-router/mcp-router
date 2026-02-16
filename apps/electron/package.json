@@ -54,6 +54,7 @@
     "chokidar": "^5.0.0",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
+    "dompurify": "^3.3.1",
     "electron-squirrel-startup": "^1.0.1",
     "execa": "^9.6.1",
     "express": "^5.2.1",

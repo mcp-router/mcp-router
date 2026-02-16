@@ -2,16 +2,38 @@ import { TokenValidator } from "./token-validator";
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import { McpManagerRequestLogEntry as RequestLogEntry } from "@mcp_router/shared";
 
+// Minimal shape for dynamically-imported workflow types (avoids static import)
+// eslint-disable-next-line custom/no-scattered-types
+interface WorkflowLike {
+  id: string;
+  name: string;
+  enabled: boolean;
+}
+
+// eslint-disable-next-line custom/no-scattered-types
+interface WorkflowServiceLike {
+  getWorkflowsByType(type: string): Promise<WorkflowLike[]>;
+  executeWorkflow(
+    id: string,
+    context?: Record<string, unknown>,
+  ): Promise<{ mcpResult?: unknown }>;
+}
+
+// eslint-disable-next-line custom/no-scattered-types
+interface WorkflowExecutorLike {
+  isValidWorkflow(workflow: WorkflowLike): boolean;
+}
+
 // Cache for dynamic imports (resolved once, reused forever)
 let workflowImportsCache: {
-  getWorkflowService: () => any;
-  WorkflowExecutor: any;
+  getWorkflowService: () => WorkflowServiceLike;
+  WorkflowExecutor: WorkflowExecutorLike;
 } | null = null;
 
 // TTL cache for active workflow lookups, keyed by workflow type (method)
 const workflowLookupCache = new Map<
   string,
-  { workflows: any[]; timestamp: number }
+  { workflows: WorkflowLike[]; timestamp: number }
 >();
 const WORKFLOW_CACHE_TTL = 5000; // 5 seconds
 
@@ -48,10 +70,10 @@ export abstract class RequestHandlerBase {
    */
   protected async executeWithHooks<T>(
     method: string,
-    params: any,
+    params: Record<string, unknown> | object,
     clientId: string,
     handler: () => Promise<T>,
-    additionalMetadata?: Record<string, any>,
+    additionalMetadata?: Record<string, unknown>,
   ): Promise<T> {
     // Try to execute via Workflow
     try {
@@ -62,8 +84,10 @@ export abstract class RequestHandlerBase {
           import("../workflow/workflow-executor"),
         ]);
         workflowImportsCache = {
-          getWorkflowService: wsModule.getWorkflowService,
-          WorkflowExecutor: weModule.WorkflowExecutor,
+          getWorkflowService:
+            wsModule.getWorkflowService as () => WorkflowServiceLike,
+          WorkflowExecutor:
+            weModule.WorkflowExecutor as unknown as WorkflowExecutorLike,
         };
       }
       const { getWorkflowService, WorkflowExecutor } = workflowImportsCache;
@@ -74,7 +98,7 @@ export abstract class RequestHandlerBase {
       const now = Date.now();
       const cached = workflowLookupCache.get(workflowType);
 
-      let validWorkflows: any[];
+      let validWorkflows: WorkflowLike[];
       if (cached && now - cached.timestamp < WORKFLOW_CACHE_TTL) {
         validWorkflows = cached.workflows;
       } else {
@@ -82,7 +106,7 @@ export abstract class RequestHandlerBase {
           await workflowService.getWorkflowsByType(workflowType);
 
         // Filter for enabled and structurally valid workflows
-        validWorkflows = workflows.filter((w: any) => {
+        validWorkflows = workflows.filter((w: WorkflowLike) => {
           if (!w.enabled) {
             return false;
           }
@@ -104,7 +128,7 @@ export abstract class RequestHandlerBase {
       }
 
       // Build execution context
-      const context = {
+      const context: Record<string, unknown> = {
         method,
         params,
         clientId,
@@ -167,12 +191,12 @@ export abstract class RequestHandlerBase {
    */
   protected async executeWithHooksAndLogging<T>(
     method: string,
-    params: any,
+    params: Record<string, unknown> | object,
     clientId: string,
     serverName: string,
     requestType: string,
     handler: () => Promise<T>,
-    _additionalMetadata?: Record<string, any>,
+    _additionalMetadata?: Record<string, unknown>,
   ): Promise<T> {
     // Create log entry
     const logEntry: RequestLogEntry = {
@@ -194,10 +218,11 @@ export abstract class RequestHandlerBase {
       getLogService().recordMcpRequestLog(logEntry, serverName);
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Log error
       logEntry.result = "error";
-      logEntry.errorMessage = error.message || String(error);
+      logEntry.errorMessage =
+        error instanceof Error ? error.message : String(error);
       logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
       getLogService().recordMcpRequestLog(logEntry, serverName);
 

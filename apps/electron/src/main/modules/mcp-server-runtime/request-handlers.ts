@@ -1,10 +1,24 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import type {
+  CallToolRequest,
+  CallToolResult,
+  ListToolsResult,
+  ListResourcesResult,
+  ListResourceTemplatesResult,
+  ReadResourceResult,
+  GetPromptResult,
+  Tool,
+  Resource,
+  ResourceTemplate,
+  Prompt,
+} from "@modelcontextprotocol/sdk/types.js";
 import {
   MCPServer,
   UNASSIGNED_PROJECT_ID,
   prefixToolName,
   stripServerPrefix,
 } from "@mcp_router/shared";
+import type { ElicitationMode } from "@mcp_router/shared";
 import {
   parseResourceUri,
   createResourceUri,
@@ -25,6 +39,36 @@ import { getSharedConfigManager } from "@/main/infrastructure/shared-config-mana
 import { getElicitationManager } from "./elicitation-manager";
 import { validateElicitationUrl } from "@/main/utils/url-validation-utils";
 import { SystemServerService } from "@/main/modules/system-server/system-server.service";
+
+/** Tool with source server annotation for aggregated results */
+type ToolWithSource = Tool & { sourceServer: string };
+
+/** Resource with source server annotation for aggregated results */
+type ResourceWithSource = Resource & { sourceServer: string };
+
+/** Resource template with source server annotation for aggregated results */
+type ResourceTemplateWithSource = ResourceTemplate & { sourceServer: string };
+
+/** Prompt with source server annotation for aggregated results */
+type PromptWithSource = Prompt & { sourceServer: string };
+
+/** Elicitation create request shape (custom router protocol) */
+interface ElicitationCreateRequest {
+  params: {
+    elicitationId?: string;
+    mode?: ElicitationMode;
+    message?: string;
+    url?: string;
+    schema?: unknown;
+    _meta?: { sessionId?: string } & Record<string, unknown>;
+  };
+}
+
+/** Elicitation create response shape */
+interface ElicitationCreateResponse {
+  method: string;
+  params: Record<string, unknown>;
+}
 
 /**
  * Handles all request processing for the aggregator server
@@ -137,7 +181,7 @@ export class RequestHandlers extends RequestHandlerBase {
   public async handleListTools(
     token?: string,
     projectIdInput?: unknown,
-  ): Promise<any> {
+  ): Promise<ListToolsResult> {
     const clientId = this.getClientId(token);
     const projectId = this.normalizeProjectId(projectIdInput);
 
@@ -150,7 +194,7 @@ export class RequestHandlers extends RequestHandlerBase {
 
       // If tool catalog is enabled, return META_TOOLS + system tools
       if (this.isToolCatalogEnabled()) {
-        return { tools: [...META_TOOLS, ...systemTools] };
+        return { tools: [...(META_TOOLS as Tool[]), ...systemTools] };
       }
       // Otherwise, return all tools from all servers (legacy behavior)
       // (system tools are already appended inside getAllToolsInternal)
@@ -162,7 +206,7 @@ export class RequestHandlers extends RequestHandlerBase {
   /**
    * Handle a call to a specific tool
    */
-  public async handleCallTool(request: any): Promise<any> {
+  public async handleCallTool(request: CallToolRequest): Promise<CallToolResult> {
     const toolName = request.params.name;
     const projectId = this.normalizeProjectId(request.params._meta?.projectId);
 
@@ -181,7 +225,10 @@ export class RequestHandlers extends RequestHandlerBase {
 
     // Route router_* system tools directly to the SystemServer
     if (toolName.startsWith("router_")) {
-      return this.handleSystemToolCall(toolName, request.params.arguments || {});
+      return this.handleSystemToolCall(
+        toolName,
+        (request.params.arguments as Record<string, unknown>) || {},
+      );
     }
 
     // If tool catalog is enabled, only META_TOOLS are available
@@ -199,7 +246,7 @@ export class RequestHandlers extends RequestHandlerBase {
   public async handleListResources(
     token?: string,
     projectIdInput?: unknown,
-  ): Promise<any> {
+  ): Promise<ListResourcesResult> {
     const clientId = this.getClientId(token);
     const projectId = this.normalizeProjectId(projectIdInput);
 
@@ -215,9 +262,9 @@ export class RequestHandlers extends RequestHandlerBase {
   private async getAllResourcesInternal(
     token?: string,
     projectId?: string | null,
-  ): Promise<any[]> {
+  ): Promise<ResourceWithSource[]> {
     const normalizedProjectId = this.normalizeProjectId(projectId);
-    const allResources: any[] = [];
+    const allResources: ResourceWithSource[] = [];
 
     for (const [serverId, client] of this.clients.entries()) {
       const server = this.servers.get(serverId);
@@ -261,7 +308,7 @@ export class RequestHandlers extends RequestHandlerBase {
             this.originalProtocols.set(resource.uri, protocolPrefix);
           }
 
-          const resourceWithSource = {
+          const resourceWithSource: ResourceWithSource = {
             ...resource,
             sourceServer: serverName,
             uri: createResourceUri(serverName, resource.uri),
@@ -269,7 +316,7 @@ export class RequestHandlers extends RequestHandlerBase {
 
           allResources.push(resourceWithSource);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(
           `[MCPServerManager] Failed to get resources from server ${serverName}:`,
           error,
@@ -286,7 +333,7 @@ export class RequestHandlers extends RequestHandlerBase {
   public async handleListResourceTemplates(
     token?: string,
     projectIdInput?: unknown,
-  ): Promise<any> {
+  ): Promise<ListResourceTemplatesResult> {
     const clientId = this.getClientId(token);
     const projectId = this.normalizeProjectId(projectIdInput);
 
@@ -295,7 +342,7 @@ export class RequestHandlers extends RequestHandlerBase {
       {},
       clientId,
       async () => {
-        const allTemplates: any[] = [];
+        const allTemplates: ResourceTemplateWithSource[] = [];
 
         for (const [serverId, client] of this.clients.entries()) {
           const server = this.servers.get(serverId);
@@ -332,7 +379,7 @@ export class RequestHandlers extends RequestHandlerBase {
 
             // Add templates with source server information
             for (const template of templates.resourceTemplates) {
-              const templateWithSource = {
+              const templateWithSource: ResourceTemplateWithSource = {
                 ...template,
                 sourceServer: serverName,
                 uriTemplate: createResourceUri(
@@ -343,7 +390,7 @@ export class RequestHandlers extends RequestHandlerBase {
 
               allTemplates.push(templateWithSource);
             }
-          } catch (error: any) {
+          } catch (error: unknown) {
             // Server might not support resource templates
             console.error(
               `[MCPServerManager] Failed to get resource templates from server ${serverName}:`,
@@ -364,7 +411,7 @@ export class RequestHandlers extends RequestHandlerBase {
     uri: string,
     token?: string,
     projectIdInput?: unknown,
-  ): Promise<any> {
+  ): Promise<ReadResourceResult> {
     const clientId = this.getClientId(token);
     const projectId = this.normalizeProjectId(projectIdInput);
 
@@ -429,7 +476,7 @@ export class RequestHandlers extends RequestHandlerBase {
           originalProtocol,
         );
 
-        let lastError: any;
+        let lastError: unknown;
         for (const variantUri of uriVariants) {
           try {
             const result = await client
@@ -440,7 +487,7 @@ export class RequestHandlers extends RequestHandlerBase {
             // Just return the result as is
 
             return result;
-          } catch (error: any) {
+          } catch (error: unknown) {
             lastError = error;
             // Try the next variant
           }
@@ -465,9 +512,9 @@ export class RequestHandlers extends RequestHandlerBase {
   public async getAllPromptsInternal(
     token?: string,
     projectIdInput?: unknown,
-  ): Promise<any[]> {
+  ): Promise<PromptWithSource[]> {
     const projectId = this.normalizeProjectId(projectIdInput);
-    const allPrompts: any[] = [];
+    const allPrompts: PromptWithSource[] = [];
 
     for (const [serverId, client] of this.clients.entries()) {
       const server = this.servers.get(serverId);
@@ -501,7 +548,7 @@ export class RequestHandlers extends RequestHandlerBase {
 
         // Add prompts with source server information
         for (const prompt of prompts.prompts) {
-          const promptWithSource = {
+          const promptWithSource: PromptWithSource = {
             ...prompt,
             sourceServer: serverName,
             // Prefix prompt name with server name to avoid collisions
@@ -510,7 +557,7 @@ export class RequestHandlers extends RequestHandlerBase {
 
           allPrompts.push(promptWithSource);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(
           `[MCPServerManager] Failed to get prompts from server ${serverName}:`,
           error,
@@ -526,10 +573,10 @@ export class RequestHandlers extends RequestHandlerBase {
    */
   public async getPromptByName(
     name: string,
-    promptArgs?: any,
+    promptArgs?: Record<string, string>,
     token?: string,
     projectIdInput?: unknown,
-  ): Promise<any> {
+  ): Promise<GetPromptResult> {
     const clientId = this.getClientId(token);
     const projectId = this.normalizeProjectId(projectIdInput);
 
@@ -609,7 +656,7 @@ export class RequestHandlers extends RequestHandlerBase {
   private async getAllToolsInternal(
     token?: string,
     projectId?: string | null,
-  ): Promise<any[]> {
+  ): Promise<ToolWithSource[]> {
     const PER_SERVER_TIMEOUT_MS = 10_000;
     const normalizedProjectId = this.normalizeProjectId(projectId);
     const toolMap = this.ensureToolMap(normalizedProjectId);
@@ -619,9 +666,9 @@ export class RequestHandlers extends RequestHandlerBase {
     // Build list of eligible servers
     const eligible: {
       serverId: string;
-      client: any;
+      client: ReconnectingMCPClient;
       serverName: string;
-      server: any;
+      server: MCPServer | undefined;
     }[] = [];
     for (const [serverId, client] of this.clients.entries()) {
       const server = this.servers.get(serverId);
@@ -662,7 +709,7 @@ export class RequestHandlers extends RequestHandlerBase {
           string,
           boolean
         >;
-        const serverTools: any[] = [];
+        const serverTools: ToolWithSource[] = [];
 
         for (const tool of tools.tools) {
           if (permissions[tool.name] === false) continue;
@@ -682,7 +729,7 @@ export class RequestHandlers extends RequestHandlerBase {
     );
 
     // Collect results from fulfilled promises
-    const allTools: any[] = [];
+    const allTools: ToolWithSource[] = [];
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
       if (result.status === "fulfilled") {
@@ -715,15 +762,17 @@ export class RequestHandlers extends RequestHandlerBase {
    * Get tool definitions from the SystemServer, if initialised.
    * Returns an empty array if the SystemServerService is not yet available.
    */
-  private getSystemToolDefinitions(): Array<{
-    name: string;
-    description: string;
-    inputSchema: any;
-  }> {
+  private getSystemToolDefinitions(): Array<
+    Pick<Tool, "name" | "inputSchema"> & { description: string }
+  > {
     try {
+      // The SystemServer tool definitions conform structurally to Tool at
+      // runtime, but their `typeof` inference is wider.  Cast to align types.
       return SystemServerService.getInstance()
         .getSystemServer()
-        .getToolDefinitions();
+        .getToolDefinitions() as Array<
+        Pick<Tool, "name" | "inputSchema"> & { description: string }
+      >;
     } catch {
       // SystemServerService not initialised yet — return nothing
       return [];
@@ -736,16 +785,18 @@ export class RequestHandlers extends RequestHandlerBase {
   private async handleSystemToolCall(
     toolName: string,
     args: Record<string, unknown>,
-  ): Promise<any> {
+  ): Promise<CallToolResult> {
     try {
       const systemServer = SystemServerService.getInstance().getSystemServer();
       return await systemServer.callTool(toolName, args);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Re-throw McpError as-is; wrap anything else
       if (error instanceof McpError) throw error;
+      const message =
+        error instanceof Error ? error.message : String(error);
       throw new McpError(
         ErrorCode.InternalError,
-        `System tool error: ${error.message ?? error}`,
+        `System tool error: ${message}`,
       );
     }
   }
@@ -774,10 +825,10 @@ export class RequestHandlers extends RequestHandlerBase {
    * Handle legacy tool call (when tool catalog is disabled)
    */
   private async handleLegacyToolCall(
-    request: any,
+    request: CallToolRequest,
     toolName: string,
     projectId: string | null,
-  ): Promise<any> {
+  ): Promise<CallToolResult> {
     const token = request.params._meta?.token as string | undefined;
     const mappedServerName = await this.getServerNameForTool(
       toolName,
@@ -850,7 +901,8 @@ export class RequestHandlers extends RequestHandlerBase {
         const result = await client.getClient().callTool(
           {
             name: originalToolName,
-            arguments: request.params.arguments || {},
+            arguments:
+              (request.params.arguments as Record<string, unknown>) || {},
           },
           undefined,
           {
@@ -874,9 +926,9 @@ export class RequestHandlers extends RequestHandlerBase {
    * Routes elicitation requests from backend servers to the connected client
    */
   public async handleElicitationCreate(
-    request: any,
+    request: ElicitationCreateRequest,
     backendServerId: string,
-  ): Promise<any> {
+  ): Promise<ElicitationCreateResponse> {
     const elicitationId = request.params?.elicitationId;
     const mode = request.params?.mode;
     const message = request.params?.message;
