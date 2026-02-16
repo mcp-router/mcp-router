@@ -1,5 +1,8 @@
 import { getSettingsService } from "@/main/modules/settings/settings.service";
-import { API_BASE_URL, mainWindow } from "../../../main";
+import {
+  API_BASE_URL,
+  getMainWindow,
+} from "@/main/infrastructure/app-context";
 import crypto from "crypto";
 import { shell } from "electron";
 import { fetchWithToken } from "@/main/utils/fetch-utils";
@@ -162,8 +165,9 @@ async function exchangeCodeForToken(
       const user = await status();
 
       // Notify the renderer process about the auth state change
-      if (mainWindow) {
-        mainWindow.webContents.send("auth:status-changed", {
+      const win = getMainWindow();
+      if (win) {
+        win.webContents.send("auth:status-changed", {
           loggedIn: true,
           userId: user.userId,
           user: user.user,
@@ -204,8 +208,9 @@ export function logout(): boolean {
     clearStatusCache();
 
     // Notify the renderer process about the auth state change
-    if (mainWindow) {
-      mainWindow.webContents.send("auth:status-changed", {
+    const win = getMainWindow();
+    if (win) {
+      win.webContents.send("auth:status-changed", {
         loggedIn: false,
         userId: "",
       });
