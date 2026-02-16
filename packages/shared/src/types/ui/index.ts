@@ -27,7 +27,7 @@ export type ErrorBoundaryState = {
 };
 
 // Store state interfaces
-export interface ServerState {
+export interface ServerDataState {
   // Server data
   servers: any[]; // MCPServer[]
 
@@ -37,12 +37,17 @@ export interface ServerState {
 
   // Error states
   error: string | null;
+}
 
+export interface ServerUIState {
   // UI state
   searchQuery: string;
   expandedServerId: string | null;
   selectedServerId: string | null;
 }
+
+/** @deprecated Use ServerDataState & ServerUIState instead */
+export type ServerState = ServerDataState & ServerUIState;
 
 export interface UIState {
   // Loading states

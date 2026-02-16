@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { electronPlatformAPI } from "../platform-api/electron-platform-api";
 import { RemotePlatformAPI } from "../platform-api/remote-platform-api";
 import type { PlatformAPI, Workspace } from "@mcp_router/shared";
-import { useAuthStore, useServerStore } from "@/renderer/stores";
+import { useAuthStore, useServerStore, useServerUIStore } from "@/renderer/stores";
 
 interface WorkspaceState {
   workspaces: Workspace[];
@@ -126,6 +126,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
         // Clear all stores before switching
         useServerStore.getState().clearStore();
+        useServerUIStore.getState().clearUI();
         useAuthStore.getState().clearStore();
 
         // 1. First, refresh auth store to ensure authentication is ready

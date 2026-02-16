@@ -2,11 +2,11 @@ import { create, StoreApi, UseBoundStore } from "zustand";
 import {
   MCPServer,
   MCPServerConfig,
-  ServerState,
+  ServerDataState,
   PlatformAPI,
 } from "@mcp_router/shared";
 
-export interface ServerStoreState extends ServerState {
+export interface ServerStoreState extends ServerDataState {
   // Actions
   setServers: (servers: MCPServer[]) => void;
   addServer: (server: MCPServer) => void;
@@ -20,11 +20,6 @@ export interface ServerStoreState extends ServerState {
 
   // Error actions
   setError: (error: string | null) => void;
-
-  // UI actions
-  setSearchQuery: (query: string) => void;
-  setExpandedServerId: (id: string | null) => void;
-  setSelectedServerId: (id: string | null) => void;
 
   // Server operations
   startServer: (id: string) => Promise<void>;
@@ -54,9 +49,6 @@ export const createServerStore = (
     isLoading: false,
     isUpdating: [],
     error: null,
-    searchQuery: "",
-    expandedServerId: null,
-    selectedServerId: null,
 
     // Basic state setters
     setServers: (servers) => set({ servers }),
@@ -95,13 +87,6 @@ export const createServerStore = (
       })),
 
     setError: (error) => set({ error }),
-
-    // UI actions
-    setSearchQuery: (searchQuery) => set({ searchQuery }),
-
-    setExpandedServerId: (expandedServerId) => set({ expandedServerId }),
-
-    setSelectedServerId: (selectedServerId) => set({ selectedServerId }),
 
     // Server operations with Platform API integration
     startServer: async (id) => {
@@ -285,9 +270,6 @@ export const createServerStore = (
         isLoading: false,
         isUpdating: [],
         error: null,
-        searchQuery: "",
-        expandedServerId: null,
-        selectedServerId: null,
       });
     },
   }));
