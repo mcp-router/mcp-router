@@ -21,9 +21,15 @@ import {
   applyThemeSettings,
   getSettingsService,
 } from "@/main/modules/settings/settings.service";
-import { getSkillService } from "@/main/modules/skills/skills.service";
+import { getUnifiedSkillsService } from "@/main/modules/skills/unified-skills.service";
+import { SystemServerService } from "@/main/modules/system-server/system-server.service";
 import { cleanupOldLogs } from "./main/utils/log-cleanup";
 import { logger } from "./main/utils/logger-factory";
+import {
+  BASE_URL as _BASE_URL,
+  API_BASE_URL as _API_BASE_URL,
+  setMainWindow,
+} from "@/main/infrastructure/app-context";
 
 // Global handler for uncaught EPIPE errors.
 // EPIPE occurs when writing to a pipe whose receiving end has closed (e.g., when MCP server
@@ -79,8 +85,9 @@ let isQuitting = false;
 // Timer for updating tray context menu
 let trayUpdateTimer: NodeJS.Timeout | null = null;
 
-export const BASE_URL = "https://mcp-router.net/";
-export const API_BASE_URL = `${BASE_URL}api`;
+// Re-exported from app-context for backward compatibility
+export const BASE_URL = _BASE_URL;
+export const API_BASE_URL = _API_BASE_URL;
 
 // Configure auto update (guarded to avoid crash on unsigned macOS builds)
 const { enabled: enableAutoUpdate, options: autoUpdateOptions } =
@@ -141,6 +148,7 @@ const createWindow = ({ showOnCreate = true }: CreateWindowOptions = {}) => {
 
   // Create the browser window.
   mainWindow = new BrowserWindow(windowOptions);
+  setMainWindow(mainWindow);
 
   // Apply Windows title bar overlay colors based on system theme
   if (process.platform === "win32") {
@@ -213,6 +221,7 @@ const createWindow = ({ showOnCreate = true }: CreateWindowOptions = {}) => {
   // Handle actual window closed event if it occurs
   mainWindow.on("closed", () => {
     mainWindow = null;
+    setMainWindow(null);
   });
 
   if (isDevelopment()) {
@@ -295,8 +304,11 @@ async function initMCPServices(): Promise<void> {
     console.error("Failed to start MCP HTTP Server:", error);
   }
 
-  // Verify and repair skill symlinks
-  getSkillService().verifyAndRepairSymlinks();
+  // Initialize SystemServer (agent-native router management)
+  SystemServerService.initialize(serverManager);
+
+  // Verify and repair skill symlinks (fire-and-forget async)
+  getUnifiedSkillsService().verifyAndRepairAll();
 }
 
 /**
@@ -474,6 +486,7 @@ app.on("will-quit", async () => {
 
   serverManager.shutdown();
   aggregatorServer.shutdown();
+  SystemServerService.resetInstance();
 });
 
 // Override the default app.quit to set our isQuitting flag first

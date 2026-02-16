@@ -68,7 +68,7 @@ const SidebarComponent: React.FC = () => {
 
   return (
     <Sidebar collapsible="icon" className="border-r-0 bg-transparent">
-      <div className="pt-[50px]" />
+      <div className="pt-[var(--titlebar-height)]" />
       <SidebarHeader className="py-4 px-4 overflow-hidden">
         <Link
           to="/"

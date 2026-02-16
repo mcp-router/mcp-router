@@ -607,6 +607,51 @@ export class UnifiedSkillsService extends SingletonService<
     }
   }
 
+  /**
+   * Set skill state for a specific client (enable/disable/not-installed)
+   * Dispatches to enableForClient, disableForClient, or removeFromClient
+   * and returns the resulting ClientSkillState record.
+   */
+  public async setClientState(
+    skillId: string,
+    clientId: string,
+    state: ClientSkillStateType,
+  ): Promise<ClientSkillState> {
+    switch (state) {
+      case "enabled":
+        await this.enableForClient(skillId, clientId);
+        break;
+      case "disabled":
+        await this.disableForClient(skillId, clientId);
+        break;
+      case "not-installed":
+        await this.removeFromClient(skillId, clientId);
+        break;
+      default:
+        throw new Error(`Invalid client skill state: ${state}`);
+    }
+
+    const stateRepo = ClientSkillStateRepository.getInstance();
+    const record = stateRepo.findBySkillAndClient(skillId, clientId);
+
+    // For "not-installed", the record is deleted so return a synthetic one
+    if (!record) {
+      return {
+        id: "",
+        skillId,
+        clientId,
+        state: "not-installed",
+        isManaged: false,
+        source: "local",
+        symlinkStatus: "none",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+    }
+
+    return record;
+  }
+
   // ==========================================================================
   // Discovery & Adoption
   // ==========================================================================

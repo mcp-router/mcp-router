@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { HeatmapData } from "@mcp_router/shared";
 import { Card } from "@mcp_router/ui";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/renderer/utils/tailwind-utils";
 
 interface ActivityHeatmapProps {
@@ -120,7 +121,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
     return (
       <Card className="p-8 rounded-[2rem] border-border/40 bg-card/40 backdrop-blur-sm shadow-sm">
         <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </Card>
     );

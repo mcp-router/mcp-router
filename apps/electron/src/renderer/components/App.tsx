@@ -147,7 +147,7 @@ const App: React.FC = () => {
 
       <SidebarComponent />
       <main className="flex flex-col flex-1 w-full min-w-0">
-        <div className="flex flex-col flex-1 pt-[50px] pb-4 pr-4 pl-0 h-screen">
+        <div className="flex flex-col flex-1 pt-[var(--titlebar-height)] pb-4 pr-4 pl-0 h-screen">
           <div className="flex-1 w-full overflow-auto bg-card/40 backdrop-blur-sm border border-border/40 rounded-[2.5rem] soft-shadow relative">
             <div className="max-w-[1600px] mx-auto w-full min-h-full">
               <Routes>

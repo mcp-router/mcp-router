@@ -1,5 +1,7 @@
 import { ipcMain } from "electron";
 import type {
+  ClientSkillState,
+  ClientSkillStateType,
   SkillSyncResult,
   SkillVerifyResult,
   UnifiedSkill,
@@ -24,6 +26,11 @@ interface UnifiedSkillsService {
   verifyAndRepairAll(): Promise<SkillVerifyResult>;
   enableAll(skillId: string): Promise<SkillSyncResult>;
   disableAll(skillId: string): Promise<SkillSyncResult>;
+  setClientState(
+    skillId: string,
+    clientId: string,
+    state: ClientSkillStateType,
+  ): Promise<ClientSkillState>;
 }
 
 let unifiedSkillsService: UnifiedSkillsService | null = null;
@@ -144,4 +151,23 @@ export function setupUnifiedSkillsHandlers(): void {
     const service = getUnifiedSkillsService();
     return service.disableAll(skillId);
   });
+
+  // Set client state for a skill
+  ipcMain.handle(
+    "skill:set-client-state",
+    async (
+      _evt,
+      input: { skillId: string; clientId: string; state: string },
+    ) => {
+      if (!input.skillId) throw new Error("Missing skill id");
+      if (!input.clientId) throw new Error("Missing client id");
+      if (!input.state) throw new Error("Missing state");
+      const service = getUnifiedSkillsService();
+      return service.setClientState(
+        input.skillId,
+        input.clientId,
+        input.state as ClientSkillStateType,
+      );
+    },
+  );
 }

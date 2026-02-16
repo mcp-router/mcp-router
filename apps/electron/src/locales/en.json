@@ -158,6 +158,8 @@
     "loadExternalMCPConfigsDescription": "Allow MCP Router to import server configurations from other applications like Claude for Desktop",
     "prefixToolNames": "Prefix tool names with server name",
     "prefixToolNamesDescription": "Add source server prefix to tool names (e.g., krisp__search_meetings) for easier identification",
+    "toolCatalogMode": "Tool Catalog Mode",
+    "toolCatalogModeDescription": "When enabled, exposes meta-tools (tool_discovery, tool_execute, tool_capabilities) instead of individual tools",
     "analytics": "Send usage analytics",
     "analyticsDescription": "Send anonymous usage data to help improve the app",
     "autoUpdate": "Enable automatic updates",

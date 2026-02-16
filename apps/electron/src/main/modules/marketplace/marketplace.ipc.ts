@@ -5,6 +5,7 @@ import {
   type SkillsSearchOptions,
 } from "./skills-registry.service";
 import { getSkillService } from "../skills/skills.service";
+import { getUnifiedSkillsService } from "../skills/unified-skills.service";
 import { SkillRepository } from "../skills/skills.repository";
 import { validateSkillName } from "@/main/utils/path-security";
 import type { MarketplaceSearchOptions } from "./marketplace.types";
@@ -147,7 +148,8 @@ export function setupMarketplaceHandlers(): void {
         projectId: options.projectId ?? undefined,
       });
 
-      skillService.update(skill.id, { content });
+      // Write content through the unified service for proper per-client state management
+      await getUnifiedSkillsService().updateUnified(skill.id, { content });
 
       return { success: true, skillId: skill.id };
     },

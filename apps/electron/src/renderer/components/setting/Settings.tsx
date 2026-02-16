@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@mcp_router/ui";
+import { Card, CardContent, CardHeader, CardTitle, Label } from "@mcp_router/ui";
 import {
   Select,
   SelectContent,
@@ -83,6 +83,7 @@ const Settings: React.FC = () => {
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState<boolean>(true);
   const [showWindowOnStartup, setShowWindowOnStartup] = useState<boolean>(true);
   const [prefixToolNames, setPrefixToolNames] = useState<boolean>(true);
+  const [toolCatalogEnabled, setToolCatalogEnabled] = useState<boolean>(false);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Cloud Sync state
@@ -128,6 +129,7 @@ const Settings: React.FC = () => {
         setAutoUpdateEnabled(settings.autoUpdateEnabled ?? true);
         setShowWindowOnStartup(settings.showWindowOnStartup ?? true);
         setPrefixToolNames(settings.prefixToolNames ?? true);
+        setToolCatalogEnabled(settings.toolCatalogEnabled ?? false);
       } catch {
         console.log("Failed to load settings, using defaults");
       }
@@ -227,6 +229,12 @@ const Settings: React.FC = () => {
   const handlePrefixToolNamesToggle = createBooleanSettingToggle({
     settingKey: "prefixToolNames",
     stateSetter: setPrefixToolNames,
+    setLoading: setIsSavingSettings,
+  });
+
+  const handleToolCatalogToggle = createBooleanSettingToggle({
+    settingKey: "toolCatalogEnabled",
+    stateSetter: setToolCatalogEnabled,
     setLoading: setIsSavingSettings,
   });
 
@@ -526,9 +534,9 @@ const Settings: React.FC = () => {
           {/* Theme */}
           <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
             <div className="space-y-1">
-              <label className="text-sm font-semibold">
+              <Label className="text-sm font-semibold">
                 {t("settings.theme")}
-              </label>
+              </Label>
               <p className="text-xs text-muted-foreground">
                 {t("settings.themeDescription", {
                   defaultValue: "Choose how the application looks",
@@ -559,9 +567,9 @@ const Settings: React.FC = () => {
           {/* Auto Update */}
           <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
             <div className="space-y-1">
-              <label className="text-sm font-semibold">
+              <Label className="text-sm font-semibold">
                 {t("settings.autoUpdate")}
-              </label>
+              </Label>
               <p className="text-xs text-muted-foreground max-w-[400px]">
                 {t("settings.autoUpdateDescription")}
               </p>
@@ -576,9 +584,9 @@ const Settings: React.FC = () => {
           {/* Show Window on Startup */}
           <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
             <div className="space-y-1">
-              <label className="text-sm font-semibold">
+              <Label className="text-sm font-semibold">
                 {t("settings.showWindowOnStartup")}
-              </label>
+              </Label>
               <p className="text-xs text-muted-foreground max-w-[400px]">
                 {t("settings.showWindowOnStartupDescription")}
               </p>
@@ -593,9 +601,9 @@ const Settings: React.FC = () => {
           {/* Load External MCP Configs */}
           <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
             <div className="space-y-1">
-              <label className="text-sm font-semibold">
+              <Label className="text-sm font-semibold">
                 {t("settings.loadExternalMCPConfigs")}
-              </label>
+              </Label>
               <p className="text-xs text-muted-foreground max-w-[400px]">
                 {t("settings.loadExternalMCPConfigsDescription")}
               </p>
@@ -610,9 +618,9 @@ const Settings: React.FC = () => {
           {/* Prefix Tool Names */}
           <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
             <div className="space-y-1">
-              <label className="text-sm font-semibold">
+              <Label className="text-sm font-semibold">
                 {t("settings.prefixToolNames")}
-              </label>
+              </Label>
               <p className="text-xs text-muted-foreground max-w-[400px]">
                 {t("settings.prefixToolNamesDescription")}
               </p>
@@ -624,12 +632,29 @@ const Settings: React.FC = () => {
             />
           </div>
 
+          {/* Tool Catalog Mode */}
+          <div className="flex items-center justify-between py-5 border-b border-border/30 last:border-0">
+            <div className="space-y-1">
+              <Label className="text-sm font-semibold">
+                {t("settings.toolCatalogMode")}
+              </Label>
+              <p className="text-xs text-muted-foreground max-w-[400px]">
+                {t("settings.toolCatalogModeDescription")}
+              </p>
+            </div>
+            <Switch
+              checked={toolCatalogEnabled}
+              onCheckedChange={handleToolCatalogToggle}
+              disabled={isSavingSettings}
+            />
+          </div>
+
           {/* Analytics */}
           <div className="flex items-center justify-between py-5 last:border-0">
             <div className="space-y-1">
-              <label className="text-sm font-semibold">
+              <Label className="text-sm font-semibold">
                 {t("settings.analytics")}
-              </label>
+              </Label>
               <p className="text-xs text-muted-foreground max-w-[400px]">
                 {t("settings.analyticsDescription")}
               </p>
