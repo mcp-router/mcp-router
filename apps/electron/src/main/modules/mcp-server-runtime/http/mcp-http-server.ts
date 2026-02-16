@@ -47,8 +47,18 @@ export class MCPHttpServer {
     // Parse JSON request bodies
     this.app.use(express.json());
 
-    // Enable CORS
-    this.app.use(cors());
+    // Enable CORS with restricted origins
+    this.app.use(cors({
+      origin: (origin, callback) => {
+        // Allow requests with no origin (same-origin, curl, MCP clients)
+        if (!origin) return callback(null, true);
+        // Allow localhost origins
+        if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+          return callback(null, true);
+        }
+        callback(new Error('Not allowed by CORS'));
+      },
+    }));
 
     // Create authentication middleware
     const authMiddleware = (

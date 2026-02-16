@@ -273,19 +273,3 @@ export const createServerStore = (
       });
     },
   }));
-
-// Utility selector creators
-const createServerSelectors = <T extends ReturnType<typeof createServerStore>>(
-  useStore: T,
-) => ({
-  useServerById: (id: string) =>
-    useStore((state) => state.servers.find((server) => server.id === id)),
-
-  useServersByStatus: (status: MCPServer["status"]) =>
-    useStore((state) =>
-      state.servers.filter((server) => server.status === status),
-    ),
-
-  useIsServerUpdating: (id: string) =>
-    useStore((state) => state.isUpdating.includes(id)),
-});

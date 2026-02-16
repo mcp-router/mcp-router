@@ -28,6 +28,7 @@ import {
   IconCheck,
   IconX,
 } from "@tabler/icons-react";
+import { sanitizeSvgWithStyles } from "@/renderer/utils/svg-sanitizer";
 import { usePlatformAPI } from "@/renderer/platform-api";
 import type {
   ClientApp,
@@ -493,9 +494,9 @@ const ClientApps: React.FC = () => {
                       <div
                         className="w-full h-full flex items-center justify-center"
                         dangerouslySetInnerHTML={{
-                          __html: client.icon.replace(
-                            /<svg/g,
-                            '<svg style="width: 100%; height: 100%; max-width: 24px; max-height: 24px;"',
+                          __html: sanitizeSvgWithStyles(
+                            client.icon,
+                            "width: 100%; height: 100%; max-width: 24px; max-height: 24px;"
                           ),
                         }}
                       />

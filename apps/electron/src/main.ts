@@ -351,11 +351,22 @@ async function initApplication(): Promise<void> {
     .replace(/\s+/g, " ")
     .trim();
 
+  const PROD_CSP = `
+    default-src 'self' 'unsafe-inline';
+    script-src 'self';
+    connect-src 'self' https://mcp-router.net https://api.mcp-router.net https://github.com;
+    img-src 'self' data:;
+  `
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const csp = isDevelopment() ? DEV_CSP : PROD_CSP;
+
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        "Content-Security-Policy": [DEV_CSP],
+        "Content-Security-Policy": [csp],
       },
     });
   });

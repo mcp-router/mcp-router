@@ -1,5 +1,6 @@
 import { ipcMain } from "electron";
 import { getWorkflowService } from "@/main/modules/workflow/workflow.service";
+import { invalidateWorkflowCache } from "@/main/modules/mcp-server-runtime/request-handler-base";
 import type { WorkflowDefinition } from "@mcp_router/shared";
 
 /**
@@ -34,7 +35,9 @@ export function setupWorkflowHandlers(): void {
       workflow: Omit<WorkflowDefinition, "id" | "createdAt" | "updatedAt">,
     ) => {
       try {
-        return await getWorkflowService().createWorkflow(workflow);
+        const result = await getWorkflowService().createWorkflow(workflow);
+        invalidateWorkflowCache();
+        return result;
       } catch (error) {
         console.error("Failed to create workflow:", error);
         throw error;
@@ -51,7 +54,9 @@ export function setupWorkflowHandlers(): void {
       updates: Partial<Omit<WorkflowDefinition, "id" | "createdAt">>,
     ) => {
       try {
-        return await getWorkflowService().updateWorkflow(id, updates);
+        const result = await getWorkflowService().updateWorkflow(id, updates);
+        invalidateWorkflowCache();
+        return result;
       } catch (error) {
         console.error("Failed to update workflow:", error);
         throw error;
@@ -62,7 +67,9 @@ export function setupWorkflowHandlers(): void {
   // Delete workflow
   ipcMain.handle("workflow:delete", async (_, id: string) => {
     try {
-      return await getWorkflowService().deleteWorkflow(id);
+      const result = await getWorkflowService().deleteWorkflow(id);
+      invalidateWorkflowCache();
+      return result;
     } catch (error) {
       console.error("Failed to delete workflow:", error);
       throw error;
@@ -72,7 +79,9 @@ export function setupWorkflowHandlers(): void {
   // Set workflow as active
   ipcMain.handle("workflow:setActive", async (_, id: string) => {
     try {
-      return await getWorkflowService().setActiveWorkflow(id);
+      const result = await getWorkflowService().setActiveWorkflow(id);
+      invalidateWorkflowCache();
+      return result;
     } catch (error) {
       console.error("Failed to set active workflow:", error);
       throw error;
@@ -82,7 +91,9 @@ export function setupWorkflowHandlers(): void {
   // Disable workflow
   ipcMain.handle("workflow:disable", async (_, id: string) => {
     try {
-      return await getWorkflowService().disableWorkflow(id);
+      const result = await getWorkflowService().disableWorkflow(id);
+      invalidateWorkflowCache();
+      return result;
     } catch (error) {
       console.error("Failed to disable workflow:", error);
       throw error;

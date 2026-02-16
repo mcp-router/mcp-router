@@ -117,11 +117,11 @@ class SharedConfigManager implements ISharedConfigManager {
         this.config._meta.lastModified = new Date().toISOString();
       }
 
-      // Write to file
+      // Write to file with restricted permissions (owner read/write only)
       fs.writeFileSync(
         this.configPath,
         JSON.stringify(this.config, null, 2),
-        "utf-8",
+        { encoding: "utf-8", mode: 0o600 },
       );
     } catch (error) {
       console.error("[SharedConfigManager] Failed to save config:", error);

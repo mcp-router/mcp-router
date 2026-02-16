@@ -211,8 +211,6 @@ export class HookService {
         Boolean,
         Date,
         Math,
-        Promise,
-        setTimeout,
       };
 
       // Wrap script to capture return value

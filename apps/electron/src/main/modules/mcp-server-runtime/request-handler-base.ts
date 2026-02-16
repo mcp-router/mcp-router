@@ -2,6 +2,28 @@ import { TokenValidator } from "./token-validator";
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import { McpManagerRequestLogEntry as RequestLogEntry } from "@mcp_router/shared";
 
+// Cache for dynamic imports (resolved once, reused forever)
+let workflowImportsCache: {
+  getWorkflowService: () => any;
+  WorkflowExecutor: any;
+} | null = null;
+
+// TTL cache for active workflow lookups, keyed by workflow type (method)
+const workflowLookupCache = new Map<
+  string,
+  { workflows: any[]; timestamp: number }
+>();
+const WORKFLOW_CACHE_TTL = 5000; // 5 seconds
+
+/**
+ * Invalidate the workflow lookup cache. Call this when workflows are
+ * created, updated, deleted, or toggled so the next request picks up
+ * the change immediately instead of waiting for the TTL to expire.
+ */
+export function invalidateWorkflowCache(): void {
+  workflowLookupCache.clear();
+}
+
 /**
  * Base class for request handlers with common error handling patterns
  */
@@ -33,32 +55,53 @@ export abstract class RequestHandlerBase {
   ): Promise<T> {
     // Try to execute via Workflow
     try {
-      // Import WorkflowService and WorkflowExecutor
-      const { getWorkflowService } =
-        await import("../workflow/workflow.service");
-      const { WorkflowExecutor } =
-        await import("../workflow/workflow-executor");
+      // Import WorkflowService and WorkflowExecutor (cached after first import)
+      if (!workflowImportsCache) {
+        const [wsModule, weModule] = await Promise.all([
+          import("../workflow/workflow.service"),
+          import("../workflow/workflow-executor"),
+        ]);
+        workflowImportsCache = {
+          getWorkflowService: wsModule.getWorkflowService,
+          WorkflowExecutor: weModule.WorkflowExecutor,
+        };
+      }
+      const { getWorkflowService, WorkflowExecutor } = workflowImportsCache;
       const workflowService = getWorkflowService();
 
-      // Get matching workflows (tools/list or tools/call)
+      // Get matching workflows (tools/list or tools/call) with TTL cache
       const workflowType = method; // "tools/list" or "tools/call"
-      const workflows = await workflowService.getWorkflowsByType(workflowType);
+      const now = Date.now();
+      const cached = workflowLookupCache.get(workflowType);
 
-      // Filter for enabled and structurally valid workflows
-      const validWorkflows = workflows.filter((w) => {
-        if (!w.enabled) {
-          return false;
-        }
+      let validWorkflows: any[];
+      if (cached && now - cached.timestamp < WORKFLOW_CACHE_TTL) {
+        validWorkflows = cached.workflows;
+      } else {
+        const workflows =
+          await workflowService.getWorkflowsByType(workflowType);
 
-        // Validate workflow structure (Start -> MCP Call -> End connected)
-        const isValid = WorkflowExecutor.isValidWorkflow(w);
-        if (!isValid) {
-          console.warn(
-            `Workflow ${w.name} (${w.id}) is not valid for execution`,
-          );
-        }
-        return isValid;
-      });
+        // Filter for enabled and structurally valid workflows
+        validWorkflows = workflows.filter((w: any) => {
+          if (!w.enabled) {
+            return false;
+          }
+
+          // Validate workflow structure (Start -> MCP Call -> End connected)
+          const isValid = WorkflowExecutor.isValidWorkflow(w);
+          if (!isValid) {
+            console.warn(
+              `Workflow ${w.name} (${w.id}) is not valid for execution`,
+            );
+          }
+          return isValid;
+        });
+
+        workflowLookupCache.set(workflowType, {
+          workflows: validWorkflows,
+          timestamp: now,
+        });
+      }
 
       // Build execution context
       const context = {

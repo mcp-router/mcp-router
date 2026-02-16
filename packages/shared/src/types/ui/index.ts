@@ -46,9 +46,6 @@ export interface ServerUIState {
   selectedServerId: string | null;
 }
 
-/** @deprecated Use ServerDataState & ServerUIState instead */
-export type ServerState = ServerDataState & ServerUIState;
-
 export interface UIState {
   // Loading states
   globalLoading: boolean;

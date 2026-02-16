@@ -37,7 +37,6 @@ let unifiedSkillsService: UnifiedSkillsService | null = null;
 
 /**
  * Get or create the UnifiedSkillsService instance
- * TODO: Replace with actual service implementation when Task #30 is complete
  */
 function getUnifiedSkillsService(): UnifiedSkillsService {
   if (!unifiedSkillsService) {

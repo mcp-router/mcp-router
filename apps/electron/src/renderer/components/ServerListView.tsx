@@ -190,10 +190,9 @@ const ServerListRow: React.FC<{
             <div className="font-bold text-sm mb-1 group-hover:text-primary transition-colors">
               {server.name}
             </div>
-            {"description" in server &&
-              typeof (server as any).description === "string" && (
+            {server.description && (
                 <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
-                  {(server as any).description}
+                  {server.description}
                 </p>
               )}
             <div className="flex flex-wrap gap-2 mb-1">

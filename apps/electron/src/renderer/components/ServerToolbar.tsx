@@ -21,7 +21,7 @@ import { UNASSIGNED_PROJECT_ID } from "../stores";
 interface ServerToolbarProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  serverViewMode: string;
+  serverViewMode: "list" | "grid";
   setServerViewMode: (mode: "list" | "grid") => void;
   exportServersToFile: () => void;
   selectedProjectId: string | null;

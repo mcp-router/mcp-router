@@ -1,5 +1,5 @@
 import React from "react";
-import { MCPServer, Project, ProjectOptimization } from "@mcp_router/shared";
+import { MCPServer, MCPServerConfig, MCPInputParam, Project, ProjectOptimization } from "@mcp_router/shared";
 import { Button } from "@mcp_router/ui";
 import {
   AlertDialog,
@@ -41,7 +41,7 @@ interface ServerModalsProps {
   setAdvancedSettingsServer: (server: MCPServer | null) => void;
   onUpdateServerConfig: (
     id: string,
-    config: any,
+    config: Partial<MCPServerConfig>,
   ) => Promise<void>;
   onUpdateServerToolPermissions: (
     id: string,
@@ -131,11 +131,12 @@ export const ServerModals: React.FC<ServerModalsProps> = ({
               envPairs.forEach((pair) => {
                 if (pair.key.trim()) envObj[pair.key.trim()] = pair.value;
               });
-              const finalInputParams =
-                updatedInputParams || advancedSettingsServer.inputParams;
+              const finalInputParams = (
+                updatedInputParams || advancedSettingsServer.inputParams
+              ) as Record<string, MCPInputParam> | undefined;
               if (finalInputParams) {
                 Object.entries(finalInputParams).forEach(
-                  ([key, param]: [string, any]) => {
+                  ([key, param]: [string, MCPInputParam]) => {
                     if (
                       !envObj[key] &&
                       param.default !== undefined &&
@@ -147,7 +148,7 @@ export const ServerModals: React.FC<ServerModalsProps> = ({
                   },
                 );
               }
-              const updatedConfig: any = {
+              const updatedConfig: Partial<MCPServerConfig> = {
                 name: editedName || advancedSettingsServer.name,
                 command: editedCommand,
                 args: editedArgs,

@@ -1,4 +1,5 @@
 import process from "node:process";
+import path from "node:path";
 import { execa } from "execa";
 import stripAnsi from "strip-ansi";
 import { userInfo, homedir } from "node:os";
@@ -76,11 +77,44 @@ function augmentPath(existingPath: string | undefined): string {
 }
 
 /**
+ * Allowlist of commands that may be checked via the commandExists IPC handler.
+ * This prevents the renderer process from probing arbitrary binaries.
+ */
+const ALLOWED_COMMANDS = new Set([
+  "node",
+  "npm",
+  "npx",
+  "pnpm",
+  "yarn",
+  "bun",
+  "bunx",
+  "uvx",
+  "uv",
+  "python",
+  "python3",
+  "pip",
+  "pip3",
+  "docker",
+  "podman",
+  "git",
+  "deno",
+  "go",
+  "cargo",
+  "rustc",
+]);
+
+/**
  * Check if a command exists in the system's PATH
  * @param cmd Command to check
  * @returns boolean indicating whether the command exists
  */
 export async function commandExists(cmd: string): Promise<boolean> {
+  // Validate against allowlist to prevent command injection
+  const baseName = path.basename(cmd).toLowerCase();
+  if (!ALLOWED_COMMANDS.has(baseName)) {
+    return false;
+  }
+
   try {
     const shellEnv = await getUserShellEnv();
     // Get PATH from shell environment

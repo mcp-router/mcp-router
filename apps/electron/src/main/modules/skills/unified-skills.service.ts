@@ -1,4 +1,4 @@
-import fs, { promises as fsPromises } from "fs";
+import { promises as fsPromises } from "fs";
 import path from "path";
 import { SingletonService } from "@/main/modules/singleton-service";
 import { SkillRepository } from "./skills.repository";
@@ -418,23 +418,20 @@ export class UnifiedSkillsService extends SingletonService<
   // ==========================================================================
 
   /**
-   * Enable a skill for a specific client by creating symlink
+   * Enable a skill for a specific client by creating symlink.
+   * Fetches skill and client data, then delegates to enableForClientWithData.
    */
   public async enableForClient(
     skillId: string,
     clientId: string,
   ): Promise<void> {
     try {
-      const skillRepo = SkillRepository.getInstance();
-      const stateRepo = ClientSkillStateRepository.getInstance();
-      const clientAppService = getClientAppService();
-
-      const skill = skillRepo.getById(skillId);
+      const skill = SkillRepository.getInstance().getById(skillId);
       if (!skill) {
         throw new Error(`Skill not found: ${skillId}`);
       }
 
-      const client = await clientAppService.get(clientId);
+      const client = await getClientAppService().get(clientId);
       if (!client) {
         throw new Error(`Client not found: ${clientId}`);
       }
@@ -445,75 +442,7 @@ export class UnifiedSkillsService extends SingletonService<
         );
       }
 
-      if (!client.skillsPath) {
-        throw new Error(`Client ${client.name} has no skills path configured`);
-      }
-
-      // Resolve the skills path (handle globs)
-      const resolvedPaths = this.resolveClientSkillsPath(client.skillsPath);
-      if (resolvedPaths.length === 0) {
-        throw new Error(
-          `Could not resolve skills path for client ${client.name}`,
-        );
-      }
-
-      // Create symlink in each resolved path, tracking success
-      const skillPath = this.fileManager.getSkillPath(skill.name);
-      let allSucceeded = true;
-      const failedPaths: string[] = [];
-      for (const targetDir of resolvedPaths) {
-        const targetPath = path.join(targetDir, skill.name);
-        // Skip symlink creation if a real directory already exists (externally managed)
-        try {
-          const stats = await fsPromises.lstat(targetPath);
-          if (stats.isDirectory() && !stats.isSymbolicLink()) {
-            continue;
-          }
-        } catch {
-          // Path doesn't exist, proceed with symlink creation
-        }
-        const success = this.fileManager.createSymlink(skillPath, targetPath);
-        if (!success) {
-          allSucceeded = false;
-          failedPaths.push(targetPath);
-          console.warn(`Failed to create symlink at ${targetPath}`);
-        }
-      }
-
-      // Update or create state record with actual symlink status
-      const existingState = stateRepo.findBySkillAndClient(skillId, clientId);
-      const now = Date.now();
-      const symlinkStatus: SymlinkStatus = allSucceeded ? "active" : "broken";
-
-      if (existingState) {
-        stateRepo.update(existingState.id, {
-          state: "enabled" as ClientSkillStateType,
-          symlinkStatus,
-          lastSyncAt: now,
-          updatedAt: now,
-        });
-      } else {
-        stateRepo.add({
-          skillId,
-          clientId,
-          state: "enabled" as ClientSkillStateType,
-          isManaged: true,
-          source: "local" as SkillSource,
-          symlinkStatus,
-          lastSyncAt: now,
-          createdAt: now,
-          updatedAt: now,
-        } as Omit<ClientSkillState, "id">);
-      }
-
-      if (!allSucceeded) {
-        const [firstFailedPath] = failedPaths;
-        const extraCount = Math.max(failedPaths.length - 1, 0);
-        const extraText = extraCount > 0 ? ` (+${extraCount} more)` : "";
-        throw new Error(
-          `Failed to create one or more skill symlinks for ${client.name}: ${firstFailedPath}${extraText}`,
-        );
-      }
+      await this.enableForClientWithData(skill, client);
     } catch (error) {
       this.handleError("enableForClient", error);
     }
@@ -812,7 +741,7 @@ export class UnifiedSkillsService extends SingletonService<
         }
 
         try {
-          this.enableForClientWithData(skill, client);
+          await this.enableForClientWithData(skill, client);
           result.synced.push({ clientId: client.id, skillId });
         } catch (error: unknown) {
           const message =
@@ -1142,7 +1071,10 @@ export class UnifiedSkillsService extends SingletonService<
    * Enable a skill for a specific client using pre-fetched data.
    * Avoids re-fetching skill and client data (N+1 pattern).
    */
-  private enableForClientWithData(skill: Skill, client: ClientApp): void {
+  private async enableForClientWithData(
+    skill: Skill,
+    client: ClientApp,
+  ): Promise<void> {
     const stateRepo = ClientSkillStateRepository.getInstance();
 
     if (client.installed === false) {
@@ -1167,7 +1099,7 @@ export class UnifiedSkillsService extends SingletonService<
       const targetPath = path.join(targetDir, skill.name);
       // Skip symlink creation if a real directory already exists (externally managed)
       try {
-        const stats = fs.lstatSync(targetPath);
+        const stats = await fsPromises.lstat(targetPath);
         if (stats.isDirectory() && !stats.isSymbolicLink()) {
           continue;
         }

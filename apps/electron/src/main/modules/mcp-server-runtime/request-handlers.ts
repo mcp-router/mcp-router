@@ -24,6 +24,7 @@ import {
 import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
 import { getElicitationManager } from "./elicitation-manager";
 import { validateElicitationUrl } from "@/main/utils/url-validation-utils";
+import { SystemServerService } from "@/main/modules/system-server/system-server.service";
 
 /**
  * Handles all request processing for the aggregator server
@@ -116,7 +117,7 @@ export class RequestHandlers extends RequestHandlerBase {
    * tool_execute, tool_capabilities) instead of all tools directly.
    * This provides better token efficiency and works within client tool limits.
    */
-  private isToolCatalogEnabled(_projectId: string | null): boolean {
+  private isToolCatalogEnabled(): boolean {
     return getSharedConfigManager().getSettings().toolCatalogEnabled === true;
   }
 
@@ -141,11 +142,18 @@ export class RequestHandlers extends RequestHandlerBase {
     const projectId = this.normalizeProjectId(projectIdInput);
 
     return this.executeWithHooks("tools/list", {}, clientId, async () => {
-      // If tool catalog is enabled, return META_TOOLS (tool_discovery, tool_execute)
-      if (this.isToolCatalogEnabled(projectId)) {
-        return { tools: META_TOOLS };
+      // Always include system tools (router_*) so agents can manage the router
+      const systemTools = this.getSystemToolDefinitions().map((t) => ({
+        ...t,
+        sourceServer: "mcp-router-system",
+      }));
+
+      // If tool catalog is enabled, return META_TOOLS + system tools
+      if (this.isToolCatalogEnabled()) {
+        return { tools: [...META_TOOLS, ...systemTools] };
       }
       // Otherwise, return all tools from all servers (legacy behavior)
+      // (system tools are already appended inside getAllToolsInternal)
       const allTools = await this.getAllToolsInternal(token, projectId);
       return { tools: allTools };
     });
@@ -171,8 +179,13 @@ export class RequestHandlers extends RequestHandlerBase {
       return await this.toolCatalogHandler.handleToolCapabilities(request);
     }
 
+    // Route router_* system tools directly to the SystemServer
+    if (toolName.startsWith("router_")) {
+      return this.handleSystemToolCall(toolName, request.params.arguments || {});
+    }
+
     // If tool catalog is enabled, only META_TOOLS are available
-    if (this.isToolCatalogEnabled(projectId)) {
+    if (this.isToolCatalogEnabled()) {
       throw new McpError(ErrorCode.InvalidRequest, `Unknown tool: ${toolName}`);
     }
 
@@ -685,7 +698,56 @@ export class RequestHandlers extends RequestHandlerBase {
       }
     }
 
+    // Append SystemServer tools (router_*) so they appear alongside aggregated tools
+    const systemTools = this.getSystemToolDefinitions();
+    for (const tool of systemTools) {
+      toolMap.set(tool.name, "__system__");
+      allTools.push({
+        ...tool,
+        sourceServer: "mcp-router-system",
+      });
+    }
+
     return allTools;
+  }
+
+  /**
+   * Get tool definitions from the SystemServer, if initialised.
+   * Returns an empty array if the SystemServerService is not yet available.
+   */
+  private getSystemToolDefinitions(): Array<{
+    name: string;
+    description: string;
+    inputSchema: any;
+  }> {
+    try {
+      return SystemServerService.getInstance()
+        .getSystemServer()
+        .getToolDefinitions();
+    } catch {
+      // SystemServerService not initialised yet — return nothing
+      return [];
+    }
+  }
+
+  /**
+   * Route a router_* tool call to the SystemServer.
+   */
+  private async handleSystemToolCall(
+    toolName: string,
+    args: Record<string, unknown>,
+  ): Promise<any> {
+    try {
+      const systemServer = SystemServerService.getInstance().getSystemServer();
+      return await systemServer.callTool(toolName, args);
+    } catch (error: any) {
+      // Re-throw McpError as-is; wrap anything else
+      if (error instanceof McpError) throw error;
+      throw new McpError(
+        ErrorCode.InternalError,
+        `System tool error: ${error.message ?? error}`,
+      );
+    }
   }
 
   /**
