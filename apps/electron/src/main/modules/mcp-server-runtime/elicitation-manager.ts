@@ -5,7 +5,7 @@ import type { ElicitationState, ElicitationMode } from "@mcp_router/shared";
 
 const ELICITATION_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
-export class ElicitationManager {
+class ElicitationManager {
   private states: Map<string, ElicitationState> = new Map();
 
   /**

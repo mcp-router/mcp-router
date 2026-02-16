@@ -37,7 +37,7 @@ type WorkspaceBundlePayload = {
   workspaces: WorkspaceBundleEntry[];
 };
 
-export class CloudSyncService {
+class CloudSyncService {
   private static instance: CloudSyncService | null = null;
   private serverManagerProvider?: () => MCPServerManager;
   private syncInProgress = false;

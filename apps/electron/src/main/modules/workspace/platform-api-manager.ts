@@ -31,7 +31,7 @@ import { UnifiedSkillsService } from "../skills/unified-skills.service";
  * Platform API management class.
  * Switches Platform API implementation based on the active workspace.
  */
-export class PlatformAPIManager {
+class PlatformAPIManager {
   private static instance: PlatformAPIManager | null = null;
   private currentWorkspace: Workspace | null = null;
   private currentDatabase: SqliteManager | null = null;

@@ -95,7 +95,7 @@ const DISCOVERY_CACHE_TTL = 30_000;
  * Merges McpAppsManagerService + AgentPath functionality into a single service.
  * Manages both MCP configuration and skills symlinks for AI clients.
  */
-export class ClientAppService extends SingletonService<
+class ClientAppService extends SingletonService<
   ClientApp,
   string,
   ClientAppService

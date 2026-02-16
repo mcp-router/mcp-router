@@ -16,7 +16,7 @@ interface BridgeEvent {
 
 type EventCallback = (event: BridgeEvent) => void;
 
-export class EventBridge {
+class EventBridge {
   private subscribers: Set<EventCallback> = new Set();
   private heartbeatInterval: NodeJS.Timeout | null = null;
 

@@ -606,7 +606,12 @@ export class RequestHandlers extends RequestHandlerBase {
     const shouldPrefix = this.shouldPrefixToolNames();
 
     // Build list of eligible servers
-    const eligible: { serverId: string; client: any; serverName: string; server: any }[] = [];
+    const eligible: {
+      serverId: string;
+      client: any;
+      serverName: string;
+      server: any;
+    }[] = [];
     for (const [serverId, client] of this.clients.entries()) {
       const server = this.servers.get(serverId);
       const serverName = server?.name || serverId;
@@ -630,7 +635,11 @@ export class RequestHandlers extends RequestHandlerBase {
         const tools = await Promise.race([
           client.getClient().listTools(),
           new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error(`Timed out after ${PER_SERVER_TIMEOUT_MS}ms`)), PER_SERVER_TIMEOUT_MS),
+            setTimeout(
+              () =>
+                reject(new Error(`Timed out after ${PER_SERVER_TIMEOUT_MS}ms`)),
+              PER_SERVER_TIMEOUT_MS,
+            ),
           ),
         ]);
 
@@ -638,7 +647,10 @@ export class RequestHandlers extends RequestHandlerBase {
           return [];
         }
 
-        const permissions = (server?.toolPermissions ?? {}) as Record<string, boolean>;
+        const permissions = (server?.toolPermissions ?? {}) as Record<
+          string,
+          boolean
+        >;
         const serverTools: any[] = [];
 
         for (const tool of tools.tools) {

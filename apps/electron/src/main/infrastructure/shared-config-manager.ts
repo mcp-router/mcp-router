@@ -15,7 +15,7 @@ import { SqliteManager } from "./database/sqlite-manager";
  * Shared configuration file manager.
  * Manages settings shared across workspaces via JSON file.
  */
-export class SharedConfigManager implements ISharedConfigManager {
+class SharedConfigManager implements ISharedConfigManager {
   private static instance: SharedConfigManager | null = null;
   private configPath: string;
   private config: SharedConfig;

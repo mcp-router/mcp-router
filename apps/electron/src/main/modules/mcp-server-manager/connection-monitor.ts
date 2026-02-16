@@ -7,7 +7,7 @@ export type ConnectionState =
   | "reconnecting"
   | "failed";
 
-export interface ConnectionMonitorOptions {
+interface ConnectionMonitorOptions {
   serverId: string;
   onStateChange: (state: ConnectionState) => void;
   onReconnect: () => Promise<boolean>;

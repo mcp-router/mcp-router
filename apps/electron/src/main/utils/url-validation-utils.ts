@@ -18,7 +18,7 @@ const BLOCKED_HOST_PATTERNS = [
   /^192\.168\.\d{1,3}\.\d{1,3}$/, // 192.168.x.x
 ];
 
-export interface URLValidationResult {
+interface URLValidationResult {
   isValid: boolean;
   error?: string;
   normalizedUrl?: string;

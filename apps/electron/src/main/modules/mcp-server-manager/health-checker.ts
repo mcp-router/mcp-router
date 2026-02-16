@@ -1,4 +1,4 @@
-export interface HealthCheckerOptions {
+interface HealthCheckerOptions {
   pingFn: () => Promise<boolean>;
   intervalMs: number;
   onHealthy: () => void;

@@ -26,7 +26,7 @@ interface GitHubStatsCacheEntry {
   timestamp: number;
 }
 
-export class MarketplaceService {
+class MarketplaceService {
   private cache: Map<string, CacheEntry> = new Map();
   private githubStatsCache: Map<string, GitHubStatsCacheEntry> = new Map();
 

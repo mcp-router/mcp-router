@@ -4,7 +4,7 @@ import { SqliteManager } from "../../infrastructure/database/sqlite-manager";
  * Database context manager class
  * Provides the current workspace's database instance
  */
-export class DatabaseContext {
+class DatabaseContext {
   private static instance: DatabaseContext | null = null;
   private currentDatabase: SqliteManager | null = null;
   private databaseProvider: (() => Promise<SqliteManager>) | null = null;
