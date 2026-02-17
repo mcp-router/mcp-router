@@ -1,5 +1,6 @@
 import { TokenValidator } from "./token-validator";
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
+import { getHealthMetricsTracker } from "./health-metrics-tracker";
 import { McpManagerRequestLogEntry as RequestLogEntry } from "@mcp_router/shared";
 
 // Minimal shape for dynamically-imported workflow types (avoids static import)
@@ -208,6 +209,9 @@ export abstract class RequestHandlerBase {
       clientId,
     };
 
+    const serverId =
+      (_additionalMetadata?.serverId as string) || undefined;
+
     try {
       // Execute the actual handler
       const result = await handler();
@@ -217,6 +221,15 @@ export abstract class RequestHandlerBase {
       logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
       getLogService().recordMcpRequestLog(logEntry, serverName);
 
+      // Record latency for health metrics
+      if (serverId) {
+        getHealthMetricsTracker().recordRequestLatency(
+          serverId,
+          logEntry.duration,
+          true,
+        );
+      }
+
       return result;
     } catch (error: unknown) {
       // Log error
@@ -225,6 +238,15 @@ export abstract class RequestHandlerBase {
         error instanceof Error ? error.message : String(error);
       logEntry.duration = Date.now() - new Date(logEntry.timestamp).getTime();
       getLogService().recordMcpRequestLog(logEntry, serverName);
+
+      // Record latency for health metrics (failed request)
+      if (serverId) {
+        getHealthMetricsTracker().recordRequestLatency(
+          serverId,
+          logEntry.duration,
+          false,
+        );
+      }
 
       // Re-throw the original error
       throw error;

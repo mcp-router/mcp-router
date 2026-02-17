@@ -51,6 +51,7 @@ function substituteArgsParameters(
   });
 }
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
+import { getHealthMetricsTracker } from "@/main/modules/mcp-server-runtime/health-metrics-tracker";
 import { DevWatcherService } from "./dev-watcher.service";
 import { ReconnectingMCPClient } from "./reconnecting-mcp-client";
 import { ConnectionState } from "./connection-monitor";
@@ -697,6 +698,13 @@ export class MCPServerManager {
   ): void {
     const server = this.servers.get(serverId);
     if (!server) return;
+
+    // Record status change for health metrics tracking
+    getHealthMetricsTracker().recordStatusChange(
+      serverId,
+      server.name,
+      state,
+    );
 
     // Map ConnectionState to MCPServer status
     switch (state) {

@@ -190,10 +190,52 @@ export class MCPHttpServer {
   }
 
   /**
-   * Configure direct MCP route without versioning
+   * Resolve the Streamable HTTP transport for a request.
+   *
+   * If the request carries an `mcp-session-id` header the existing session
+   * transport is returned. Otherwise a brand-new stateful session is created
+   * (the SDK will generate and return the session ID in the response headers).
+   */
+  private async resolveStreamableTransport(
+    req: express.Request,
+    res: express.Response,
+  ): Promise<
+    | { transport: import("@modelcontextprotocol/sdk/server/streamableHttp").StreamableHTTPServerTransport }
+    | null
+  > {
+    const sessionId = req.headers["mcp-session-id"] as string | undefined;
+
+    if (sessionId) {
+      const existing = this.aggregatorServer.getSessionTransport(sessionId);
+      if (existing) return { transport: existing };
+
+      // Session not found or expired -- 404 per MCP spec.
+      if (!res.headersSent) {
+        res.status(404).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32000,
+            message: "Session not found or expired",
+          },
+          id: null,
+        });
+      }
+      return null;
+    }
+
+    // No session header -- create a new session (initialization).
+    const transport = await this.aggregatorServer.createSessionTransport();
+    return { transport };
+  }
+
+  /**
+   * Configure direct MCP route without versioning.
+   *
+   * Handles POST (JSON-RPC requests), GET (SSE stream), and DELETE (session
+   * termination) on `/mcp` as specified by the MCP Streamable HTTP transport.
    */
   private configureMcpRoute(): void {
-    // POST /mcp - Handle MCP requests (direct route without versioning)
+    // POST /mcp - Handle MCP JSON-RPC requests
     this.app.post("/mcp", async (req, res) => {
       // Copy the original request body
       const modifiedBody = { ...req.body };
@@ -226,9 +268,10 @@ export class MCPHttpServer {
         // Append metadata for downstream handlers
         const token = req.headers["authorization"];
         this.attachRequestMetadata(modifiedBody, token, projectFilter);
-        // Create a fresh transport per request (SDK requires single-use in stateless mode)
-        const transport = await this.aggregatorServer.createRequestTransport();
-        await transport.handleRequest(req, res, modifiedBody);
+
+        const result = await this.resolveStreamableTransport(req, res);
+        if (!result) return; // error response already sent
+        await result.transport.handleRequest(req, res, modifiedBody);
       } catch (error) {
         console.error("Error handling MCP request:", error);
         if (!res.headersSent) {
@@ -240,6 +283,34 @@ export class MCPHttpServer {
             },
             id: null,
           });
+        }
+      }
+    });
+
+    // GET /mcp - SSE stream for server-initiated messages (Streamable HTTP)
+    this.app.get("/mcp", async (req, res) => {
+      try {
+        const result = await this.resolveStreamableTransport(req, res);
+        if (!result) return;
+        await result.transport.handleRequest(req, res);
+      } catch (error) {
+        console.error("Error handling MCP GET request:", error);
+        if (!res.headersSent) {
+          res.status(500).send("Internal server error");
+        }
+      }
+    });
+
+    // DELETE /mcp - Explicit session termination (MCP spec)
+    this.app.delete("/mcp", async (req, res) => {
+      try {
+        const result = await this.resolveStreamableTransport(req, res);
+        if (!result) return;
+        await result.transport.handleRequest(req, res);
+      } catch (error) {
+        console.error("Error handling MCP DELETE request:", error);
+        if (!res.headersSent) {
+          res.status(500).send("Internal server error");
         }
       }
     });

@@ -60,6 +60,7 @@
     "express": "^5.2.1",
     "i18next": "^24.2.3",
     "immer": "^10.2.0",
+    "isolated-vm": "^6.0.2",
     "lucide-react": "^0.487.0",
     "minisearch": "^7.2.0",
     "node-machine-id": "^1.1.12",

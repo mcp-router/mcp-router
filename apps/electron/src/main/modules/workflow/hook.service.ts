@@ -1,11 +1,18 @@
 import { HookModule } from "@mcp_router/shared";
 import { getHookRepository, HookRepository } from "./hook.repository";
 import { getServerService } from "@/main/modules/mcp-server-manager/server-service";
-import vm from "vm";
+import ivm from "isolated-vm";
 
 /**
  * Hook Module domain service.
  * Provides business logic and backend services for Hook Modules.
+ *
+ * Hook scripts are executed inside truly isolated V8 contexts via the
+ * `isolated-vm` package. Each execution gets its own Isolate with a
+ * separate heap (128 MB limit) and a 5-second execution timeout.
+ * This replaces the previous Node.js `vm` module approach, which could
+ * not guarantee isolation (Node.js docs explicitly state `vm` is NOT a
+ * security boundary).
  */
 export class HookService {
   private static instance: HookService | null = null;
@@ -162,62 +169,136 @@ export class HookService {
   }
 
   /**
-   * Execute a hook script
+   * Execute a hook script inside an isolated V8 context.
+   *
+   * Each invocation creates a fresh `ivm.Isolate` (128 MB heap limit) and
+   * context so that user-supplied code cannot access Node.js globals,
+   * require(), process, or any host objects.  Utility functions (console,
+   * sleep, getServerInfo) are transferred into the isolate via callbacks.
    */
   public async executeHookScript(script: string, context: any): Promise<any> {
+    const isolate = new ivm.Isolate({ memoryLimit: 128 });
     try {
-      // Build a hardened sandbox that prevents constructor-chain escape.
-      // Node's `vm` module is NOT a security boundary — any exposed object
-      // with a live prototype can be used to reach `Function` via
-      //   obj.constructor.constructor('return process')()
-      // We mitigate this by:
-      //  1. Exposing only plain objects with static utility methods (no real
-      //     constructors).
-      //  2. Deep-freezing every sandbox value so prototypes can't be mutated.
-      //  3. Wrapping the user-supplied `context` in a recursive proxy that
-      //     blocks access to `constructor` and `__proto__` at every level.
+      const ivmContext = await isolate.createContext();
+      const jail = ivmContext.global;
 
-      const sandbox = createHardenedSandbox(context);
+      // Make `global` reference itself (standard pattern for isolated-vm)
+      await jail.set("global", jail.derefInto());
 
-      // Wrap script to capture return value
+      // --- Transfer the user-supplied context as a deep copy ---
+      await jail.set("context", new ivm.ExternalCopy(context ?? {}).copyInto());
+
+      // --- Console (callbacks into the host) ---
+      await jail.set("__consoleLog", new ivm.Callback(
+        (...args: unknown[]) => console.log("[Hook]", ...args),
+      ));
+      await jail.set("__consoleError", new ivm.Callback(
+        (...args: unknown[]) => console.error("[Hook]", ...args),
+      ));
+      await jail.set("__consoleWarn", new ivm.Callback(
+        (...args: unknown[]) => console.warn("[Hook]", ...args),
+      ));
+
+      // --- sleep (returns a promise that resolves on the host side) ---
+      await jail.set("__sleep", new ivm.Callback(
+        (ms: number) => {
+          const capped = Math.min(Math.max(0, Number(ms) || 0), 5000);
+          return new Promise<void>((resolve) => setTimeout(resolve, capped));
+        },
+        { async: true },
+      ));
+
+      // --- getServerInfo (synchronous callback into host) ---
+      await jail.set("__getServerInfo", new ivm.Callback(
+        (serverId: string): string | null => {
+          try {
+            const server = getServerService().getServerById(String(serverId));
+            if (!server) return null;
+            return JSON.stringify({
+              id: server.id,
+              name: server.name,
+              type: server.serverType,
+              status: server.status,
+              enabled: !server.disabled,
+            });
+          } catch {
+            return null;
+          }
+        },
+      ));
+
+      // --- Bootstrap: wire up friendly APIs from the raw callbacks ---
+      const bootstrap = await isolate.compileScript(`
+        (function() {
+          const console = {
+            log:   (...args) => __consoleLog(...args),
+            error: (...args) => __consoleError(...args),
+            warn:  (...args) => __consoleWarn(...args),
+          };
+          global.console = console;
+
+          global.sleep = function sleep(ms) {
+            return __sleep(ms);
+          };
+
+          global.getServerInfo = function getServerInfo(serverId) {
+            const raw = __getServerInfo(serverId);
+            return raw ? JSON.parse(raw) : null;
+          };
+
+          // Clean up raw callbacks from global scope
+          delete global.__consoleLog;
+          delete global.__consoleError;
+          delete global.__consoleWarn;
+          delete global.__sleep;
+          delete global.__getServerInfo;
+        })();
+      `);
+      await bootstrap.run(ivmContext);
+
+      // --- Compile and run the user script ---
       const wrappedScript = `
         (async function() {
           ${script}
         })()
       `;
 
-      // Execute script in VM context
-      const vmScript = new vm.Script(wrappedScript);
-      const vmContext = vm.createContext(sandbox);
-
-      // Set timeout (5 seconds)
-      const result = await vmScript.runInContext(vmContext, {
-        timeout: 5000,
-        displayErrors: true,
-      });
+      const compiled = await isolate.compileScript(wrappedScript);
+      const result = await compiled.run(ivmContext, { timeout: 5000 });
 
       return result;
     } catch (error: any) {
       console.error("Hook execution error:", error);
       throw new Error(`Hook execution failed: ${error.message}`);
+    } finally {
+      // Always dispose the isolate to free the V8 heap
+      if (!isolate.isDisposed) {
+        isolate.dispose();
+      }
     }
   }
 
   /**
-   * Validate a hook script
+   * Validate a hook script (syntax check only, no execution).
+   *
+   * Creates a disposable isolate just to attempt compilation.
    */
   public async validateHookScript(
     script: string,
   ): Promise<{ valid: boolean; error?: string }> {
+    const isolate = new ivm.Isolate({ memoryLimit: 8 });
     try {
-      // Syntax check only (no execution)
-      new vm.Script(script);
+      await isolate.compileScript(script);
       return { valid: true };
     } catch (error: any) {
       return {
         valid: false,
         error: error.message || "Invalid JavaScript syntax",
       };
+    } finally {
+      if (!isolate.isDisposed) {
+        isolate.dispose();
+      }
     }
   }
 
@@ -243,189 +324,6 @@ export class HookService {
       throw new Error("Hook module script is too large (max 1MB)");
     }
   }
-}
-
-// ---------------------------------------------------------------------------
-// Sandbox hardening utilities
-// ---------------------------------------------------------------------------
-
-/** Property names that could be used to traverse the prototype/constructor chain */
-const BLOCKED_PROPS = new Set(["constructor", "__proto__", "prototype"]);
-
-/**
- * Recursively wraps an object in a Proxy that blocks access to
- * `constructor`, `__proto__`, and `prototype` at every depth.
- * Primitive values are returned as-is.  Functions are wrapped so their
- * return values are also proxied.
- */
-function sandboxProxy(value: unknown, seen = new WeakSet<object>()): unknown {
-  if (value === null || value === undefined) return value;
-
-  const t = typeof value;
-  // Primitives pass through unchanged
-  if (t !== "object" && t !== "function") return value;
-
-  const obj = value as object;
-  if (seen.has(obj)) return obj; // avoid infinite loops on cycles
-  seen.add(obj);
-
-  return new Proxy(obj, {
-    get(target, prop, receiver) {
-      if (typeof prop === "string" && BLOCKED_PROPS.has(prop)) {
-        return undefined;
-      }
-      const val = Reflect.get(target, prop, receiver);
-      // Recursively proxy nested objects/functions
-      if (val !== null && val !== undefined && (typeof val === "object" || typeof val === "function")) {
-        return sandboxProxy(val, seen);
-      }
-      return val;
-    },
-    // Block setting dangerous props
-    set(target, prop, val, receiver) {
-      if (typeof prop === "string" && BLOCKED_PROPS.has(prop)) {
-        return true; // silently fail
-      }
-      return Reflect.set(target, prop, val, receiver);
-    },
-  });
-}
-
-/**
- * Deep-freeze an object and its entire prototype chain so that
- * no property can be added, removed, or reconfigured.
- */
-function deepFreeze<T>(obj: T): T {
-  if (obj === null || obj === undefined) return obj;
-  if (typeof obj !== "object" && typeof obj !== "function") return obj;
-
-  Object.freeze(obj);
-  const proto = Object.getPrototypeOf(obj);
-  if (proto && proto !== Object.prototype && proto !== Function.prototype) {
-    deepFreeze(proto);
-  }
-  for (const value of Object.values(obj as Record<string, unknown>)) {
-    if (value && (typeof value === "object" || typeof value === "function")) {
-      deepFreeze(value);
-    }
-  }
-  return obj;
-}
-
-/**
- * Build a hardened sandbox object for VM execution.
- *
- * Instead of exposing real built-in constructors (JSON, Object, Array …)
- * which let scripts traverse the prototype chain to reach `Function`, we
- * expose **plain frozen objects** containing only the safe static methods.
- *
- * The user-supplied `context` is wrapped in a recursive proxy that blocks
- * access to `constructor`, `__proto__`, and `prototype` at any depth.
- */
-function createHardenedSandbox(context: unknown): Record<string, unknown> {
-  // --- Safe built-in replacements (plain objects, no live constructors) ---
-  const safeJSON = Object.create(null) as Record<string, unknown>;
-  safeJSON.parse = JSON.parse.bind(JSON);
-  safeJSON.stringify = JSON.stringify.bind(JSON);
-
-  const safeObject = Object.create(null) as Record<string, unknown>;
-  safeObject.keys = Object.keys;
-  safeObject.values = Object.values;
-  safeObject.entries = Object.entries;
-  safeObject.assign = Object.assign;
-  safeObject.freeze = Object.freeze;
-  safeObject.create = Object.create;
-  safeObject.defineProperty = Object.defineProperty;
-
-  const safeArray = Object.create(null) as Record<string, unknown>;
-  safeArray.isArray = Array.isArray;
-  safeArray.from = Array.from;
-  safeArray.of = Array.of;
-
-  const safeNumber = Object.create(null) as Record<string, unknown>;
-  safeNumber.isFinite = Number.isFinite;
-  safeNumber.isInteger = Number.isInteger;
-  safeNumber.isNaN = Number.isNaN;
-  safeNumber.parseFloat = Number.parseFloat;
-  safeNumber.parseInt = Number.parseInt;
-  safeNumber.MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER;
-  safeNumber.MIN_SAFE_INTEGER = Number.MIN_SAFE_INTEGER;
-
-  const safeDate = Object.create(null) as Record<string, unknown>;
-  safeDate.now = Date.now;
-
-  // Math is already a plain namespace object, but clone it to sever the
-  // prototype chain. Use Object.create(null) to avoid Object.prototype.
-  const safeMath = Object.create(null) as Record<string, unknown>;
-  for (const key of Object.getOwnPropertyNames(Math)) {
-    if (key === "constructor") continue;
-    const desc = Object.getOwnPropertyDescriptor(Math, key);
-    if (desc) Object.defineProperty(safeMath, key, desc);
-  }
-
-  // Safe console that cannot be used to escape
-  const safeConsole = Object.create(null) as Record<string, unknown>;
-  safeConsole.log = (...args: unknown[]) => console.log("[Hook]", ...args);
-  safeConsole.error = (...args: unknown[]) => console.error("[Hook]", ...args);
-  safeConsole.warn = (...args: unknown[]) => console.warn("[Hook]", ...args);
-
-  // --- Utility helpers ---
-  const sleep = (ms: number): Promise<void> => {
-    const capped = Math.min(Math.max(0, ms), 5000);
-    return new Promise((resolve) => setTimeout(resolve, capped));
-  };
-
-  const getServerInfo = (
-    serverId: string,
-  ): {
-    id: string;
-    name: string;
-    type: string;
-    status: string;
-    enabled: boolean;
-  } | null => {
-    try {
-      const server = getServerService().getServerById(serverId);
-      if (!server) return null;
-      return Object.freeze({
-        id: server.id,
-        name: server.name,
-        type: server.serverType,
-        status: server.status,
-        enabled: !server.disabled,
-      });
-    } catch {
-      return null;
-    }
-  };
-
-  // --- Freeze all safe built-ins ---
-  const builtins = [safeJSON, safeObject, safeArray, safeNumber, safeDate, safeMath, safeConsole];
-  for (const obj of builtins) {
-    deepFreeze(obj);
-  }
-
-  // --- Assemble sandbox ---
-  // The user `context` is proxy-wrapped so scripts cannot traverse its
-  // prototype chain to reach host constructors.
-  const sandbox: Record<string, unknown> = {
-    context: sandboxProxy(context),
-    console: safeConsole,
-    sleep,
-    getServerInfo,
-    // Provide a frozen empty String / Boolean so scripts can reference them
-    // (e.g. typeof checks) without gaining access to the real constructors.
-    JSON: safeJSON,
-    Object: safeObject,
-    Array: safeArray,
-    String: Object.freeze(Object.create(null)),
-    Number: safeNumber,
-    Boolean: Object.freeze(Object.create(null)),
-    Date: safeDate,
-    Math: safeMath,
-  };
-
-  return sandbox;
 }
 
 /**

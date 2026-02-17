@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp";
 import {
@@ -14,73 +15,116 @@ import { MCPServerManager } from "../mcp-server-manager/mcp-server-manager";
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import type { ToolCatalogService } from "@/main/modules/tool-catalog/tool-catalog.service";
 
+/** Tracked state for a single Streamable HTTP session. */
+interface SessionEntry {
+  transport: StreamableHTTPServerTransport;
+  server: Server;
+  createdAt: number;
+}
+
+/** Default session time-to-live: 30 minutes (in milliseconds). */
+const DEFAULT_SESSION_TTL_MS = 30 * 60 * 1000;
+
+/** How often the cleanup timer runs: every 5 minutes. */
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+
 /**
  * MCP Aggregator Server that combines multiple MCP servers into one.
  *
- * Uses stateless mode: a fresh Server + StreamableHTTPServerTransport is
- * created for each incoming request, as required by the MCP SDK which
- * enforces single-use transports in stateless mode.
+ * Supports stateful Streamable HTTP sessions via MCP-Session-Id headers.
+ * Each session gets its own Server + StreamableHTTPServerTransport pair.
+ * Sessions are tracked in an in-memory map and expire after a configurable TTL.
+ * Requests without an existing session ID trigger a new session (initialization).
  */
 export class AggregatorServer {
   private requestHandlers: RequestHandlers;
 
+  /** Active sessions keyed by MCP session ID. */
+  private sessions: Map<string, SessionEntry> = new Map();
+
+  /** Configurable session TTL in milliseconds. */
+  private sessionTtlMs: number;
+
+  /** Periodic timer for cleaning up expired sessions. */
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
+
   constructor(
     serverManager: MCPServerManager,
     toolCatalogService?: ToolCatalogService,
+    sessionTtlMs: number = DEFAULT_SESSION_TTL_MS,
   ) {
     this.requestHandlers = new RequestHandlers(
       serverManager,
       toolCatalogService,
     );
+    this.sessionTtlMs = sessionTtlMs;
+    this.startCleanupTimer();
   }
 
   /**
-   * Create a fresh Server + StreamableHTTPServerTransport for a single request.
-   * The SDK enforces that stateless transports cannot be reused, so we create
-   * a new pair per request.
+   * Create a new stateful Server + StreamableHTTPServerTransport.
+   *
+   * The transport generates a UUID v4 session ID on initialization. Once the
+   * SDK fires `onsessioninitialized`, the session is registered in the internal
+   * map so subsequent requests carrying the same `Mcp-Session-Id` header can
+   * be routed to this transport.
    */
-  public async createRequestTransport(): Promise<StreamableHTTPServerTransport> {
-    const server = new Server(
-      {
-        name: "mcp-aggregator",
-        version: "1.0.0",
-      },
-      {
-        capabilities: {
-          resources: {},
-          tools: {},
-          prompts: {},
-          experimental: {
-            elicitation: {
-              form: {},
-              url: {},
-            },
-          },
-        },
-      },
-    );
-
-    this.setupRequestHandlers(server);
-
-    server.onerror = (error) => {
-      console.error("[MCP Aggregator Error]", error);
-      getLogService().recordMcpRequestLog({
-        timestamp: new Date().toISOString(),
-        requestType: "ServerError",
-        params: {},
-        result: "error",
-        errorMessage: error.message || "Unknown server error",
-        duration: 0,
-        clientId: "mcp-router-system",
-      });
-    };
+  public async createSessionTransport(): Promise<StreamableHTTPServerTransport> {
+    const server = this.createConfiguredServer();
 
     const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined,
+      sessionIdGenerator: () => crypto.randomUUID(),
+      onsessioninitialized: (sessionId: string) => {
+        this.sessions.set(sessionId, {
+          transport,
+          server,
+          createdAt: Date.now(),
+        });
+        console.log(
+          `[MCP Session] Initialized: ${sessionId} (active: ${this.sessions.size})`,
+        );
+      },
+      onsessionclosed: (sessionId: string) => {
+        this.sessions.delete(sessionId);
+        console.log(
+          `[MCP Session] Closed: ${sessionId} (active: ${this.sessions.size})`,
+        );
+      },
     });
+
+    transport.onclose = () => {
+      const sessionId = transport.sessionId;
+      if (sessionId) {
+        this.sessions.delete(sessionId);
+      }
+    };
 
     await server.connect(transport);
     return transport;
+  }
+
+  /**
+   * Look up an existing session transport by its MCP session ID.
+   * Returns `undefined` if the session does not exist or has expired.
+   */
+  public getSessionTransport(
+    sessionId: string,
+  ): StreamableHTTPServerTransport | undefined {
+    const entry = this.sessions.get(sessionId);
+    if (!entry) return undefined;
+
+    // Check TTL -- if expired, tear down and remove.
+    if (Date.now() - entry.createdAt > this.sessionTtlMs) {
+      this.removeSession(sessionId, entry);
+      return undefined;
+    }
+
+    return entry.transport;
+  }
+
+  /** Number of active sessions (useful for diagnostics). */
+  public get activeSessionCount(): number {
+    return this.sessions.size;
   }
 
   /**
@@ -89,6 +133,13 @@ export class AggregatorServer {
    * only allows one transport per Server.
    */
   public createSseServer(): Server {
+    return this.createConfiguredServer();
+  }
+
+  /**
+   * Create a Server instance with standard capabilities, handlers, and error logging.
+   */
+  private createConfiguredServer(): Server {
     const server = new Server(
       {
         name: "mcp-aggregator",
@@ -200,10 +251,65 @@ export class AggregatorServer {
     });
   }
 
+  // ---------------------------------------------------------------------------
+  // Session lifecycle helpers
+  // ---------------------------------------------------------------------------
+
+  /** Remove a session and close its transport. */
+  private removeSession(sessionId: string, entry: SessionEntry): void {
+    this.sessions.delete(sessionId);
+    entry.transport.close().catch((err) => {
+      console.error(`[MCP Session] Error closing transport ${sessionId}:`, err);
+    });
+    console.log(
+      `[MCP Session] Removed (expired): ${sessionId} (active: ${this.sessions.size})`,
+    );
+  }
+
+  /** Sweep expired sessions. Called periodically by the cleanup timer. */
+  private cleanupExpiredSessions(): void {
+    const now = Date.now();
+    for (const [sessionId, entry] of this.sessions) {
+      if (now - entry.createdAt > this.sessionTtlMs) {
+        this.removeSession(sessionId, entry);
+      }
+    }
+  }
+
+  /** Start the periodic cleanup timer. */
+  private startCleanupTimer(): void {
+    if (this.cleanupTimer) return;
+    this.cleanupTimer = setInterval(() => {
+      this.cleanupExpiredSessions();
+    }, CLEANUP_INTERVAL_MS);
+    // Allow the Node process to exit even if the timer is still running.
+    if (this.cleanupTimer && typeof this.cleanupTimer === "object" && "unref" in this.cleanupTimer) {
+      this.cleanupTimer.unref();
+    }
+  }
+
   /**
-   * Clean up resources
+   * Clean up all sessions and stop the cleanup timer.
    */
   public async shutdown(): Promise<void> {
-    // No persistent server to close; each request creates its own
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+
+    const closePromises: Promise<void>[] = [];
+    for (const [sessionId, entry] of this.sessions) {
+      console.log(`[MCP Session] Shutting down session: ${sessionId}`);
+      closePromises.push(
+        entry.transport.close().catch((err) => {
+          console.error(
+            `[MCP Session] Error closing transport ${sessionId} during shutdown:`,
+            err,
+          );
+        }),
+      );
+    }
+    this.sessions.clear();
+    await Promise.all(closePromises);
   }
 }

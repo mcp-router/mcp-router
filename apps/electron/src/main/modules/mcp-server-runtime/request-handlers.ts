@@ -1,4 +1,6 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import { getRateLimiter } from "./rate-limiter";
+import type { RateLimitResult } from "./rate-limiter";
 import type {
   CallToolRequest,
   CallToolResult,
@@ -39,6 +41,8 @@ import { getSharedConfigManager } from "@/main/infrastructure/shared-config-mana
 import { getElicitationManager } from "./elicitation-manager";
 import { validateElicitationUrl } from "@/main/utils/url-validation-utils";
 import { SystemServerService } from "@/main/modules/system-server/system-server.service";
+import { estimateRequestTokens, estimateResponseTokens } from "./token-estimator";
+import { getTokenBudgetTracker } from "./token-budget-tracker";
 
 /** Tool with source server annotation for aggregated results */
 type ToolWithSource = Tool & { sourceServer: string };
@@ -194,6 +198,8 @@ export class RequestHandlers extends RequestHandlerBase {
 
       // If tool catalog is enabled, return META_TOOLS + system tools
       if (this.isToolCatalogEnabled()) {
+        // Record meta-tool definitions for catalog savings calculation
+        getTokenBudgetTracker().recordMetaToolDefinitions(META_TOOLS);
         return { tools: [...(META_TOOLS as Tool[]), ...systemTools] };
       }
       // Otherwise, return all tools from all servers (legacy behavior)
@@ -209,6 +215,11 @@ export class RequestHandlers extends RequestHandlerBase {
   public async handleCallTool(request: CallToolRequest): Promise<CallToolResult> {
     const toolName = request.params.name;
     const projectId = this.normalizeProjectId(request.params._meta?.projectId);
+
+    // --- Rate limiting ---
+    const token = request.params._meta?.token as string | undefined;
+    const clientId = this.getClientId(token);
+    this.enforceRateLimit(`client:${clientId}`);
 
     // Always handle META_TOOLS (tool_discovery, tool_execute, tool_capabilities) regardless of catalog mode
     if (toolName === "tool_discovery") {
@@ -728,15 +739,19 @@ export class RequestHandlers extends RequestHandlerBase {
       }),
     );
 
-    // Collect results from fulfilled promises
+    // Collect results from fulfilled promises and record tool definition tokens
     const allTools: ToolWithSource[] = [];
+    const tracker = getTokenBudgetTracker();
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
       if (result.status === "fulfilled") {
+        const serverName = eligible[i].serverName;
         for (const tool of result.value) {
-          toolMap.set(tool.name, eligible[i].serverName);
+          toolMap.set(tool.name, serverName);
           allTools.push(tool);
         }
+        // Record tool definition token estimates for this server
+        tracker.recordToolDefinitions(serverName, result.value);
       } else {
         console.error(
           `[MCPServerManager] Failed to get tools from server ${eligible[i].serverName}:`,
@@ -822,6 +837,21 @@ export class RequestHandlers extends RequestHandlerBase {
   }
 
   /**
+   * Check rate limit for the given key and throw an McpError if the
+   * request should be rejected.
+   */
+  private enforceRateLimit(key: string): void {
+    const result: RateLimitResult = getRateLimiter().tryConsume(key);
+    if (!result.allowed) {
+      const retryAfterSec = Math.ceil((result.retryAfterMs ?? 1000) / 1000);
+      throw new McpError(
+        -32000 as ErrorCode,
+        `Rate limit exceeded for ${key}. Retry after ${retryAfterSec}s.`,
+      );
+    }
+  }
+
+  /**
    * Handle legacy tool call (when tool catalog is disabled)
    */
   private async handleLegacyToolCall(
@@ -843,7 +873,10 @@ export class RequestHandlers extends RequestHandlerBase {
     }
     const serverName = mappedServerName;
 
+    // Rate limit by server and tool
+    this.enforceRateLimit(`server:${serverName}`);
     const originalToolName = stripServerPrefix(toolName);
+    this.enforceRateLimit(`tool:${serverName}:${originalToolName}`);
 
     const clientId = this.tokenValidator.validateTokenAndAccess(
       token,
@@ -898,11 +931,17 @@ export class RequestHandlers extends RequestHandlerBase {
       serverName,
       "CallTool",
       async () => {
+        const toolArgs =
+          (request.params.arguments as Record<string, unknown>) || {};
+        const reqTokens = estimateRequestTokens({
+          name: originalToolName,
+          arguments: toolArgs,
+        });
+
         const result = await client.getClient().callTool(
           {
             name: originalToolName,
-            arguments:
-              (request.params.arguments as Record<string, unknown>) || {},
+            arguments: toolArgs,
           },
           undefined,
           {
@@ -910,6 +949,16 @@ export class RequestHandlers extends RequestHandlerBase {
             resetTimeoutOnProgress: true,
           },
         );
+
+        // Record token usage for this tool call
+        const resTokens = estimateResponseTokens(result as object);
+        getTokenBudgetTracker().recordUsage(
+          serverName,
+          originalToolName,
+          reqTokens,
+          resTokens,
+        );
+
         // Transform resource links to use router's namespace
         return transformResourceLinksInResult(result, serverName);
       },
