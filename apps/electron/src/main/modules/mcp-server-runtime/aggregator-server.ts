@@ -14,6 +14,7 @@ import { RequestHandlers } from "./request-handlers";
 import { MCPServerManager } from "../mcp-server-manager/mcp-server-manager";
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import type { ToolCatalogService } from "@/main/modules/tool-catalog/tool-catalog.service";
+import { getSamplingProxy } from "./sampling-proxy";
 
 /** Tracked state for a single Streamable HTTP session. */
 interface SessionEntry {
@@ -161,6 +162,10 @@ export class AggregatorServer {
     );
 
     this.setupRequestHandlers(server);
+
+    // Track the most recently created server so the SamplingProxy can
+    // forward sampling/createMessage requests to the upstream client.
+    getSamplingProxy().setActiveServer(server);
 
     server.onerror = (error) => {
       console.error("[MCP Aggregator Error]", error);

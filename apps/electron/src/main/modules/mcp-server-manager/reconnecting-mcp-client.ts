@@ -1,5 +1,9 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+import {
+  CreateMessageRequestSchema,
+  type CreateMessageResult,
+} from "@modelcontextprotocol/sdk/types.js";
 import { ConnectionMonitor, ConnectionState } from "./connection-monitor";
 import { HealthChecker } from "./health-checker";
 import { safeConsoleLog, safeConsoleError } from "@/main/utils/safe-console";
@@ -16,6 +20,8 @@ export interface ReconnectingClientOptions {
   healthCheckUrl?: string;
   healthCheckIntervalMs?: number;
   bearerToken?: string;
+  // Callback to handle sampling/createMessage from backend servers
+  onSamplingRequest?: (params: unknown) => Promise<unknown>;
 }
 
 export class ReconnectingMCPClient {
@@ -35,6 +41,7 @@ export class ReconnectingMCPClient {
   private readonly maxRetries: number;
   private readonly initialDelayMs: number;
   private readonly maxDelayMs: number;
+  private readonly onSamplingRequest?: (params: unknown) => Promise<unknown>;
 
   constructor(options: ReconnectingClientOptions) {
     this.serverId = options.serverId;
@@ -47,11 +54,9 @@ export class ReconnectingMCPClient {
     this.maxRetries = options.maxRetries ?? 5;
     this.initialDelayMs = options.initialDelayMs ?? 1000;
     this.maxDelayMs = options.maxDelayMs ?? 30000;
+    this.onSamplingRequest = options.onSamplingRequest;
 
-    this.client = new Client({
-      name: "mcp-router",
-      version: "1.0.0",
-    });
+    this.client = this.createClient();
 
     this.monitor = new ConnectionMonitor({
       serverId: options.serverId,
@@ -114,10 +119,7 @@ export class ReconnectingMCPClient {
           } catch {
             // Ignore close errors
           }
-          this.client = new Client({
-            name: "mcp-router",
-            version: "1.0.0",
-          });
+          this.client = this.createClient();
         }
       }
     }
@@ -132,6 +134,29 @@ export class ReconnectingMCPClient {
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Create a new Client instance with sampling capability declared
+   * and the sampling request handler registered (if provided).
+   */
+  private createClient(): Client {
+    const client = new Client(
+      { name: "mcp-router", version: "1.0.0" },
+      { capabilities: { sampling: {} } },
+    );
+
+    if (this.onSamplingRequest) {
+      const handler = this.onSamplingRequest;
+      client.setRequestHandler(
+        CreateMessageRequestSchema,
+        async (request) => {
+          return (await handler(request.params)) as CreateMessageResult;
+        },
+      );
+    }
+
+    return client;
   }
 
   getClient(): Client {
@@ -200,10 +225,7 @@ export class ReconnectingMCPClient {
       if (this.disposed) return false;
 
       // Create new client and transport
-      this.client = new Client({
-        name: "mcp-router",
-        version: "1.0.0",
-      });
+      this.client = this.createClient();
 
       this.transport = this.createTransport();
       this.setupTransportCallbacks(this.transport);

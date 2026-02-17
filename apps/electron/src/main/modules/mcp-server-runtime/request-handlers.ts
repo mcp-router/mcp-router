@@ -1,6 +1,10 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { getRateLimiter } from "./rate-limiter";
 import type { RateLimitResult } from "./rate-limiter";
+import {
+  getTaskRegistry,
+  createNamespacedTaskId,
+} from "./task-registry";
 import type {
   CallToolRequest,
   CallToolResult,
@@ -958,6 +962,25 @@ export class RequestHandlers extends RequestHandlerBase {
           reqTokens,
           resTokens,
         );
+
+        // Detect and register task handles in the response
+        const taskResult = result as Record<string, unknown>;
+        if (
+          taskResult.task &&
+          typeof taskResult.task === "object" &&
+          (taskResult.task as Record<string, unknown>).taskId
+        ) {
+          const task = taskResult.task as Record<string, unknown>;
+          const originalTaskId = task.taskId as string;
+          const namespacedId = getTaskRegistry().registerTask(
+            originalTaskId,
+            serverName,
+            serverId,
+            (task.status as string) ?? "working",
+          );
+          // Rewrite taskId so the client uses the namespaced version
+          task.taskId = namespacedId;
+        }
 
         // Transform resource links to use router's namespace
         return transformResourceLinksInResult(result, serverName);

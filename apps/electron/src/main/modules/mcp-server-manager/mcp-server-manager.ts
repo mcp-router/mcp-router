@@ -52,6 +52,7 @@ function substituteArgsParameters(
 }
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import { getHealthMetricsTracker } from "@/main/modules/mcp-server-runtime/health-metrics-tracker";
+import { getSamplingProxy } from "@/main/modules/mcp-server-runtime/sampling-proxy";
 import { DevWatcherService } from "./dev-watcher.service";
 import { ReconnectingMCPClient } from "./reconnecting-mcp-client";
 import { ConnectionState } from "./connection-monitor";
@@ -612,6 +613,8 @@ export class MCPServerManager {
         maxRetries: 5,
         initialDelayMs: 1000,
         maxDelayMs: 30000,
+        onSamplingRequest: (params) =>
+          getSamplingProxy().createMessage(params as any),
       });
 
       await reconnectingClient.connect();
