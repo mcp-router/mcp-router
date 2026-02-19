@@ -5,6 +5,11 @@ import * as crypto from "crypto";
 import { MCPServerConfig } from "@mcp_router/shared";
 import { convertMcpbManifestToMCPServerConfig } from "./mcpb-converter";
 
+// Security limits for MCPB extraction
+const MAX_ARCHIVE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
+const MAX_UNCOMPRESSED_SIZE_BYTES = 500 * 1024 * 1024; // 500MB
+const MAX_FILE_COUNT = 10000;
+
 /**
  * MCPB v0.3 manifest interface.
  * Based on https://github.com/modelcontextprotocol/mcpb
@@ -72,6 +77,13 @@ export interface McpbManifest {
 export async function processMcpbFile(
   mcpbFile: Uint8Array,
 ): Promise<MCPServerConfig> {
+  // Pre-extraction size check
+  if (mcpbFile.length > MAX_ARCHIVE_SIZE_BYTES) {
+    throw new Error(
+      `MCPB archive exceeds maximum size limit of ${MAX_ARCHIVE_SIZE_BYTES / 1024 / 1024}MB`,
+    );
+  }
+
   const mcpbDir = path.join(app.getPath("userData"), "mcp-servers", "mcpb");
   if (!fs.existsSync(mcpbDir)) {
     fs.mkdirSync(mcpbDir, { recursive: true });
@@ -127,11 +139,43 @@ export async function processMcpbFile(
 }
 
 function validateMcpbManifest(manifest: McpbManifest): void {
-  if (!manifest.name) throw new Error("MCPB manifest missing required field: name");
-  if (!manifest.version) throw new Error("MCPB manifest missing required field: version");
-  if (!manifest.description) throw new Error("MCPB manifest missing required field: description");
+  if (!manifest.name)
+    throw new Error("MCPB manifest missing required field: name");
+  if (!manifest.version)
+    throw new Error("MCPB manifest missing required field: version");
+  if (!manifest.description)
+    throw new Error("MCPB manifest missing required field: description");
   if (!manifest.server?.mcp_config?.command) {
-    throw new Error("MCPB manifest missing required field: server.mcp_config.command");
+    throw new Error(
+      "MCPB manifest missing required field: server.mcp_config.command",
+    );
+  }
+
+  // Prevent shell injection and arbitrary command execution
+  const allowedCommands = [
+    "node",
+    "python",
+    "python3",
+    "npx",
+    "uvx",
+    "uv",
+    "go",
+    "cargo",
+    "docker",
+  ];
+  const isCommandAllowed =
+    allowedCommands.includes(manifest.server.mcp_config.command) ||
+    /^[a-zA-Z0-9_\-\.\/]+$/.test(manifest.server.mcp_config.command);
+
+  if (
+    !isCommandAllowed ||
+    manifest.server.mcp_config.command.includes("&&") ||
+    manifest.server.mcp_config.command.includes("|") ||
+    manifest.server.mcp_config.command.includes(";")
+  ) {
+    throw new Error(
+      `MCPB manifest contains invalid or potentially unsafe command: ${manifest.server.mcp_config.command}`,
+    );
   }
 
   const validVersion = manifest.manifest_version;
@@ -166,12 +210,32 @@ async function extractZip(
   const { unzipSync } = await import("fflate");
   const files = unzipSync(zipData);
 
+  const entries = Object.entries(files);
+
+  if (entries.length > MAX_FILE_COUNT) {
+    throw new Error(
+      `Archive exceeds maximum file count limit of ${MAX_FILE_COUNT}`,
+    );
+  }
+
+  let totalSize = 0;
   const resolvedOutput = path.resolve(outputDir);
 
-  for (const [filePath, content] of Object.entries(files)) {
+  for (const [filePath, content] of entries) {
+    // Check uncompressed size limit to prevent zip bombs
+    totalSize += content.length;
+    if (totalSize > MAX_UNCOMPRESSED_SIZE_BYTES) {
+      throw new Error(
+        `Archive exceeds maximum uncompressed size limit of ${MAX_UNCOMPRESSED_SIZE_BYTES / 1024 / 1024}MB`,
+      );
+    }
+
     // Zip-slip prevention
     const resolvedPath = path.resolve(outputDir, filePath);
-    if (!resolvedPath.startsWith(resolvedOutput + path.sep) && resolvedPath !== resolvedOutput) {
+    if (
+      !resolvedPath.startsWith(resolvedOutput + path.sep) &&
+      resolvedPath !== resolvedOutput
+    ) {
       throw new Error(`Zip-slip attack detected: ${filePath}`);
     }
 

@@ -26,4 +26,7 @@ export const mainConfig: Configuration = {
       ),
     },
   },
+  externals: {
+    "isolated-vm": "commonjs isolated-vm",
+  },
 };

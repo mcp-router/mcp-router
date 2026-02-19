@@ -27,7 +27,7 @@ export function createNamespacedTaskId(
   return `${serverName}${TASK_SEPARATOR}${originalTaskId}`;
 }
 
-export function parseNamespacedTaskId(
+function parseNamespacedTaskId(
   namespacedId: string,
 ): { serverName: string; originalTaskId: string } | null {
   const idx = namespacedId.indexOf(TASK_SEPARATOR);
@@ -45,7 +45,10 @@ export class TaskRegistry {
 
   private constructor() {
     // Clean up stale tasks every 5 minutes
-    this.cleanupTimer = setInterval(() => this.cleanup(30 * 60 * 1000), 5 * 60 * 1000);
+    this.cleanupTimer = setInterval(
+      () => this.cleanup(30 * 60 * 1000),
+      5 * 60 * 1000,
+    );
     this.cleanupTimer.unref();
   }
 

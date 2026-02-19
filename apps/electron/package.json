@@ -58,6 +58,7 @@
     "electron-squirrel-startup": "^1.0.1",
     "execa": "^9.6.1",
     "express": "^5.2.1",
+    "fflate": "^0.8.2",
     "i18next": "^24.2.3",
     "immer": "^10.2.0",
     "isolated-vm": "^6.0.2",

@@ -21,12 +21,8 @@ import type {
   ServerSummary,
   ToolSummary,
 } from "./system-server.types";
-import {
-  ServerHealthMetrics,
-  getHealthMetricsTracker,
-} from "../mcp-server-runtime/health-metrics-tracker";
+import { getHealthMetricsTracker } from "../mcp-server-runtime/health-metrics-tracker";
 import { getTokenBudgetTracker } from "../mcp-server-runtime/token-budget-tracker";
-import { AuditLogRepository } from "../mcp-logger/audit-log.repository";
 import { ServerDiscoveryService } from "../mcp-server-manager/server-discovery.service";
 import { processMcpbFile } from "../mcp-server-manager/mcpb-processor/mcpb-processor";
 import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
@@ -491,7 +487,8 @@ export class SystemServer {
         return this.handleTokenUsage();
       }
       case "router_audit_log": {
-        return this.handleAuditLog(args as any);
+        const auditArgs = args as Record<string, unknown>;
+        return this.handleAuditLog(auditArgs);
       }
       case "router_discover_servers": {
         return this.handleDiscoverServers();
@@ -1026,10 +1023,15 @@ export class SystemServer {
     };
   }
 
-  private async handleAuditLog(args: { action?: string; actor?: string }) {
-    const repo = AuditLogRepository.getInstance();
-    const logs = repo.getEntries(args);
-    const count = repo.getEntryCount(args);
+  private async handleAuditLog(args: Record<string, unknown>) {
+    const action = typeof args.action === "string" ? args.action : undefined;
+    const actor = typeof args.actor === "string" ? args.actor : undefined;
+
+    // Use the service directly to ensure single-path execution and future-proofing
+    const { getAuditLogService } = require("../mcp-logger/audit-log.service");
+    const service = getAuditLogService();
+    const logs = service.queryLogs({ action, actor });
+    const count = service.getLogCount({ action, actor });
 
     return {
       content: [
@@ -1047,7 +1049,6 @@ export class SystemServer {
     // Trigger a new scan
     // We scan standard directories: ~, workspace, etc.
     const os = require("os");
-    const path = require("path");
 
     // Scan home directory for global IDE configs
     await discoveryService.scanProjectDirectory(os.homedir());

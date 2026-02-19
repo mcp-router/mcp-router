@@ -11,7 +11,7 @@ const CHARS_PER_TOKEN = 4;
  * Estimate the number of tokens in a string.
  * Uses ~4 characters per token as a rough heuristic.
  */
-export function estimateTokens(text: string): number {
+function estimateTokens(text: string): number {
   if (!text) return 0;
   return Math.ceil(text.length / CHARS_PER_TOKEN);
 }
