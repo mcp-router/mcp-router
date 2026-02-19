@@ -97,12 +97,14 @@ export class AggregatorServer {
           createdAt: Date.now(),
           lastActivityAt: Date.now(),
         });
+        getSamplingProxy().registerSessionServer(sessionId, server);
         safeConsoleLog(
           `[MCP Session] Initialized: ${sessionId} (active: ${this.sessions.size})`,
         );
       },
       onsessionclosed: (sessionId: string) => {
         this.sessions.delete(sessionId);
+        getSamplingProxy().unregisterSessionServer(sessionId);
         safeConsoleLog(
           `[MCP Session] Closed: ${sessionId} (active: ${this.sessions.size})`,
         );
@@ -113,6 +115,7 @@ export class AggregatorServer {
       const sessionId = transport.sessionId;
       if (sessionId) {
         this.sessions.delete(sessionId);
+        getSamplingProxy().unregisterSessionServer(sessionId);
       }
     };
 
@@ -183,8 +186,7 @@ export class AggregatorServer {
 
     this.setupRequestHandlers(server);
 
-    // Track the most recently created server so the SamplingProxy can
-    // forward sampling/createMessage requests to the upstream client.
+    // Keep a fallback server association for non-session flows.
     getSamplingProxy().setActiveServer(server);
 
     server.onerror = (error) => {

@@ -910,10 +910,10 @@ export class RequestHandlers extends RequestHandlerBase {
     const originalToolName = stripServerPrefix(toolName);
     this.enforceRateLimit(`tool:${serverName}:${originalToolName}`);
 
-    const clientIdHeader = request.params._meta?.clientId as string | undefined;
-    const clientId =
-      clientIdHeader ||
-      this.tokenValidator.validateTokenAndAccess(token, serverName);
+    const clientId = this.tokenValidator.validateTokenAndAccess(
+      token,
+      serverName,
+    );
 
     const serverId = this.getServerIdByName(serverName);
     if (!serverId) {

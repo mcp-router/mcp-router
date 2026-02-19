@@ -10,6 +10,8 @@ import { ProjectRepository } from "../../projects/projects.repository";
 import { PROJECT_HEADER, UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
 import { createApiRouter } from "./api-router";
 import { getRateLimiter } from "../rate-limiter";
+import { runWithSessionContext } from "../request-context";
+import { getSamplingProxy } from "../sampling-proxy";
 
 /**
  * HTTP server that exposes MCP functionality through REST endpoints
@@ -184,22 +186,26 @@ export class MCPHttpServer {
     payload: any,
     clientIdHeader: string | string[] | undefined,
     projectId: string | null,
+    tokenHeader?: string | string[] | undefined,
   ): void {
     const clientId = Array.isArray(clientIdHeader)
       ? clientIdHeader[0]
       : clientIdHeader;
+    const token = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
 
     if (payload.params && typeof payload.params === "object") {
       payload.params._meta = {
         ...(payload.params._meta || {}),
         clientId,
         projectId,
+        token,
       };
     } else if (payload.params === undefined) {
       payload.params = {
         _meta: {
           clientId,
           projectId,
+          token,
         },
       };
     }
@@ -240,7 +246,7 @@ export class MCPHttpServer {
 
     // Rate limit session creation
     const limiter = getRateLimiter();
-    const clientId = req.headers["x-mcp-client-id"] as string || "unknown";
+    const clientId = (req.headers["x-mcp-client-id"] as string) || "unknown";
     const rateLimitResult = limiter.tryConsume(`session:${clientId}`);
     if (!rateLimitResult.allowed) {
       if (!res.headersSent) {
@@ -250,8 +256,24 @@ export class MCPHttpServer {
     }
 
     // No session header -- create a new session (initialization).
-    const transport = await this.aggregatorServer.createSessionTransport();
-    return { transport };
+    try {
+      const transport = await this.aggregatorServer.createSessionTransport();
+      return { transport };
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("Maximum concurrent sessions")
+      ) {
+        if (!res.headersSent) {
+          res.status(429).json({
+            error:
+              "Too many active sessions. Please disconnect existing sessions and retry.",
+          });
+        }
+        return null;
+      }
+      throw error;
+    }
   }
 
   /**
@@ -293,11 +315,23 @@ export class MCPHttpServer {
 
         // Append metadata for downstream handlers
         const clientId = req.headers["x-mcp-client-id"];
-        this.attachRequestMetadata(modifiedBody, clientId, projectFilter);
+        const token = req.headers["authorization"];
+        this.attachRequestMetadata(
+          modifiedBody,
+          clientId,
+          projectFilter,
+          token,
+        );
 
         const result = await this.resolveStreamableTransport(req, res);
         if (!result) return; // error response already sent
-        await result.transport.handleRequest(req, res, modifiedBody);
+        const sessionId =
+          (req.headers["mcp-session-id"] as string | undefined) ||
+          result.transport.sessionId ||
+          null;
+        await runWithSessionContext(sessionId, () =>
+          result.transport.handleRequest(req, res, modifiedBody),
+        );
       } catch (error) {
         console.error("Error handling MCP request:", error);
         if (!res.headersSent) {
@@ -318,7 +352,13 @@ export class MCPHttpServer {
       try {
         const result = await this.resolveStreamableTransport(req, res);
         if (!result) return;
-        await result.transport.handleRequest(req, res);
+        const sessionId =
+          (req.headers["mcp-session-id"] as string | undefined) ||
+          result.transport.sessionId ||
+          null;
+        await runWithSessionContext(sessionId, () =>
+          result.transport.handleRequest(req, res),
+        );
       } catch (error) {
         console.error("Error handling MCP GET request:", error);
         if (!res.headersSent) {
@@ -332,7 +372,13 @@ export class MCPHttpServer {
       try {
         const result = await this.resolveStreamableTransport(req, res);
         if (!result) return;
-        await result.transport.handleRequest(req, res);
+        const sessionId =
+          (req.headers["mcp-session-id"] as string | undefined) ||
+          result.transport.sessionId ||
+          null;
+        await runWithSessionContext(sessionId, () =>
+          result.transport.handleRequest(req, res),
+        );
       } catch (error) {
         console.error("Error handling MCP DELETE request:", error);
         if (!res.headersSent) {
@@ -415,11 +461,13 @@ export class MCPHttpServer {
         res.on("close", () => {
           this.sseSessions.delete(sessionId);
           this.sseSessionProjects.delete(sessionId);
+          getSamplingProxy().unregisterSessionServer(sessionId);
         });
 
         // Create a fresh Server per SSE connection (SDK only allows one transport per Server)
         const sseServer = this.aggregatorServer.createSseServer();
         await sseServer.connect(transport);
+        getSamplingProxy().registerSessionServer(sessionId, sseServer);
 
         // Send session ID info to the client
         res.write(`data: ${JSON.stringify({ sessionId })}\n\n`);
@@ -494,10 +542,18 @@ export class MCPHttpServer {
         }
 
         const clientId = req.headers["x-mcp-client-id"];
-        this.attachRequestMetadata(modifiedBody, clientId, projectFilter);
+        const token = req.headers["authorization"];
+        this.attachRequestMetadata(
+          modifiedBody,
+          clientId,
+          projectFilter,
+          token,
+        );
 
         // Process the message via transport
-        await transport.handlePostMessage(req, res, modifiedBody);
+        await runWithSessionContext(sessionId, () =>
+          transport.handlePostMessage(req, res, modifiedBody),
+        );
       } catch (error) {
         console.error("Error handling SSE message:", error);
         if (!res.headersSent) {

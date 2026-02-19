@@ -6,6 +6,7 @@ import {
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
 import { getRateLimiter, RateLimitResult } from "./rate-limiter";
+import { getCurrentSessionId } from "./request-context";
 
 /**
  * Proxies sampling/createMessage requests from backend MCP servers
@@ -16,13 +17,15 @@ import { getRateLimiter, RateLimitResult } from "./rate-limiter";
  * to whichever upstream client (Claude Desktop, Cursor, etc.) is currently
  * connected to the aggregator.
  *
- * TODO(#115): This uses a last-writer-wins pattern. With multiple concurrent clients,
- * only the most recently connected client will receive sampling requests. For single-user
- * desktop use this is acceptable. A full fix requires associating sampling requests with
- * the client session that initiated the original tool call.
+ * Session-aware routing:
+ *  - Primary path: route by the current request's session ID.
+ *  - Fallback path: activeServer (for non-session or legacy flows).
+ *
+ * Remaining limitation: non-session flows still use fallback behavior.
  */
 export class SamplingProxy {
   private activeServer: Server | null = null;
+  private readonly sessionServers: Map<string, Server> = new Map();
 
   /**
    * Set the active upstream server instance that can forward
@@ -33,6 +36,20 @@ export class SamplingProxy {
   }
 
   /**
+   * Register the upstream server associated with a specific client session.
+   */
+  registerSessionServer(sessionId: string, server: Server): void {
+    this.sessionServers.set(sessionId, server);
+  }
+
+  /**
+   * Remove a session-specific server association.
+   */
+  unregisterSessionServer(sessionId: string): void {
+    this.sessionServers.delete(sessionId);
+  }
+
+  /**
    * Forward a sampling/createMessage request to the upstream client.
    * Enforces rate limits and caps maxTokens to prevent abuse.
    * Throws if no upstream client is connected.
@@ -40,7 +57,13 @@ export class SamplingProxy {
   async createMessage(
     params: CreateMessageRequest["params"],
   ): Promise<CreateMessageResult> {
-    if (!this.activeServer) {
+    const sessionId = getCurrentSessionId();
+    const sessionServer = sessionId
+      ? this.sessionServers.get(sessionId)
+      : undefined;
+    const targetServer = sessionServer ?? this.activeServer;
+
+    if (!targetServer) {
       throw new McpError(
         ErrorCode.InternalError,
         "No upstream client connected — cannot forward sampling request.",
@@ -67,7 +90,7 @@ export class SamplingProxy {
       maxTokens: Math.min(params.maxTokens, MAX_SAMPLING_TOKENS),
     };
 
-    return await this.activeServer.createMessage(safeParams);
+    return await targetServer.createMessage(safeParams);
   }
 }
 

@@ -1,5 +1,45 @@
 import { test, expect } from "../fixtures/electron-app";
 import { waitForAppReady } from "../utils/helpers";
+import type { Page } from "@playwright/test";
+
+async function clickFirstVisible(page: Page, selectors: string[]) {
+  for (const selector of selectors) {
+    const target = page.locator(selector).first();
+    if (await target.isVisible().catch(() => false)) {
+      await target.click();
+      return true;
+    }
+  }
+  return false;
+}
+
+async function isAnyVisible(page: Page, selectors: string[]) {
+  for (const selector of selectors) {
+    if (await page.locator(selector).first().isVisible().catch(() => false)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+async function waitForAny(page: Page, selectors: string[], timeout = 10000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    if (await isAnyVisible(page, selectors)) {
+      return true;
+    }
+    await page.waitForTimeout(100);
+  }
+  throw new Error(`None of selectors became visible: ${selectors.join(", ")}`);
+}
+
+async function navigateToSkills(page: Page) {
+  await clickFirstVisible(page, [
+    '[data-testid="nav-skills"]',
+    "text=My Skills",
+    "text=Skills",
+  ]);
+}
 
 test.describe("Skills Feature", () => {
   test.beforeEach(async ({ page }) => {
@@ -8,24 +48,26 @@ test.describe("Skills Feature", () => {
 
   test("should display the skills list", async ({ page }) => {
     // Navigate to skills section
-    await page.click('[data-testid="nav-skills"], text=Skills, text=My Skills');
+    await navigateToSkills(page);
 
     // Wait for the skills manager to load
-    await page.waitForSelector(
-      '[data-testid="skills-manager"], .skills-container, text=Skills Library',
-      { timeout: 10000 },
+    await waitForAny(
+      page,
+      ['[data-testid="skills-manager"]', ".skills-container", "text=Skills Library"],
+      10000,
     );
 
     // Verify the skills section is visible
-    const skillsSection = await page.isVisible(
-      "text=Skills Library, text=My Skills",
-    );
+    const skillsSection = await isAnyVisible(page, [
+      "text=Skills Library",
+      "text=My Skills",
+    ]);
     expect(skillsSection).toBe(true);
   });
 
   test("should open new skill dialog", async ({ page }) => {
     // Navigate to skills
-    await page.click('[data-testid="nav-skills"], text=Skills, text=My Skills');
+    await navigateToSkills(page);
     await page.waitForTimeout(1000);
 
     // Click the New button
@@ -36,22 +78,24 @@ test.describe("Skills Feature", () => {
       await newButton.click();
 
       // Wait for dialog to appear
-      await page.waitForSelector(
-        '[role="dialog"], [data-testid="new-skill-dialog"]',
-        { timeout: 5000 },
+      await waitForAny(
+        page,
+        ['[role="dialog"]', '[data-testid="new-skill-dialog"]'],
+        5000,
       );
 
       // Verify dialog is open
-      const dialogVisible = await page.isVisible(
-        "text=Create New Skill, text=Enter a name",
-      );
+      const dialogVisible = await isAnyVisible(page, [
+        "text=Create New Skill",
+        "text=Enter a name",
+      ]);
       expect(dialogVisible).toBe(true);
     }
   });
 
   test("should validate skill name input", async ({ page }) => {
     // Navigate to skills
-    await page.click('[data-testid="nav-skills"], text=Skills, text=My Skills');
+    await navigateToSkills(page);
     await page.waitForTimeout(1000);
 
     // Open new skill dialog
@@ -70,9 +114,7 @@ test.describe("Skills Feature", () => {
         await createButton.click();
 
         // Should show validation error
-        const hasError = await page.isVisible(
-          "text=required, text=name is required",
-        );
+        await isAnyVisible(page, ["text=required", "text=name is required"]);
         // Error may or may not be visible depending on validation timing
       }
     }
@@ -82,7 +124,7 @@ test.describe("Skills Feature", () => {
     page,
   }) => {
     // Navigate to skills
-    await page.click('[data-testid="nav-skills"], text=Skills, text=My Skills');
+    await navigateToSkills(page);
     await page.waitForTimeout(2000);
 
     // Check if any skill cards exist
@@ -96,22 +138,25 @@ test.describe("Skills Feature", () => {
       await skillCards.first().click();
 
       // Wait for detail sheet to appear
-      await page.waitForSelector(
-        '[role="dialog"], [data-testid="skill-detail-sheet"], .sheet-content',
-        { timeout: 5000 },
+      await waitForAny(
+        page,
+        ['[role="dialog"]', '[data-testid="skill-detail-sheet"]', ".sheet-content"],
+        5000,
       );
 
       // Verify skill detail view is showing
-      const hasDetailView = await page.isVisible(
-        "text=SKILL.md, text=Content, text=Client",
-      );
+      const hasDetailView = await isAnyVisible(page, [
+        "text=SKILL.md",
+        "text=Content",
+        "text=Client",
+      ]);
       expect(hasDetailView).toBe(true);
     }
   });
 
   test("should filter skills by search query", async ({ page }) => {
     // Navigate to skills
-    await page.click('[data-testid="nav-skills"], text=Skills, text=My Skills');
+    await navigateToSkills(page);
     await page.waitForTimeout(2000);
 
     // Find and fill the search input
@@ -123,16 +168,18 @@ test.describe("Skills Feature", () => {
       await page.waitForTimeout(500);
 
       // Should show no results message
-      const noResults = await page.isVisible(
-        "text=No skills, text=No results, text=No match",
-      );
+      await isAnyVisible(page, [
+        "text=No skills",
+        "text=No results",
+        "text=No match",
+      ]);
       // The no results message may vary based on implementation
     }
   });
 
   test("should handle refresh button click", async ({ page }) => {
     // Navigate to skills
-    await page.click('[data-testid="nav-skills"], text=Skills, text=My Skills');
+    await navigateToSkills(page);
     await page.waitForTimeout(1000);
 
     // Find and click refresh button
@@ -147,14 +194,17 @@ test.describe("Skills Feature", () => {
       await page.waitForTimeout(2000);
 
       // Verify page is still functional
-      const pageStillLoaded = await page.isVisible("text=Skills, text=Library");
+      const pageStillLoaded = await isAnyVisible(page, [
+        "text=Skills",
+        "text=Library",
+      ]);
       expect(pageStillLoaded).toBe(true);
     }
   });
 
   test("should show client filter dropdown", async ({ page }) => {
     // Navigate to skills
-    await page.click('[data-testid="nav-skills"], text=Skills, text=My Skills');
+    await navigateToSkills(page);
     await page.waitForTimeout(1000);
 
     // Find and click client filter button
@@ -166,9 +216,11 @@ test.describe("Skills Feature", () => {
       await page.waitForTimeout(500);
 
       // Dropdown should appear
-      const dropdownVisible = await page.isVisible(
-        '[role="menu"], [data-testid="client-filter-menu"], text=All Clients',
-      );
+      await isAnyVisible(page, [
+        '[role="menu"]',
+        '[data-testid="client-filter-menu"]',
+        "text=All Clients",
+      ]);
       // Dropdown visibility depends on having clients configured
     }
   });

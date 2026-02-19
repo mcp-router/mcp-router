@@ -598,7 +598,10 @@ export class MCPServerManager {
       let healthCheckUrl: string | undefined;
       if (server.serverType === "remote-streamable" && server.remoteUrl) {
         const url = new URL(server.remoteUrl);
-        url.pathname = url.pathname.replace(/\/mcp$/, "/api/test");
+        const normalizedPath = url.pathname.replace(/\/+$/, "");
+        url.pathname = normalizedPath.endsWith("/mcp")
+          ? normalizedPath.replace(/\/mcp$/, "/api/health")
+          : "/api/health";
         healthCheckUrl = url.toString();
       }
 

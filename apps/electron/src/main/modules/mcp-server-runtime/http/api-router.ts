@@ -2,6 +2,20 @@ import { Router, Request, Response } from "express";
 import type { MCPServerManager } from "../../mcp-server-manager/mcp-server-manager";
 import { getMarketplaceService } from "../../marketplace/marketplace.service";
 import { getEventBridge } from "../event-bridge";
+import { TokenManager } from "../../client-apps/token-manager";
+
+type ApiEvent = {
+  type: string;
+  data: Record<string, unknown>;
+  timestamp: string;
+};
+
+const SERVER_SCOPED_EVENT_TYPES = new Set([
+  "servers_updated",
+  "tool_list_changed",
+  "resource_list_changed",
+  "config_changed",
+]);
 
 function getRouteParam(value: string | string[] | undefined): string | null {
   if (typeof value === "string") {
@@ -15,8 +29,93 @@ function getRouteParam(value: string | string[] | undefined): string | null {
   return null;
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (value && typeof value === "object") {
+    return value as Record<string, unknown>;
+  }
+  return null;
+}
+
+export function collectServerIdsFromEventData(
+  data: Record<string, unknown>,
+): string[] {
+  const ids = new Set<string>();
+  const collectFromRecord = (record: Record<string, unknown>) => {
+    const serverId = record.serverId;
+    const id = record.id;
+
+    if (typeof serverId === "string" && serverId.length > 0) {
+      ids.add(serverId);
+    }
+
+    if (typeof id === "string" && id.length > 0) {
+      ids.add(id);
+    }
+
+    const nestedServer = asRecord(record.server);
+    if (nestedServer && typeof nestedServer.id === "string") {
+      ids.add(nestedServer.id);
+    }
+  };
+
+  collectFromRecord(data);
+
+  const result = data.result;
+  if (Array.isArray(result)) {
+    for (const item of result) {
+      const record = asRecord(item);
+      if (record) {
+        collectFromRecord(record);
+      }
+    }
+  } else {
+    const resultRecord = asRecord(result);
+    if (resultRecord) {
+      collectFromRecord(resultRecord);
+    }
+  }
+
+  return Array.from(ids);
+}
+
+export function isApiEventAuthorized(
+  token: string | null,
+  event: ApiEvent,
+  hasServerAccess: (token: string, serverId: string) => boolean,
+): boolean {
+  if (!token) {
+    return false;
+  }
+
+  if (!SERVER_SCOPED_EVENT_TYPES.has(event.type)) {
+    return true;
+  }
+
+  const serverIds = collectServerIdsFromEventData(event.data);
+  if (serverIds.length === 0) {
+    // Allow non-server config events (settings/workspace updates, etc.)
+    return true;
+  }
+
+  return serverIds.every((serverId) => hasServerAccess(token, serverId));
+}
+
 export function createApiRouter(serverManager: MCPServerManager): Router {
   const router = Router();
+  const tokenManager = new TokenManager();
+
+  function getRequestToken(req: Request): string | null {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return null;
+    const raw = Array.isArray(authHeader) ? authHeader[0] : authHeader;
+    if (!raw) return null;
+    return raw.startsWith("Bearer ") ? raw.slice(7) : raw;
+  }
+
+  function hasServerAccess(req: Request, serverId: string): boolean {
+    const token = getRequestToken(req);
+    return token ? tokenManager.hasServerAccess(token, serverId) : false;
+  }
 
   // GET /api/health - Health check endpoint
   router.get("/health", (_req: Request, res: Response) => {
@@ -28,9 +127,11 @@ export function createApiRouter(serverManager: MCPServerManager): Router {
   });
 
   // GET /api/servers - List all MCP servers
-  router.get("/servers", (_req: Request, res: Response) => {
+  router.get("/servers", (req: Request, res: Response) => {
     try {
-      const servers = serverManager.getServers();
+      const servers = serverManager
+        .getServers()
+        .filter((server) => hasServerAccess(req, server.id));
       res.json({ servers });
     } catch (error) {
       res.status(500).json({
@@ -46,6 +147,12 @@ export function createApiRouter(serverManager: MCPServerManager): Router {
       const id = getRouteParam(req.params.id);
       if (!id) {
         res.status(400).json({ error: "Server ID is required" });
+        return;
+      }
+      if (!hasServerAccess(req, id)) {
+        res
+          .status(403)
+          .json({ error: "Forbidden: token has no access to this server" });
         return;
       }
       const result = await serverManager.startServer(id, "REST API");
@@ -66,6 +173,12 @@ export function createApiRouter(serverManager: MCPServerManager): Router {
         res.status(400).json({ error: "Server ID is required" });
         return;
       }
+      if (!hasServerAccess(req, id)) {
+        res
+          .status(403)
+          .json({ error: "Forbidden: token has no access to this server" });
+        return;
+      }
       const result = serverManager.stopServer(id, "REST API");
       res.json({ success: true, result });
     } catch (error) {
@@ -81,6 +194,12 @@ export function createApiRouter(serverManager: MCPServerManager): Router {
       const id = getRouteParam(req.params.id);
       if (!id) {
         res.status(400).json({ error: "Server ID is required" });
+        return;
+      }
+      if (!hasServerAccess(req, id)) {
+        res
+          .status(403)
+          .json({ error: "Forbidden: token has no access to this server" });
         return;
       }
       const tools = await serverManager.listServerTools(id);
@@ -100,12 +219,16 @@ export function createApiRouter(serverManager: MCPServerManager): Router {
     res.setHeader("X-Accel-Buffering", "no");
 
     const eventBridge = getEventBridge();
+    const token = getRequestToken(req);
 
-    const sendEvent = (event: {
-      type: string;
-      data: Record<string, unknown>;
-      timestamp: string;
-    }) => {
+    const sendEvent = (event: ApiEvent) => {
+      if (
+        !isApiEventAuthorized(token, event, (requestToken, serverId) =>
+          tokenManager.hasServerAccess(requestToken, serverId),
+        )
+      ) {
+        return;
+      }
       res.write(`event: ${event.type}\n`);
       res.write(`data: ${JSON.stringify(event)}\n\n`);
     };
