@@ -42,6 +42,11 @@ export interface RateLimiterOptions {
    */
   cleanupIntervalMs?: number;
   /**
+   * Maximum number of buckets to keep in memory at once (prevents memory exhaustion).
+   * Default: 10_000
+   */
+  maxBuckets?: number;
+  /**
    * Per-key-prefix overrides. The key prefix is matched against the start
    * of each bucket key (e.g. "server:" matches "server:my-server").
    */
@@ -61,6 +66,7 @@ export class RateLimiter {
   private readonly defaultMaxTokens: number;
   private readonly defaultRefillRate: number;
   private readonly staleAfterMs: number;
+  private readonly maxBuckets: number;
   private readonly overrides: Record<string, RateLimitOverride>;
   private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -68,6 +74,7 @@ export class RateLimiter {
     this.defaultMaxTokens = options.maxTokens ?? 60;
     this.defaultRefillRate = options.refillRatePerSecond ?? 1;
     this.staleAfterMs = options.staleAfterMs ?? 300_000;
+    this.maxBuckets = options.maxBuckets ?? 10_000;
     this.overrides = options.overrides ?? {};
 
     const cleanupIntervalMs = options.cleanupIntervalMs ?? 60_000;
@@ -76,7 +83,11 @@ export class RateLimiter {
       cleanupIntervalMs,
     );
     // Allow the process to exit even if the timer is still running
-    if (this.cleanupTimer && typeof this.cleanupTimer === "object" && "unref" in this.cleanupTimer) {
+    if (
+      this.cleanupTimer &&
+      typeof this.cleanupTimer === "object" &&
+      "unref" in this.cleanupTimer
+    ) {
       this.cleanupTimer.unref();
     }
   }
@@ -92,6 +103,15 @@ export class RateLimiter {
     let bucket = this.buckets.get(key);
 
     if (!bucket) {
+      if (this.buckets.size >= this.maxBuckets) {
+        // Run emergency cleanup
+        this.cleanupStaleBuckets();
+        if (this.buckets.size >= this.maxBuckets) {
+          // If still at capacity, reject the request to prevent memory exhaustion
+          return { allowed: false, retryAfterMs: 5000 };
+        }
+      }
+
       const { maxTokens, refillRatePerSecond } = this.resolveConfig(key);
       bucket = {
         tokens: maxTokens,
