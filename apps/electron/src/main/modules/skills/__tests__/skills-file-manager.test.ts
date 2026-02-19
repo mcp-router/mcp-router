@@ -148,9 +148,9 @@ describe("SkillsFileManager", () => {
         error: "Invalid name",
       });
 
-      await expect(
-        fileManager.createSkillDirectory("../bad"),
-      ).rejects.toThrow("Invalid name");
+      await expect(fileManager.createSkillDirectory("../bad")).rejects.toThrow(
+        "Invalid name",
+      );
     });
 
     it("should throw error if directory already exists", async () => {
@@ -168,9 +168,9 @@ describe("SkillsFileManager", () => {
       (validateSkillName as any).mockReturnValue({ valid: true });
       (isPathContained as any).mockReturnValue(false);
 
-      await expect(
-        fileManager.createSkillDirectory("skill"),
-      ).rejects.toThrow("path traversal");
+      await expect(fileManager.createSkillDirectory("skill")).rejects.toThrow(
+        "path traversal",
+      );
     });
   });
 

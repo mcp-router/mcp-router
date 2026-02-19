@@ -62,8 +62,7 @@ const Home: React.FC = () => {
               </div>
             </div>
           </div>
-        ) : state.filteredServers.length === 0 &&
-          state.searchQuery !== "" ? (
+        ) : state.filteredServers.length === 0 && state.searchQuery !== "" ? (
           <div className="p-4 flex items-center justify-center">
             <div className="text-center">
               <IconSearch className="w-12 h-12 mx-auto mb-4 opacity-40" />

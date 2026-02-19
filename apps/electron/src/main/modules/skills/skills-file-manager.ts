@@ -120,7 +120,10 @@ export class SkillsFileManager {
    *
    * Security: Validates that target path is in an allowed location
    */
-  async createSymlink(sourcePath: string, targetPath: string): Promise<boolean> {
+  async createSymlink(
+    sourcePath: string,
+    targetPath: string,
+  ): Promise<boolean> {
     await this.initPromise;
     try {
       // Validate source is within skills directory
@@ -143,7 +146,10 @@ export class SkillsFileManager {
       await this.ensureDirectory(targetDir);
 
       // Remove existing symlink or file if exists
-      if (await this.pathExists(targetPath) || await this.isSymlinkExists(targetPath)) {
+      if (
+        (await this.pathExists(targetPath)) ||
+        (await this.isSymlinkExists(targetPath))
+      ) {
         // Only remove if it's a symlink, not a regular file/directory
         const stats = await fsPromises.lstat(targetPath);
         if (stats.isSymbolicLink()) {

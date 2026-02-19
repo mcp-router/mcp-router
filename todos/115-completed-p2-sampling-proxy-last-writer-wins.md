@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 priority: p2
 issue_id: "115"
 tags: [code-review, architecture, bug]
@@ -104,12 +104,12 @@ The `SamplingProxy` class maintains a single `activeServer: Server | null` field
 
 ## Acceptance Criteria
 
-- [ ] Concurrent clients each receive their own sampling requests
-- [ ] Sampling requests from client A never route to client B
-- [ ] Disconnected clients are cleaned up (no stale activeServer)
-- [ ] Single-client scenario still works correctly
-- [ ] `pnpm typecheck` passes
-- [ ] Manual test: connect two clients, verify sampling routes correctly
+- [x] Concurrent clients each receive their own sampling requests
+- [x] Sampling requests from client A never route to client B
+- [x] Disconnected clients are cleaned up (no stale activeServer)
+- [x] Single-client scenario still works correctly
+- [x] `pnpm typecheck` passes
+- [x] Manual test: connect two clients, verify sampling routes correctly
 
 ## Work Log
 
@@ -126,5 +126,20 @@ The `SamplingProxy` class maintains a single `activeServer: Server | null` field
 **Learnings:**
 - The single-server design was likely adequate for initial single-client usage
 - Multi-client support (MAX_SESSIONS=50) makes this a real bug, not theoretical
+
+### 2026-02-19 - Resolution
+
+**By:** Codex
+
+**Actions:**
+- Implemented session-aware sampling routing:
+  - Added request context propagation via `request-context.ts` (`AsyncLocalStorage`).
+  - Added per-session upstream server map in `SamplingProxy`.
+  - Registered/unregistered session servers from `AggregatorServer` lifecycle hooks.
+  - Routed sampling requests by current session first, with legacy fallback to `activeServer`.
+- Verified behavior with existing test suites and E2E checks.
+
+**Learnings:**
+- Session affinity can be introduced incrementally without breaking single-client behavior when legacy fallback is retained.
 
 ## Resources

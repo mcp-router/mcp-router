@@ -10,7 +10,7 @@ import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-ser
 import { MiniSearchProvider } from "./minisearch-provider";
 
 // Internal type for search context filtering
-// eslint-disable-next-line custom/no-scattered-types
+
 type SearchContext = {
   projectId: string | null;
   allowedServerIds?: Set<string>;
@@ -23,7 +23,11 @@ const MAX_RESULTS_LIMIT = 100;
 export class ToolCatalogService {
   private serverManager: MCPServerManager;
   private searchProvider: SearchProvider;
-  private toolCache: { tools: ToolInfo[]; hash: string; timestamp: number } | null = null;
+  private toolCache: {
+    tools: ToolInfo[];
+    hash: string;
+    timestamp: number;
+  } | null = null;
   private readonly TOOL_CACHE_TTL_MS = 5000;
 
   constructor(
@@ -100,7 +104,8 @@ export class ToolCatalogService {
 
       const serverName = server.name || serverId;
       if (!serverStatusMap.get(serverName)) continue;
-      if (context.allowedServerIds && !context.allowedServerIds.has(serverId)) continue;
+      if (context.allowedServerIds && !context.allowedServerIds.has(serverId))
+        continue;
       if (!this.matchesProject(server, context.projectId)) continue;
 
       eligibleServers.push({ serverId, server, serverName, client });
@@ -150,7 +155,10 @@ export class ToolCatalogService {
       if (result.status === "fulfilled") {
         tools.push(...result.value);
       } else {
-        console.error("[ToolCatalog] Failed to list tools from server:", result.reason);
+        console.error(
+          "[ToolCatalog] Failed to list tools from server:",
+          result.reason,
+        );
       }
     }
 

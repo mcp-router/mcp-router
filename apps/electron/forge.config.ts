@@ -11,9 +11,7 @@ import { rendererConfig } from "./webpack.renderer.config";
 import { MakerDMG } from "@electron-forge/maker-dmg";
 import * as path from "path";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
-
 
 const isMac = process.platform === "darwin";
 const hasSignIdentity = !!process.env.PUBLIC_IDENTIFIER;
@@ -30,18 +28,20 @@ const config: ForgeConfig = {
     // Support both Intel and Apple Silicon architectures - use target arch from env
     arch: (process.env.npm_config_target_arch as any) || process.arch,
     // Only sign/notarize on macOS when credentials are available (CI-safe)
-    osxSign: isMac && hasSignIdentity
-      ? {
-          identity: process.env.PUBLIC_IDENTIFIER,
-        }
-      : undefined,
-    osxNotarize: isMac && hasNotarizeCreds
-      ? {
-          appleApiKey: process.env.APPLE_API_KEY || "",
-          appleApiKeyId: process.env.APPLE_API_KEY_ID || "",
-          appleApiIssuer: process.env.APPLE_API_ISSUER || "",
-        }
-      : undefined,
+    osxSign:
+      isMac && hasSignIdentity
+        ? {
+            identity: process.env.PUBLIC_IDENTIFIER,
+          }
+        : undefined,
+    osxNotarize:
+      isMac && hasNotarizeCreds
+        ? {
+            appleApiKey: process.env.APPLE_API_KEY || "",
+            appleApiKeyId: process.env.APPLE_API_KEY_ID || "",
+            appleApiIssuer: process.env.APPLE_API_ISSUER || "",
+          }
+        : undefined,
   },
   rebuildConfig: {
     // Force rebuild native modules for the target architecture

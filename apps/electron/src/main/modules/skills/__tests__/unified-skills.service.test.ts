@@ -38,7 +38,9 @@ const { mockSkillRepo, mockStateRepo, mockFileManager, mockClientAppService } =
       deleteSkillDirectory: vi.fn().mockResolvedValue(true),
       renameSkillDirectory: vi.fn().mockResolvedValue("/mock/skills/renamed"),
       skillExists: vi.fn().mockResolvedValue(false),
-      extractFolderName: vi.fn().mockImplementation((p: string) => p.split("/").pop()),
+      extractFolderName: vi
+        .fn()
+        .mockImplementation((p: string) => p.split("/").pop()),
       openInFinder: vi.fn(),
     },
     mockClientAppService: {
@@ -439,9 +441,7 @@ describe("UnifiedSkillsService", () => {
       mockSkillRepo.findByName.mockReturnValue(null);
       mockClientAppService.list.mockResolvedValue([]);
       (fsPromises.rename as any).mockResolvedValue(undefined);
-      mockFileManager.writeSkillMd.mockRejectedValue(
-        new Error("Write failed"),
-      );
+      mockFileManager.writeSkillMd.mockRejectedValue(new Error("Write failed"));
 
       await expect(
         service.updateUnified("skill-1", {

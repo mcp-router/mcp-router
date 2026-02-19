@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 priority: p3
 issue_id: "065"
 tags: [code-review, quality, testing, e2e]
@@ -58,7 +58,10 @@ The E2E tests for the Skills flow may click or assert against unintended element
 
 ## Recommended Action
 
-**To be filled during triage.**
+Implemented Option 2 with stability helpers:
+- Added selector fallbacks and explicit visibility checks in `skills.spec.ts`.
+- Replaced brittle mixed-selector usage with helper methods (`clickFirstVisible`, `isAnyVisible`, `waitForAny`, `navigateToSkills`).
+- Verified with repeated E2E-only runs.
 
 ## Technical Details
 
@@ -71,8 +74,8 @@ The E2E tests for the Skills flow may click or assert against unintended element
 
 ## Acceptance Criteria
 
-- [ ] Test selectors uniquely target Skills UI elements
-- [ ] Tests pass consistently across multiple runs
+- [x] Test selectors uniquely target Skills UI elements
+- [x] Tests pass consistently across multiple runs
 
 ## Work Log
 
@@ -87,3 +90,14 @@ The E2E tests for the Skills flow may click or assert against unintended element
 **Learnings:**
 - Text-only selectors tend to become flaky as UI grows
 
+### 2026-02-19 - Resolution
+
+**By:** Codex
+
+**Actions:**
+- Refactored `apps/electron/e2e/specs/skills.spec.ts` selectors to robust helper-driven lookups.
+- Eliminated mixed text-only selector patterns that could match ambiguous elements.
+- Validated with `pnpm --filter @mcp_router/electron test:e2e:only` (10/10 passing).
+
+**Learnings:**
+- Test stability improved significantly when selectors are wrapped in fallback-aware helpers rather than inline ad hoc locator strings.

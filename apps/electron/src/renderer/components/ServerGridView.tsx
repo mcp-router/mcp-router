@@ -23,69 +23,129 @@ interface ServerGridViewProps {
   onError: (server: MCPServer, e: React.MouseEvent) => void;
 }
 
-export const ServerGridView: React.FC<ServerGridViewProps> = React.memo(({
-  filteredServers,
-  selectedProjectId,
-  projects,
-  collapsedByProjectId,
-  setCollapsed,
-  expandedServerId,
-  onToggleExpand,
-  onStartServer,
-  onStopServer,
-  onRequestDelete,
-  onError,
-}) => {
-  const { t } = useTranslation();
+export const ServerGridView: React.FC<ServerGridViewProps> = React.memo(
+  ({
+    filteredServers,
+    selectedProjectId,
+    projects,
+    collapsedByProjectId,
+    setCollapsed,
+    expandedServerId,
+    onToggleExpand,
+    onStartServer,
+    onStopServer,
+    onRequestDelete,
+    onError,
+  }) => {
+    const { t } = useTranslation();
 
-  const handleToggle = async (server: MCPServer, checked: boolean) => {
-    try {
-      if (checked) {
-        await onStartServer(server.id);
-        toast.success(t("serverList.serverStarted"));
-      } else {
-        await onStopServer(server.id);
-        toast.success(t("serverList.serverStopped"));
+    const handleToggle = async (server: MCPServer, checked: boolean) => {
+      try {
+        if (checked) {
+          await onStartServer(server.id);
+          toast.success(t("serverList.serverStarted"));
+        } else {
+          await onStopServer(server.id);
+          toast.success(t("serverList.serverStopped"));
+        }
+      } catch (error) {
+        showServerError(
+          error instanceof Error ? error : new Error(String(error)),
+          server.name,
+        );
       }
-    } catch (error) {
-      showServerError(
-        error instanceof Error ? error : new Error(String(error)),
-        server.name,
-      );
-    }
-  };
+    };
 
-  return (
-    <ScrollArea className="h-full">
-      <div className="p-4 space-y-4">
-        {/* Unassigned section Grid */}
-        {(selectedProjectId === null ||
-          selectedProjectId === UNASSIGNED_PROJECT_ID) &&
-          (() => {
-            const collapsed = collapsedByProjectId[UNASSIGNED_PROJECT_ID];
-            const unassignedServers = filteredServers.filter(
-              (s) => !s.projectId,
+    return (
+      <ScrollArea className="h-full">
+        <div className="p-4 space-y-4">
+          {/* Unassigned section Grid */}
+          {(selectedProjectId === null ||
+            selectedProjectId === UNASSIGNED_PROJECT_ID) &&
+            (() => {
+              const collapsed = collapsedByProjectId[UNASSIGNED_PROJECT_ID];
+              const unassignedServers = filteredServers.filter(
+                (s) => !s.projectId,
+              );
+              if (unassignedServers.length === 0) return null;
+              const isUnassignedCollapsible = selectedProjectId === null;
+              const effectiveCollapsed = isUnassignedCollapsible && collapsed;
+              return (
+                <div>
+                  <div
+                    className={cn(
+                      "px-3 py-2 flex items-center justify-between bg-muted/30 rounded-full mb-3 border border-border/10",
+                      isUnassignedCollapsible && "cursor-pointer",
+                    )}
+                    onClick={
+                      isUnassignedCollapsible
+                        ? () => setCollapsed(UNASSIGNED_PROJECT_ID, !collapsed)
+                        : undefined
+                    }
+                  >
+                    <div className="flex items-center gap-2 text-xs font-bold text-primary/70 uppercase tracking-widest ml-1">
+                      {isUnassignedCollapsible && (
+                        <ChevronDown
+                          className={cn(
+                            "h-3.5 w-3.5 transition-transform duration-300",
+                            collapsed ? "-rotate-90" : "rotate-0",
+                          )}
+                        />
+                      )}
+                      {t("projects.unassigned", {
+                        defaultValue: "Unassigned",
+                      })}
+                    </div>
+                    <div className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full mr-1">
+                      {unassignedServers.length}
+                    </div>
+                  </div>
+                  {!effectiveCollapsed && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                      {unassignedServers.map((server) => (
+                        <ServerCardCompact
+                          key={server.id}
+                          server={server}
+                          isExpanded={expandedServerId === server.id}
+                          onClick={() => onToggleExpand(server.id)}
+                          onToggle={(checked) => handleToggle(server, checked)}
+                          onDelete={() => onRequestDelete(server)}
+                          onError={(e) => onError(server, e)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+          {/* Project sections Grid */}
+          {(selectedProjectId === null
+            ? projects
+            : projects.filter((p) => p.id === selectedProjectId)
+          ).map((project) => {
+            const sectionServers = filteredServers.filter(
+              (s) => s.projectId === project.id,
             );
-            if (unassignedServers.length === 0) return null;
-            const isUnassignedCollapsible = selectedProjectId === null;
-            const effectiveCollapsed =
-              isUnassignedCollapsible && collapsed;
+            if (sectionServers.length === 0) return null;
+            const collapsed = !!collapsedByProjectId[project.id];
+            const isProjectCollapsible = selectedProjectId === null;
+            const effectiveCollapsed = isProjectCollapsible && collapsed;
             return (
-              <div>
+              <div key={project.id} className="pt-2">
                 <div
                   className={cn(
                     "px-3 py-2 flex items-center justify-between bg-muted/30 rounded-full mb-3 border border-border/10",
-                    isUnassignedCollapsible && "cursor-pointer",
+                    isProjectCollapsible && "cursor-pointer",
                   )}
                   onClick={
-                    isUnassignedCollapsible
-                      ? () =>
-                          setCollapsed(UNASSIGNED_PROJECT_ID, !collapsed)
+                    isProjectCollapsible
+                      ? () => setCollapsed(project.id, !collapsed)
                       : undefined
                   }
                 >
                   <div className="flex items-center gap-2 text-xs font-bold text-primary/70 uppercase tracking-widest ml-1">
-                    {isUnassignedCollapsible && (
+                    {isProjectCollapsible && (
                       <ChevronDown
                         className={cn(
                           "h-3.5 w-3.5 transition-transform duration-300",
@@ -93,17 +153,15 @@ export const ServerGridView: React.FC<ServerGridViewProps> = React.memo(({
                         )}
                       />
                     )}
-                    {t("projects.unassigned", {
-                      defaultValue: "Unassigned",
-                    })}
+                    {project.name}
                   </div>
                   <div className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full mr-1">
-                    {unassignedServers.length}
+                    {sectionServers.length}
                   </div>
                 </div>
                 {!effectiveCollapsed && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                    {unassignedServers.map((server) => (
+                    {sectionServers.map((server) => (
                       <ServerCardCompact
                         key={server.id}
                         server={server}
@@ -118,69 +176,11 @@ export const ServerGridView: React.FC<ServerGridViewProps> = React.memo(({
                 )}
               </div>
             );
-          })()}
-
-        {/* Project sections Grid */}
-        {(selectedProjectId === null
-          ? projects
-          : projects.filter((p) => p.id === selectedProjectId)
-        ).map((project) => {
-          const sectionServers = filteredServers.filter(
-            (s) => s.projectId === project.id,
-          );
-          if (sectionServers.length === 0) return null;
-          const collapsed = !!collapsedByProjectId[project.id];
-          const isProjectCollapsible = selectedProjectId === null;
-          const effectiveCollapsed = isProjectCollapsible && collapsed;
-          return (
-            <div key={project.id} className="pt-2">
-              <div
-                className={cn(
-                  "px-3 py-2 flex items-center justify-between bg-muted/30 rounded-full mb-3 border border-border/10",
-                  isProjectCollapsible && "cursor-pointer",
-                )}
-                onClick={
-                  isProjectCollapsible
-                    ? () => setCollapsed(project.id, !collapsed)
-                    : undefined
-                }
-              >
-                <div className="flex items-center gap-2 text-xs font-bold text-primary/70 uppercase tracking-widest ml-1">
-                  {isProjectCollapsible && (
-                    <ChevronDown
-                      className={cn(
-                        "h-3.5 w-3.5 transition-transform duration-300",
-                        collapsed ? "-rotate-90" : "rotate-0",
-                      )}
-                    />
-                  )}
-                  {project.name}
-                </div>
-                <div className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full mr-1">
-                  {sectionServers.length}
-                </div>
-              </div>
-              {!effectiveCollapsed && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                  {sectionServers.map((server) => (
-                    <ServerCardCompact
-                      key={server.id}
-                      server={server}
-                      isExpanded={expandedServerId === server.id}
-                      onClick={() => onToggleExpand(server.id)}
-                      onToggle={(checked) => handleToggle(server, checked)}
-                      onDelete={() => onRequestDelete(server)}
-                      onError={(e) => onError(server, e)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </ScrollArea>
-  );
-});
+          })}
+        </div>
+      </ScrollArea>
+    );
+  },
+);
 
 ServerGridView.displayName = "ServerGridView";

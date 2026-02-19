@@ -12,8 +12,7 @@ const requestedDevServerHost =
 // Normalize wildcard hosts to loopback while preserving explicit host overrides.
 const isWildcardHost =
   requestedDevServerHost === "0.0.0.0" || requestedDevServerHost === "::";
-const devServerHost =
-  isWildcardHost ? "127.0.0.1" : requestedDevServerHost;
+const devServerHost = isWildcardHost ? "127.0.0.1" : requestedDevServerHost;
 
 if (isWildcardHost) {
   console.warn(

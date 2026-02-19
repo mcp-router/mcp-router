@@ -10,12 +10,8 @@ export const plugins = [
     },
     issue: {
       // Make TypeScript errors block the build
-      include: [
-        { file: "**/*.{ts,tsx}" },
-      ],
-      exclude: [
-        { file: "**/node_modules/**/*" },
-      ],
+      include: [{ file: "**/*.{ts,tsx}" }],
+      exclude: [{ file: "**/node_modules/**/*" }],
     },
     async: false, // Run type checking synchronously to block builds on errors
   }),

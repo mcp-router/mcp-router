@@ -1,5 +1,11 @@
 import React from "react";
-import { MCPServer, MCPServerConfig, MCPInputParam, Project, ProjectOptimization } from "@mcp_router/shared";
+import {
+  MCPServer,
+  MCPServerConfig,
+  MCPInputParam,
+  Project,
+  ProjectOptimization,
+} from "@mcp_router/shared";
 import { Button } from "@mcp_router/ui";
 import {
   AlertDialog,
@@ -59,163 +65,166 @@ interface ServerModalsProps {
   onConfirmDelete: () => Promise<void>;
 }
 
-export const ServerModals: React.FC<ServerModalsProps> = React.memo(({
-  errorServer,
-  errorModalOpen,
-  onCloseErrorModal,
-  isHomeSettingsOpen,
-  setIsHomeSettingsOpen,
-  projects,
-  onCreateProject,
-  onRenameProject,
-  onDeleteProject,
-  onUpdateProjectOptimization,
-  advancedSettingsServer,
-  setAdvancedSettingsServer,
-  onUpdateServerConfig,
-  onUpdateServerToolPermissions,
-  onRefreshServers,
-  deleteDialogOpen,
-  setDeleteDialogOpen,
-  serverToDelete,
-  onConfirmDelete,
-}) => {
-  const { t } = useTranslation();
-  const { setIsAdvancedEditing } = useServerEditingStore();
+export const ServerModals: React.FC<ServerModalsProps> = React.memo(
+  ({
+    errorServer,
+    errorModalOpen,
+    onCloseErrorModal,
+    isHomeSettingsOpen,
+    setIsHomeSettingsOpen,
+    projects,
+    onCreateProject,
+    onRenameProject,
+    onDeleteProject,
+    onUpdateProjectOptimization,
+    advancedSettingsServer,
+    setAdvancedSettingsServer,
+    onUpdateServerConfig,
+    onUpdateServerToolPermissions,
+    onRefreshServers,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    serverToDelete,
+    onConfirmDelete,
+  }) => {
+    const { t } = useTranslation();
+    const { setIsAdvancedEditing } = useServerEditingStore();
 
-  return (
-    <>
-      {errorServer && (
-        <ServerErrorModal
-          isOpen={errorModalOpen}
-          onClose={onCloseErrorModal}
-          serverName={errorServer.name}
-          errorMessage={errorServer.errorMessage}
-        />
-      )}
+    return (
+      <>
+        {errorServer && (
+          <ServerErrorModal
+            isOpen={errorModalOpen}
+            onClose={onCloseErrorModal}
+            serverName={errorServer.name}
+            errorMessage={errorServer.errorMessage}
+          />
+        )}
 
-      <ProjectSettingsModal
-        open={isHomeSettingsOpen}
-        onOpenChange={setIsHomeSettingsOpen}
-        projects={projects}
-        onCreateProject={onCreateProject}
-        onRenameProject={onRenameProject}
-        onDeleteProject={onDeleteProject}
-        onUpdateProjectOptimization={onUpdateProjectOptimization}
-      />
-
-      {advancedSettingsServer && (
-        <ServerDetailsAdvancedSheet
-          server={advancedSettingsServer}
+        <ProjectSettingsModal
+          open={isHomeSettingsOpen}
+          onOpenChange={setIsHomeSettingsOpen}
           projects={projects}
-          onAssignProject={async (projectId: string | null) => {
-            await onUpdateServerConfig(advancedSettingsServer.id, {
-              projectId,
-            });
-            await onRefreshServers();
-          }}
-          onOpenManageProjects={() => setIsHomeSettingsOpen(true)}
-          handleSave={async (
-            updatedInputParams,
-            editedName,
-            updatedToolPermissions,
-          ) => {
-            try {
-              const {
-                editedCommand,
-                editedArgs,
-                editedBearerToken,
-                editedAutoStart,
-                envPairs,
-                editedDevEnabled,
-                editedWatchPatterns,
-              } = useServerEditingStore.getState();
-              const envObj: Record<string, string> = {};
-              envPairs.forEach((pair) => {
-                if (pair.key.trim()) envObj[pair.key.trim()] = pair.value;
-              });
-              const finalInputParams = (
-                updatedInputParams || advancedSettingsServer.inputParams
-              ) as Record<string, MCPInputParam> | undefined;
-              if (finalInputParams) {
-                Object.entries(finalInputParams).forEach(
-                  ([key, param]: [string, MCPInputParam]) => {
-                    if (
-                      !envObj[key] &&
-                      param.default !== undefined &&
-                      param.default !== null &&
-                      String(param.default).trim() !== ""
-                    ) {
-                      envObj[key] = String(param.default);
-                    }
-                  },
-                );
-              }
-              const updatedConfig: Partial<MCPServerConfig> = {
-                name: editedName || advancedSettingsServer.name,
-                command: editedCommand,
-                args: editedArgs,
-                env: envObj,
-                autoStart: editedAutoStart,
-                inputParams: finalInputParams,
-              };
-              if (advancedSettingsServer.serverType === "local") {
-                updatedConfig.dev = {
-                  enabled: editedDevEnabled,
-                  watch: editedWatchPatterns
-                    .split(",")
-                    .map((p) => p.trim())
-                    .filter(Boolean),
-                };
-              } else {
-                updatedConfig.bearerToken = editedBearerToken;
-              }
-              await onUpdateServerConfig(
-                advancedSettingsServer.id,
-                updatedConfig,
-              );
-              if (updatedToolPermissions)
-                await onUpdateServerToolPermissions(
-                  advancedSettingsServer.id,
-                  updatedToolPermissions,
-                );
-              setIsAdvancedEditing(false);
-              setAdvancedSettingsServer(null);
-              toast.success(t("serverDetails.updateSuccess"));
-            } catch (_error) {
-              toast.error(t("serverDetails.updateFailed"));
-            }
-          }}
+          onCreateProject={onCreateProject}
+          onRenameProject={onRenameProject}
+          onDeleteProject={onDeleteProject}
+          onUpdateProjectOptimization={onUpdateProjectOptimization}
         />
-      )}
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("serverSettings.confirmDeleteTitle")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("serverSettings.confirmDeleteDescription", {
-                serverName: serverToDelete?.name ?? "",
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-full">
-              {t("common.cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={onConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full"
-            >
-              {t("serverSettings.delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-});
+        {advancedSettingsServer && (
+          <ServerDetailsAdvancedSheet
+            server={advancedSettingsServer}
+            projects={projects}
+            onAssignProject={async (projectId: string | null) => {
+              await onUpdateServerConfig(advancedSettingsServer.id, {
+                projectId,
+              });
+              await onRefreshServers();
+            }}
+            onOpenManageProjects={() => setIsHomeSettingsOpen(true)}
+            handleSave={async (
+              updatedInputParams,
+              editedName,
+              updatedToolPermissions,
+            ) => {
+              try {
+                const {
+                  editedCommand,
+                  editedArgs,
+                  editedBearerToken,
+                  editedAutoStart,
+                  envPairs,
+                  editedDevEnabled,
+                  editedWatchPatterns,
+                } = useServerEditingStore.getState();
+                const envObj: Record<string, string> = {};
+                envPairs.forEach((pair) => {
+                  if (pair.key.trim()) envObj[pair.key.trim()] = pair.value;
+                });
+                const finalInputParams = (updatedInputParams ||
+                  advancedSettingsServer.inputParams) as
+                  | Record<string, MCPInputParam>
+                  | undefined;
+                if (finalInputParams) {
+                  Object.entries(finalInputParams).forEach(
+                    ([key, param]: [string, MCPInputParam]) => {
+                      if (
+                        !envObj[key] &&
+                        param.default !== undefined &&
+                        param.default !== null &&
+                        String(param.default).trim() !== ""
+                      ) {
+                        envObj[key] = String(param.default);
+                      }
+                    },
+                  );
+                }
+                const updatedConfig: Partial<MCPServerConfig> = {
+                  name: editedName || advancedSettingsServer.name,
+                  command: editedCommand,
+                  args: editedArgs,
+                  env: envObj,
+                  autoStart: editedAutoStart,
+                  inputParams: finalInputParams,
+                };
+                if (advancedSettingsServer.serverType === "local") {
+                  updatedConfig.dev = {
+                    enabled: editedDevEnabled,
+                    watch: editedWatchPatterns
+                      .split(",")
+                      .map((p) => p.trim())
+                      .filter(Boolean),
+                  };
+                } else {
+                  updatedConfig.bearerToken = editedBearerToken;
+                }
+                await onUpdateServerConfig(
+                  advancedSettingsServer.id,
+                  updatedConfig,
+                );
+                if (updatedToolPermissions)
+                  await onUpdateServerToolPermissions(
+                    advancedSettingsServer.id,
+                    updatedToolPermissions,
+                  );
+                setIsAdvancedEditing(false);
+                setAdvancedSettingsServer(null);
+                toast.success(t("serverDetails.updateSuccess"));
+              } catch (_error) {
+                toast.error(t("serverDetails.updateFailed"));
+              }
+            }}
+          />
+        )}
+
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent className="rounded-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {t("serverSettings.confirmDeleteTitle")}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("serverSettings.confirmDeleteDescription", {
+                  serverName: serverToDelete?.name ?? "",
+                })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-full">
+                {t("common.cancel")}
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={onConfirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full"
+              >
+                {t("serverSettings.delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
+    );
+  },
+);
 
 ServerModals.displayName = "ServerModals";

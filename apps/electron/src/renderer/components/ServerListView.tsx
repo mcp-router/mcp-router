@@ -37,48 +37,104 @@ interface ServerListViewProps {
   onDeleteServer: (server: MCPServer, e: React.MouseEvent) => void;
 }
 
-export const ServerListView: React.FC<ServerListViewProps> = React.memo(({
-  filteredServers,
-  selectedProjectId,
-  projects,
-  collapsedByProjectId,
-  setCollapsed,
-  onToggleExpand,
-  onStartServer,
-  onStopServer,
-  onDeleteServer,
-}) => {
-  const { t } = useTranslation();
+export const ServerListView: React.FC<ServerListViewProps> = React.memo(
+  ({
+    filteredServers,
+    selectedProjectId,
+    projects,
+    collapsedByProjectId,
+    setCollapsed,
+    onToggleExpand,
+    onStartServer,
+    onStopServer,
+    onDeleteServer,
+  }) => {
+    const { t } = useTranslation();
 
-  return (
-    <ScrollArea className="h-full">
-      <div className="divide-y divide-border">
-        {/* Unassigned Section */}
-        {(selectedProjectId === null ||
-          selectedProjectId === UNASSIGNED_PROJECT_ID) &&
-          (() => {
-            const collapsed =
-              !!collapsedByProjectId[UNASSIGNED_PROJECT_ID];
-            const unassignedServers = filteredServers.filter(
-              (s) => !s.projectId,
+    return (
+      <ScrollArea className="h-full">
+        <div className="divide-y divide-border">
+          {/* Unassigned Section */}
+          {(selectedProjectId === null ||
+            selectedProjectId === UNASSIGNED_PROJECT_ID) &&
+            (() => {
+              const collapsed = !!collapsedByProjectId[UNASSIGNED_PROJECT_ID];
+              const unassignedServers = filteredServers.filter(
+                (s) => !s.projectId,
+              );
+              const isUnassignedCollapsible = selectedProjectId === null;
+              const effectiveCollapsed = isUnassignedCollapsible && collapsed;
+              const unassignedHeaderOnClick = isUnassignedCollapsible
+                ? () => setCollapsed(UNASSIGNED_PROJECT_ID, !collapsed)
+                : undefined;
+              return (
+                <div>
+                  <div
+                    className={cn(
+                      "px-4 py-2.5 flex items-center justify-between bg-muted/40 backdrop-blur-sm sticky top-0 z-10 border-b border-border/10",
+                      isUnassignedCollapsible && "cursor-pointer",
+                    )}
+                    onClick={unassignedHeaderOnClick}
+                  >
+                    <div className="flex items-center gap-2 text-sm font-bold text-primary/80">
+                      {isUnassignedCollapsible && (
+                        <ChevronDown
+                          className={cn(
+                            "h-4 w-4 transition-transform duration-300",
+                            collapsed ? "-rotate-90" : "rotate-0",
+                          )}
+                        />
+                      )}
+                      {t("projects.unassigned", {
+                        defaultValue: "Unassigned",
+                      })}
+                    </div>
+                    <div className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      {unassignedServers.length}
+                    </div>
+                  </div>
+                  {!effectiveCollapsed &&
+                    unassignedServers.map((server) => (
+                      <ServerListRow
+                        key={server.id}
+                        server={server}
+                        onToggleExpand={onToggleExpand}
+                        onStartServer={onStartServer}
+                        onStopServer={onStopServer}
+                        onDeleteServer={onDeleteServer}
+                      />
+                    ))}
+                </div>
+              );
+            })()}
+
+          {/* Project Sections */}
+          {(selectedProjectId === null
+            ? projects
+            : projects.filter((p) => p.id === selectedProjectId)
+          ).map((project) => {
+            const sectionServers = filteredServers.filter(
+              (s) => s.projectId === project.id,
             );
-            const isUnassignedCollapsible = selectedProjectId === null;
-            const effectiveCollapsed =
-              isUnassignedCollapsible && collapsed;
-            const unassignedHeaderOnClick = isUnassignedCollapsible
-              ? () => setCollapsed(UNASSIGNED_PROJECT_ID, !collapsed)
-              : undefined;
+            if (sectionServers.length === 0) return null;
+            const collapsed = !!collapsedByProjectId[project.id];
+            const isProjectCollapsible = selectedProjectId === null;
+            const effectiveCollapsed = isProjectCollapsible && collapsed;
             return (
-              <div>
+              <div key={project.id}>
                 <div
                   className={cn(
                     "px-4 py-2.5 flex items-center justify-between bg-muted/40 backdrop-blur-sm sticky top-0 z-10 border-b border-border/10",
-                    isUnassignedCollapsible && "cursor-pointer",
+                    isProjectCollapsible && "cursor-pointer",
                   )}
-                  onClick={unassignedHeaderOnClick}
+                  onClick={
+                    isProjectCollapsible
+                      ? () => setCollapsed(project.id, !collapsed)
+                      : undefined
+                  }
                 >
                   <div className="flex items-center gap-2 text-sm font-bold text-primary/80">
-                    {isUnassignedCollapsible && (
+                    {isProjectCollapsible && (
                       <ChevronDown
                         className={cn(
                           "h-4 w-4 transition-transform duration-300",
@@ -86,16 +142,14 @@ export const ServerListView: React.FC<ServerListViewProps> = React.memo(({
                         )}
                       />
                     )}
-                    {t("projects.unassigned", {
-                      defaultValue: "Unassigned",
-                    })}
+                    {project.name}
                   </div>
                   <div className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                    {unassignedServers.length}
+                    {sectionServers.length}
                   </div>
                 </div>
                 {!effectiveCollapsed &&
-                  unassignedServers.map((server) => (
+                  sectionServers.map((server) => (
                     <ServerListRow
                       key={server.id}
                       server={server}
@@ -107,66 +161,12 @@ export const ServerListView: React.FC<ServerListViewProps> = React.memo(({
                   ))}
               </div>
             );
-          })()}
-
-        {/* Project Sections */}
-        {(selectedProjectId === null
-          ? projects
-          : projects.filter((p) => p.id === selectedProjectId)
-        ).map((project) => {
-          const sectionServers = filteredServers.filter(
-            (s) => s.projectId === project.id,
-          );
-          if (sectionServers.length === 0) return null;
-          const collapsed = !!collapsedByProjectId[project.id];
-          const isProjectCollapsible = selectedProjectId === null;
-          const effectiveCollapsed = isProjectCollapsible && collapsed;
-          return (
-            <div key={project.id}>
-              <div
-                className={cn(
-                  "px-4 py-2.5 flex items-center justify-between bg-muted/40 backdrop-blur-sm sticky top-0 z-10 border-b border-border/10",
-                  isProjectCollapsible && "cursor-pointer",
-                )}
-                onClick={
-                  isProjectCollapsible
-                    ? () => setCollapsed(project.id, !collapsed)
-                    : undefined
-                }
-              >
-                <div className="flex items-center gap-2 text-sm font-bold text-primary/80">
-                  {isProjectCollapsible && (
-                    <ChevronDown
-                      className={cn(
-                        "h-4 w-4 transition-transform duration-300",
-                        collapsed ? "-rotate-90" : "rotate-0",
-                      )}
-                    />
-                  )}
-                  {project.name}
-                </div>
-                <div className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                  {sectionServers.length}
-                </div>
-              </div>
-              {!effectiveCollapsed &&
-                sectionServers.map((server) => (
-                  <ServerListRow
-                    key={server.id}
-                    server={server}
-                    onToggleExpand={onToggleExpand}
-                    onStartServer={onStartServer}
-                    onStopServer={onStopServer}
-                    onDeleteServer={onDeleteServer}
-                  />
-                ))}
-            </div>
-          );
-        })}
-      </div>
-    </ScrollArea>
-  );
-});
+          })}
+        </div>
+      </ScrollArea>
+    );
+  },
+);
 
 ServerListView.displayName = "ServerListView";
 
@@ -177,7 +177,13 @@ const ServerListRow: React.FC<{
   onStartServer: (id: string) => Promise<void>;
   onStopServer: (id: string) => Promise<void>;
   onDeleteServer: (server: MCPServer, e: React.MouseEvent) => void;
-}> = ({ server, onToggleExpand, onStartServer, onStopServer, onDeleteServer }) => {
+}> = ({
+  server,
+  onToggleExpand,
+  onStartServer,
+  onStopServer,
+  onDeleteServer,
+}) => {
   const { t } = useTranslation();
   const status = getStatusVisual(server.status);
 
@@ -193,10 +199,10 @@ const ServerListRow: React.FC<{
               {server.name}
             </div>
             {server.description && (
-                <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
-                  {server.description}
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
+                {server.description}
+              </p>
+            )}
             <div className="flex flex-wrap gap-2 mb-1">
               <Badge
                 variant="secondary"
@@ -251,9 +257,7 @@ const ServerListRow: React.FC<{
                     }
                   } catch (error) {
                     showServerError(
-                      error instanceof Error
-                        ? error
-                        : new Error(String(error)),
+                      error instanceof Error ? error : new Error(String(error)),
                       server.name,
                     );
                   }

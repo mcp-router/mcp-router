@@ -46,9 +46,7 @@ function estimateObjectSize(
         return size;
       }
       let size = 2; // braces
-      for (const [key, val] of Object.entries(
-        obj as Record<string, unknown>,
-      )) {
+      for (const [key, val] of Object.entries(obj as Record<string, unknown>)) {
         size += key.length + 4 + estimateObjectSize(val, seen, depth + 1);
       }
       return size;

@@ -33,9 +33,7 @@ export function useServerFiltering() {
   const setSearchQuery = useServerUIStore((state) => state.setSearchQuery);
   const expandedServerId = useServerUIStore((state) => state.expandedServerId);
 
-  const currentWorkspace = useWorkspaceStore(
-    (state) => state.currentWorkspace,
-  );
+  const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const login = useAuthStore((state) => state.login);
@@ -56,9 +54,7 @@ export function useServerFiltering() {
     (state) => state.collapsedByProjectId,
   );
   const setCollapsed = useProjectStore((state) => state.setCollapsed);
-  const selectedProjectId = useProjectStore(
-    (state) => state.selectedProjectId,
-  );
+  const selectedProjectId = useProjectStore((state) => state.selectedProjectId);
   const setSelectedProjectId = useProjectStore(
     (state) => state.setSelectedProjectId,
   );

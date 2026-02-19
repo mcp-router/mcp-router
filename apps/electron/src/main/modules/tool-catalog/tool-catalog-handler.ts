@@ -147,7 +147,7 @@ WORKFLOW:
 ];
 
 // Internal dependency injection type for handler initialization
-// eslint-disable-next-line custom/no-scattered-types
+
 type ToolCatalogHandlerDeps = {
   servers: ReadonlyMap<string, MCPServer>;
   clients: ReadonlyMap<string, ReconnectingMCPClient>;

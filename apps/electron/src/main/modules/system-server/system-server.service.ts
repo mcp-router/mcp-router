@@ -19,11 +19,16 @@ export class SystemServerService {
   }
 
   /** Initialise (or re-initialise) the service with a given server manager. */
-  public static initialize(serverManager: MCPServerManager): SystemServerService {
+  public static initialize(
+    serverManager: MCPServerManager,
+  ): SystemServerService {
     if (instance) {
       // Shut down the previous instance if re-initialising
       instance.systemServer.shutdown().catch((err) => {
-        console.error("[SystemServerService] Error shutting down previous instance:", err);
+        console.error(
+          "[SystemServerService] Error shutting down previous instance:",
+          err,
+        );
       });
     }
     instance = new SystemServerService(serverManager);
@@ -33,7 +38,9 @@ export class SystemServerService {
   /** Get the current instance (throws if not initialised). */
   public static getInstance(): SystemServerService {
     if (!instance) {
-      throw new Error("SystemServerService not initialised — call initialize() first");
+      throw new Error(
+        "SystemServerService not initialised — call initialize() first",
+      );
     }
     return instance;
   }
@@ -54,4 +61,3 @@ export class SystemServerService {
     instance = null;
   }
 }
-

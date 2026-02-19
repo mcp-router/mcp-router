@@ -79,7 +79,10 @@ class ElectronPlatformAPI implements PlatformAPI {
       },
       create: (input) => window.electronAPI.addMcpServer(input),
       update: async (id, updates) => {
-        const result = await window.electronAPI.updateMcpServerConfig(id, updates);
+        const result = await window.electronAPI.updateMcpServerConfig(
+          id,
+          updates,
+        );
         if (!result) throw new Error(`Server not found: ${id}`);
         return result;
       },

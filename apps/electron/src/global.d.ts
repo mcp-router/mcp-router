@@ -93,9 +93,14 @@ declare global {
       startMcpServer: (id: string) => Promise<boolean>;
       stopMcpServer: (id: string) => Promise<boolean>;
       addMcpServer: (input: CreateServerInput) => Promise<MCPServer>;
-      serverSelectFile: (options?: FileSelectOptions) => Promise<FileSelectResult>;
+      serverSelectFile: (
+        options?: FileSelectOptions,
+      ) => Promise<FileSelectResult>;
       removeMcpServer: (id: string) => Promise<boolean>;
-      updateMcpServerConfig: (id: string, config: Partial<MCPServerConfig>) => Promise<MCPServer | undefined>;
+      updateMcpServerConfig: (
+        id: string,
+        config: Partial<MCPServerConfig>,
+      ) => Promise<MCPServer | undefined>;
       listMcpServerTools: (id: string) => Promise<MCPTool[]>;
       updateToolPermissions: (
         id: string,
@@ -267,7 +272,12 @@ declare global {
       getUnifiedSkill: (id: string) => Promise<UnifiedSkill | null>;
       updateUnifiedSkill: (
         id: string,
-        updates: { name?: string; content?: string; globalSync?: boolean; projectId?: string | null },
+        updates: {
+          name?: string;
+          content?: string;
+          globalSync?: boolean;
+          projectId?: string | null;
+        },
       ) => Promise<UnifiedSkill>;
       setClientSkillState: (
         input: SetClientSkillStateInput,
@@ -424,7 +434,9 @@ declare global {
       // Client Apps Management
       listClientApps: () => Promise<ClientApp[]>;
       getClientApp: (id: string) => Promise<ClientApp | null>;
-      createClientApp: (input: CreateClientAppInput) => Promise<ClientAppResult>;
+      createClientApp: (
+        input: CreateClientAppInput,
+      ) => Promise<ClientAppResult>;
       updateClientApp: (
         id: string,
         input: UpdateClientAppInput,

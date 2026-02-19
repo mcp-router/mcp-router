@@ -496,7 +496,7 @@ const ClientApps: React.FC = () => {
                         dangerouslySetInnerHTML={{
                           __html: sanitizeSvgWithStyles(
                             client.icon,
-                            "width: 100%; height: 100%; max-width: 24px; max-height: 24px;"
+                            "width: 100%; height: 100%; max-width: 24px; max-height: 24px;",
                           ),
                         }}
                       />

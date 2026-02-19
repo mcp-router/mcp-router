@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle, Label } from "@mcp_router/ui";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Label,
+} from "@mcp_router/ui";
 import {
   Select,
   SelectContent,

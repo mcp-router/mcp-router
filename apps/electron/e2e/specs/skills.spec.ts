@@ -15,7 +15,13 @@ async function clickFirstVisible(page: Page, selectors: string[]) {
 
 async function isAnyVisible(page: Page, selectors: string[]) {
   for (const selector of selectors) {
-    if (await page.locator(selector).first().isVisible().catch(() => false)) {
+    if (
+      await page
+        .locator(selector)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       return true;
     }
   }
@@ -53,7 +59,11 @@ test.describe("Skills Feature", () => {
     // Wait for the skills manager to load
     await waitForAny(
       page,
-      ['[data-testid="skills-manager"]', ".skills-container", "text=Skills Library"],
+      [
+        '[data-testid="skills-manager"]',
+        ".skills-container",
+        "text=Skills Library",
+      ],
       10000,
     );
 
@@ -140,7 +150,11 @@ test.describe("Skills Feature", () => {
       // Wait for detail sheet to appear
       await waitForAny(
         page,
-        ['[role="dialog"]', '[data-testid="skill-detail-sheet"]', ".sheet-content"],
+        [
+          '[role="dialog"]',
+          '[data-testid="skill-detail-sheet"]',
+          ".sheet-content",
+        ],
         5000,
       );
 

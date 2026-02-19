@@ -325,7 +325,6 @@ export class HealthMetricsTracker {
       ...data.history.slice(0, data.historyWriteIdx),
     ];
   }
-
 }
 
 // ---------------------------------------------------------------------------

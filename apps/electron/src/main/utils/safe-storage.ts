@@ -26,7 +26,10 @@ export function encryptString(plaintext: string): string {
     const encrypted = safeStorage.encryptString(plaintext);
     return ENCRYPTED_PREFIX + encrypted.toString("base64");
   } catch (error) {
-    console.error("[safe-storage] Encryption failed, storing plaintext:", error);
+    console.error(
+      "[safe-storage] Encryption failed, storing plaintext:",
+      error,
+    );
     return plaintext;
   }
 }
@@ -60,5 +63,5 @@ export function decryptString(value: string): string {
  * Check whether a value is already encrypted (has the enc: prefix).
  */
 export function isEncrypted(value: string): boolean {
-  return typeof value === 'string' && value.startsWith(ENCRYPTED_PREFIX);
+  return typeof value === "string" && value.startsWith(ENCRYPTED_PREFIX);
 }

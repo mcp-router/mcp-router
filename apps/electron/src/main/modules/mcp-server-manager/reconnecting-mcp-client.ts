@@ -148,12 +148,9 @@ export class ReconnectingMCPClient {
 
     if (this.onSamplingRequest) {
       const handler = this.onSamplingRequest;
-      client.setRequestHandler(
-        CreateMessageRequestSchema,
-        async (request) => {
-          return (await handler(request.params)) as CreateMessageResult;
-        },
-      );
+      client.setRequestHandler(CreateMessageRequestSchema, async (request) => {
+        return (await handler(request.params)) as CreateMessageResult;
+      });
     }
 
     return client;

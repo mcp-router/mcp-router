@@ -163,8 +163,9 @@ function validateMcpbManifest(manifest: McpbManifest): void {
     "cargo",
     "docker",
   ];
-  const isCommandAllowed =
-    allowedCommands.includes(manifest.server.mcp_config.command);
+  const isCommandAllowed = allowedCommands.includes(
+    manifest.server.mcp_config.command,
+  );
 
   if (
     !isCommandAllowed ||

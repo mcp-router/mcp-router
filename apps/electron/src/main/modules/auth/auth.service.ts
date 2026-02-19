@@ -1,8 +1,5 @@
 import { getSettingsService } from "@/main/modules/settings/settings.service";
-import {
-  API_BASE_URL,
-  getMainWindow,
-} from "@/main/infrastructure/app-context";
+import { API_BASE_URL, getMainWindow } from "@/main/infrastructure/app-context";
 import crypto from "crypto";
 import { shell } from "electron";
 import { fetchWithToken } from "@/main/utils/fetch-utils";

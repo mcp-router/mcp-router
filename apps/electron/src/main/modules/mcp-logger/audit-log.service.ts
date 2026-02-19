@@ -57,7 +57,9 @@ export class AuditLogService {
         action,
         target,
         targetType,
-        details: details ? JSON.stringify(this.scrubSensitiveData(details)) : "{}",
+        details: details
+          ? JSON.stringify(this.scrubSensitiveData(details))
+          : "{}",
         ipAddress: null,
       });
     } catch (error) {
@@ -123,7 +125,13 @@ export class AuditLogService {
     this.log(`project.${action}`, projectName, "project", details);
   }
 
-  public queryLogs(filters?: { action?: string; actor?: string; startDate?: string; endDate?: string; limit?: number }): AuditLogEntry[] {
+  public queryLogs(filters?: {
+    action?: string;
+    actor?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+  }): AuditLogEntry[] {
     return this.repository.getEntries(filters);
   }
 
@@ -146,7 +154,9 @@ export class AuditLogService {
 
     if (typeof obj === "object") {
       const scrubbed: Record<string, unknown> = {};
-      for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      for (const [key, value] of Object.entries(
+        obj as Record<string, unknown>,
+      )) {
         if (SENSITIVE_KEYS.has(key)) {
           scrubbed[key] = "***REDACTED***";
         } else if (typeof value === "object" && value !== null) {

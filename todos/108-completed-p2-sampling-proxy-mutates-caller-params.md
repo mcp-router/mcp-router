@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 priority: p2
 issue_id: "108"
 tags: [code-review, typescript, bug]
@@ -103,11 +103,11 @@ return await this.activeServer.createMessage(safeParams);
 
 ## Acceptance Criteria
 
-- [ ] `params` object is not mutated by `createMessage()`
-- [ ] `maxTokens` is still capped at `MAX_SAMPLING_TOKENS` in the forwarded request
-- [ ] Callers retain original `maxTokens` value after the call returns
-- [ ] `pnpm typecheck` passes
-- [ ] Existing sampling tests pass (if any)
+- [x] `params` object is not mutated by `createMessage()`
+- [x] `maxTokens` is still capped at `MAX_SAMPLING_TOKENS` in the forwarded request
+- [x] Callers retain original `maxTokens` value after the call returns
+- [x] `pnpm typecheck` passes
+- [x] Existing sampling tests pass (if any)
 
 ## Work Log
 
@@ -123,5 +123,17 @@ return await this.activeServer.createMessage(safeParams);
 **Learnings:**
 - Parameter mutation is a common JavaScript footgun in middleware-style code
 - Shallow spread is sufficient since only a top-level field is modified
+
+### 2026-02-19 - Resolution
+
+**By:** Codex
+
+**Actions:**
+- Updated `SamplingProxy.createMessage()` to construct `safeParams` via object spread and capped `maxTokens` on the copy only.
+- Preserved caller-owned request object immutability while maintaining the token cap behavior.
+- Validated with `pnpm turbo run typecheck` and `pnpm --filter @mcp_router/electron test`.
+
+**Learnings:**
+- Keeping request payloads immutable by default also simplified follow-on session-aware routing changes.
 
 ## Resources

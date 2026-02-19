@@ -208,9 +208,7 @@ export class TokenBudgetTracker {
     const withCatalog = this.metaToolDefinitionTokens;
     const savedTokens = Math.max(0, withoutCatalog - withCatalog);
     const savingsPercent =
-      withoutCatalog > 0
-        ? Math.round((savedTokens / withoutCatalog) * 100)
-        : 0;
+      withoutCatalog > 0 ? Math.round((savedTokens / withoutCatalog) * 100) : 0;
 
     return {
       withoutCatalog,

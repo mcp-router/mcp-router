@@ -821,8 +821,18 @@ export class SystemServer {
     // Validate command if being updated (reuse allowlist from handleAddServer)
     if (updateFields.command) {
       const ALLOWED_COMMANDS = [
-        "node", "npx", "npm", "python", "python3", "pip",
-        "uvx", "uv", "deno", "bun", "bunx", "docker",
+        "node",
+        "npx",
+        "npm",
+        "python",
+        "python3",
+        "pip",
+        "uvx",
+        "uv",
+        "deno",
+        "bun",
+        "bunx",
+        "docker",
       ];
       if (!ALLOWED_COMMANDS.includes(path.basename(updateFields.command))) {
         throw new McpError(
@@ -1443,8 +1453,7 @@ const SYSTEM_TOOLS = [
       properties: {
         action: {
           type: "string",
-          description:
-            "Filter by action (e.g. 'TOOL_CALL', 'SERVER_START')",
+          description: "Filter by action (e.g. 'TOOL_CALL', 'SERVER_START')",
         },
         actor: {
           type: "string",
@@ -1464,8 +1473,7 @@ const SYSTEM_TOOLS = [
   },
   {
     name: "router_install_mcpb",
-    description:
-      "Install an MCP server from a local .mcpb bundle file.",
+    description: "Install an MCP server from a local .mcpb bundle file.",
     inputSchema: {
       type: "object" as const,
       properties: {

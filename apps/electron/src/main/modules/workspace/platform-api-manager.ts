@@ -30,9 +30,7 @@ import { ServerDiscoveryService } from "../mcp-server-manager/server-discovery.s
 import { resetSamplingProxy } from "../mcp-server-runtime/sampling-proxy";
 import { AuditLogRepository } from "../mcp-logger/audit-log.repository";
 import { AuditLogService } from "../mcp-logger/audit-log.service";
-import {
-  TaskRegistry,
-} from "../mcp-server-runtime/task-registry";
+import { TaskRegistry } from "../mcp-server-runtime/task-registry";
 import { TokenBudgetTracker } from "../mcp-server-runtime/token-budget-tracker";
 import { resetHealthMetricsTracker } from "../mcp-server-runtime/health-metrics-tracker";
 import { resetRateLimiter } from "../mcp-server-runtime/rate-limiter";

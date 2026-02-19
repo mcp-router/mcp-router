@@ -4,14 +4,13 @@ import { getHealthMetricsTracker } from "./health-metrics-tracker";
 import { McpManagerRequestLogEntry as RequestLogEntry } from "@mcp_router/shared";
 
 // Minimal shape for dynamically-imported workflow types (avoids static import)
-// eslint-disable-next-line custom/no-scattered-types
+
 interface WorkflowLike {
   id: string;
   name: string;
   enabled: boolean;
 }
 
-// eslint-disable-next-line custom/no-scattered-types
 interface WorkflowServiceLike {
   getWorkflowsByType(type: string): Promise<WorkflowLike[]>;
   executeWorkflow(
@@ -20,7 +19,6 @@ interface WorkflowServiceLike {
   ): Promise<{ mcpResult?: unknown }>;
 }
 
-// eslint-disable-next-line custom/no-scattered-types
 interface WorkflowExecutorLike {
   isValidWorkflow(workflow: WorkflowLike): boolean;
 }
@@ -180,8 +178,7 @@ export abstract class RequestHandlerBase {
         } catch (error) {
           console.error(`Failed to execute workflow ${workflow.name}:`, error);
           // Fall back to direct handler execution on workflow failure
-          if (DEBUG)
-            console.log(`Falling back to direct handler execution`);
+          if (DEBUG) console.log(`Falling back to direct handler execution`);
           return await handler();
         }
       } else {
@@ -219,8 +216,7 @@ export abstract class RequestHandlerBase {
       clientId,
     };
 
-    const serverId =
-      (_additionalMetadata?.serverId as string) || undefined;
+    const serverId = (_additionalMetadata?.serverId as string) || undefined;
 
     try {
       // Execute the actual handler

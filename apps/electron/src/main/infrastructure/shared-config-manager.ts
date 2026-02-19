@@ -317,10 +317,10 @@ class SharedConfigManager implements ISharedConfigManager {
    * Get a token by ID
    */
   getToken(tokenId: string): Token | undefined {
-    const inputHash = crypto.createHash('sha256').update(tokenId).digest();
+    const inputHash = crypto.createHash("sha256").update(tokenId).digest();
     const token = this.config.mcpApps.tokens.find((t) => {
       try {
-        const storedHash = crypto.createHash('sha256').update(t.id).digest();
+        const storedHash = crypto.createHash("sha256").update(t.id).digest();
         return crypto.timingSafeEqual(inputHash, storedHash);
       } catch {
         return false;
