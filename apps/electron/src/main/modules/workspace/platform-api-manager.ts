@@ -26,6 +26,17 @@ import { SkillService } from "../skills/skills.service";
 import { ClientSkillStateRepository } from "../skills/client-skill-state.repository";
 import { AgentPathRepository } from "../skills/agent-path.repository";
 import { UnifiedSkillsService } from "../skills/unified-skills.service";
+import { ServerDiscoveryService } from "../mcp-server-manager/server-discovery.service";
+import { resetSamplingProxy } from "../mcp-server-runtime/sampling-proxy";
+import { AuditLogRepository } from "../mcp-logger/audit-log.repository";
+import { AuditLogService } from "../mcp-logger/audit-log.service";
+import {
+  getTaskRegistry,
+  TaskRegistry,
+} from "../mcp-server-runtime/task-registry";
+import { getTokenBudgetTracker } from "../mcp-server-runtime/token-budget-tracker";
+import { resetHealthMetricsTracker } from "../mcp-server-runtime/health-metrics-tracker";
+import { resetRateLimiter } from "../mcp-server-runtime/rate-limiter";
 
 /**
  * Platform API management class.
@@ -135,6 +146,7 @@ class PlatformAPIManager {
     SkillRepository.resetInstance();
     ClientSkillStateRepository.resetInstance();
     AgentPathRepository.resetInstance();
+    AuditLogRepository.resetInstance();
 
     // Also reset service singleton instances
     ServerService.resetInstance();
@@ -144,6 +156,15 @@ class PlatformAPIManager {
     HookService.resetInstance();
     SkillService.resetInstance();
     UnifiedSkillsService.resetInstance();
+    ServerDiscoveryService.resetInstance();
+    AuditLogService.resetInstance();
+
+    // Reset non-class singletons
+    resetSamplingProxy();
+    TaskRegistry.resetInstance();
+    getTokenBudgetTracker().reset();
+    resetHealthMetricsTracker();
+    resetRateLimiter();
 
     // Trigger MCPServerManager re-initialization
     if (this.getServerManager) {

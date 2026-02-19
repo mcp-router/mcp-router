@@ -49,3 +49,7 @@ export function getSamplingProxy(): SamplingProxy {
   }
   return instance;
 }
+
+export function resetSamplingProxy(): void {
+  instance = null;
+}

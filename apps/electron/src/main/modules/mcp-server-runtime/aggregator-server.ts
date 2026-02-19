@@ -1,3 +1,4 @@
+import { safeConsoleLog, safeConsoleError } from "@/main/utils/safe-console";
 import crypto from "node:crypto";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp";
@@ -81,13 +82,13 @@ export class AggregatorServer {
           server,
           createdAt: Date.now(),
         });
-        console.log(
+        safeConsoleLog(
           `[MCP Session] Initialized: ${sessionId} (active: ${this.sessions.size})`,
         );
       },
       onsessionclosed: (sessionId: string) => {
         this.sessions.delete(sessionId);
-        console.log(
+        safeConsoleLog(
           `[MCP Session] Closed: ${sessionId} (active: ${this.sessions.size})`,
         );
       },
@@ -168,7 +169,7 @@ export class AggregatorServer {
     getSamplingProxy().setActiveServer(server);
 
     server.onerror = (error) => {
-      console.error("[MCP Aggregator Error]", error);
+      safeConsoleError("[MCP Aggregator Error]", error);
       getLogService().recordMcpRequestLog({
         timestamp: new Date().toISOString(),
         requestType: "ServerError",
@@ -264,9 +265,12 @@ export class AggregatorServer {
   private removeSession(sessionId: string, entry: SessionEntry): void {
     this.sessions.delete(sessionId);
     entry.transport.close().catch((err) => {
-      console.error(`[MCP Session] Error closing transport ${sessionId}:`, err);
+      safeConsoleError(
+        `[MCP Session] Error closing transport ${sessionId}:`,
+        err,
+      );
     });
-    console.log(
+    safeConsoleLog(
       `[MCP Session] Removed (expired): ${sessionId} (active: ${this.sessions.size})`,
     );
   }
@@ -288,7 +292,11 @@ export class AggregatorServer {
       this.cleanupExpiredSessions();
     }, CLEANUP_INTERVAL_MS);
     // Allow the Node process to exit even if the timer is still running.
-    if (this.cleanupTimer && typeof this.cleanupTimer === "object" && "unref" in this.cleanupTimer) {
+    if (
+      this.cleanupTimer &&
+      typeof this.cleanupTimer === "object" &&
+      "unref" in this.cleanupTimer
+    ) {
       this.cleanupTimer.unref();
     }
   }
@@ -304,10 +312,10 @@ export class AggregatorServer {
 
     const closePromises: Promise<void>[] = [];
     for (const [sessionId, entry] of this.sessions) {
-      console.log(`[MCP Session] Shutting down session: ${sessionId}`);
+      safeConsoleLog(`[MCP Session] Shutting down session: ${sessionId}`);
       closePromises.push(
         entry.transport.close().catch((err) => {
-          console.error(
+          safeConsoleError(
             `[MCP Session] Error closing transport ${sessionId} during shutdown:`,
             err,
           );

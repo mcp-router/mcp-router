@@ -91,11 +91,7 @@ function buildDiscoveredServer(
   if (entry.url && typeof entry.url === "string") {
     server.url = entry.url;
   }
-  if (
-    entry.env &&
-    typeof entry.env === "object" &&
-    !Array.isArray(entry.env)
-  ) {
+  if (entry.env && typeof entry.env === "object" && !Array.isArray(entry.env)) {
     server.env = entry.env as Record<string, string>;
   }
 
@@ -156,7 +152,9 @@ function extractServersFromJson(
         continue;
       }
 
-      results.push(buildDiscoveredServer(serverName, entry, source, sourcePath));
+      results.push(
+        buildDiscoveredServer(serverName, entry, source, sourcePath),
+      );
     }
   }
 
@@ -204,9 +202,7 @@ function extractServersFromToml(
     const env: Record<string, string> = {};
     if (envMatch) {
       const envContent = envMatch[1];
-      const envPairs = envContent.matchAll(
-        /^\s*(\w+)\s*=\s*"([^"]*)"/gm,
-      );
+      const envPairs = envContent.matchAll(/^\s*(\w+)\s*=\s*"([^"]*)"/gm);
       for (const pair of envPairs) {
         env[pair[1]] = pair[2];
       }
@@ -319,8 +315,27 @@ async function fileExists(filePath: string): Promise<boolean> {
  * presented to the user for manual import.
  */
 export class ServerDiscoveryService {
+  private static instance: ServerDiscoveryService | null = null;
+
   /** Cached results from the most recent scan */
   private lastScanResults: DiscoveredServer[] = [];
+
+  /**
+   * Get the singleton instance
+   */
+  public static getInstance(): ServerDiscoveryService {
+    if (!ServerDiscoveryService.instance) {
+      ServerDiscoveryService.instance = new ServerDiscoveryService();
+    }
+    return ServerDiscoveryService.instance;
+  }
+
+  /**
+   * Reset the instance
+   */
+  public static resetInstance(): void {
+    ServerDiscoveryService.instance = null;
+  }
 
   /**
    * Scan all known IDE configuration files for MCP server entries.
@@ -404,9 +419,18 @@ export class ServerDiscoveryService {
 
     const configLocations: Array<{ relativePath: string; source: string }> = [
       { relativePath: ".mcp.json", source: ".mcp.json" },
-      { relativePath: path.join(".mcp", "config.json"), source: ".mcp/config.json" },
-      { relativePath: path.join(".vscode", "mcp.json"), source: ".vscode/mcp.json" },
-      { relativePath: path.join(".cursor", "mcp.json"), source: ".cursor/mcp.json" },
+      {
+        relativePath: path.join(".mcp", "config.json"),
+        source: ".mcp/config.json",
+      },
+      {
+        relativePath: path.join(".vscode", "mcp.json"),
+        source: ".vscode/mcp.json",
+      },
+      {
+        relativePath: path.join(".cursor", "mcp.json"),
+        source: ".cursor/mcp.json",
+      },
     ];
 
     const scanPromises = configLocations.map(
