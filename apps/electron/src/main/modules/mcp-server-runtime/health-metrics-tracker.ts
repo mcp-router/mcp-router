@@ -11,13 +11,17 @@
 export type TrackedStatus =
   | "connected"
   | "disconnected"
+  | "connecting"
   | "reconnecting"
-  | "failed";
+  | "failed"
+  | "starting"
+  | "stopping"
+  | "error";
 
 /** A single status-change entry in the history ring buffer. */
 export interface StatusHistoryEntry {
   timestamp: number;
-  status: string;
+  status: TrackedStatus;
 }
 
 /** Per-server health metrics returned by getMetrics(). */
@@ -95,10 +99,10 @@ export class HealthMetricsTracker {
   recordStatusChange(
     serverId: string,
     serverName: string,
-    status: string,
+    status: TrackedStatus,
   ): void {
     const data = this.ensureServer(serverId, serverName);
-    data.currentStatus = status as TrackedStatus;
+    data.currentStatus = status;
     data.lastHealthCheck = Date.now();
 
     const entry: StatusHistoryEntry = {
@@ -112,8 +116,7 @@ export class HealthMetricsTracker {
     } else {
       data.history[data.historyWriteIdx] = entry;
     }
-    data.historyWriteIdx =
-      (data.historyWriteIdx + 1) % MAX_HISTORY_ENTRIES;
+    data.historyWriteIdx = (data.historyWriteIdx + 1) % MAX_HISTORY_ENTRIES;
     data.historyCount++;
 
     // Prune entries older than 7 days to keep memory bounded
@@ -184,7 +187,9 @@ export class HealthMetricsTracker {
       totalServers,
       healthyServers,
       avgUptimePercent:
-        totalServers > 0 ? Math.round((uptimeSum / totalServers) * 100) / 100 : 0,
+        totalServers > 0
+          ? Math.round((uptimeSum / totalServers) * 100) / 100
+          : 0,
     };
   }
 
@@ -238,18 +243,20 @@ export class HealthMetricsTracker {
         ? Math.round(data.totalLatencyMs / data.totalRequests)
         : 0;
 
+    const statusHistory = this.getOrderedHistory(data);
+
     return {
       serverId: data.serverId,
       serverName: data.serverName,
       currentStatus: data.currentStatus,
-      uptimePercent24h: this.computeUptimePercent(data, MS_24H),
-      uptimePercent7d: this.computeUptimePercent(data, MS_7D),
+      uptimePercent24h: this.computeUptimePercent(data, MS_24H, statusHistory),
+      uptimePercent7d: this.computeUptimePercent(data, MS_7D, statusHistory),
       avgLatencyMs,
       totalRequests: data.totalRequests,
       failedRequests: data.failedRequests,
       successRate,
       lastHealthCheck: data.lastHealthCheck,
-      statusHistory: this.getOrderedHistory(data),
+      statusHistory,
     };
   }
 
@@ -260,10 +267,13 @@ export class HealthMetricsTracker {
    * The algorithm walks the ordered status history in chronological
    * order, accumulating time spent as "connected" within the window.
    */
-  private computeUptimePercent(data: ServerData, windowMs: number): number {
+  private computeUptimePercent(
+    data: ServerData,
+    windowMs: number,
+    ordered: StatusHistoryEntry[] = this.getOrderedHistory(data),
+  ): number {
     const now = Date.now();
     const windowStart = now - windowMs;
-    const ordered = this.getOrderedHistory(data);
 
     if (ordered.length === 0) {
       // No history at all -- if currently connected, assume 100 %
@@ -328,11 +338,20 @@ export class HealthMetricsTracker {
     const cutoff = Date.now() - MS_7D;
 
     if (data.history.length < MAX_HISTORY_ENTRIES) {
-      // Simple array -- remove leading old entries
-      while (data.history.length > 0 && data.history[0].timestamp < cutoff) {
-        data.history.shift();
+      // Find the first entry that is NOT old
+      const firstKeepIdx = data.history.findIndex(
+        (entry) => entry.timestamp >= cutoff,
+      );
+
+      if (firstKeepIdx > 0) {
+        // Remove all entries before the first keep index at once
+        data.history.splice(0, firstKeepIdx);
         // Adjust write index since we removed from front
-        data.historyWriteIdx = Math.max(0, data.historyWriteIdx - 1);
+        data.historyWriteIdx = Math.max(0, data.historyWriteIdx - firstKeepIdx);
+      } else if (firstKeepIdx === -1 && data.history.length > 0) {
+        // All entries are old
+        data.history.length = 0;
+        data.historyWriteIdx = 0;
       }
     }
     // For a fully-wrapped buffer, old entries are naturally overwritten
