@@ -12,6 +12,7 @@ import {
   getServerService,
   ServerService,
 } from "@/main/modules/mcp-server-manager/server-service";
+import { TokenManager } from "@/main/modules/client-apps/token-manager";
 
 /**
  * Substitutes parameter placeholders in args with actual values from env and inputParams
@@ -308,9 +309,6 @@ export class MCPServerManager {
    */
   private removeServerFromTokens(serverId: string): void {
     try {
-      const {
-        TokenManager,
-      } = require("@/main/modules/client-apps/token-manager");
       const tokenManager = new TokenManager();
       const allTokens = tokenManager.listTokens();
 

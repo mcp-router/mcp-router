@@ -206,6 +206,22 @@ const createWindow = ({ showOnCreate = true }: CreateWindowOptions = {}) => {
     return { action: "deny" };
   });
 
+  mainWindow.webContents.on("will-navigate", (event, url) => {
+    const currentUrl = mainWindow?.webContents.getURL();
+    if (url === currentUrl) {
+      return;
+    }
+    event.preventDefault();
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+        shell.openExternal(url);
+      }
+    } catch {
+      /* ignore invalid URLs */
+    }
+  });
+
   // Handle window close event - hide instead of closing completely
   mainWindow.on("close", (event) => {
     // If app.quit() was called explicitly (from tray menu) or auto-update is in progress, don't prevent the window from closing

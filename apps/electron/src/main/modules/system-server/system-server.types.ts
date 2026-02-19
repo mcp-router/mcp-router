@@ -99,8 +99,14 @@ export interface UpdateServerInput {
   command?: string;
   /** New arguments (local servers) */
   args?: string[];
+  /** New remote URL (remote servers) */
+  remoteUrl?: string;
+  /** New bearer token (remote servers) */
+  bearerToken?: string;
   /** New environment variables */
   env?: Record<string, string>;
+  /** New description */
+  description?: string;
   /** Whether to auto-start on launch */
   autoStart?: boolean;
   /** Whether the server is disabled */

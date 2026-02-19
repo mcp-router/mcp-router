@@ -394,30 +394,29 @@ class SharedConfigManager implements ISharedConfigManager {
 
   /**
    * Sync tokens with workspace server list.
-   * Automatically adds new servers to tokens.
+   * Removes access entries for servers that no longer exist in the workspace.
+   * New servers must be explicitly granted per token.
    */
   syncTokensWithWorkspaceServers(serverList: string[]): void {
     let updated = false;
+    const existingServerIds = new Set(serverList);
 
     this.config.mcpApps.tokens.forEach((token) => {
       const map = token.serverAccess || {};
-      const initialSize = Object.keys(map).length;
-      const nextAccess = { ...map };
-      serverList.forEach((id) => {
-        if (!(id in nextAccess)) {
-          nextAccess[id] = true;
-        }
-      });
-      const nextSize = Object.keys(nextAccess).length;
+      const nextAccess: TokenServerAccess = {};
 
-      // Only update if new server IDs were added
-      if (nextSize > initialSize) {
-        token.serverAccess = nextAccess;
-        updated = true;
-        console.log(
-          `[SharedConfigManager] Updated token ${token.id} with ${nextSize - initialSize} new server(s)`,
-        );
+      for (const [serverId, hasAccess] of Object.entries(map)) {
+        if (existingServerIds.has(serverId)) {
+          nextAccess[serverId] = hasAccess;
+        } else {
+          updated = true;
+          console.log(
+            `[SharedConfigManager] Removed stale server access "${serverId}" from token ${token.id}`,
+          );
+        }
       }
+
+      token.serverAccess = nextAccess;
     });
 
     // Save if changes were made

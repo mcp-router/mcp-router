@@ -4,10 +4,20 @@
  */
 
 import { useWorkspaceStore } from "@/renderer/stores/workspace-store";
+import { useAuthStore } from "@/renderer/stores";
+import { useMemo } from "react";
 import type { PlatformAPI } from "@mcp_router/shared";
 
 export function usePlatformAPI(): PlatformAPI {
-  // Get the platform API directly from the workspace store
-  // This ensures it's always in sync with the current workspace
-  return useWorkspaceStore((state) => state.getPlatformAPI)();
+  const getPlatformAPI = useWorkspaceStore((state) => state.getPlatformAPI);
+  const workspaceId = useWorkspaceStore((state) => state.currentWorkspace?.id);
+  const workspaceType = useWorkspaceStore(
+    (state) => state.currentWorkspace?.type,
+  );
+  const authToken = useAuthStore((state) => state.authToken);
+
+  return useMemo(
+    () => getPlatformAPI(),
+    [getPlatformAPI, workspaceId, workspaceType, authToken],
+  );
 }

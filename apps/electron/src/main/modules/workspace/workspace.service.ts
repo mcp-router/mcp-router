@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from "uuid";
 import * as fsSync from "fs";
 import type { Workspace, WorkspaceCreateConfig } from "@mcp_router/shared";
 
+const WORKSPACE_ID_PATTERN = /^[a-zA-Z0-9_-]{1,64}$/;
+
 class WorkspaceService extends SingletonService<
   Workspace,
   string,
@@ -189,6 +191,11 @@ class WorkspaceService extends SingletonService<
       if (!this.metaDb) throw new Error("Meta database not initialized");
 
       const workspaceId = config.id ?? uuidv4();
+      if (!WORKSPACE_ID_PATTERN.test(workspaceId)) {
+        throw new Error(
+          "Workspace ID must be 1-64 characters and only contain letters, numbers, '-' or '_'",
+        );
+      }
       const workspace: Workspace = {
         id: workspaceId,
         name: config.name,
@@ -382,12 +389,27 @@ class WorkspaceService extends SingletonService<
 
       // Delete workspace directory (both local and remote)
       if (workspace.localConfig?.databasePath) {
-        const workspaceDir = path.dirname(
-          path.join(
-            app.getPath("userData"),
-            workspace.localConfig.databasePath,
+        const workspaceRoot = path.resolve(
+          app.getPath("userData"),
+          "workspaces",
+        );
+        const workspaceDir = path.resolve(
+          path.dirname(
+            path.join(
+              app.getPath("userData"),
+              workspace.localConfig.databasePath,
+            ),
           ),
         );
+        const workspaceRootPrefix = `${workspaceRoot}${path.sep}`;
+        if (
+          workspaceDir !== workspaceRoot &&
+          !workspaceDir.startsWith(workspaceRootPrefix)
+        ) {
+          throw new Error(
+            `Refusing to delete path outside workspace root: ${workspaceDir}`,
+          );
+        }
         await fs.rm(workspaceDir, { recursive: true, force: true });
       }
 

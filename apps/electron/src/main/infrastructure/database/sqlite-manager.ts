@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as fs from "fs";
 import { app } from "electron";
 import Database, {
   type Database as DatabaseType,
@@ -29,7 +30,6 @@ export class SqliteManager {
 
     // Create directory if it does not exist
     try {
-      const fs = require("fs");
       const dbDir = path.dirname(this.dbPath);
       if (!fs.existsSync(dbDir)) {
         fs.mkdirSync(dbDir, { recursive: true });

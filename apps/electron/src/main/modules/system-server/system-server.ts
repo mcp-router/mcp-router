@@ -32,6 +32,23 @@ import { getSharedConfigManager } from "@/main/infrastructure/shared-config-mana
 import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 import { getEventBridge } from "@/main/modules/mcp-server-runtime/event-bridge";
 
+const ALLOWED_LOCAL_COMMANDS = new Set([
+  "node",
+  "npx",
+  "npm",
+  "python",
+  "python3",
+  "pip",
+  "uvx",
+  "uv",
+  "deno",
+  "bun",
+  "bunx",
+  "docker",
+]);
+
+const MAX_MCPB_SIZE_BYTES = 50 * 1024 * 1024;
+
 /**
  * MCP Server that exposes router management as MCP tools.
  * Allows agents to list, inspect, add, remove, and toggle MCP servers
@@ -168,6 +185,9 @@ export class SystemServer {
             "command must be a string",
           );
         }
+        if (typeof args.command === "string") {
+          this.validateLocalCommand(args.command);
+        }
 
         // args: optional string array
         if (args.args !== undefined) {
@@ -191,11 +211,14 @@ export class SystemServer {
             );
           }
           try {
-            new URL(args.remoteUrl);
+            const parsed = new URL(args.remoteUrl);
+            if (!["http:", "https:"].includes(parsed.protocol)) {
+              throw new Error("invalid protocol");
+            }
           } catch {
             throw new McpError(
               ErrorCode.InvalidParams,
-              "remoteUrl must be a valid URL",
+              "remoteUrl must be a valid http(s) URL",
             );
           }
         }
@@ -340,6 +363,9 @@ export class SystemServer {
             "command must be a string",
           );
         }
+        if (typeof args.command === "string") {
+          this.validateLocalCommand(args.command);
+        }
         if (args.args !== undefined) {
           if (
             !Array.isArray(args.args) ||
@@ -353,6 +379,43 @@ export class SystemServer {
         }
         if (args.env !== undefined) {
           this.validateEnvObject(args.env);
+        }
+        if (args.remoteUrl !== undefined) {
+          if (typeof args.remoteUrl !== "string") {
+            throw new McpError(
+              ErrorCode.InvalidParams,
+              "remoteUrl must be a string",
+            );
+          }
+          try {
+            const parsed = new URL(args.remoteUrl);
+            if (!["http:", "https:"].includes(parsed.protocol)) {
+              throw new Error("invalid protocol");
+            }
+          } catch {
+            throw new McpError(
+              ErrorCode.InvalidParams,
+              "remoteUrl must be a valid http(s) URL",
+            );
+          }
+        }
+        if (
+          args.bearerToken !== undefined &&
+          typeof args.bearerToken !== "string"
+        ) {
+          throw new McpError(
+            ErrorCode.InvalidParams,
+            "bearerToken must be a string",
+          );
+        }
+        if (
+          args.description !== undefined &&
+          typeof args.description !== "string"
+        ) {
+          throw new McpError(
+            ErrorCode.InvalidParams,
+            "description must be a string",
+          );
         }
         if (
           args.autoStart !== undefined &&
@@ -375,6 +438,9 @@ export class SystemServer {
           command: args.command as string | undefined,
           args: args.args as string[] | undefined,
           env: args.env as Record<string, string> | undefined,
+          remoteUrl: args.remoteUrl as string | undefined,
+          bearerToken: args.bearerToken as string | undefined,
+          description: args.description as string | undefined,
           autoStart: args.autoStart as boolean | undefined,
           disabled: args.disabled as boolean | undefined,
         });
@@ -547,30 +613,12 @@ export class SystemServer {
       );
     }
 
-    // Command execution prevention (#100)
-    const ALLOWED_COMMANDS = [
-      "node",
-      "npx",
-      "npm",
-      "python",
-      "python3",
-      "pip",
-      "uvx",
-      "uv",
-      "deno",
-      "bun",
-      "bunx",
-      "docker",
-    ];
-    if (
-      input.command &&
-      !ALLOWED_COMMANDS.includes(path.basename(input.command))
-    ) {
-      throw new McpError(
-        ErrorCode.InvalidParams,
-        `Command "${input.command}" is not in the allowed list. Allowed: ${ALLOWED_COMMANDS.join(", ")}`,
-      );
+    if (input.command) {
+      this.validateLocalCommand(input.command);
     }
+
+    // Agent-created servers must be manually started by the user.
+    const autoStart = false;
 
     const newServer = this.serverManager.addServer({
       id: "", // repository generates the ID
@@ -582,7 +630,7 @@ export class SystemServer {
       bearerToken: input.bearerToken,
       env: input.env ?? {},
       description: input.description,
-      autoStart: input.autoStart ?? false,
+      autoStart,
     });
 
     getEventBridge().emit("servers_updated", {
@@ -599,6 +647,7 @@ export class SystemServer {
               id: newServer.id,
               name: newServer.name,
               status: newServer.status,
+              autoStart,
             },
             null,
             2,
@@ -818,28 +867,9 @@ export class SystemServer {
 
     const { server: _serverIdOrName, ...updateFields } = input;
 
-    // Validate command if being updated (reuse allowlist from handleAddServer)
+    // Validate command if being updated.
     if (updateFields.command) {
-      const ALLOWED_COMMANDS = [
-        "node",
-        "npx",
-        "npm",
-        "python",
-        "python3",
-        "pip",
-        "uvx",
-        "uv",
-        "deno",
-        "bun",
-        "bunx",
-        "docker",
-      ];
-      if (!ALLOWED_COMMANDS.includes(path.basename(updateFields.command))) {
-        throw new McpError(
-          ErrorCode.InvalidParams,
-          `Command "${updateFields.command}" is not in the allowed list. Allowed: ${ALLOWED_COMMANDS.join(", ")}`,
-        );
-      }
+      this.validateLocalCommand(updateFields.command);
     }
 
     const updated = this.serverManager.updateServer(server.id, updateFields);
@@ -1060,7 +1090,7 @@ export class SystemServer {
 
   private async handleInstallMcpb(filePath: string) {
     // Path traversal prevention (#101)
-    if (!filePath.endsWith(".mcpb")) {
+    if (!filePath.toLowerCase().endsWith(".mcpb")) {
       throw new McpError(
         ErrorCode.InvalidParams,
         "filePath must end with .mcpb extension",
@@ -1068,14 +1098,29 @@ export class SystemServer {
     }
     const resolvedPath = path.resolve(filePath);
     const homeDir = os.homedir();
-    if (!resolvedPath.startsWith(homeDir)) {
+    let realPath: string;
+    try {
+      realPath = fs.realpathSync(resolvedPath);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Unable to resolve file path: ${message}`,
+      );
+    }
+    const normalizedHome = path.resolve(homeDir);
+    const homePrefix = `${normalizedHome}${path.sep}`;
+    if (realPath !== normalizedHome && !realPath.startsWith(homePrefix)) {
       throw new McpError(
         ErrorCode.InvalidParams,
         "filePath must be within the user's home directory",
       );
     }
-    const stats = fs.statSync(resolvedPath);
-    if (stats.size > 50 * 1024 * 1024) {
+    const stats = await fs.promises.stat(realPath);
+    if (!stats.isFile()) {
+      throw new McpError(ErrorCode.InvalidParams, "filePath must be a file");
+    }
+    if (stats.size > MAX_MCPB_SIZE_BYTES) {
       throw new McpError(
         ErrorCode.InvalidParams,
         "File exceeds maximum size of 50MB",
@@ -1083,7 +1128,7 @@ export class SystemServer {
     }
 
     try {
-      const buffer = fs.readFileSync(resolvedPath);
+      const buffer = await fs.promises.readFile(realPath);
       const uint8Array = new Uint8Array(buffer);
 
       const result = await processMcpbFile(uint8Array);
@@ -1115,6 +1160,37 @@ export class SystemServer {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
+
+  /**
+   * Validate that a value is a Record<string, string>.
+   */
+  private validateLocalCommand(command: string): void {
+    const trimmed = command.trim();
+    if (trimmed.length === 0) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "command must be a non-empty string",
+      );
+    }
+    if (trimmed !== command) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "command cannot contain leading or trailing whitespace",
+      );
+    }
+    if (path.basename(command) !== command) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "command must be a bare command name, not a file path",
+      );
+    }
+    if (!ALLOWED_LOCAL_COMMANDS.has(command)) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Command "${command}" is not in the allowed list. Allowed: ${Array.from(ALLOWED_LOCAL_COMMANDS).join(", ")}`,
+      );
+    }
+  }
 
   /**
    * Validate that a value is a Record<string, string>.
@@ -1342,10 +1418,22 @@ const SYSTEM_TOOLS = [
           items: { type: "string" },
           description: "New arguments for the command (local servers only).",
         },
+        remoteUrl: {
+          type: "string",
+          description: "New remote URL for remote servers.",
+        },
+        bearerToken: {
+          type: "string",
+          description: "New bearer token for remote servers.",
+        },
         env: {
           type: "object",
           additionalProperties: { type: "string" },
           description: "New environment variables for the server process.",
+        },
+        description: {
+          type: "string",
+          description: "New human-readable description for the server.",
         },
         autoStart: {
           type: "boolean",
