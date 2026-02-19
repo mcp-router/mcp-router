@@ -1,10 +1,7 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { getRateLimiter } from "./rate-limiter";
 import type { RateLimitResult } from "./rate-limiter";
-import {
-  getTaskRegistry,
-  createNamespacedTaskId,
-} from "./task-registry";
+import { getTaskRegistry, createNamespacedTaskId } from "./task-registry";
 import type {
   CallToolRequest,
   CallToolResult,
@@ -45,7 +42,10 @@ import { getSharedConfigManager } from "@/main/infrastructure/shared-config-mana
 import { getElicitationManager } from "./elicitation-manager";
 import { validateElicitationUrl } from "@/main/utils/url-validation-utils";
 import { SystemServerService } from "@/main/modules/system-server/system-server.service";
-import { estimateRequestTokens, estimateResponseTokens } from "./token-estimator";
+import {
+  estimateRequestTokens,
+  estimateResponseTokens,
+} from "./token-estimator";
 import { getTokenBudgetTracker } from "./token-budget-tracker";
 
 /** Tool with source server annotation for aggregated results */
@@ -216,7 +216,9 @@ export class RequestHandlers extends RequestHandlerBase {
   /**
    * Handle a call to a specific tool
    */
-  public async handleCallTool(request: CallToolRequest): Promise<CallToolResult> {
+  public async handleCallTool(
+    request: CallToolRequest,
+  ): Promise<CallToolResult> {
     const toolName = request.params.name;
     const projectId = this.normalizeProjectId(request.params._meta?.projectId);
 
@@ -280,6 +282,7 @@ export class RequestHandlers extends RequestHandlerBase {
   ): Promise<ResourceWithSource[]> {
     const normalizedProjectId = this.normalizeProjectId(projectId);
     const allResources: ResourceWithSource[] = [];
+    const eligible = [];
 
     for (const [serverId, client] of this.clients.entries()) {
       const server = this.servers.get(serverId);
@@ -304,15 +307,20 @@ export class RequestHandlers extends RequestHandlerBase {
         }
       }
 
-      try {
+      eligible.push({ serverName, client });
+    }
+
+    const results = await Promise.allSettled(
+      eligible.map(async ({ serverName, client }) => {
         const resources = await client.getClient().listResources();
+        return { serverName, resources: resources.resources || [] };
+      }),
+    );
 
-        if (!resources.resources || resources.resources.length === 0) {
-          continue;
-        }
-
-        // Add resources with source server information
-        for (const resource of resources.resources) {
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        const { serverName, resources } = result.value;
+        for (const resource of resources) {
           // Store the original protocol if not already stored
           if (
             resource.uri &&
@@ -331,10 +339,10 @@ export class RequestHandlers extends RequestHandlerBase {
 
           allResources.push(resourceWithSource);
         }
-      } catch (error: unknown) {
+      } else {
         console.error(
-          `[MCPServerManager] Failed to get resources from server ${serverName}:`,
-          error,
+          `[MCPServerManager] Failed to get resources:`,
+          result.reason,
         );
       }
     }
@@ -358,6 +366,7 @@ export class RequestHandlers extends RequestHandlerBase {
       clientId,
       async () => {
         const allTemplates: ResourceTemplateWithSource[] = [];
+        const eligible = [];
 
         for (const [serverId, client] of this.clients.entries()) {
           const server = this.servers.get(serverId);
@@ -382,18 +391,20 @@ export class RequestHandlers extends RequestHandlerBase {
             }
           }
 
-          try {
+          eligible.push({ serverName, client });
+        }
+
+        const results = await Promise.allSettled(
+          eligible.map(async ({ serverName, client }) => {
             const templates = await client.getClient().listResourceTemplates();
+            return { serverName, templates: templates.resourceTemplates || [] };
+          }),
+        );
 
-            if (
-              !templates.resourceTemplates ||
-              templates.resourceTemplates.length === 0
-            ) {
-              continue;
-            }
-
-            // Add templates with source server information
-            for (const template of templates.resourceTemplates) {
+        for (const result of results) {
+          if (result.status === "fulfilled") {
+            const { serverName, templates } = result.value;
+            for (const template of templates) {
               const templateWithSource: ResourceTemplateWithSource = {
                 ...template,
                 sourceServer: serverName,
@@ -405,11 +416,10 @@ export class RequestHandlers extends RequestHandlerBase {
 
               allTemplates.push(templateWithSource);
             }
-          } catch (error: unknown) {
-            // Server might not support resource templates
+          } else {
             console.error(
-              `[MCPServerManager] Failed to get resource templates from server ${serverName}:`,
-              error,
+              `[MCPServerManager] Failed to get resource templates:`,
+              result.reason,
             );
           }
         }
@@ -531,6 +541,7 @@ export class RequestHandlers extends RequestHandlerBase {
     const projectId = this.normalizeProjectId(projectIdInput);
     const allPrompts: PromptWithSource[] = [];
 
+    const eligible = [];
     for (const [serverId, client] of this.clients.entries()) {
       const server = this.servers.get(serverId);
       const serverName = server?.name || serverId;
@@ -554,15 +565,20 @@ export class RequestHandlers extends RequestHandlerBase {
         }
       }
 
-      try {
+      eligible.push({ serverName, client });
+    }
+
+    const results = await Promise.allSettled(
+      eligible.map(async ({ serverName, client }) => {
         const prompts = await client.getClient().listPrompts();
+        return { serverName, prompts: prompts.prompts || [] };
+      }),
+    );
 
-        if (!prompts.prompts || prompts.prompts.length === 0) {
-          continue;
-        }
-
-        // Add prompts with source server information
-        for (const prompt of prompts.prompts) {
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        const { serverName, prompts } = result.value;
+        for (const prompt of prompts) {
           const promptWithSource: PromptWithSource = {
             ...prompt,
             sourceServer: serverName,
@@ -572,10 +588,10 @@ export class RequestHandlers extends RequestHandlerBase {
 
           allPrompts.push(promptWithSource);
         }
-      } catch (error: unknown) {
+      } else {
         console.error(
-          `[MCPServerManager] Failed to get prompts from server ${serverName}:`,
-          error,
+          `[MCPServerManager] Failed to get prompts:`,
+          result.reason,
         );
       }
     }
@@ -705,41 +721,49 @@ export class RequestHandlers extends RequestHandlerBase {
     // Query all servers in parallel with per-server timeout
     const results = await Promise.allSettled(
       eligible.map(async ({ client, serverName, server }) => {
-        const tools = await Promise.race([
-          client.getClient().listTools(),
-          new Promise<never>((_, reject) =>
-            setTimeout(
-              () =>
-                reject(new Error(`Timed out after ${PER_SERVER_TIMEOUT_MS}ms`)),
-              PER_SERVER_TIMEOUT_MS,
-            ),
-          ),
-        ]);
+        let timeoutId: NodeJS.Timeout;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(
+            () =>
+              reject(new Error(`Timed out after ${PER_SERVER_TIMEOUT_MS}ms`)),
+            PER_SERVER_TIMEOUT_MS,
+          );
+        });
 
-        if (!tools.tools || tools.tools.length === 0) {
-          return [];
+        try {
+          const tools = await Promise.race([
+            client.getClient().listTools(),
+            timeoutPromise,
+          ]);
+
+          if (!tools.tools || tools.tools.length === 0) {
+            return [];
+          }
+
+          const permissions = (server?.toolPermissions ?? {}) as Record<
+            string,
+            boolean
+          >;
+
+          const serverTools: ToolWithSource[] = [];
+
+          for (const tool of tools.tools) {
+            if (permissions[tool.name] === false) continue;
+
+            const prefixedName = shouldPrefix
+              ? prefixToolName(serverName, tool.name)
+              : tool.name;
+
+            serverTools.push({
+              ...tool,
+              name: prefixedName,
+              sourceServer: serverName,
+            });
+          }
+          return serverTools;
+        } finally {
+          clearTimeout(timeoutId!);
         }
-
-        const permissions = (server?.toolPermissions ?? {}) as Record<
-          string,
-          boolean
-        >;
-        const serverTools: ToolWithSource[] = [];
-
-        for (const tool of tools.tools) {
-          if (permissions[tool.name] === false) continue;
-
-          const prefixedName = shouldPrefix
-            ? prefixToolName(serverName, tool.name)
-            : tool.name;
-
-          serverTools.push({
-            ...tool,
-            name: prefixedName,
-            sourceServer: serverName,
-          });
-        }
-        return serverTools;
       }),
     );
 
@@ -811,8 +835,7 @@ export class RequestHandlers extends RequestHandlerBase {
     } catch (error: unknown) {
       // Re-throw McpError as-is; wrap anything else
       if (error instanceof McpError) throw error;
-      const message =
-        error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : String(error);
       throw new McpError(
         ErrorCode.InternalError,
         `System tool error: ${message}`,

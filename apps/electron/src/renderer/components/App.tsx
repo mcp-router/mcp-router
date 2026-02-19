@@ -115,12 +115,12 @@ const App: React.FC = () => {
     refreshServers();
   }, [refreshServers]);
 
-  // Simple polling: refresh server list every 3 seconds
+  // Simple polling: refresh server list every 5 seconds (increased from 3s to reduce CPU overhead)
   useEffect(() => {
     const id = setInterval(() => {
       // Ignore errors to keep polling resilient
       refreshServers().catch(() => {});
-    }, 3000);
+    }, 5000);
     return () => clearInterval(id);
   }, [refreshServers]);
 
