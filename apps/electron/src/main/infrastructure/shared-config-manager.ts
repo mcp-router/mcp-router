@@ -1,6 +1,7 @@
 import { app } from "electron";
 import * as fs from "fs";
 import * as path from "path";
+import * as crypto from "crypto";
 import {
   SharedConfig,
   ISharedConfigManager,
@@ -316,7 +317,15 @@ class SharedConfigManager implements ISharedConfigManager {
    * Get a token by ID
    */
   getToken(tokenId: string): Token | undefined {
-    const token = this.config.mcpApps.tokens.find((t) => t.id === tokenId);
+    const inputHash = crypto.createHash('sha256').update(tokenId).digest();
+    const token = this.config.mcpApps.tokens.find((t) => {
+      try {
+        const storedHash = crypto.createHash('sha256').update(t.id).digest();
+        return crypto.timingSafeEqual(inputHash, storedHash);
+      } catch {
+        return false;
+      }
+    });
     return token ? this.cloneToken(token) : undefined;
   }
 

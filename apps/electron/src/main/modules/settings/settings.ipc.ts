@@ -8,7 +8,7 @@ export function setupSettingsHandlers(): void {
       return settingsService.getSettings();
     } catch (error) {
       console.error("Failed to get settings:", error);
-      return { authBypassEnabled: false };
+      throw error;
     }
   });
 
@@ -18,7 +18,7 @@ export function setupSettingsHandlers(): void {
       return settingsService.saveSettings(settings);
     } catch (error) {
       console.error("Failed to save settings:", error);
-      return false;
+      throw error;
     }
   });
 
@@ -39,7 +39,7 @@ export function setupSettingsHandlers(): void {
         "Failed to increment package manager overlay display count:",
         error,
       );
-      return { success: false, count: 0 };
+      throw error;
     }
   });
 }

@@ -31,12 +31,12 @@ import { resetSamplingProxy } from "../mcp-server-runtime/sampling-proxy";
 import { AuditLogRepository } from "../mcp-logger/audit-log.repository";
 import { AuditLogService } from "../mcp-logger/audit-log.service";
 import {
-  getTaskRegistry,
   TaskRegistry,
 } from "../mcp-server-runtime/task-registry";
-import { getTokenBudgetTracker } from "../mcp-server-runtime/token-budget-tracker";
+import { TokenBudgetTracker } from "../mcp-server-runtime/token-budget-tracker";
 import { resetHealthMetricsTracker } from "../mcp-server-runtime/health-metrics-tracker";
 import { resetRateLimiter } from "../mcp-server-runtime/rate-limiter";
+import { ClientAppService } from "../client-apps/client-app.service";
 
 /**
  * Platform API management class.
@@ -158,11 +158,12 @@ class PlatformAPIManager {
     UnifiedSkillsService.resetInstance();
     ServerDiscoveryService.resetInstance();
     AuditLogService.resetInstance();
+    ClientAppService.resetInstance();
 
     // Reset non-class singletons
     resetSamplingProxy();
     TaskRegistry.resetInstance();
-    getTokenBudgetTracker().reset();
+    TokenBudgetTracker.resetInstance();
     resetHealthMetricsTracker();
     resetRateLimiter();
 

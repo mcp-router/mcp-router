@@ -12,6 +12,7 @@ import Database, {
 export class SqliteManager {
   private db: DatabaseType;
   private dbPath: string;
+  private stmtCache = new Map<string, ReturnType<DatabaseType["prepare"]>>();
 
   /**
    * Constructor
@@ -66,13 +67,25 @@ export class SqliteManager {
   }
 
   /**
+   * Get a cached prepared statement, creating it if needed.
+   */
+  private getStatement(sql: string): ReturnType<DatabaseType["prepare"]> {
+    let stmt = this.stmtCache.get(sql);
+    if (!stmt) {
+      stmt = this.db.prepare(sql);
+      this.stmtCache.set(sql, stmt);
+    }
+    return stmt;
+  }
+
+  /**
    * Execute an SQL query (no transaction)
    * @param sql SQL statement
    * @param params Parameters
    */
   public execute(sql: string, params: any = {}): RunResult {
     try {
-      return this.db.prepare(sql).run(params);
+      return this.getStatement(sql).run(params);
     } catch (error) {
       console.error("Failed to execute SQL query:", error);
       throw error;
@@ -86,7 +99,7 @@ export class SqliteManager {
    */
   public get<T>(sql: string, params: any = {}): T | undefined {
     try {
-      return this.db.prepare(sql).get(params) as T | undefined;
+      return this.getStatement(sql).get(params) as T | undefined;
     } catch (error) {
       console.error("Failed to execute SQL query:", error);
       throw error;
@@ -100,7 +113,7 @@ export class SqliteManager {
    */
   public all<T>(sql: string, params: any = {}): T[] {
     try {
-      return this.db.prepare(sql).all(params) as T[];
+      return this.getStatement(sql).all(params) as T[];
     } catch (error) {
       console.error("Failed to execute SQL query:", error);
       throw error;
@@ -127,6 +140,7 @@ export class SqliteManager {
    */
   public close(): void {
     try {
+      this.stmtCache.clear();
       this.db.close();
     } catch (error) {
       console.error("Failed to close database connection:", error);

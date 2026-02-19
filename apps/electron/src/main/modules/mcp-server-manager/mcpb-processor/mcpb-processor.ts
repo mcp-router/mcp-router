@@ -164,8 +164,7 @@ function validateMcpbManifest(manifest: McpbManifest): void {
     "docker",
   ];
   const isCommandAllowed =
-    allowedCommands.includes(manifest.server.mcp_config.command) ||
-    /^[a-zA-Z0-9_\-\.\/]+$/.test(manifest.server.mcp_config.command);
+    allowedCommands.includes(manifest.server.mcp_config.command);
 
   if (
     !isCommandAllowed ||

@@ -9,6 +9,7 @@ import { TokenValidator } from "../token-validator";
 import { ProjectRepository } from "../../projects/projects.repository";
 import { PROJECT_HEADER, UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
 import { createApiRouter } from "./api-router";
+import { getRateLimiter } from "../rate-limiter";
 
 /**
  * HTTP server that exposes MCP functionality through REST endpoints
@@ -237,6 +238,17 @@ export class MCPHttpServer {
       return null;
     }
 
+    // Rate limit session creation
+    const limiter = getRateLimiter();
+    const clientId = req.headers["x-mcp-client-id"] as string || "unknown";
+    const rateLimitResult = limiter.tryConsume(`session:${clientId}`);
+    if (!rateLimitResult.allowed) {
+      if (!res.headersSent) {
+        res.status(429).json({ error: "Too many session creation requests" });
+      }
+      return null;
+    }
+
     // No session header -- create a new session (initialization).
     const transport = await this.aggregatorServer.createSessionTransport();
     return { transport };
@@ -337,10 +349,19 @@ export class MCPHttpServer {
     // GET /mcp/sse - Handle SSE connection setup
     this.app.get("/mcp/sse", async (req, res) => {
       try {
-        // Set headers
-        res.setHeader("Content-Type", "text/event-stream");
-        res.setHeader("Cache-Control", "no-cache");
-        res.setHeader("Connection", "keep-alive");
+        // Rate limit session creation (before setting SSE headers)
+        const limiter = getRateLimiter();
+        const clientId =
+          (req.headers["x-mcp-client-id"] as string) || "unknown";
+        const rateLimitResult = limiter.tryConsume(`session:${clientId}`);
+        if (!rateLimitResult.allowed) {
+          if (!res.headersSent) {
+            res
+              .status(429)
+              .json({ error: "Too many session creation requests" });
+          }
+          return;
+        }
 
         // Enforce max sessions to prevent memory exhaustion
         if (this.sseSessions.size >= this.MAX_SESSIONS) {
@@ -351,6 +372,11 @@ export class MCPHttpServer {
           }
           return;
         }
+
+        // Set SSE headers after rate limit checks pass
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
 
         // Create SSE server transport
         const messageEndpoint = "/mcp/messages";

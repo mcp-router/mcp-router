@@ -1,4 +1,4 @@
-import { AuditLogRepository } from "./audit-log.repository";
+import { AuditLogRepository, AuditLogEntry } from "./audit-log.repository";
 import { logError } from "@/main/utils/logger";
 
 const SENSITIVE_KEYS = new Set([
@@ -28,14 +28,14 @@ export class AuditLogService {
 
   private constructor() {}
 
-  static getInstance(): AuditLogService {
+  public static getInstance(): AuditLogService {
     if (!AuditLogService.instance) {
       AuditLogService.instance = new AuditLogService();
     }
     return AuditLogService.instance;
   }
 
-  static resetInstance(): void {
+  public static resetInstance(): void {
     AuditLogService.instance = null;
   }
 
@@ -121,6 +121,14 @@ export class AuditLogService {
     details?: object,
   ): void {
     this.log(`project.${action}`, projectName, "project", details);
+  }
+
+  public queryLogs(filters?: { action?: string; actor?: string; startDate?: string; endDate?: string; limit?: number }): AuditLogEntry[] {
+    return this.repository.getEntries(filters);
+  }
+
+  public getLogCount(filters?: { action?: string; actor?: string }): number {
+    return this.repository.getEntryCount(filters);
   }
 
   /**

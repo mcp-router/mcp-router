@@ -1,12 +1,16 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { TokenManager } from "@/main/modules/client-apps/token-manager";
-import { TokenServerAccess } from "@mcp_router/shared";
+import {
+  Token,
+  TokenServerAccess,
+  TokenValidationResult,
+} from "@mcp_router/shared";
 
 export class TokenValidator {
   private tokenManager: TokenManager;
-  private serverNameToIdMap: Map<string, string>;
+  private serverNameToIdMap: ReadonlyMap<string, string>;
 
-  constructor(serverNameToIdMap: Map<string, string>) {
+  constructor(serverNameToIdMap: ReadonlyMap<string, string>) {
     this.serverNameToIdMap = serverNameToIdMap;
     this.tokenManager = new TokenManager();
   }
@@ -58,7 +62,14 @@ export class TokenValidator {
       );
     }
 
-    return validation.clientId!;
+    if (!validation.clientId) {
+      throw new McpError(
+        ErrorCode.InternalError,
+        "Token validated but clientId is missing",
+      );
+    }
+
+    return validation.clientId;
   }
 
   /**
@@ -71,7 +82,7 @@ export class TokenValidator {
   /**
    * Validate a token
    */
-  public validateToken(token: string): any {
+  public validateToken(token: string): TokenValidationResult {
     return this.tokenManager.validateToken(token);
   }
 
@@ -88,7 +99,7 @@ export class TokenValidator {
   /**
    * List all tokens
    */
-  public listTokens(): any[] {
+  public listTokens(): Token[] {
     return this.tokenManager.listTokens();
   }
 }

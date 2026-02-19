@@ -62,6 +62,14 @@ export class HookRepository {
     HookRepository.instance = null;
   }
 
+  private mapRowToHookModule(row: any): HookModule {
+    return {
+      id: row.id,
+      name: row.name,
+      script: row.script,
+    };
+  }
+
   /**
    * Get all Hook Modules
    */
@@ -73,11 +81,7 @@ export class HookRepository {
       ORDER BY name ASC
     `);
 
-    return rows.map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      script: row.script,
-    }));
+    return rows.map((row: any) => this.mapRowToHookModule(row));
   }
 
   /**
@@ -98,11 +102,7 @@ export class HookRepository {
       return null;
     }
 
-    return {
-      id: row.id,
-      name: row.name,
-      script: row.script,
-    };
+    return this.mapRowToHookModule(row);
   }
 
   /**
@@ -123,11 +123,7 @@ export class HookRepository {
       return null;
     }
 
-    return {
-      id: row.id,
-      name: row.name,
-      script: row.script,
-    };
+    return this.mapRowToHookModule(row);
   }
 
   /**

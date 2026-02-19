@@ -76,6 +76,8 @@ export abstract class RequestHandlerBase {
     handler: () => Promise<T>,
     additionalMetadata?: Record<string, unknown>,
   ): Promise<T> {
+    const DEBUG = process.env.DEBUG_WORKFLOWS === "true";
+
     // Try to execute via Workflow
     try {
       // Import WorkflowService and WorkflowExecutor (cached after first import)
@@ -140,16 +142,20 @@ export abstract class RequestHandlerBase {
 
       // Execute if valid workflows exist
       if (validWorkflows.length > 0) {
-        console.log(
-          `Found ${validWorkflows.length} valid workflows for ${method}`,
-        );
+        if (DEBUG)
+          console.log(
+            `Found ${validWorkflows.length} valid workflows for ${method}`,
+          );
 
         // Execute the first valid workflow (use first one if multiple exist)
         // TODO: Consider execution strategy for multiple workflows
         const workflow = validWorkflows[0];
 
         try {
-          console.log(`Executing workflow: ${workflow.name} (${workflow.id})`);
+          if (DEBUG)
+            console.log(
+              `Executing workflow: ${workflow.name} (${workflow.id})`,
+            );
           const result = await workflowService.executeWorkflow(
             workflow.id,
             context,
@@ -157,7 +163,10 @@ export abstract class RequestHandlerBase {
 
           // Return MCP result if the MCP request was executed within the workflow
           if (result.mcpResult !== undefined) {
-            console.log(`Workflow execution successful, returning MCP result`);
+            if (DEBUG)
+              console.log(
+                `Workflow execution successful, returning MCP result`,
+              );
             return result.mcpResult as T;
           }
 
@@ -171,11 +180,12 @@ export abstract class RequestHandlerBase {
         } catch (error) {
           console.error(`Failed to execute workflow ${workflow.name}:`, error);
           // Fall back to direct handler execution on workflow failure
-          console.log(`Falling back to direct handler execution`);
+          if (DEBUG)
+            console.log(`Falling back to direct handler execution`);
           return await handler();
         }
       } else {
-        console.log(`No valid workflows found for ${method}`);
+        if (DEBUG) console.log(`No valid workflows found for ${method}`);
       }
     } catch (error) {
       // Log workflow setup errors but continue with MCP request
@@ -183,7 +193,7 @@ export abstract class RequestHandlerBase {
     }
 
     // Execute handler directly when no workflow is available
-    console.log(`Executing handler directly without workflow`);
+    if (DEBUG) console.log(`Executing handler directly without workflow`);
     return await handler();
   }
 

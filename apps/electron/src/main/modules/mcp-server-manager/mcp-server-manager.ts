@@ -736,9 +736,15 @@ export class MCPServerManager {
   }
 
   /**
-   * Get all maps for sharing with other components
+   * Get all maps for sharing with other components.
+   * Returns ReadonlyMap types to prevent external mutation at compile time.
    */
-  public getMaps() {
+  public getMaps(): {
+    servers: ReadonlyMap<string, MCPServer>;
+    clients: ReadonlyMap<string, ReconnectingMCPClient>;
+    serverNameToIdMap: ReadonlyMap<string, string>;
+    serverStatusMap: ReadonlyMap<string, boolean>;
+  } {
     return {
       servers: this.servers,
       clients: this.clients,

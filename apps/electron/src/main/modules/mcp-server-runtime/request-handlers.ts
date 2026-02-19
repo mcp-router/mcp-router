@@ -84,10 +84,10 @@ interface ElicitationCreateResponse {
 export class RequestHandlers extends RequestHandlerBase {
   private originalProtocols: Map<string, string> = new Map();
   private toolNameToServerMap: Map<string, Map<string, string>> = new Map();
-  private serverStatusMap: Map<string, boolean>;
-  private servers: Map<string, MCPServer>;
-  private clients: Map<string, ReconnectingMCPClient>;
-  private serverNameToIdMap: Map<string, string>;
+  private serverStatusMap: ReadonlyMap<string, boolean>;
+  private servers: ReadonlyMap<string, MCPServer>;
+  private clients: ReadonlyMap<string, ReconnectingMCPClient>;
+  private serverNameToIdMap: ReadonlyMap<string, string>;
   private toolCatalogService: ToolCatalogService;
   private toolCatalogHandler: ToolCatalogHandler;
 

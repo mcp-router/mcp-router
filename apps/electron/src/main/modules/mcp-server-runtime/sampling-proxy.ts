@@ -16,10 +16,10 @@ import { getRateLimiter, RateLimitResult } from "./rate-limiter";
  * to whichever upstream client (Claude Desktop, Cursor, etc.) is currently
  * connected to the aggregator.
  *
- * TODO: Currently this uses a last-writer-wins pattern where only the most
- * recently connected client session can receive sampling requests. In a
- * multi-client scenario, we need a way to route sampling requests back to
- * the specific client that initiated the tool call.
+ * TODO(#115): This uses a last-writer-wins pattern. With multiple concurrent clients,
+ * only the most recently connected client will receive sampling requests. For single-user
+ * desktop use this is acceptable. A full fix requires associating sampling requests with
+ * the client session that initiated the original tool call.
  */
 export class SamplingProxy {
   private activeServer: Server | null = null;
@@ -62,11 +62,12 @@ export class SamplingProxy {
 
     // Hard cap maxTokens to prevent malicious servers from draining user's LLM budget
     const MAX_SAMPLING_TOKENS = 4096;
-    if (params.maxTokens > MAX_SAMPLING_TOKENS) {
-      params.maxTokens = MAX_SAMPLING_TOKENS;
-    }
+    const safeParams = {
+      ...params,
+      maxTokens: Math.min(params.maxTokens, MAX_SAMPLING_TOKENS),
+    };
 
-    return await this.activeServer.createMessage(params);
+    return await this.activeServer.createMessage(safeParams);
   }
 }
 

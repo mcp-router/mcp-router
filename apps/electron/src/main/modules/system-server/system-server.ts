@@ -5,6 +5,9 @@ import {
   ErrorCode,
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
+import os from "node:os";
+import fs from "node:fs";
+import path from "node:path";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import type {
   ListServersInput,
@@ -386,66 +389,6 @@ export class SystemServer {
           "loadExternalMCPConfigs",
           "autoUpdateEnabled",
           "showWindowOnStartup",
-          {
-            name: "router_health_metrics",
-            description:
-              "Get health metrics (uptime, latency, success rate) for all tracked servers.",
-            inputSchema: {
-              type: "object" as const,
-              properties: {},
-            },
-          },
-          {
-            name: "router_token_usage",
-            description:
-              "Get token budget tracking data including per-server tool stats and catalog savings.",
-            inputSchema: {
-              type: "object" as const,
-              properties: {},
-            },
-          },
-          {
-            name: "router_audit_log",
-            description: "Query security and compliance audit logs.",
-            inputSchema: {
-              type: "object" as const,
-              properties: {
-                action: {
-                  type: "string",
-                  description:
-                    "Filter by action (e.g. 'TOOL_CALL', 'SERVER_START')",
-                },
-                actor: {
-                  type: "string",
-                  description: "Filter by actor ID",
-                },
-              },
-            },
-          },
-          {
-            name: "router_discover_servers",
-            description:
-              "Scan local IDE configurations (VSCode, Cursor, Claude Desktop) for unmanaged MCP servers.",
-            inputSchema: {
-              type: "object" as const,
-              properties: {},
-            },
-          },
-          {
-            name: "router_install_mcpb",
-            description:
-              "Install an MCP server from a local .mcpb bundle file.",
-            inputSchema: {
-              type: "object" as const,
-              properties: {
-                filePath: {
-                  type: "string",
-                  description: "Absolute path to the .mcpb file to install",
-                },
-              },
-              required: ["filePath"],
-            },
-          },
         ];
         // Validate that only known keys are provided and all are booleans
         for (const [key, value] of Object.entries(args)) {
@@ -601,6 +544,31 @@ export class SystemServer {
       throw new McpError(
         ErrorCode.InvalidParams,
         "remoteUrl is required for remote servers",
+      );
+    }
+
+    // Command execution prevention (#100)
+    const ALLOWED_COMMANDS = [
+      "node",
+      "npx",
+      "npm",
+      "python",
+      "python3",
+      "pip",
+      "uvx",
+      "uv",
+      "deno",
+      "bun",
+      "bunx",
+      "docker",
+    ];
+    if (
+      input.command &&
+      !ALLOWED_COMMANDS.includes(path.basename(input.command))
+    ) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Command "${input.command}" is not in the allowed list. Allowed: ${ALLOWED_COMMANDS.join(", ")}`,
       );
     }
 
@@ -849,6 +817,21 @@ export class SystemServer {
     }
 
     const { server: _serverIdOrName, ...updateFields } = input;
+
+    // Validate command if being updated (reuse allowlist from handleAddServer)
+    if (updateFields.command) {
+      const ALLOWED_COMMANDS = [
+        "node", "npx", "npm", "python", "python3", "pip",
+        "uvx", "uv", "deno", "bun", "bunx", "docker",
+      ];
+      if (!ALLOWED_COMMANDS.includes(path.basename(updateFields.command))) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          `Command "${updateFields.command}" is not in the allowed list. Allowed: ${ALLOWED_COMMANDS.join(", ")}`,
+        );
+      }
+    }
+
     const updated = this.serverManager.updateServer(server.id, updateFields);
     if (!updated) {
       throw new McpError(
@@ -1027,9 +1010,9 @@ export class SystemServer {
     const action = typeof args.action === "string" ? args.action : undefined;
     const actor = typeof args.actor === "string" ? args.actor : undefined;
 
-    // Use the service directly to ensure single-path execution and future-proofing
-    const { getAuditLogService } = require("../mcp-logger/audit-log.service");
-    const service = getAuditLogService();
+    // Use the service layer (which delegates to the repository)
+    const { AuditLogService } = await import("../mcp-logger/audit-log.service");
+    const service = AuditLogService.getInstance();
     const logs = service.queryLogs({ action, actor });
     const count = service.getLogCount({ action, actor });
 
@@ -1045,10 +1028,6 @@ export class SystemServer {
 
   private async handleDiscoverServers() {
     const discoveryService = ServerDiscoveryService.getInstance();
-
-    // Trigger a new scan
-    // We scan standard directories: ~, workspace, etc.
-    const os = require("os");
 
     // Scan home directory for global IDE configs
     await discoveryService.scanProjectDirectory(os.homedir());
@@ -1070,9 +1049,31 @@ export class SystemServer {
   }
 
   private async handleInstallMcpb(filePath: string) {
+    // Path traversal prevention (#101)
+    if (!filePath.endsWith(".mcpb")) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "filePath must end with .mcpb extension",
+      );
+    }
+    const resolvedPath = path.resolve(filePath);
+    const homeDir = os.homedir();
+    if (!resolvedPath.startsWith(homeDir)) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "filePath must be within the user's home directory",
+      );
+    }
+    const stats = fs.statSync(resolvedPath);
+    if (stats.size > 50 * 1024 * 1024) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "File exceeds maximum size of 50MB",
+      );
+    }
+
     try {
-      const fs = require("fs");
-      const buffer = fs.readFileSync(filePath);
+      const buffer = fs.readFileSync(resolvedPath);
       const uint8Array = new Uint8Array(buffer);
 
       const result = await processMcpbFile(uint8Array);
@@ -1413,6 +1414,67 @@ const SYSTEM_TOOLS = [
         },
       },
       required: ["workspaceId"],
+    },
+  },
+  // --- P1: Observability & discovery tools ---
+  {
+    name: "router_health_metrics",
+    description:
+      "Get health metrics (uptime, latency, success rate) for all tracked servers.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "router_token_usage",
+    description:
+      "Get token budget tracking data including per-server tool stats and catalog savings.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "router_audit_log",
+    description: "Query security and compliance audit logs.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        action: {
+          type: "string",
+          description:
+            "Filter by action (e.g. 'TOOL_CALL', 'SERVER_START')",
+        },
+        actor: {
+          type: "string",
+          description: "Filter by actor ID",
+        },
+      },
+    },
+  },
+  {
+    name: "router_discover_servers",
+    description:
+      "Scan local IDE configurations (VSCode, Cursor, Claude Desktop) for unmanaged MCP servers.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "router_install_mcpb",
+    description:
+      "Install an MCP server from a local .mcpb bundle file.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        filePath: {
+          type: "string",
+          description: "Absolute path to the .mcpb file to install",
+        },
+      },
+      required: ["filePath"],
     },
   },
 ];

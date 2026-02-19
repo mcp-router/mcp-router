@@ -369,7 +369,7 @@ class CloudSyncService {
       args: server.args,
       env: server.env ?? {},
       remoteUrl: server.remoteUrl,
-      bearerToken: server.bearerToken,
+      bearerToken: undefined, // Excluded from sync for security
       autoStart: server.autoStart,
       disabled: server.disabled,
       description: server.description,

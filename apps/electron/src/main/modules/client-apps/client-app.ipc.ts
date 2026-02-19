@@ -17,7 +17,7 @@ export function setupClientAppHandlers(): void {
       return service.list();
     } catch (error) {
       console.error("Failed to list client apps:", error);
-      return [];
+      throw error;
     }
   });
 
@@ -31,7 +31,7 @@ export function setupClientAppHandlers(): void {
       return service.get(id);
     } catch (error) {
       console.error(`Failed to get client app ${id}:`, error);
-      return null;
+      throw error;
     }
   });
 
@@ -99,7 +99,7 @@ export function setupClientAppHandlers(): void {
       return service.detectInstalled();
     } catch (error) {
       console.error("Failed to detect client apps:", error);
-      return [];
+      throw error;
     }
   });
 
@@ -170,7 +170,7 @@ export function setupClientAppHandlers(): void {
       return service.discoverSkillsFromClients();
     } catch (error) {
       console.error("Failed to discover skills from clients:", error);
-      return [];
+      throw error;
     }
   });
 }

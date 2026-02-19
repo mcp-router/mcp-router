@@ -11,6 +11,55 @@ import {
 import { McpLoggerRepository } from "./mcp-logger.repository";
 
 /**
+ * Batches log entries in memory and flushes them to the repository
+ * periodically or when the buffer is full, reducing SQLite write overhead.
+ */
+class LogBuffer {
+  private buffer: RequestLogEntryInput[] = [];
+  private flushTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly FLUSH_INTERVAL_MS = 500;
+  private readonly MAX_BUFFER_SIZE = 50;
+
+  constructor(private readonly repository: McpLoggerRepository) {}
+
+  add(entry: RequestLogEntryInput): void {
+    this.buffer.push(entry);
+    if (this.buffer.length >= this.MAX_BUFFER_SIZE) {
+      this.flush();
+    } else if (!this.flushTimer) {
+      this.flushTimer = setTimeout(() => this.flush(), this.FLUSH_INTERVAL_MS);
+    }
+  }
+
+  flush(): void {
+    if (this.buffer.length === 0) return;
+    const entries = this.buffer;
+    this.buffer = [];
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+    }
+    try {
+      this.repository.transaction(() => {
+        for (const entry of entries) {
+          this.repository.addRequestLog(entry);
+        }
+      });
+    } catch (error) {
+      console.error("[LogBuffer] Batch flush error:", error);
+    }
+  }
+
+  dispose(): void {
+    this.flush();
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+    }
+  }
+}
+
+/**
  * Request log service class
  */
 export class McpLoggerService extends SingletonService<
@@ -19,12 +68,20 @@ export class McpLoggerService extends SingletonService<
   McpLoggerService
 > {
   private serverNameToIdMap: Map<string, string> | undefined;
+  private logBuffer: LogBuffer | null = null;
 
   /**
    * Constructor
    */
   protected constructor() {
     super();
+  }
+
+  private getLogBuffer(): LogBuffer {
+    if (!this.logBuffer) {
+      this.logBuffer = new LogBuffer(McpLoggerRepository.getInstance());
+    }
+    return this.logBuffer;
   }
 
   /**
@@ -60,6 +117,11 @@ export class McpLoggerService extends SingletonService<
    * Used when switching workspaces
    */
   public static resetInstance(): void {
+    const instance = McpLoggerService.getInstance();
+    if (instance.logBuffer) {
+      instance.logBuffer.dispose();
+      instance.logBuffer = null;
+    }
     (this as any).resetInstanceBase(McpLoggerService);
   }
 
@@ -68,13 +130,19 @@ export class McpLoggerService extends SingletonService<
   //--------------------------------------------------------------------------------
 
   /**
-   * Add a request log
+   * Add a request log (buffered for batch writes)
    */
   public async addRequestLog(
     entry: RequestLogEntryInput,
   ): Promise<RequestLogEntry> {
     try {
-      return await McpLoggerRepository.getInstance().addRequestLog(entry);
+      this.getLogBuffer().add(entry);
+      // Return a synthetic entry since the actual write is deferred
+      return {
+        ...entry,
+        id: "",
+        timestamp: Date.now(),
+      };
     } catch (error) {
       return this.handleError("add", error);
     }

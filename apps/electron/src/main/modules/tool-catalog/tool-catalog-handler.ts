@@ -149,9 +149,9 @@ WORKFLOW:
 // Internal dependency injection type for handler initialization
 // eslint-disable-next-line custom/no-scattered-types
 type ToolCatalogHandlerDeps = {
-  servers: Map<string, MCPServer>;
-  clients: Map<string, ReconnectingMCPClient>;
-  serverStatusMap: Map<string, boolean>;
+  servers: ReadonlyMap<string, MCPServer>;
+  clients: ReadonlyMap<string, ReconnectingMCPClient>;
+  serverStatusMap: ReadonlyMap<string, boolean>;
   toolCatalogService: ToolCatalogService;
 };
 
@@ -159,9 +159,9 @@ type ToolCatalogHandlerDeps = {
  * Handles tool_discovery and tool_execute meta-tools.
  */
 export class ToolCatalogHandler extends RequestHandlerBase {
-  private servers: Map<string, MCPServer>;
-  private clients: Map<string, ReconnectingMCPClient>;
-  private serverStatusMap: Map<string, boolean>;
+  private servers: ReadonlyMap<string, MCPServer>;
+  private clients: ReadonlyMap<string, ReconnectingMCPClient>;
+  private serverStatusMap: ReadonlyMap<string, boolean>;
   private toolCatalogService: ToolCatalogService;
   private lowerCaseNameToIdMap: Map<string, string> = new Map();
 

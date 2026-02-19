@@ -96,7 +96,7 @@ See `docs/NEW_FEATURE_CHECKLIST.md` for the complete checklist. Key files to mod
 ### Key Patterns
 
 - **Singleton repositories**: Always implement `getInstance()` and `resetInstance()`
-- **IPC naming**: Use `feature:action` format (e.g., `workspace:list`)
+- **IPC naming**: Use `feature:action` format with kebab-case for multi-word actions (e.g., `skill:list-unified`). Legacy channels use camelCase (e.g., `skill:getContent`) but new channels should use kebab-case.
 - **Module structure**: Keep business logic in services, data access in repositories
 - **State management**: Zustand stores in renderer, SQLite persistence in main
 

@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 export abstract class BaseRepository<T extends { id: string }> {
   protected db: SqliteManager;
   protected tableName: string;
+  private tableVerified = false;
 
   /**
    * Get the current database instance (for external comparison)
@@ -42,17 +43,20 @@ export abstract class BaseRepository<T extends { id: string }> {
    */
   public getAll(options: any = {}): T[] {
     try {
-      // Check if table exists before query
-      const tableExists = this.db.get(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
-        [this.tableName],
-      );
-
-      if (!tableExists) {
-        console.warn(
-          `Table ${this.tableName} does not exist, returning empty array`,
+      // Check if table exists (cached after first successful verification)
+      if (!this.tableVerified) {
+        const tableExists = this.db.get(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
+          [this.tableName],
         );
-        return [];
+
+        if (!tableExists) {
+          console.warn(
+            `Table ${this.tableName} does not exist, returning empty array`,
+          );
+          return [];
+        }
+        this.tableVerified = true;
       }
 
       // Build SQL query

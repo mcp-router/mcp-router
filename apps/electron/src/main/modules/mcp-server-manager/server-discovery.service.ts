@@ -1,23 +1,18 @@
 /**
  * Server Discovery Service
  *
- * Scans IDE configurations and project directories for MCP server definitions
- * that are not yet managed by MCP Router. Provides read-only discovery results
- * that can be presented to the user for manual approval/import.
+ * Scans project directories for MCP server definitions that are not yet
+ * managed by MCP Router. Provides read-only discovery results that can be
+ * presented to the user for manual approval/import.
  *
  * Supported sources:
- * - IDE global configs (Claude Desktop, Cursor, VS Code, Cline, Windsurf, etc.)
  * - Project-level configs (.mcp.json, .mcp/config.json, .vscode/mcp.json, .cursor/mcp.json)
  *
- * Limitations:
- * - YAML configs (Continue, Goose) are not parsed (would require a YAML dependency)
- * - TOML configs (Codex) use regex-based parsing for basic extraction
- * - No file watching; discovery is triggered manually via scan methods
+ * No file watching; discovery is triggered manually via scan methods.
  */
 
 import { promises as fsPromises } from "fs";
 import path from "path";
-import { STANDARD_CLIENTS } from "@/main/modules/client-apps/client-definitions";
 import { getServerService } from "./server-service";
 
 // =============================================================================
@@ -162,107 +157,6 @@ function extractServersFromJson(
 }
 
 /**
- * Extract server entries from a TOML config string using regex.
- * This handles the Codex config format: [mcp_servers.<name>]
- */
-function extractServersFromToml(
-  content: string,
-  source: string,
-  sourcePath: string,
-): DiscoveredServer[] {
-  const results: DiscoveredServer[] = [];
-
-  // Match [mcp_servers.<name>] sections (not .env sub-sections)
-  const sectionPattern = /\[mcp_servers\.(\w[\w-]*)\](?!\.\w)/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = sectionPattern.exec(content)) !== null) {
-    const serverName = match[1];
-    const sectionStart = match.index + match[0].length;
-
-    // Find end of section (next [...] header or end of file)
-    const nextSectionMatch = content
-      .slice(sectionStart)
-      .match(/\n\[(?!mcp_servers\.\w+\.env)/);
-    const sectionEnd = nextSectionMatch
-      ? sectionStart + (nextSectionMatch.index ?? content.length)
-      : content.length;
-
-    const sectionContent = content.slice(sectionStart, sectionEnd);
-
-    // Parse key-value pairs from the section
-    const command = extractTomlValue(sectionContent, "command");
-    const argsStr = extractTomlArray(sectionContent, "args");
-
-    // Also look for the .env sub-section
-    const envSectionPattern = new RegExp(
-      `\\[mcp_servers\\.${serverName}\\.env\\]([\\s\\S]*?)(?=\\n\\[|$)`,
-    );
-    const envMatch = content.match(envSectionPattern);
-    const env: Record<string, string> = {};
-    if (envMatch) {
-      const envContent = envMatch[1];
-      const envPairs = envContent.matchAll(/^\s*(\w+)\s*=\s*"([^"]*)"/gm);
-      for (const pair of envPairs) {
-        env[pair[1]] = pair[2];
-      }
-    }
-
-    const server: DiscoveredServer = {
-      name: serverName,
-      source,
-      sourcePath,
-      transport: "stdio",
-    };
-
-    if (command) {
-      server.command = command;
-    }
-    if (argsStr) {
-      server.args = argsStr;
-    }
-    if (Object.keys(env).length > 0) {
-      server.env = env;
-    }
-
-    results.push(server);
-  }
-
-  return results;
-}
-
-/**
- * Extract a string value from a TOML section.
- */
-function extractTomlValue(
-  sectionContent: string,
-  key: string,
-): string | undefined {
-  const match = sectionContent.match(
-    new RegExp(`^\\s*${key}\\s*=\\s*"([^"]*)"`, "m"),
-  );
-  return match ? match[1] : undefined;
-}
-
-/**
- * Extract an array of strings from a TOML section.
- */
-function extractTomlArray(
-  sectionContent: string,
-  key: string,
-): string[] | undefined {
-  const match = sectionContent.match(
-    new RegExp(`^\\s*${key}\\s*=\\s*\\[([^\\]]*)]`, "m"),
-  );
-  if (!match) return undefined;
-
-  const items = match[1].match(/"([^"]*)"/g);
-  if (!items) return undefined;
-
-  return items.map((item) => item.replace(/^"|"$/g, ""));
-}
-
-/**
  * Safely read and parse a JSON file. Returns null on any error.
  */
 async function safeReadJson(
@@ -275,17 +169,6 @@ async function safeReadJson(
       return parsed as Record<string, unknown>;
     }
     return null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Safely read a file as text. Returns null on any error.
- */
-async function safeReadText(filePath: string): Promise<string | null> {
-  try {
-    return await fsPromises.readFile(filePath, "utf8");
   } catch {
     return null;
   }
@@ -335,69 +218,6 @@ export class ServerDiscoveryService {
    */
   public static resetInstance(): void {
     ServerDiscoveryService.instance = null;
-  }
-
-  /**
-   * Scan all known IDE configuration files for MCP server entries.
-   *
-   * Reads config files for Claude Desktop, Cursor, VS Code, Cline, Windsurf,
-   * and other supported clients. Skips clients that use YAML or env-only
-   * config formats since those require additional parsing dependencies.
-   *
-   * @returns Array of discovered servers not already managed by MCP Router
-   */
-  public async scanIDEConfigs(): Promise<DiscoveredServer[]> {
-    const platform = process.platform as "darwin" | "win32" | "linux";
-    const discovered: DiscoveredServer[] = [];
-
-    const scanPromises = STANDARD_CLIENTS.map(async (client) => {
-      // Skip clients without MCP config paths
-      const configPath = client.mcpConfigPath[platform];
-      if (!configPath) {
-        return [];
-      }
-
-      // Skip formats we cannot parse (YAML requires a dependency, env-only has no servers)
-      if (
-        client.configFormat === "yaml" ||
-        client.configFormat === "env-only"
-      ) {
-        return [];
-      }
-
-      const exists = await fileExists(configPath);
-      if (!exists) {
-        return [];
-      }
-
-      const source = `${client.name} config`;
-
-      try {
-        if (client.configFormat === "toml") {
-          const content = await safeReadText(configPath);
-          if (!content) return [];
-          return extractServersFromToml(content, source, configPath);
-        }
-
-        // Default: JSON format
-        const config = await safeReadJson(configPath);
-        if (!config) return [];
-        return extractServersFromJson(config, source, configPath);
-      } catch {
-        // Corrupt or unreadable config -- skip gracefully
-        return [];
-      }
-    });
-
-    const results = await Promise.all(scanPromises);
-    for (const batch of results) {
-      discovered.push(...batch);
-    }
-
-    // Filter out servers already managed by MCP Router
-    const filtered = this.filterAlreadyManaged(discovered);
-    this.lastScanResults = filtered;
-    return filtered;
   }
 
   /**

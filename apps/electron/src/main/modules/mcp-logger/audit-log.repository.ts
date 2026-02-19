@@ -67,7 +67,7 @@ export class AuditLogRepository {
     }
   }
 
-  static getInstance(): AuditLogRepository {
+  public static getInstance(): AuditLogRepository {
     if (!AuditLogRepository.instance) {
       const db = getSqliteManager();
       AuditLogRepository.instance = new AuditLogRepository(db);
@@ -75,7 +75,7 @@ export class AuditLogRepository {
     return AuditLogRepository.instance;
   }
 
-  static resetInstance(): void {
+  public static resetInstance(): void {
     AuditLogRepository.instance = null;
   }
 

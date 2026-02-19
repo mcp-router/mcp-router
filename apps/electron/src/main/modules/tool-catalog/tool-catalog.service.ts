@@ -23,6 +23,8 @@ const MAX_RESULTS_LIMIT = 100;
 export class ToolCatalogService {
   private serverManager: MCPServerManager;
   private searchProvider: SearchProvider;
+  private toolCache: { tools: ToolInfo[]; hash: string; timestamp: number } | null = null;
+  private readonly TOOL_CACHE_TTL_MS = 5000;
 
   constructor(
     serverManager: MCPServerManager,
@@ -75,43 +77,57 @@ export class ToolCatalogService {
 
   /**
    * Collects available tools from running servers on-demand.
+   * Uses a TTL-based cache to avoid repeated queries within a short window.
    * Applies filtering based on context (projectId, allowedServerIds, toolPermissions).
    */
   private async collectAvailableTools(
     context: SearchContext,
   ): Promise<ToolInfo[]> {
     const { servers, clients, serverStatusMap } = this.serverManager.getMaps();
-    const tools: ToolInfo[] = [];
+
+    // Build eligible server list and compute a cache key from it
+    const eligibleServers: {
+      serverId: string;
+      server: MCPServer;
+      serverName: string;
+      client: ReturnType<typeof clients.get>;
+    }[] = [];
+    const hashParts: string[] = [];
 
     for (const [serverId, client] of clients.entries()) {
       const server = servers.get(serverId);
-      if (!server || !client) {
-        continue;
-      }
+      if (!server || !client) continue;
 
       const serverName = server.name || serverId;
-      if (!serverStatusMap.get(serverName)) {
-        continue;
-      }
+      if (!serverStatusMap.get(serverName)) continue;
+      if (context.allowedServerIds && !context.allowedServerIds.has(serverId)) continue;
+      if (!this.matchesProject(server, context.projectId)) continue;
 
-      if (context.allowedServerIds && !context.allowedServerIds.has(serverId)) {
-        continue;
-      }
+      eligibleServers.push({ serverId, server, serverName, client });
+      hashParts.push(serverId);
+    }
 
-      if (!this.matchesProject(server, context.projectId)) {
-        continue;
-      }
+    const hash = hashParts.sort().join(",");
 
-      const permissions = server.toolPermissions || {};
+    // Return cached results if still valid
+    if (
+      this.toolCache &&
+      this.toolCache.hash === hash &&
+      Date.now() - this.toolCache.timestamp < this.TOOL_CACHE_TTL_MS
+    ) {
+      return this.toolCache.tools;
+    }
 
-      try {
-        const toolResponse = await client.getClient().listTools();
+    // Query all eligible servers in parallel
+    const results = await Promise.allSettled(
+      eligibleServers.map(async ({ serverId, server, serverName, client }) => {
+        const permissions = server.toolPermissions || {};
+        const toolResponse = await client!.getClient().listTools();
         const toolList = toolResponse?.tools ?? [];
+        const tools: ToolInfo[] = [];
 
         for (const tool of toolList) {
-          if (permissions[tool.name] === false) {
-            continue;
-          }
+          if (permissions[tool.name] === false) continue;
 
           tools.push({
             toolKey: `${serverId}:${tool.name}`,
@@ -125,13 +141,21 @@ export class ToolCatalogService {
             annotations: tool.annotations as ToolInfo["annotations"],
           });
         }
-      } catch (error) {
-        console.error(
-          `[ToolCatalog] Failed to list tools from ${serverName}:`,
-          error,
-        );
+        return tools;
+      }),
+    );
+
+    const tools: ToolInfo[] = [];
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        tools.push(...result.value);
+      } else {
+        console.error("[ToolCatalog] Failed to list tools from server:", result.reason);
       }
     }
+
+    // Update cache
+    this.toolCache = { tools, hash, timestamp: Date.now() };
 
     return tools;
   }

@@ -69,6 +69,20 @@ export class WorkflowRepository {
     WorkflowRepository.instance = null;
   }
 
+  private mapRowToWorkflow(row: any): WorkflowDefinition {
+    return {
+      id: row.id,
+      name: row.name,
+      description: row.description || undefined,
+      workflowType: row.workflow_type,
+      nodes: JSON.parse(row.nodes),
+      edges: JSON.parse(row.edges),
+      enabled: Boolean(row.enabled),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
   /**
    * Get all workflows
    */
@@ -81,17 +95,7 @@ export class WorkflowRepository {
       ORDER BY updated_at DESC
     `);
 
-    return rows.map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      description: row.description || undefined,
-      workflowType: row.workflow_type,
-      nodes: JSON.parse(row.nodes),
-      edges: JSON.parse(row.edges),
-      enabled: Boolean(row.enabled),
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return rows.map((row: any) => this.mapRowToWorkflow(row));
   }
 
   /**
@@ -107,17 +111,7 @@ export class WorkflowRepository {
       ORDER BY updated_at DESC
     `);
 
-    return rows.map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      description: row.description || undefined,
-      workflowType: row.workflow_type,
-      nodes: JSON.parse(row.nodes),
-      edges: JSON.parse(row.edges),
-      enabled: Boolean(row.enabled),
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return rows.map((row: any) => this.mapRowToWorkflow(row));
   }
 
   /**
@@ -139,17 +133,7 @@ export class WorkflowRepository {
       return null;
     }
 
-    return {
-      id: row.id,
-      name: row.name,
-      description: row.description || undefined,
-      workflowType: row.workflow_type,
-      nodes: JSON.parse(row.nodes),
-      edges: JSON.parse(row.edges),
-      enabled: Boolean(row.enabled),
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return this.mapRowToWorkflow(row);
   }
 
   /**
@@ -168,17 +152,7 @@ export class WorkflowRepository {
       { workflowType },
     );
 
-    return rows.map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      description: row.description || undefined,
-      workflowType: row.workflow_type,
-      nodes: JSON.parse(row.nodes),
-      edges: JSON.parse(row.edges),
-      enabled: Boolean(row.enabled),
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return rows.map((row: any) => this.mapRowToWorkflow(row));
   }
 
   /**

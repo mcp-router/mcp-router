@@ -55,11 +55,12 @@ const MS_7D = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * Maximum number of status history entries per server.
- * With one entry per state change this is generous for 7 days
- * of typical operation (a server that reconnects every 30 s
- * would generate ~20 160 entries in 7 days).
+ * 500 entries is generous for a desktop app — even a server that
+ * reconnects every minute would only generate ~10 080 entries in
+ * 7 days, but most servers change state far less frequently.
+ * The circular buffer handles eviction naturally.
  */
-const MAX_HISTORY_ENTRIES = 25_000;
+const MAX_HISTORY_ENTRIES = 500;
 
 /** Internal per-server data. */
 interface ServerData {
@@ -118,9 +119,6 @@ export class HealthMetricsTracker {
     }
     data.historyWriteIdx = (data.historyWriteIdx + 1) % MAX_HISTORY_ENTRIES;
     data.historyCount++;
-
-    // Prune entries older than 7 days to keep memory bounded
-    this.pruneOldEntries(data);
   }
 
   /**
@@ -328,35 +326,6 @@ export class HealthMetricsTracker {
     ];
   }
 
-  /**
-   * Remove history entries older than 7 days.
-   *
-   * For the non-wrapped case we can simply shift from the front.
-   * For the wrapped case we advance the write index past old entries.
-   */
-  private pruneOldEntries(data: ServerData): void {
-    const cutoff = Date.now() - MS_7D;
-
-    if (data.history.length < MAX_HISTORY_ENTRIES) {
-      // Find the first entry that is NOT old
-      const firstKeepIdx = data.history.findIndex(
-        (entry) => entry.timestamp >= cutoff,
-      );
-
-      if (firstKeepIdx > 0) {
-        // Remove all entries before the first keep index at once
-        data.history.splice(0, firstKeepIdx);
-        // Adjust write index since we removed from front
-        data.historyWriteIdx = Math.max(0, data.historyWriteIdx - firstKeepIdx);
-      } else if (firstKeepIdx === -1 && data.history.length > 0) {
-        // All entries are old
-        data.history.length = 0;
-        data.historyWriteIdx = 0;
-      }
-    }
-    // For a fully-wrapped buffer, old entries are naturally overwritten
-    // by the circular write, so no explicit pruning is needed.
-  }
 }
 
 // ---------------------------------------------------------------------------

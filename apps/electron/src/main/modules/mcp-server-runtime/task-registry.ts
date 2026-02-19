@@ -27,17 +27,6 @@ export function createNamespacedTaskId(
   return `${serverName}${TASK_SEPARATOR}${originalTaskId}`;
 }
 
-function parseNamespacedTaskId(
-  namespacedId: string,
-): { serverName: string; originalTaskId: string } | null {
-  const idx = namespacedId.indexOf(TASK_SEPARATOR);
-  if (idx === -1) return null;
-  return {
-    serverName: namespacedId.substring(0, idx),
-    originalTaskId: namespacedId.substring(idx + TASK_SEPARATOR.length),
-  };
-}
-
 export class TaskRegistry {
   private static instance: TaskRegistry | null = null;
   private tasks: Map<string, TaskEntry> = new Map();
@@ -52,14 +41,14 @@ export class TaskRegistry {
     this.cleanupTimer.unref();
   }
 
-  static getInstance(): TaskRegistry {
+  public static getInstance(): TaskRegistry {
     if (!TaskRegistry.instance) {
       TaskRegistry.instance = new TaskRegistry();
     }
     return TaskRegistry.instance;
   }
 
-  static resetInstance(): void {
+  public static resetInstance(): void {
     if (TaskRegistry.instance?.cleanupTimer) {
       clearInterval(TaskRegistry.instance.cleanupTimer);
     }
@@ -100,34 +89,6 @@ export class TaskRegistry {
    */
   getServerForTask(namespacedId: string): string | undefined {
     return this.tasks.get(namespacedId)?.serverName;
-  }
-
-  /**
-   * List all tasks, optionally filtered by server.
-   */
-  listTasks(serverName?: string): TaskEntry[] {
-    const entries = Array.from(this.tasks.values());
-    if (serverName) {
-      return entries.filter((t) => t.serverName === serverName);
-    }
-    return entries;
-  }
-
-  /**
-   * Update the status of a tracked task.
-   */
-  updateStatus(namespacedId: string, status: string): void {
-    const task = this.tasks.get(namespacedId);
-    if (task) {
-      task.status = status;
-    }
-  }
-
-  /**
-   * Remove a task from tracking.
-   */
-  removeTask(namespacedId: string): void {
-    this.tasks.delete(namespacedId);
   }
 
   /**

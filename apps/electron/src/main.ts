@@ -12,7 +12,7 @@ import { getPlatformAPIManager } from "@/main/modules/workspace/platform-api-man
 import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
 import { setupIpcHandlers } from "./main/infrastructure/ipc";
-import { resolveAutoUpdateConfig } from "./main/modules/system/app-updator";
+import { resolveAutoUpdateConfig } from "./main/modules/system/app-updater";
 import { getIsAutoUpdateInProgress } from "./main/modules/system/system-handler";
 import { initializeEnvironment, isDevelopment } from "@/main/utils/environment";
 import { getCloudSyncService } from "@/main/modules/cloud-sync/cloud-sync.service";
@@ -195,7 +195,12 @@ const createWindow = ({ showOnCreate = true }: CreateWindowOptions = {}) => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+        shell.openExternal(url);
+      }
+    } catch { /* ignore invalid URLs */ }
     return { action: "deny" };
   });
 
@@ -352,10 +357,14 @@ async function initApplication(): Promise<void> {
     .trim();
 
   const PROD_CSP = `
-    default-src 'self' 'unsafe-inline';
+    default-src 'self';
+    style-src 'self' 'unsafe-inline';
     script-src 'self';
     connect-src 'self' https://mcp-router.net https://api.mcp-router.net https://github.com;
     img-src 'self' data:;
+    object-src 'none';
+    base-uri 'self';
+    frame-src 'none';
   `
     .replace(/\s+/g, " ")
     .trim();
