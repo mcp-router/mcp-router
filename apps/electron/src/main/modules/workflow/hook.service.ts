@@ -189,28 +189,41 @@ export class HookService {
       await jail.set("context", new ivm.ExternalCopy(context ?? {}).copyInto());
 
       // --- Console (callbacks into the host) ---
-      await jail.set("__consoleLog", new ivm.Callback(
-        (...args: unknown[]) => console.log("[Hook]", ...args),
-      ));
-      await jail.set("__consoleError", new ivm.Callback(
-        (...args: unknown[]) => console.error("[Hook]", ...args),
-      ));
-      await jail.set("__consoleWarn", new ivm.Callback(
-        (...args: unknown[]) => console.warn("[Hook]", ...args),
-      ));
+      await jail.set(
+        "__consoleLog",
+        new ivm.Callback((...args: unknown[]) =>
+          console.log("[Hook]", ...args),
+        ),
+      );
+      await jail.set(
+        "__consoleError",
+        new ivm.Callback((...args: unknown[]) =>
+          console.error("[Hook]", ...args),
+        ),
+      );
+      await jail.set(
+        "__consoleWarn",
+        new ivm.Callback((...args: unknown[]) =>
+          console.warn("[Hook]", ...args),
+        ),
+      );
 
       // --- sleep (returns a promise that resolves on the host side) ---
-      await jail.set("__sleep", new ivm.Callback(
-        (ms: number) => {
-          const capped = Math.min(Math.max(0, Number(ms) || 0), 5000);
-          return new Promise<void>((resolve) => setTimeout(resolve, capped));
-        },
-        { async: true },
-      ));
+      await jail.set(
+        "__sleep",
+        new ivm.Callback(
+          (ms: number) => {
+            const capped = Math.min(Math.max(0, Number(ms) || 0), 5000);
+            return new Promise<void>((resolve) => setTimeout(resolve, capped));
+          },
+          { async: true },
+        ),
+      );
 
       // --- getServerInfo (synchronous callback into host) ---
-      await jail.set("__getServerInfo", new ivm.Callback(
-        (serverId: string): string | null => {
+      await jail.set(
+        "__getServerInfo",
+        new ivm.Callback((serverId: string): string | null => {
           try {
             const server = getServerService().getServerById(String(serverId));
             if (!server) return null;
@@ -224,8 +237,8 @@ export class HookService {
           } catch {
             return null;
           }
-        },
-      ));
+        }),
+      );
 
       // --- Bootstrap: wire up friendly APIs from the raw callbacks ---
       const bootstrap = await isolate.compileScript(`
@@ -267,9 +280,10 @@ export class HookService {
       const result = await compiled.run(ivmContext, { timeout: 5000 });
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Hook execution error:", error);
-      throw new Error(`Hook execution failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Hook execution failed: ${message}`);
     } finally {
       // Always dispose the isolate to free the V8 heap
       if (!isolate.isDisposed) {
@@ -290,10 +304,11 @@ export class HookService {
     try {
       await isolate.compileScript(script);
       return { valid: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       return {
         valid: false,
-        error: error.message || "Invalid JavaScript syntax",
+        error: message || "Invalid JavaScript syntax",
       };
     } finally {
       if (!isolate.isDisposed) {

@@ -992,13 +992,13 @@ export class RequestHandlers extends RequestHandlerBase {
         );
 
         // Detect and register task handles in the response
-        const taskResult = result as Record<string, unknown>;
+        let finalResult = result as Record<string, unknown>;
         if (
-          taskResult.task &&
-          typeof taskResult.task === "object" &&
-          (taskResult.task as Record<string, unknown>).taskId
+          finalResult.task &&
+          typeof finalResult.task === "object" &&
+          (finalResult.task as Record<string, unknown>).taskId
         ) {
-          const task = taskResult.task as Record<string, unknown>;
+          const task = finalResult.task as Record<string, unknown>;
           const originalTaskId = task.taskId as string;
           const namespacedId = getTaskRegistry().registerTask(
             originalTaskId,
@@ -1006,12 +1006,18 @@ export class RequestHandlers extends RequestHandlerBase {
             serverId,
             (task.status as string) ?? "working",
           );
-          // Rewrite taskId so the client uses the namespaced version
-          task.taskId = namespacedId;
+          // Return a new object so we don't mutate SDK response directly
+          finalResult = {
+            ...finalResult,
+            task: {
+              ...task,
+              taskId: namespacedId,
+            },
+          };
         }
 
         // Transform resource links to use router's namespace
-        return transformResourceLinksInResult(result, serverName);
+        return transformResourceLinksInResult(finalResult, serverName);
       },
       { serverId },
     );

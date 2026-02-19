@@ -50,6 +50,7 @@ function substituteArgsParameters(
     return arg;
   });
 }
+import { CreateMessageRequest } from "@modelcontextprotocol/sdk/types.js";
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import { getHealthMetricsTracker } from "@/main/modules/mcp-server-runtime/health-metrics-tracker";
 import { getSamplingProxy } from "@/main/modules/mcp-server-runtime/sampling-proxy";
@@ -614,7 +615,9 @@ export class MCPServerManager {
         initialDelayMs: 1000,
         maxDelayMs: 30000,
         onSamplingRequest: (params) =>
-          getSamplingProxy().createMessage(params as any),
+          getSamplingProxy().createMessage(
+            params as CreateMessageRequest["params"],
+          ),
       });
 
       await reconnectingClient.connect();
@@ -703,11 +706,7 @@ export class MCPServerManager {
     if (!server) return;
 
     // Record status change for health metrics tracking
-    getHealthMetricsTracker().recordStatusChange(
-      serverId,
-      server.name,
-      state,
-    );
+    getHealthMetricsTracker().recordStatusChange(serverId, server.name, state);
 
     // Map ConnectionState to MCPServer status
     switch (state) {
