@@ -82,17 +82,9 @@ export class MCPHttpServer {
       res: express.Response,
       next: express.NextFunction,
     ) => {
-      const token = req.headers["authorization"];
-      // Bearers token format
-      if (token && token.startsWith("Bearer ")) {
-        // Remove 'Bearer ' prefix
-        req.headers["authorization"] = token.substring(7);
-      }
+      const authHeader = req.headers["authorization"];
 
-      // Log the request without sensitive token information
-      // console.log(`[HTTP] ${req.method} ${req.url}${clientName ? ` (Client: ${clientName})` : ''}, Body = ${JSON.stringify(req.body)}`);
-      // Token validation middleware
-      if (!token) {
+      if (!authHeader) {
         // No token provided
         res.status(401).json({
           error: "Authentication required. Please provide a valid token.",
@@ -100,14 +92,16 @@ export class MCPHttpServer {
         return;
       }
 
-      // Validate the token
-      const tokenId =
-        typeof token === "string"
-          ? token.startsWith("Bearer ")
-            ? token.substring(7)
-            : token
+      // Extract token value
+      const token =
+        typeof authHeader === "string"
+          ? authHeader.startsWith("Bearer ")
+            ? authHeader.substring(7)
+            : authHeader
           : "";
-      const validation = this.tokenValidator.validateToken(tokenId);
+
+      // Validate the token
+      const validation = this.tokenValidator.validateToken(token);
 
       if (!validation.isValid) {
         // Invalid token
@@ -116,6 +110,11 @@ export class MCPHttpServer {
         });
         return;
       }
+
+      // Set the clean token and clientId on the request for downstream use
+      req.headers["authorization"] = token;
+      // We pass the validated client ID down so we don't leak the token
+      req.headers["x-mcp-client-id"] = validation.clientId || "unknown";
 
       // Token is valid and has proper scope, proceed to the next middleware or route handler
       next();
@@ -182,23 +181,23 @@ export class MCPHttpServer {
 
   private attachRequestMetadata(
     payload: any,
-    tokenHeader: string | string[] | undefined,
+    clientIdHeader: string | string[] | undefined,
     projectId: string | null,
   ): void {
-    const tokenValue = Array.isArray(tokenHeader)
-      ? tokenHeader[0]
-      : tokenHeader;
+    const clientId = Array.isArray(clientIdHeader)
+      ? clientIdHeader[0]
+      : clientIdHeader;
 
     if (payload.params && typeof payload.params === "object") {
       payload.params._meta = {
         ...(payload.params._meta || {}),
-        token: tokenValue,
+        clientId,
         projectId,
       };
     } else if (payload.params === undefined) {
       payload.params = {
         _meta: {
-          token: tokenValue,
+          clientId,
           projectId,
         },
       };
@@ -281,8 +280,8 @@ export class MCPHttpServer {
         }
 
         // Append metadata for downstream handlers
-        const token = req.headers["authorization"];
-        this.attachRequestMetadata(modifiedBody, token, projectFilter);
+        const clientId = req.headers["x-mcp-client-id"];
+        this.attachRequestMetadata(modifiedBody, clientId, projectFilter);
 
         const result = await this.resolveStreamableTransport(req, res);
         if (!result) return; // error response already sent
@@ -468,8 +467,8 @@ export class MCPHttpServer {
           return;
         }
 
-        const token = req.headers["authorization"];
-        this.attachRequestMetadata(modifiedBody, token, projectFilter);
+        const clientId = req.headers["x-mcp-client-id"];
+        this.attachRequestMetadata(modifiedBody, clientId, projectFilter);
 
         // Process the message via transport
         await transport.handlePostMessage(req, res, modifiedBody);

@@ -224,7 +224,8 @@ export class RequestHandlers extends RequestHandlerBase {
 
     // --- Rate limiting ---
     const token = request.params._meta?.token as string | undefined;
-    const clientId = this.getClientId(token);
+    const clientIdHeader = request.params._meta?.clientId as string | undefined;
+    const clientId = clientIdHeader || this.getClientId(token);
     this.enforceRateLimit(`client:${clientId}`);
 
     // Always handle META_TOOLS (tool_discovery, tool_execute, tool_capabilities) regardless of catalog mode
@@ -909,10 +910,10 @@ export class RequestHandlers extends RequestHandlerBase {
     const originalToolName = stripServerPrefix(toolName);
     this.enforceRateLimit(`tool:${serverName}:${originalToolName}`);
 
-    const clientId = this.tokenValidator.validateTokenAndAccess(
-      token,
-      serverName,
-    );
+    const clientIdHeader = request.params._meta?.clientId as string | undefined;
+    const clientId =
+      clientIdHeader ||
+      this.tokenValidator.validateTokenAndAccess(token, serverName);
 
     const serverId = this.getServerIdByName(serverName);
     if (!serverId) {
