@@ -871,8 +871,12 @@ export class RequestHandlers extends RequestHandlerBase {
     const result: RateLimitResult = getRateLimiter().tryConsume(key);
     if (!result.allowed) {
       const retryAfterSec = Math.ceil((result.retryAfterMs ?? 1000) / 1000);
+      // -32000 is the JSON-RPC standard code for "Server error" which is
+      // the closest fit for a rate limit response (some APIs use 429 semantics,
+      // but MCP maps to JSON-RPC standard error codes)
+      const RATE_LIMIT_ERROR_CODE = -32000 as ErrorCode;
       throw new McpError(
-        -32000 as ErrorCode,
+        RATE_LIMIT_ERROR_CODE,
         `Rate limit exceeded for ${key}. Retry after ${retryAfterSec}s.`,
       );
     }

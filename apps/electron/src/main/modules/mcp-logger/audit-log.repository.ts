@@ -164,10 +164,7 @@ export class AuditLogRepository {
   /**
    * Get total count of entries matching filters.
    */
-  getEntryCount(filters?: {
-    action?: string;
-    actor?: string;
-  }): number {
+  getEntryCount(filters?: { action?: string; actor?: string }): number {
     const conditions: string[] = [];
     const params: unknown[] = [];
 
@@ -193,11 +190,15 @@ export class AuditLogRepository {
   /**
    * Export entries as JSON Lines format for SIEM integration.
    */
-  exportJsonLines(startDate: string, endDate: string): string {
+  exportJsonLines(
+    startDate: string,
+    endDate: string,
+    limit: number = 100000,
+  ): string {
     const entries = this.getEntries({
       startDate,
       endDate,
-      limit: 100000,
+      limit,
     });
     return entries.map((entry) => JSON.stringify(entry)).join("\n");
   }

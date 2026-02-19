@@ -16,9 +16,18 @@ export function convertMcpbManifestToMCPServerConfig(
   const serverId = generateServerId(manifest);
   const mcpConfig = resolvePlatformSpecificConfig(manifest);
 
-  const expandedCommand = expandVariables(mcpConfig.command, extractedPath);
-  const expandedArgs = expandVariables(mcpConfig.args || [], extractedPath);
-  const expandedEnv = expandVariables(mcpConfig.env || {}, extractedPath);
+  const expandedCommand = expandVariables(
+    mcpConfig.command,
+    extractedPath,
+  ) as string;
+  const expandedArgs = expandVariables(
+    mcpConfig.args || [],
+    extractedPath,
+  ) as string[];
+  const expandedEnv = expandVariables(
+    mcpConfig.env || {},
+    extractedPath,
+  ) as Record<string, string>;
 
   const inputParams = convertUserConfig(extractedPath, manifest.user_config);
 
@@ -64,7 +73,9 @@ function checkPlatformCompatibility(manifest: McpbManifest): void {
 
   if (
     supportedPlatforms &&
-    !supportedPlatforms.includes(currentPlatform as "darwin" | "win32" | "linux")
+    !supportedPlatforms.includes(
+      currentPlatform as "darwin" | "win32" | "linux",
+    )
   ) {
     throw new Error(
       `This extension does not support ${currentPlatform}. ` +
@@ -101,7 +112,19 @@ function resolvePlatformSpecificConfig(manifest: McpbManifest): {
 
 function convertUserConfig(
   extractedPath: string,
-  userConfig?: Record<string, { type: string; title?: string; description?: string; sensitive?: boolean; required?: boolean; default?: string; min?: number; max?: number }>,
+  userConfig?: Record<
+    string,
+    {
+      type: string;
+      title?: string;
+      description?: string;
+      sensitive?: boolean;
+      required?: boolean;
+      default?: string;
+      min?: number;
+      max?: number;
+    }
+  >,
 ): Record<string, MCPInputParam> | undefined {
   if (!userConfig) return undefined;
 
@@ -115,7 +138,11 @@ function convertUserConfig(
       sensitive: config.sensitive,
       required: config.required,
       default: config.default
-        ? expandVariables(config.default, extractedPath)
+        ? (expandVariables(config.default, extractedPath) as
+            | string
+            | number
+            | boolean
+            | undefined)
         : undefined,
       min: config.min,
       max: config.max,
@@ -125,7 +152,7 @@ function convertUserConfig(
   return inputParams;
 }
 
-function expandVariables(value: unknown, extractedPath: string): any {
+function expandVariables(value: unknown, extractedPath: string): unknown {
   if (typeof value === "string") {
     return expandPathVariables(value, extractedPath);
   } else if (Array.isArray(value)) {

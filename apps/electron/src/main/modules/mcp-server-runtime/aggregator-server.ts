@@ -22,6 +22,7 @@ interface SessionEntry {
   transport: StreamableHTTPServerTransport;
   server: Server;
   createdAt: number;
+  lastActivityAt: number;
 }
 
 /** Default session time-to-live: 30 minutes (in milliseconds). */
@@ -81,6 +82,7 @@ export class AggregatorServer {
           transport,
           server,
           createdAt: Date.now(),
+          lastActivityAt: Date.now(),
         });
         safeConsoleLog(
           `[MCP Session] Initialized: ${sessionId} (active: ${this.sessions.size})`,
@@ -115,11 +117,15 @@ export class AggregatorServer {
     const entry = this.sessions.get(sessionId);
     if (!entry) return undefined;
 
+    const now = Date.now();
     // Check TTL -- if expired, tear down and remove.
-    if (Date.now() - entry.createdAt > this.sessionTtlMs) {
+    if (now - entry.lastActivityAt > this.sessionTtlMs) {
       this.removeSession(sessionId, entry);
       return undefined;
     }
+
+    // Update last activity timestamp on access
+    entry.lastActivityAt = now;
 
     return entry.transport;
   }
@@ -279,7 +285,7 @@ export class AggregatorServer {
   private cleanupExpiredSessions(): void {
     const now = Date.now();
     for (const [sessionId, entry] of this.sessions) {
-      if (now - entry.createdAt > this.sessionTtlMs) {
+      if (now - entry.lastActivityAt > this.sessionTtlMs) {
         this.removeSession(sessionId, entry);
       }
     }
