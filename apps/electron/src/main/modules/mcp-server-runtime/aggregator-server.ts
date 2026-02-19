@@ -31,6 +31,9 @@ const DEFAULT_SESSION_TTL_MS = 30 * 60 * 1000;
 /** How often the cleanup timer runs: every 5 minutes. */
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
 
+/** Maximum allowed sessions to prevent memory exhaustion */
+const MAX_SESSIONS = 50;
+
 /**
  * MCP Aggregator Server that combines multiple MCP servers into one.
  *
@@ -73,6 +76,16 @@ export class AggregatorServer {
    * be routed to this transport.
    */
   public async createSessionTransport(): Promise<StreamableHTTPServerTransport> {
+    if (this.sessions.size >= MAX_SESSIONS) {
+      // Force an early sweep
+      this.cleanupExpiredSessions();
+      if (this.sessions.size >= MAX_SESSIONS) {
+        throw new Error(
+          `Maximum concurrent sessions (${MAX_SESSIONS}) reached. Please disconnect existing sessions.`,
+        );
+      }
+    }
+
     const server = this.createConfiguredServer();
 
     const transport = new StreamableHTTPServerTransport({

@@ -23,6 +23,7 @@ export class MCPHttpServer {
   // Map for SSE sessions
   private sseSessions: Map<string, SSEServerTransport> = new Map();
   private sseSessionProjects: Map<string, string | null> = new Map();
+  private readonly MAX_SESSIONS = 50;
 
   constructor(
     serverManager: MCPServerManager,
@@ -45,20 +46,35 @@ export class MCPHttpServer {
    */
   private configureMiddleware(): void {
     // Parse JSON request bodies
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: "1mb" }));
+
+    // Security headers
+    this.app.use((req, res, next) => {
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("X-Frame-Options", "DENY");
+      res.setHeader("Cache-Control", "no-store, max-age=0");
+      // Add permissive CSP for API requests
+      res.setHeader(
+        "Content-Security-Policy",
+        "default-src 'none'; frame-ancestors 'none'",
+      );
+      next();
+    });
 
     // Enable CORS with restricted origins
-    this.app.use(cors({
-      origin: (origin, callback) => {
-        // Allow requests with no origin (same-origin, curl, MCP clients)
-        if (!origin) return callback(null, true);
-        // Allow localhost origins
-        if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-          return callback(null, true);
-        }
-        callback(new Error('Not allowed by CORS'));
-      },
-    }));
+    this.app.use(
+      cors({
+        origin: (origin, callback) => {
+          // Allow requests with no origin (same-origin, curl, MCP clients)
+          if (!origin) return callback(null, true);
+          // Allow localhost origins
+          if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+            return callback(null, true);
+          }
+          callback(new Error("Not allowed by CORS"));
+        },
+      }),
+    );
 
     // Create authentication middleware
     const authMiddleware = (
@@ -199,10 +215,9 @@ export class MCPHttpServer {
   private async resolveStreamableTransport(
     req: express.Request,
     res: express.Response,
-  ): Promise<
-    | { transport: import("@modelcontextprotocol/sdk/server/streamableHttp").StreamableHTTPServerTransport }
-    | null
-  > {
+  ): Promise<{
+    transport: import("@modelcontextprotocol/sdk/server/streamableHttp").StreamableHTTPServerTransport;
+  } | null> {
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
 
     if (sessionId) {
@@ -327,6 +342,16 @@ export class MCPHttpServer {
         res.setHeader("Content-Type", "text/event-stream");
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Connection", "keep-alive");
+
+        // Enforce max sessions to prevent memory exhaustion
+        if (this.sseSessions.size >= this.MAX_SESSIONS) {
+          if (!res.headersSent) {
+            res
+              .status(429)
+              .send("Too many active sessions. Please try again later.");
+          }
+          return;
+        }
 
         // Create SSE server transport
         const messageEndpoint = "/mcp/messages";
