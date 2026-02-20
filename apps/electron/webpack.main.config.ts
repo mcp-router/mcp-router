@@ -16,7 +16,7 @@ export const mainConfig: Configuration = {
   },
   plugins,
   resolve: {
-    extensions: [".js", ".ts", ".jsx", ".tsx", ".css", ".json"],
+    extensions: [".js", ".ts", ".jsx", ".tsx", ".css", ".json", ".node"],
     modules: ["node_modules", path.resolve(__dirname, "../../node_modules")],
     alias: {
       "@": path.resolve(__dirname, "src"),
@@ -25,8 +25,5 @@ export const mainConfig: Configuration = {
         "../../packages/shared/src",
       ),
     },
-  },
-  externals: {
-    "isolated-vm": "commonjs isolated-vm",
   },
 };
