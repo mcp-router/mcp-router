@@ -8,12 +8,30 @@ describe("AuthRecoveryManager", () => {
     manager.clear();
   });
 
-  it("detects likely auth errors", () => {
-    expect(manager.isLikelyAuthError("401 Unauthorized token expired")).toBe(
-      true,
+  it("classifies auth errors and avoids 403 false positives", () => {
+    expect(
+      manager.classifyAuthError("401 Unauthorized token expired").isAuth,
+    ).toBe(true);
+    expect(manager.classifyAuthError("oauth consent required").reasonCode).toBe(
+      "consent_required",
     );
-    expect(manager.isLikelyAuthError("oauth consent required")).toBe(true);
-    expect(manager.isLikelyAuthError("socket timeout")).toBe(false);
+    expect(manager.classifyAuthError("403 Forbidden by policy").isAuth).toBe(
+      false,
+    );
+    expect(manager.classifyAuthError("socket timeout").isAuth).toBe(false);
+  });
+
+  it("stores only sanitized reason metadata", () => {
+    const challenge = manager.registerAuthFailure({
+      serverId: "srv_0",
+      serverName: "workspace-mcp",
+      reasonCode: "token_expired",
+      reasonSummary: "Access token expired; re-authentication required.",
+    });
+
+    expect(challenge.reasonCode).toBe("token_expired");
+    expect(challenge.reasonSummary).toContain("re-authentication");
+    expect(Object.keys(challenge)).not.toContain("reason");
   });
 
   it("creates and updates challenge counters for same server", () => {
@@ -22,7 +40,8 @@ describe("AuthRecoveryManager", () => {
       serverName: "workspace-mcp",
       toolName: "list_calendars",
       clientId: "claude-code",
-      errorMessage: "Authentication required",
+      reasonCode: "authentication_required",
+      reasonSummary: "Authentication is required before this tool can run.",
     });
 
     expect(first.failureCount).toBe(1);
@@ -33,12 +52,14 @@ describe("AuthRecoveryManager", () => {
       serverName: "workspace-mcp",
       toolName: "search_gmail_messages",
       clientId: "claude-code",
-      errorMessage: "token expired",
+      reasonCode: "token_expired",
+      reasonSummary: "Access token expired; re-authentication required.",
     });
 
     expect(second.id).toBe(first.id);
     expect(second.failureCount).toBe(2);
     expect(second.lastToolName).toBe("search_gmail_messages");
+    expect(second.reasonCode).toBe("token_expired");
     expect(manager.getChallenges()).toHaveLength(1);
   });
 
@@ -46,7 +67,8 @@ describe("AuthRecoveryManager", () => {
     manager.registerAuthFailure({
       serverId: "srv_2",
       serverName: "notion",
-      errorMessage: "invalid token",
+      reasonCode: "invalid_token",
+      reasonSummary: "Authentication token/credential is invalid.",
     });
 
     manager.markRecovered("srv_2");

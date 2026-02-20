@@ -1,7 +1,7 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { getRateLimiter } from "./rate-limiter";
 import type { RateLimitResult } from "./rate-limiter";
-import { getTaskRegistry, createNamespacedTaskId } from "./task-registry";
+import { getTaskRegistry } from "./task-registry";
 import type {
   CallToolRequest,
   CallToolResult,
@@ -1035,13 +1035,15 @@ export class RequestHandlers extends RequestHandlerBase {
           const message =
             error instanceof Error ? error.message : String(error);
           const authRecovery = getAuthRecoveryManager();
-          if (authRecovery.isLikelyAuthError(message)) {
+          const classification = authRecovery.classifyAuthError(message);
+          if (classification.isAuth) {
             authRecovery.registerAuthFailure({
               serverId,
               serverName,
               toolName: originalToolName,
               clientId,
-              errorMessage: message,
+              reasonCode: classification.reasonCode,
+              reasonSummary: classification.reasonSummary,
             });
 
             throw new McpError(

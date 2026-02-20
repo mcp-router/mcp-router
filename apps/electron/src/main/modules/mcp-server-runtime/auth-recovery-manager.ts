@@ -11,7 +11,8 @@ export interface AuthChallenge {
   serverId: string;
   serverName: string;
   state: AuthRecoveryState;
-  reason: string;
+  reasonCode: string;
+  reasonSummary: string;
   firstSeenAt: string;
   lastSeenAt: string;
   failureCount: number;
@@ -24,24 +25,101 @@ interface RegisterAuthFailureInput {
   serverName: string;
   toolName?: string;
   clientId?: string;
-  errorMessage: string;
+  reasonCode: string;
+  reasonSummary: string;
 }
 
-const AUTH_ERROR_PATTERNS: RegExp[] = [
-  /auth(?:entication)?\s*(?:required|failed|error)/i,
-  /oauth/i,
-  /invalid\s*(?:token|grant|credential)/i,
-  /token\s*(?:expired|invalid|revoked)/i,
-  /unauthorized|forbidden|401|403/i,
-  /needs\s*authentication/i,
-  /consent\s*required/i,
-];
+export interface AuthClassification {
+  isAuth: boolean;
+  reasonCode: string;
+  reasonSummary: string;
+}
 
 class AuthRecoveryManager {
   private challenges = new Map<string, AuthChallenge>();
 
-  isLikelyAuthError(errorMessage: string): boolean {
-    return AUTH_ERROR_PATTERNS.some((pattern) => pattern.test(errorMessage));
+  classifyAuthError(errorMessage: string): AuthClassification {
+    const message = errorMessage.toLowerCase();
+
+    // Explicit token lifecycle/auth flow signatures
+    if (/token\s*expired/.test(message)) {
+      return {
+        isAuth: true,
+        reasonCode: "token_expired",
+        reasonSummary: "Access token expired; re-authentication required.",
+      };
+    }
+    if (/invalid[_\s-]?grant/.test(message)) {
+      return {
+        isAuth: true,
+        reasonCode: "invalid_grant",
+        reasonSummary:
+          "Refresh/authorization grant is invalid; user re-authentication required.",
+      };
+    }
+    if (/invalid\s*(token|credential)/.test(message)) {
+      return {
+        isAuth: true,
+        reasonCode: "invalid_token",
+        reasonSummary: "Authentication token/credential is invalid.",
+      };
+    }
+    if (/token\s*revoked/.test(message)) {
+      return {
+        isAuth: true,
+        reasonCode: "token_revoked",
+        reasonSummary: "Authentication token was revoked.",
+      };
+    }
+    if (/consent\s*required/.test(message)) {
+      return {
+        isAuth: true,
+        reasonCode: "consent_required",
+        reasonSummary: "Provider requires renewed consent in browser.",
+      };
+    }
+    if (/needs\s*authentication|authentication\s*required/.test(message)) {
+      return {
+        isAuth: true,
+        reasonCode: "authentication_required",
+        reasonSummary: "Authentication is required before this tool can run.",
+      };
+    }
+    if (/oauth/.test(message)) {
+      return {
+        isAuth: true,
+        reasonCode: "oauth_error",
+        reasonSummary: "OAuth authentication flow is required or failed.",
+      };
+    }
+
+    // Narrow 401/unauthorized detection to auth-context signals only.
+    if (
+      (/\b401\b/.test(message) || /unauthorized/.test(message)) &&
+      /(token|credential|auth|oauth|expired|refresh)/.test(message)
+    ) {
+      return {
+        isAuth: true,
+        reasonCode: "unauthorized_auth",
+        reasonSummary: "Authentication failed with unauthorized response.",
+      };
+    }
+
+    // Do NOT treat generic forbidden/403 as auth-expired by default.
+    if (/\b403\b/.test(message) || /forbidden/.test(message)) {
+      return {
+        isAuth: false,
+        reasonCode: "forbidden_or_policy",
+        reasonSummary:
+          "Request forbidden by policy/authorization; re-auth may not help.",
+      };
+    }
+
+    return {
+      isAuth: false,
+      reasonCode: "not_auth_related",
+      reasonSummary: "Failure does not match known auth-expiry signatures.",
+    };
   }
 
   registerAuthFailure(input: RegisterAuthFailureInput): AuthChallenge {
@@ -55,7 +133,8 @@ class AuthRecoveryManager {
         state: "action_required",
         lastSeenAt: now,
         failureCount: existing.failureCount + 1,
-        reason: input.errorMessage,
+        reasonCode: input.reasonCode,
+        reasonSummary: input.reasonSummary,
         lastToolName: input.toolName,
         lastClientId: input.clientId,
       };
@@ -75,7 +154,8 @@ class AuthRecoveryManager {
       serverId: input.serverId,
       serverName: input.serverName,
       state: "action_required",
-      reason: input.errorMessage,
+      reasonCode: input.reasonCode,
+      reasonSummary: input.reasonSummary,
       firstSeenAt: now,
       lastSeenAt: now,
       failureCount: 1,

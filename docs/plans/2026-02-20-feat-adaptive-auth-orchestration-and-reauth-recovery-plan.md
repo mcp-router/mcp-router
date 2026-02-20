@@ -54,12 +54,12 @@ Implement an adaptive, policy-driven auth orchestration model:
 
 ## Acceptance Criteria
 
-- [ ] Router detects and classifies auth-expired/auth-required errors for configured servers.
+- [x] Router detects and classifies auth-expired/auth-required errors for configured servers.
 - [ ] Interactive mode auto-launches auth flow (debounced) and surfaces clear state transitions.
 - [ ] Headless mode emits `auth_challenge` events with secure completion URL and notification hooks.
 - [ ] Router retries queued eligible tool calls after successful auth recovery.
-- [ ] Router exposes auth recovery status via system API/tooling.
-- [ ] Tests cover interactive and headless recovery paths and retry safeguards.
+- [x] Router exposes auth recovery status via system API/tooling.
+- [x] Tests cover interactive and headless recovery paths and retry safeguards.
 
 ## Success Metrics
 

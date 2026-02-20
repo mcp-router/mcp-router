@@ -616,13 +616,15 @@ export class ToolCatalogHandler extends RequestHandlerBase {
         } catch (error: unknown) {
           const message =
             error instanceof Error ? error.message : String(error);
-          if (authRecovery.isLikelyAuthError(message)) {
+          const classification = authRecovery.classifyAuthError(message);
+          if (classification.isAuth) {
             authRecovery.registerAuthFailure({
               serverId,
               serverName,
               toolName,
               clientId,
-              errorMessage: message,
+              reasonCode: classification.reasonCode,
+              reasonSummary: classification.reasonSummary,
             });
             throw this.createActionableError(
               ErrorCode.InvalidRequest,
