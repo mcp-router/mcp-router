@@ -16,6 +16,7 @@ import { MCPServerManager } from "../mcp-server-manager/mcp-server-manager";
 import { getLogService } from "@/main/modules/mcp-logger/mcp-logger.service";
 import type { ToolCatalogService } from "@/main/modules/tool-catalog/tool-catalog.service";
 import { getSamplingProxy } from "./sampling-proxy";
+import { getEventBridge } from "./event-bridge";
 
 /** Tracked state for a single Streamable HTTP session. */
 interface SessionEntry {
@@ -53,6 +54,7 @@ export class AggregatorServer {
 
   /** Periodic timer for cleaning up expired sessions. */
   private cleanupTimer: ReturnType<typeof setInterval> | null = null;
+  private unsubscribeFromEventBridge: (() => void) | null = null;
 
   constructor(
     serverManager: MCPServerManager,
@@ -64,7 +66,73 @@ export class AggregatorServer {
       toolCatalogService,
     );
     this.sessionTtlMs = sessionTtlMs;
+    this.subscribeToRuntimeEvents();
     this.startCleanupTimer();
+  }
+
+  private subscribeToRuntimeEvents(): void {
+    this.unsubscribeFromEventBridge = getEventBridge().subscribe((event) => {
+      if (event.type === "tool_list_changed") {
+        void this.broadcastListChanged("tools");
+        return;
+      }
+
+      if (event.type === "resource_list_changed") {
+        void this.broadcastListChanged("resources");
+        return;
+      }
+
+      if (event.type === "servers_updated" || event.type === "config_changed") {
+        void this.broadcastListChanged("all");
+      }
+    });
+  }
+
+  private async sendListChangedNotifications(
+    server: Server,
+    listType: "tools" | "resources" | "prompts" | "all",
+  ): Promise<void> {
+    if (listType === "tools" || listType === "all") {
+      await server.sendToolListChanged();
+    }
+    if (listType === "resources" || listType === "all") {
+      await server.sendResourceListChanged();
+    }
+    if (listType === "prompts" || listType === "all") {
+      await server.sendPromptListChanged();
+    }
+  }
+
+  private async broadcastListChanged(
+    listType: "tools" | "resources" | "prompts" | "all",
+  ): Promise<void> {
+    const sessions = Array.from(this.sessions.values());
+    await Promise.all(
+      sessions.map(async (entry) => {
+        if (!entry.server.getClientCapabilities()) {
+          return;
+        }
+        try {
+          await this.sendListChangedNotifications(entry.server, listType);
+        } catch (error) {
+          safeConsoleError(
+            `[MCP Session] Failed to send ${listType} listChanged notification`,
+            error,
+          );
+        }
+      }),
+    );
+  }
+
+  private triggerInitialListChanged(server: Server): void {
+    setTimeout(() => {
+      void this.sendListChangedNotifications(server, "all").catch((error) => {
+        safeConsoleError(
+          "[MCP Session] Failed to send initial listChanged notifications",
+          error,
+        );
+      });
+    }, 250);
   }
 
   /**
@@ -171,9 +239,15 @@ export class AggregatorServer {
       },
       {
         capabilities: {
-          resources: {},
-          tools: {},
-          prompts: {},
+          resources: {
+            listChanged: true,
+          },
+          tools: {
+            listChanged: true,
+          },
+          prompts: {
+            listChanged: true,
+          },
           experimental: {
             elicitation: {
               form: {},
@@ -183,6 +257,10 @@ export class AggregatorServer {
         },
       },
     );
+
+    server.oninitialized = () => {
+      this.triggerInitialListChanged(server);
+    };
 
     this.setupRequestHandlers(server);
 
@@ -326,6 +404,11 @@ export class AggregatorServer {
    * Clean up all sessions and stop the cleanup timer.
    */
   public async shutdown(): Promise<void> {
+    if (this.unsubscribeFromEventBridge) {
+      this.unsubscribeFromEventBridge();
+      this.unsubscribeFromEventBridge = null;
+    }
+
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
       this.cleanupTimer = null;

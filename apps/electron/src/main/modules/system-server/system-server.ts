@@ -31,6 +31,10 @@ import { processMcpbFile } from "../mcp-server-manager/mcpb-processor/mcpb-proce
 import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
 import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 import { getEventBridge } from "@/main/modules/mcp-server-runtime/event-bridge";
+import {
+  normalizeToolCatalogOverrides,
+  normalizeClientId,
+} from "@/main/modules/mcp-server-runtime/tool-catalog-mode";
 
 const ALLOWED_LOCAL_COMMANDS = new Set([
   "node",
@@ -449,12 +453,16 @@ export class SystemServer {
         return this.handleGetSettings();
       }
       case "router_update_settings": {
-        const VALID_SETTING_KEYS = [
+        const VALID_BOOLEAN_SETTING_KEYS = [
           "toolCatalogEnabled",
           "prefixToolNames",
           "loadExternalMCPConfigs",
           "autoUpdateEnabled",
           "showWindowOnStartup",
+        ];
+        const VALID_SETTING_KEYS = [
+          ...VALID_BOOLEAN_SETTING_KEYS,
+          "toolCatalogOverridesByClient",
         ];
         // Validate that only known keys are provided and all are booleans
         for (const [key, value] of Object.entries(args)) {
@@ -464,7 +472,38 @@ export class SystemServer {
               `Unknown setting: ${key}. Valid settings: ${VALID_SETTING_KEYS.join(", ")}`,
             );
           }
-          if (typeof value !== "boolean") {
+          if (key === "toolCatalogOverridesByClient") {
+            if (
+              value === null ||
+              typeof value !== "object" ||
+              Array.isArray(value)
+            ) {
+              throw new McpError(
+                ErrorCode.InvalidParams,
+                "toolCatalogOverridesByClient must be an object of clientId => boolean",
+              );
+            }
+            for (const [clientId, override] of Object.entries(value)) {
+              if (!normalizeClientId(clientId)) {
+                throw new McpError(
+                  ErrorCode.InvalidParams,
+                  "toolCatalogOverridesByClient contains an empty client ID",
+                );
+              }
+              if (typeof override !== "boolean") {
+                throw new McpError(
+                  ErrorCode.InvalidParams,
+                  `toolCatalogOverridesByClient.${clientId} must be a boolean`,
+                );
+              }
+            }
+            continue;
+          }
+
+          if (
+            VALID_BOOLEAN_SETTING_KEYS.includes(key) &&
+            typeof value !== "boolean"
+          ) {
             throw new McpError(
               ErrorCode.InvalidParams,
               `${key} must be a boolean`,
@@ -911,6 +950,9 @@ export class SystemServer {
       autoUpdateEnabled: settings.autoUpdateEnabled,
       showWindowOnStartup: settings.showWindowOnStartup,
       theme: settings.theme,
+      toolCatalogOverridesByClient: normalizeToolCatalogOverrides(
+        settings.toolCatalogOverridesByClient,
+      ),
     };
 
     return {
@@ -923,12 +965,18 @@ export class SystemServer {
   private async handleUpdateSettings(input: UpdateSettingsInput) {
     const configManager = getSharedConfigManager();
     const currentSettings = configManager.getSettings();
-    const updatedSettings = { ...currentSettings, ...input };
+    const normalizedInput: UpdateSettingsInput = { ...input };
+    if (normalizedInput.toolCatalogOverridesByClient !== undefined) {
+      normalizedInput.toolCatalogOverridesByClient = normalizeToolCatalogOverrides(
+        normalizedInput.toolCatalogOverridesByClient,
+      );
+    }
+    const updatedSettings = { ...currentSettings, ...normalizedInput };
     configManager.saveSettings(updatedSettings);
 
     getEventBridge().emit("config_changed", {
       action: "settings_updated",
-      settings: input,
+      settings: normalizedInput,
     });
 
     // Return the updated safe subset
@@ -940,6 +988,9 @@ export class SystemServer {
       autoUpdateEnabled: saved.autoUpdateEnabled,
       showWindowOnStartup: saved.showWindowOnStartup,
       theme: saved.theme,
+      toolCatalogOverridesByClient: normalizeToolCatalogOverrides(
+        saved.toolCatalogOverridesByClient,
+      ),
     };
 
     return {
@@ -1485,6 +1536,12 @@ const SYSTEM_TOOLS = [
         showWindowOnStartup: {
           type: "boolean",
           description: "Show the app window on OS startup.",
+        },
+        toolCatalogOverridesByClient: {
+          type: "object",
+          description:
+            "Optional per-client catalog mode overrides (clientId => boolean). Overrides global toolCatalogEnabled when present.",
+          additionalProperties: { type: "boolean" },
         },
       },
     },

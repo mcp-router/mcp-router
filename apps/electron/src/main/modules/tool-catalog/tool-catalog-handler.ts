@@ -13,6 +13,7 @@ import type {
 } from "@mcp_router/shared";
 import { TokenValidator } from "@/main/modules/mcp-server-runtime/token-validator";
 import { RequestHandlerBase } from "@/main/modules/mcp-server-runtime/request-handler-base";
+import { shouldStripCombinatorsForClient } from "@/main/modules/mcp-server-runtime/schema-normalizer";
 import { getProjectService } from "@/main/modules/projects/projects.service";
 import { ToolCatalogService } from "./tool-catalog.service";
 import { transformResourceLinksInResult } from "@/main/utils/uri-utils";
@@ -398,6 +399,7 @@ export class ToolCatalogHandler extends RequestHandlerBase {
           {
             projectId,
             allowedServerIds,
+            stripCombinators: shouldStripCombinatorsForClient(clientId),
             // Catalog mode is always enabled - meta-tools are the default interface
             toolCatalogEnabled: true,
           },

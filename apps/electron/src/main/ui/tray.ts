@@ -53,10 +53,6 @@ export function createTray(serverManager: MCPServerManager): Tray | null {
     // On macOS, single-click will show the context menu
     // and double-click opens the main window
     tray.on("double-click", () => {
-      if (app.dock) {
-        app.dock.show();
-      }
-
       if (mainWindow) {
         if (mainWindow.isMinimized()) mainWindow.restore();
         mainWindow.show();
@@ -105,11 +101,6 @@ export function updateTrayContextMenu(serverManager: MCPServerManager): void {
     {
       label: "MCP Router",
       click: () => {
-        // Show the app in the Dock on macOS when clicked from context menu
-        if (process.platform === "darwin" && app.dock) {
-          app.dock.show();
-        }
-
         createOrShowMainWindow();
       },
     },

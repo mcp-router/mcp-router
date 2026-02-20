@@ -53,11 +53,6 @@ if (!gotTheLock) {
 
 // Listen for second instance launches and focus the existing window
 app.on("second-instance", (_event, commandLine) => {
-  // Show the app in the Dock on macOS
-  if (process.platform === "darwin" && app.dock) {
-    app.dock.show();
-  }
-
   // Focus the existing window
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore();
@@ -401,6 +396,11 @@ async function initApplication(): Promise<void> {
   // Set application name
   app.setName("MCP Router");
 
+  // Keep MCP Router as a menu-bar app on macOS (no Dock icon).
+  if (process.platform === "darwin") {
+    app.setActivationPolicy("accessory");
+  }
+
   // Set application menu
   setApplicationMenu();
 
@@ -461,11 +461,6 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
-  // Show the app in the Dock on macOS when activated
-  if (process.platform === "darwin" && app.dock) {
-    app.dock.show();
-  }
-
   // Re-create a window if there are no windows open
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();

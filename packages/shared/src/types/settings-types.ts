@@ -85,6 +85,14 @@ export interface AppSettings {
    * Default: false
    */
   toolCatalogEnabled?: boolean;
+
+  /**
+   * Optional per-client overrides for tool catalog mode.
+   * Key: normalized client ID (lowercase, trimmed)
+   * Value: true to force catalog mode, false to force legacy direct tools.
+   * When absent, the global `toolCatalogEnabled` default is used.
+   */
+  toolCatalogOverridesByClient?: Record<string, boolean>;
 }
 
 /**
@@ -107,4 +115,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   },
   prefixToolNames: true,
   toolCatalogEnabled: false,
+  toolCatalogOverridesByClient: {},
 };

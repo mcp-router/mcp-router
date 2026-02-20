@@ -8,6 +8,7 @@ import type {
 } from "@mcp_router/shared";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { MiniSearchProvider } from "./minisearch-provider";
+import { normalizeToolInputSchema } from "@/main/modules/mcp-server-runtime/schema-normalizer";
 
 // Internal type for search context filtering
 
@@ -15,6 +16,7 @@ type SearchContext = {
   projectId: string | null;
   allowedServerIds?: Set<string>;
   toolCatalogEnabled?: boolean;
+  stripCombinators?: boolean;
 };
 
 const DEFAULT_MAX_RESULTS = 10; // Reduced from 20 for token efficiency
@@ -88,6 +90,7 @@ export class ToolCatalogService {
     context: SearchContext,
   ): Promise<ToolInfo[]> {
     const { servers, clients, serverStatusMap } = this.serverManager.getMaps();
+    const stripCombinators = context.stripCombinators === true;
 
     // Build eligible server list and compute a cache key from it
     const eligibleServers: {
@@ -112,7 +115,7 @@ export class ToolCatalogService {
       hashParts.push(serverId);
     }
 
-    const hash = hashParts.sort().join(",");
+    const hash = `${hashParts.sort().join(",")}|strip:${stripCombinators ? "1" : "0"}`;
 
     // Return cached results if still valid
     if (
@@ -141,7 +144,10 @@ export class ToolCatalogService {
             serverName,
             projectId: server.projectId ?? null,
             description: tool.description,
-            inputSchema: tool.inputSchema as ToolInfo["inputSchema"],
+            inputSchema: (normalizeToolInputSchema(tool.inputSchema, {
+              stripCombinators,
+            }) ??
+              tool.inputSchema) as ToolInfo["inputSchema"],
             outputSchema: tool.outputSchema,
             annotations: tool.annotations as ToolInfo["annotations"],
           });

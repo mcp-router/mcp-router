@@ -33,6 +33,11 @@ import { ReconnectingMCPClient } from "../mcp-server-manager/reconnecting-mcp-cl
 import { ToolCatalogService } from "@/main/modules/tool-catalog/tool-catalog.service";
 import { TokenValidator } from "./token-validator";
 import { RequestHandlerBase } from "./request-handler-base";
+import {
+  normalizeToolInputSchema,
+  shouldStripCombinatorsForClient,
+} from "./schema-normalizer";
+import { getEffectiveToolCatalogEnabled } from "./tool-catalog-mode";
 import { getProjectService } from "@/main/modules/projects/projects.service";
 import {
   ToolCatalogHandler,
@@ -169,8 +174,8 @@ export class RequestHandlers extends RequestHandlerBase {
    * tool_execute, tool_capabilities) instead of all tools directly.
    * This provides better token efficiency and works within client tool limits.
    */
-  private isToolCatalogEnabled(): boolean {
-    return getSharedConfigManager().getSettings().toolCatalogEnabled === true;
+  private isToolCatalogEnabled(clientId: string): boolean {
+    return getEffectiveToolCatalogEnabled(clientId);
   }
 
   /**
@@ -183,6 +188,25 @@ export class RequestHandlers extends RequestHandlerBase {
     return settings.prefixToolNames !== false;
   }
 
+  private getSchemaNormalizationOptions(clientId: string): {
+    stripCombinators?: boolean;
+  } {
+    const normalizedClientId = clientId.trim().toLowerCase();
+    if (
+      normalizedClientId === "" ||
+      normalizedClientId === "unknownclient" ||
+      normalizedClientId === "unknown"
+    ) {
+      // Unknown clients are routed through the safest schema variant to avoid
+      // hard failures in strict function-calling providers.
+      return { stripCombinators: true };
+    }
+
+    return shouldStripCombinatorsForClient(normalizedClientId)
+      ? { stripCombinators: true }
+      : {};
+  }
+
   /**
    * Handle a request to list all tools from all servers
    */
@@ -191,24 +215,39 @@ export class RequestHandlers extends RequestHandlerBase {
     projectIdInput?: unknown,
   ): Promise<ListToolsResult> {
     const clientId = this.getClientId(token);
+    const schemaNormalizationOptions =
+      this.getSchemaNormalizationOptions(clientId);
     const projectId = this.normalizeProjectId(projectIdInput);
 
     return this.executeWithHooks("tools/list", {}, clientId, async () => {
       // Always include system tools (router_*) so agents can manage the router
-      const systemTools = this.getSystemToolDefinitions().map((t) => ({
-        ...t,
-        sourceServer: "mcp-router-system",
-      }));
+      const systemTools = this.getSystemToolDefinitions().map((t) => {
+        const normalizedInputSchema =
+          (normalizeToolInputSchema(
+            t.inputSchema,
+            schemaNormalizationOptions,
+          ) ??
+            t.inputSchema) as Tool["inputSchema"];
+        return {
+          ...t,
+          inputSchema: normalizedInputSchema,
+          sourceServer: "mcp-router-system",
+        };
+      });
 
       // If tool catalog is enabled, return META_TOOLS + system tools
-      if (this.isToolCatalogEnabled()) {
+      if (this.isToolCatalogEnabled(clientId)) {
         // Record meta-tool definitions for catalog savings calculation
         getTokenBudgetTracker().recordMetaToolDefinitions(META_TOOLS);
         return { tools: [...(META_TOOLS as Tool[]), ...systemTools] };
       }
       // Otherwise, return all tools from all servers (legacy behavior)
       // (system tools are already appended inside getAllToolsInternal)
-      const allTools = await this.getAllToolsInternal(token, projectId);
+      const allTools = await this.getAllToolsInternal(
+        token,
+        projectId,
+        schemaNormalizationOptions,
+      );
       return { tools: allTools };
     });
   }
@@ -250,7 +289,7 @@ export class RequestHandlers extends RequestHandlerBase {
     }
 
     // If tool catalog is enabled, only META_TOOLS are available
-    if (this.isToolCatalogEnabled()) {
+    if (this.isToolCatalogEnabled(clientId)) {
       throw new McpError(ErrorCode.InvalidRequest, `Unknown tool: ${toolName}`);
     }
 
@@ -688,6 +727,7 @@ export class RequestHandlers extends RequestHandlerBase {
   private async getAllToolsInternal(
     token?: string,
     projectId?: string | null,
+    schemaNormalizationOptions: { stripCombinators?: boolean } = {},
   ): Promise<ToolWithSource[]> {
     const PER_SERVER_TIMEOUT_MS = 10_000;
     const normalizedProjectId = this.normalizeProjectId(projectId);
@@ -754,10 +794,17 @@ export class RequestHandlers extends RequestHandlerBase {
             const prefixedName = shouldPrefix
               ? prefixToolName(serverName, tool.name)
               : tool.name;
+            const normalizedInputSchema =
+              (normalizeToolInputSchema(
+                tool.inputSchema,
+                schemaNormalizationOptions,
+              ) ??
+                tool.inputSchema) as Tool["inputSchema"];
 
             serverTools.push({
               ...tool,
               name: prefixedName,
+              inputSchema: normalizedInputSchema,
               sourceServer: serverName,
             });
           }
@@ -792,9 +839,13 @@ export class RequestHandlers extends RequestHandlerBase {
     // Append SystemServer tools (router_*) so they appear alongside aggregated tools
     const systemTools = this.getSystemToolDefinitions();
     for (const tool of systemTools) {
+      const normalizedInputSchema =
+        (normalizeToolInputSchema(tool.inputSchema, schemaNormalizationOptions) ??
+          tool.inputSchema) as Tool["inputSchema"];
       toolMap.set(tool.name, "__system__");
       allTools.push({
         ...tool,
+        inputSchema: normalizedInputSchema,
         sourceServer: "mcp-router-system",
       });
     }

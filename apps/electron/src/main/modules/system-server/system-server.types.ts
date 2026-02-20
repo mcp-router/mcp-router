@@ -125,6 +125,8 @@ export interface UpdateSettingsInput {
   autoUpdateEnabled?: boolean;
   /** Whether to show window on startup */
   showWindowOnStartup?: boolean;
+  /** Optional per-client tool catalog mode overrides */
+  toolCatalogOverridesByClient?: Record<string, boolean>;
 }
 
 /** Input for router_switch_workspace tool */

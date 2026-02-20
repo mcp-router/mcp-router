@@ -30,7 +30,11 @@ import {
 import { Loader2 } from "lucide-react";
 import { electronPlatformAPI as platformAPI } from "../../platform-api/electron-platform-api";
 import { postHogService } from "../../services/posthog-service";
-import type { CloudSyncStatus, AppSettings } from "@mcp_router/shared";
+import type {
+  CloudSyncStatus,
+  AppSettings,
+  ClientApp,
+} from "@mcp_router/shared";
 
 /**
  * Helper function to generate toggle handlers for boolean settings.
@@ -90,6 +94,9 @@ const Settings: React.FC = () => {
   const [showWindowOnStartup, setShowWindowOnStartup] = useState<boolean>(true);
   const [prefixToolNames, setPrefixToolNames] = useState<boolean>(true);
   const [toolCatalogEnabled, setToolCatalogEnabled] = useState<boolean>(false);
+  const [toolCatalogOverridesByClient, setToolCatalogOverridesByClient] =
+    useState<Record<string, boolean>>({});
+  const [clientApps, setClientApps] = useState<ClientApp[]>([]);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Cloud Sync state
@@ -136,11 +143,27 @@ const Settings: React.FC = () => {
         setShowWindowOnStartup(settings.showWindowOnStartup ?? true);
         setPrefixToolNames(settings.prefixToolNames ?? true);
         setToolCatalogEnabled(settings.toolCatalogEnabled ?? false);
+        setToolCatalogOverridesByClient(
+          settings.toolCatalogOverridesByClient ?? {},
+        );
       } catch {
         console.log("Failed to load settings, using defaults");
       }
     };
     loadSettings();
+  }, []);
+
+  // Load known client apps for per-client catalog overrides
+  useEffect(() => {
+    const loadClientApps = async () => {
+      try {
+        const clients = await platformAPI.clientApps.list();
+        setClientApps(clients);
+      } catch (error) {
+        console.error("Failed to load client apps:", error);
+      }
+    };
+    loadClientApps();
   }, []);
 
   // Load Cloud Sync status
@@ -243,6 +266,34 @@ const Settings: React.FC = () => {
     stateSetter: setToolCatalogEnabled,
     setLoading: setIsSavingSettings,
   });
+
+  const handleToolCatalogOverrideChange = async (
+    clientId: string,
+    mode: "inherit" | "enabled" | "disabled",
+  ) => {
+    const normalizedClientId = clientId.trim().toLowerCase();
+    const nextOverrides = { ...toolCatalogOverridesByClient };
+    if (mode === "inherit") {
+      delete nextOverrides[normalizedClientId];
+    } else {
+      nextOverrides[normalizedClientId] = mode === "enabled";
+    }
+
+    setToolCatalogOverridesByClient(nextOverrides);
+    setIsSavingSettings(true);
+    try {
+      const currentSettings = await platformAPI.settings.get();
+      await platformAPI.settings.save({
+        ...currentSettings,
+        toolCatalogOverridesByClient: nextOverrides,
+      });
+    } catch (error) {
+      console.error("Failed to save per-client catalog override:", error);
+      setToolCatalogOverridesByClient(toolCatalogOverridesByClient);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
 
   // Cloud Sync handlers
   const handleCloudSyncToggle = async (checked: boolean) => {
@@ -653,6 +704,77 @@ const Settings: React.FC = () => {
               onCheckedChange={handleToolCatalogToggle}
               disabled={isSavingSettings}
             />
+          </div>
+
+          {/* Per-client Tool Catalog Overrides */}
+          <div className="py-5 border-b border-border/30 last:border-0 space-y-4">
+            <div className="space-y-1">
+              <Label className="text-sm font-semibold">
+                {t("settings.perClientCatalogOverrides")}
+              </Label>
+              <p className="text-xs text-muted-foreground max-w-[500px]">
+                {t("settings.perClientCatalogOverridesDescription")}
+              </p>
+            </div>
+            {clientApps.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                {t("settings.perClientCatalogOverridesEmpty")}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {clientApps.map((client) => {
+                  const normalizedClientId = client.id.trim().toLowerCase();
+                  const override =
+                    toolCatalogOverridesByClient[normalizedClientId];
+                  const mode =
+                    override === undefined
+                      ? "inherit"
+                      : override
+                        ? "enabled"
+                        : "disabled";
+
+                  return (
+                    <div
+                      key={client.id}
+                      className="flex items-center justify-between rounded-md border border-border/50 px-3 py-2"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">
+                          {client.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {client.id}
+                        </span>
+                      </div>
+                      <Select
+                        value={mode}
+                        onValueChange={(value) =>
+                          handleToolCatalogOverrideChange(
+                            client.id,
+                            value as "inherit" | "enabled" | "disabled",
+                          )
+                        }
+                      >
+                        <SelectTrigger className="w-[170px] rounded-full border-border/60">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value="inherit">
+                            {t("settings.perClientOverrideInherit")}
+                          </SelectItem>
+                          <SelectItem value="enabled">
+                            {t("settings.perClientOverrideEnabled")}
+                          </SelectItem>
+                          <SelectItem value="disabled">
+                            {t("settings.perClientOverrideDisabled")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Analytics */}
