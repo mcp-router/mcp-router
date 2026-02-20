@@ -148,3 +148,47 @@ export function normalizeToolInputSchema(
     stripCombinators: options.stripCombinators,
   }) as Record<string, unknown>;
 }
+
+const NORMALIZED_SCHEMA_CACHE_MAX_ENTRIES = 500;
+const normalizedSchemaCache = new Map<string, Record<string, unknown>>();
+
+function getNormalizationCacheKey(
+  inputSchema: unknown,
+  options: { stripCombinators?: boolean },
+): string | null {
+  if (!isPlainObject(inputSchema)) {
+    return null;
+  }
+
+  try {
+    return `${options.stripCombinators === true ? "strip" : "keep"}:${JSON.stringify(inputSchema)}`;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Cached variant used in hot paths (`tools/list`, tool catalog indexing).
+ * Cache is intentionally bounded to avoid unbounded memory growth.
+ */
+export function normalizeToolInputSchemaCached(
+  inputSchema: unknown,
+  options: { stripCombinators?: boolean } = {},
+): Record<string, unknown> | undefined {
+  const cacheKey = getNormalizationCacheKey(inputSchema, options);
+  if (cacheKey) {
+    const cached = normalizedSchemaCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
+  const normalized = normalizeToolInputSchema(inputSchema, options);
+  if (cacheKey && normalized) {
+    if (normalizedSchemaCache.size >= NORMALIZED_SCHEMA_CACHE_MAX_ENTRIES) {
+      normalizedSchemaCache.clear();
+    }
+    normalizedSchemaCache.set(cacheKey, normalized);
+  }
+  return normalized;
+}

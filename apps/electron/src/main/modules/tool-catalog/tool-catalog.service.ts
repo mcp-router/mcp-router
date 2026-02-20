@@ -8,7 +8,8 @@ import type {
 } from "@mcp_router/shared";
 import type { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
 import { MiniSearchProvider } from "./minisearch-provider";
-import { normalizeToolInputSchema } from "@/main/modules/mcp-server-runtime/schema-normalizer";
+import { normalizeToolInputSchemaCached } from "@/main/modules/mcp-server-runtime/schema-normalizer";
+import { getEventBridge } from "@/main/modules/mcp-server-runtime/event-bridge";
 
 // Internal type for search context filtering
 
@@ -31,6 +32,7 @@ export class ToolCatalogService {
     timestamp: number;
   } | null = null;
   private readonly TOOL_CACHE_TTL_MS = 5000;
+  private unsubscribeFromEventBridge: (() => void) | null = null;
 
   constructor(
     serverManager: MCPServerManager,
@@ -39,6 +41,31 @@ export class ToolCatalogService {
     this.serverManager = serverManager;
     // Default to MiniSearch for better fuzzy matching and synonym support
     this.searchProvider = searchProvider ?? new MiniSearchProvider();
+    this.subscribeToRuntimeEvents();
+  }
+
+  private subscribeToRuntimeEvents(): void {
+    this.unsubscribeFromEventBridge = getEventBridge().subscribe((event) => {
+      if (
+        event.type === "tool_list_changed" ||
+        event.type === "servers_updated" ||
+        event.type === "config_changed"
+      ) {
+        this.clearCache();
+      }
+    });
+  }
+
+  public clearCache(): void {
+    this.toolCache = null;
+  }
+
+  public dispose(): void {
+    if (this.unsubscribeFromEventBridge) {
+      this.unsubscribeFromEventBridge();
+      this.unsubscribeFromEventBridge = null;
+    }
+    this.clearCache();
   }
 
   /**
@@ -144,7 +171,7 @@ export class ToolCatalogService {
             serverName,
             projectId: server.projectId ?? null,
             description: tool.description,
-            inputSchema: (normalizeToolInputSchema(tool.inputSchema, {
+            inputSchema: (normalizeToolInputSchemaCached(tool.inputSchema, {
               stripCombinators,
             }) ??
               tool.inputSchema) as ToolInfo["inputSchema"],

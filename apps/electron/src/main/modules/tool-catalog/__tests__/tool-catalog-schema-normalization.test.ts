@@ -1,5 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { ToolCatalogService } from "../tool-catalog.service";
+import { getEventBridge } from "@/main/modules/mcp-server-runtime/event-bridge";
 
 function createServerManagerMock() {
   const listTools = vi.fn();
@@ -47,6 +48,14 @@ describe("ToolCatalogService schema normalization", () => {
   const searchProvider = {
     search: vi.fn(async ({ tools }: { tools: unknown[] }) => tools),
   };
+  const createdServices: ToolCatalogService[] = [];
+
+  afterEach(() => {
+    for (const service of createdServices) {
+      service.dispose();
+    }
+    createdServices.length = 0;
+  });
 
   beforeEach(() => {
     searchProvider.search.mockClear();
@@ -73,6 +82,7 @@ describe("ToolCatalogService schema normalization", () => {
     });
 
     const service = new ToolCatalogService(manager as any, searchProvider as any);
+    createdServices.push(service);
 
     await service.searchTools(
       { query: ["conditional", "formatting"], detailLevel: "summary" },
@@ -114,6 +124,7 @@ describe("ToolCatalogService schema normalization", () => {
     });
 
     const service = new ToolCatalogService(manager as any, searchProvider as any);
+    createdServices.push(service);
 
     await service.searchTools(
       { query: ["conditional", "formatting"], detailLevel: "summary" },
@@ -132,5 +143,60 @@ describe("ToolCatalogService schema normalization", () => {
         },
       },
     });
+  });
+
+  it("reuses tool cache within TTL when no change events occur", async () => {
+    const { listTools, manager } = createServerManagerMock();
+    listTools.mockResolvedValue({
+      tools: [
+        {
+          name: "sample_tool",
+          description: "Sample",
+          inputSchema: { type: "object", properties: { q: { type: "string" } } },
+        },
+      ],
+    });
+
+    const service = new ToolCatalogService(manager as any, searchProvider as any);
+    createdServices.push(service);
+
+    await service.searchTools(
+      { query: ["sample"], detailLevel: "summary" },
+      { projectId: null },
+    );
+    await service.searchTools(
+      { query: ["sample"], detailLevel: "summary" },
+      { projectId: null },
+    );
+
+    expect(listTools).toHaveBeenCalledTimes(1);
+  });
+
+  it("invalidates tool cache on tool_list_changed events", async () => {
+    const { listTools, manager } = createServerManagerMock();
+    listTools.mockResolvedValue({
+      tools: [
+        {
+          name: "sample_tool",
+          description: "Sample",
+          inputSchema: { type: "object", properties: { q: { type: "string" } } },
+        },
+      ],
+    });
+
+    const service = new ToolCatalogService(manager as any, searchProvider as any);
+    createdServices.push(service);
+
+    await service.searchTools(
+      { query: ["sample"], detailLevel: "summary" },
+      { projectId: null },
+    );
+    getEventBridge().emit("tool_list_changed", { source: "test" });
+    await service.searchTools(
+      { query: ["sample"], detailLevel: "summary" },
+      { projectId: null },
+    );
+
+    expect(listTools).toHaveBeenCalledTimes(2);
   });
 });

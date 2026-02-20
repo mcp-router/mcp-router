@@ -34,7 +34,7 @@ import { ToolCatalogService } from "@/main/modules/tool-catalog/tool-catalog.ser
 import { TokenValidator } from "./token-validator";
 import { RequestHandlerBase } from "./request-handler-base";
 import {
-  normalizeToolInputSchema,
+  normalizeToolInputSchemaCached,
   shouldStripCombinatorsForClient,
 } from "./schema-normalizer";
 import { getEffectiveToolCatalogEnabled } from "./tool-catalog-mode";
@@ -221,19 +221,8 @@ export class RequestHandlers extends RequestHandlerBase {
 
     return this.executeWithHooks("tools/list", {}, clientId, async () => {
       // Always include system tools (router_*) so agents can manage the router
-      const systemTools = this.getSystemToolDefinitions().map((t) => {
-        const normalizedInputSchema =
-          (normalizeToolInputSchema(
-            t.inputSchema,
-            schemaNormalizationOptions,
-          ) ??
-            t.inputSchema) as Tool["inputSchema"];
-        return {
-          ...t,
-          inputSchema: normalizedInputSchema,
-          sourceServer: "mcp-router-system",
-        };
-      });
+      const systemTools =
+        this.getNormalizedSystemTools(schemaNormalizationOptions);
 
       // If tool catalog is enabled, return META_TOOLS + system tools
       if (this.isToolCatalogEnabled(clientId)) {
@@ -795,7 +784,7 @@ export class RequestHandlers extends RequestHandlerBase {
               ? prefixToolName(serverName, tool.name)
               : tool.name;
             const normalizedInputSchema =
-              (normalizeToolInputSchema(
+              (normalizeToolInputSchemaCached(
                 tool.inputSchema,
                 schemaNormalizationOptions,
               ) ??
@@ -837,17 +826,11 @@ export class RequestHandlers extends RequestHandlerBase {
     }
 
     // Append SystemServer tools (router_*) so they appear alongside aggregated tools
-    const systemTools = this.getSystemToolDefinitions();
+    const systemTools =
+      this.getNormalizedSystemTools(schemaNormalizationOptions);
     for (const tool of systemTools) {
-      const normalizedInputSchema =
-        (normalizeToolInputSchema(tool.inputSchema, schemaNormalizationOptions) ??
-          tool.inputSchema) as Tool["inputSchema"];
       toolMap.set(tool.name, "__system__");
-      allTools.push({
-        ...tool,
-        inputSchema: normalizedInputSchema,
-        sourceServer: "mcp-router-system",
-      });
+      allTools.push(tool);
     }
 
     return allTools;
@@ -872,6 +855,21 @@ export class RequestHandlers extends RequestHandlerBase {
       // SystemServerService not initialised yet — return nothing
       return [];
     }
+  }
+
+  private getNormalizedSystemTools(
+    schemaNormalizationOptions: { stripCombinators?: boolean },
+  ): ToolWithSource[] {
+    return this.getSystemToolDefinitions().map((tool) => ({
+      ...tool,
+      inputSchema:
+        (normalizeToolInputSchemaCached(
+          tool.inputSchema,
+          schemaNormalizationOptions,
+        ) ??
+          tool.inputSchema) as Tool["inputSchema"],
+      sourceServer: "mcp-router-system",
+    }));
   }
 
   /**
