@@ -127,6 +127,8 @@ export interface UpdateSettingsInput {
   showWindowOnStartup?: boolean;
   /** Optional per-client tool catalog mode overrides */
   toolCatalogOverridesByClient?: Record<string, boolean>;
+  /** Whether stale streamable session IDs should auto-create new sessions */
+  autoCreateSessionOnInvalidId?: boolean;
 }
 
 /** Input for router_switch_workspace tool */

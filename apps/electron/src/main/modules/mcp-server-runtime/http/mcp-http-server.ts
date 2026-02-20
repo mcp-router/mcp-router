@@ -12,6 +12,8 @@ import { createApiRouter } from "./api-router";
 import { getRateLimiter } from "../rate-limiter";
 import { runWithSessionContext } from "../request-context";
 import { getSamplingProxy } from "../sampling-proxy";
+import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
+import { shouldAutoRecoverInvalidStreamableSession } from "./session-recovery-policy";
 
 /**
  * HTTP server that exposes MCP functionality through REST endpoints
@@ -230,6 +232,25 @@ export class MCPHttpServer {
       const existing = this.aggregatorServer.getSessionTransport(sessionId);
       if (existing) return { transport: existing };
 
+      const autoCreateSessionOnInvalidId =
+        getSharedConfigManager().getSettings().autoCreateSessionOnInvalidId !==
+        false;
+      const shouldRecover = shouldAutoRecoverInvalidStreamableSession(
+        req.method,
+        autoCreateSessionOnInvalidId,
+      );
+
+      if (shouldRecover) {
+        const recovered = await this.createNewStreamableTransport(req, res);
+        if (recovered) {
+          // Let clients/agents detect that recovery happened this request.
+          res.setHeader("x-mcp-router-session-recovered", "true");
+          res.setHeader("x-mcp-router-recovery-mode", "compatibility");
+          return recovered;
+        }
+        return null;
+      }
+
       // Session not found or expired -- 404 per MCP spec.
       if (!res.headersSent) {
         res.status(404).json({
@@ -244,6 +265,15 @@ export class MCPHttpServer {
       return null;
     }
 
+    return this.createNewStreamableTransport(req, res);
+  }
+
+  private async createNewStreamableTransport(
+    req: express.Request,
+    res: express.Response,
+  ): Promise<{
+    transport: import("@modelcontextprotocol/sdk/server/streamableHttp").StreamableHTTPServerTransport;
+  } | null> {
     // Rate limit session creation
     const limiter = getRateLimiter();
     const clientId = (req.headers["x-mcp-client-id"] as string) || "unknown";

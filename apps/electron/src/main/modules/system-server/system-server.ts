@@ -459,6 +459,7 @@ export class SystemServer {
           "loadExternalMCPConfigs",
           "autoUpdateEnabled",
           "showWindowOnStartup",
+          "autoCreateSessionOnInvalidId",
         ];
         const VALID_SETTING_KEYS = [
           ...VALID_BOOLEAN_SETTING_KEYS,
@@ -949,6 +950,7 @@ export class SystemServer {
       loadExternalMCPConfigs: settings.loadExternalMCPConfigs,
       autoUpdateEnabled: settings.autoUpdateEnabled,
       showWindowOnStartup: settings.showWindowOnStartup,
+      autoCreateSessionOnInvalidId: settings.autoCreateSessionOnInvalidId,
       theme: settings.theme,
       toolCatalogOverridesByClient: normalizeToolCatalogOverrides(
         settings.toolCatalogOverridesByClient,
@@ -987,6 +989,7 @@ export class SystemServer {
       loadExternalMCPConfigs: saved.loadExternalMCPConfigs,
       autoUpdateEnabled: saved.autoUpdateEnabled,
       showWindowOnStartup: saved.showWindowOnStartup,
+      autoCreateSessionOnInvalidId: saved.autoCreateSessionOnInvalidId,
       theme: saved.theme,
       toolCatalogOverridesByClient: normalizeToolCatalogOverrides(
         saved.toolCatalogOverridesByClient,
@@ -1536,6 +1539,11 @@ const SYSTEM_TOOLS = [
         showWindowOnStartup: {
           type: "boolean",
           description: "Show the app window on OS startup.",
+        },
+        autoCreateSessionOnInvalidId: {
+          type: "boolean",
+          description:
+            "Compatibility mode: automatically create a fresh streamable session when a stale MCP session ID is received.",
         },
         toolCatalogOverridesByClient: {
           type: "object",

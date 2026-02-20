@@ -93,6 +93,14 @@ export interface AppSettings {
    * When absent, the global `toolCatalogEnabled` default is used.
    */
   toolCatalogOverridesByClient?: Record<string, boolean>;
+
+  /**
+   * Whether streamable HTTP requests with stale `mcp-session-id` should
+   * transparently create a fresh session (compatibility mode).
+   * When false, invalid sessions return strict 404 behavior.
+   * Default: true
+   */
+  autoCreateSessionOnInvalidId?: boolean;
 }
 
 /**
@@ -116,4 +124,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   prefixToolNames: true,
   toolCatalogEnabled: false,
   toolCatalogOverridesByClient: {},
+  autoCreateSessionOnInvalidId: true,
 };
