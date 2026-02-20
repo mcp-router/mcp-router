@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { shouldAutoRecoverInvalidStreamableSession } from "../session-recovery-policy";
+import {
+  createReinitializeRequiredJsonRpcError,
+  REINITIALIZE_REQUIRED_HEADER,
+  shouldAutoRecoverInvalidStreamableSession,
+} from "../session-recovery-policy";
 
 describe("streamable session recovery policy", () => {
   it("recovers stale sessions for POST in compatibility mode", () => {
@@ -36,5 +40,36 @@ describe("streamable session recovery policy", () => {
         id: 1,
       }),
     ).toBe(false);
+  });
+
+  it("does not recover stale POST sessions for malformed initialize payloads", () => {
+    expect(
+      shouldAutoRecoverInvalidStreamableSession("POST", true, {
+        method: "initialize",
+        id: 1,
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldAutoRecoverInvalidStreamableSession("POST", true, {
+        jsonrpc: "1.0",
+        method: "initialize",
+        id: 1,
+      }),
+    ).toBe(false);
+  });
+
+  it("defines a stable reinitialize-required response contract", () => {
+    expect(REINITIALIZE_REQUIRED_HEADER).toBe(
+      "x-mcp-router-reinitialize-required",
+    );
+    expect(createReinitializeRequiredJsonRpcError()).toEqual({
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message: "Session not found or expired; reinitialize required",
+      },
+      id: null,
+    });
   });
 });

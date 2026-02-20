@@ -13,7 +13,11 @@ import { getRateLimiter } from "../rate-limiter";
 import { runWithSessionContext } from "../request-context";
 import { getSamplingProxy } from "../sampling-proxy";
 import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
-import { shouldAutoRecoverInvalidStreamableSession } from "./session-recovery-policy";
+import {
+  createReinitializeRequiredJsonRpcError,
+  REINITIALIZE_REQUIRED_HEADER,
+  shouldAutoRecoverInvalidStreamableSession,
+} from "./session-recovery-policy";
 
 /**
  * HTTP server that exposes MCP functionality through REST endpoints
@@ -255,15 +259,8 @@ export class MCPHttpServer {
 
       // Session not found or expired -- 404 per MCP spec.
       if (!res.headersSent) {
-        res.setHeader("x-mcp-router-reinitialize-required", "true");
-        res.status(404).json({
-          jsonrpc: "2.0",
-          error: {
-            code: -32000,
-            message: "Session not found or expired; reinitialize required",
-          },
-          id: null,
-        });
+        res.setHeader(REINITIALIZE_REQUIRED_HEADER, "true");
+        res.status(404).json(createReinitializeRequiredJsonRpcError());
       }
       return null;
     }

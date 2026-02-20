@@ -1,3 +1,17 @@
+export const REINITIALIZE_REQUIRED_HEADER =
+  "x-mcp-router-reinitialize-required";
+
+export function createReinitializeRequiredJsonRpcError() {
+  return {
+    jsonrpc: "2.0" as const,
+    error: {
+      code: -32000,
+      message: "Session not found or expired; reinitialize required",
+    },
+    id: null,
+  };
+}
+
 export function shouldAutoRecoverInvalidStreamableSession(
   method: string,
   autoCreateSessionOnInvalidId: boolean,
@@ -20,7 +34,9 @@ export function shouldAutoRecoverInvalidStreamableSession(
   return true;
 }
 
-function isJsonRpcRequest(payload: unknown): payload is { method?: unknown } {
+function isJsonRpcRequest(
+  payload: unknown,
+): payload is { jsonrpc?: unknown; method?: unknown } {
   return !!payload && typeof payload === "object" && !Array.isArray(payload);
 }
 
@@ -31,5 +47,5 @@ export function isInitializeRequest(payload: unknown): boolean {
   if (!isJsonRpcRequest(payload)) {
     return false;
   }
-  return payload.method === "initialize";
+  return payload.jsonrpc === "2.0" && payload.method === "initialize";
 }
