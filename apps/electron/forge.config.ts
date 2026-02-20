@@ -60,6 +60,9 @@ const config: ForgeConfig = {
         name: "MCP-Router",
         format: "ULFO",
         icon: "./public/images/icon/icon.icns",
+        additionalDMGOptions: {
+          filesystem: "APFS",
+        },
       },
       ["darwin"],
     ),
