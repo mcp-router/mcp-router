@@ -6,7 +6,8 @@ type EventType =
   | "servers_updated"
   | "tool_list_changed"
   | "resource_list_changed"
-  | "config_changed";
+  | "config_changed"
+  | "auth_challenge";
 
 interface BridgeEvent {
   type: EventType;

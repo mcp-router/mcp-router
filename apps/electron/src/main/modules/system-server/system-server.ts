@@ -21,6 +21,7 @@ import type {
   UpdateServerInput,
   UpdateSettingsInput,
   SwitchWorkspaceInput,
+  AuthStatusInput,
   ServerSummary,
   ToolSummary,
 } from "./system-server.types";
@@ -31,6 +32,7 @@ import { processMcpbFile } from "../mcp-server-manager/mcpb-processor/mcpb-proce
 import { getSharedConfigManager } from "@/main/infrastructure/shared-config-manager";
 import { getWorkspaceService } from "@/main/modules/workspace/workspace.service";
 import { getEventBridge } from "@/main/modules/mcp-server-runtime/event-bridge";
+import { getAuthRecoveryManager } from "@/main/modules/mcp-server-runtime/auth-recovery-manager";
 import {
   normalizeToolCatalogOverrides,
   normalizeClientId,
@@ -535,6 +537,13 @@ export class SystemServer {
       case "router_token_usage": {
         return this.handleTokenUsage();
       }
+      case "router_auth_status": {
+        const server =
+          typeof args.server === "string" && args.server.trim().length > 0
+            ? args.server
+            : undefined;
+        return this.handleAuthStatus({ server });
+      }
       case "router_audit_log": {
         const auditArgs = args as Record<string, unknown>;
         return this.handleAuditLog(auditArgs);
@@ -969,9 +978,10 @@ export class SystemServer {
     const currentSettings = configManager.getSettings();
     const normalizedInput: UpdateSettingsInput = { ...input };
     if (normalizedInput.toolCatalogOverridesByClient !== undefined) {
-      normalizedInput.toolCatalogOverridesByClient = normalizeToolCatalogOverrides(
-        normalizedInput.toolCatalogOverridesByClient,
-      );
+      normalizedInput.toolCatalogOverridesByClient =
+        normalizeToolCatalogOverrides(
+          normalizedInput.toolCatalogOverridesByClient,
+        );
     }
     const updatedSettings = { ...currentSettings, ...normalizedInput };
     configManager.saveSettings(updatedSettings);
@@ -1091,6 +1101,31 @@ export class SystemServer {
             {
               globalStats: { catalogSavings },
               servers: serverDetails,
+            },
+            null,
+            2,
+          ),
+        },
+      ],
+    };
+  }
+
+  private async handleAuthStatus(input: AuthStatusInput) {
+    const authRecovery = getAuthRecoveryManager();
+    const resolvedServer = input.server
+      ? this.resolveServer(input.server)
+      : undefined;
+    const filterServerId = resolvedServer?.id || input.server;
+    const challenges = authRecovery.getChallenges(filterServerId);
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify(
+            {
+              challengeCount: challenges.length,
+              challenges,
             },
             null,
             2,
@@ -1596,6 +1631,21 @@ const SYSTEM_TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {},
+    },
+  },
+  {
+    name: "router_auth_status",
+    description:
+      "Get auth recovery/challenge status detected from recent tool-call failures.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        server: {
+          type: "string",
+          description:
+            "Optional server ID or name to filter auth status/challenges.",
+        },
+      },
     },
   },
   {

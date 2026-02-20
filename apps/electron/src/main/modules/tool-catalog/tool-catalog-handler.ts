@@ -18,6 +18,7 @@ import { getProjectService } from "@/main/modules/projects/projects.service";
 import { ToolCatalogService } from "./tool-catalog.service";
 import { transformResourceLinksInResult } from "@/main/utils/uri-utils";
 import { ReconnectingMCPClient } from "@/main/modules/mcp-server-manager/reconnecting-mcp-client";
+import { getAuthRecoveryManager } from "@/main/modules/mcp-server-runtime/auth-recovery-manager";
 
 export const META_TOOLS: MCPTool[] = [
   {
@@ -598,17 +599,50 @@ export class ToolCatalogHandler extends RequestHandlerBase {
       serverName,
       "ToolExecute",
       async () => {
-        const result = await client.getClient().callTool(
-          {
-            name: toolName,
-            arguments: toolArguments,
-          },
-          undefined,
-          {
-            timeout: 60 * 60 * 1000, // 60 minutes
-            resetTimeoutOnProgress: true,
-          },
-        );
+        const authRecovery = getAuthRecoveryManager();
+        let result: Record<string, unknown>;
+        try {
+          result = (await client.getClient().callTool(
+            {
+              name: toolName,
+              arguments: toolArguments,
+            },
+            undefined,
+            {
+              timeout: 60 * 60 * 1000, // 60 minutes
+              resetTimeoutOnProgress: true,
+            },
+          )) as Record<string, unknown>;
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          if (authRecovery.isLikelyAuthError(message)) {
+            authRecovery.registerAuthFailure({
+              serverId,
+              serverName,
+              toolName,
+              clientId,
+              errorMessage: message,
+            });
+            throw this.createActionableError(
+              ErrorCode.InvalidRequest,
+              "AUTH_REQUIRED",
+              `Authentication required or expired for server '${serverName}'`,
+              {
+                action: "Re-authenticate the backing provider and retry",
+                steps: [
+                  "Complete provider authentication in browser (or configured auth flow)",
+                  "Use router_auth_status to inspect auth challenge state",
+                  "Retry the same tool_execute call once auth is restored",
+                ],
+                suggestedTools: ["router_auth_status"],
+              },
+            );
+          }
+          throw error;
+        }
+
+        authRecovery.markRecovered(serverId);
         // Transform resource links to use router's namespace
         return transformResourceLinksInResult(result, serverName);
       },

@@ -136,3 +136,9 @@ export interface SwitchWorkspaceInput {
   /** Workspace ID to switch to */
   workspaceId: string;
 }
+
+/** Input for router_auth_status tool */
+export interface AuthStatusInput {
+  /** Optional server ID or name to filter */
+  server?: string;
+}

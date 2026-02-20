@@ -52,6 +52,7 @@ import {
   estimateResponseTokens,
 } from "./token-estimator";
 import { getTokenBudgetTracker } from "./token-budget-tracker";
+import { getAuthRecoveryManager } from "./auth-recovery-manager";
 
 /** Tool with source server annotation for aggregated results */
 type ToolWithSource = Tool & { sourceServer: string };
@@ -221,8 +222,9 @@ export class RequestHandlers extends RequestHandlerBase {
 
     return this.executeWithHooks("tools/list", {}, clientId, async () => {
       // Always include system tools (router_*) so agents can manage the router
-      const systemTools =
-        this.getNormalizedSystemTools(schemaNormalizationOptions);
+      const systemTools = this.getNormalizedSystemTools(
+        schemaNormalizationOptions,
+      );
 
       // If tool catalog is enabled, return META_TOOLS + system tools
       if (this.isToolCatalogEnabled(clientId)) {
@@ -783,12 +785,10 @@ export class RequestHandlers extends RequestHandlerBase {
             const prefixedName = shouldPrefix
               ? prefixToolName(serverName, tool.name)
               : tool.name;
-            const normalizedInputSchema =
-              (normalizeToolInputSchemaCached(
-                tool.inputSchema,
-                schemaNormalizationOptions,
-              ) ??
-                tool.inputSchema) as Tool["inputSchema"];
+            const normalizedInputSchema = (normalizeToolInputSchemaCached(
+              tool.inputSchema,
+              schemaNormalizationOptions,
+            ) ?? tool.inputSchema) as Tool["inputSchema"];
 
             serverTools.push({
               ...tool,
@@ -826,8 +826,9 @@ export class RequestHandlers extends RequestHandlerBase {
     }
 
     // Append SystemServer tools (router_*) so they appear alongside aggregated tools
-    const systemTools =
-      this.getNormalizedSystemTools(schemaNormalizationOptions);
+    const systemTools = this.getNormalizedSystemTools(
+      schemaNormalizationOptions,
+    );
     for (const tool of systemTools) {
       toolMap.set(tool.name, "__system__");
       allTools.push(tool);
@@ -857,17 +858,15 @@ export class RequestHandlers extends RequestHandlerBase {
     }
   }
 
-  private getNormalizedSystemTools(
-    schemaNormalizationOptions: { stripCombinators?: boolean },
-  ): ToolWithSource[] {
+  private getNormalizedSystemTools(schemaNormalizationOptions: {
+    stripCombinators?: boolean;
+  }): ToolWithSource[] {
     return this.getSystemToolDefinitions().map((tool) => ({
       ...tool,
-      inputSchema:
-        (normalizeToolInputSchemaCached(
-          tool.inputSchema,
-          schemaNormalizationOptions,
-        ) ??
-          tool.inputSchema) as Tool["inputSchema"],
+      inputSchema: (normalizeToolInputSchemaCached(
+        tool.inputSchema,
+        schemaNormalizationOptions,
+      ) ?? tool.inputSchema) as Tool["inputSchema"],
       sourceServer: "mcp-router-system",
     }));
   }
@@ -1019,17 +1018,39 @@ export class RequestHandlers extends RequestHandlerBase {
           arguments: toolArgs,
         });
 
-        const result = await client.getClient().callTool(
-          {
-            name: originalToolName,
-            arguments: toolArgs,
-          },
-          undefined,
-          {
-            timeout: 60 * 60 * 1000, // 60 minutes
-            resetTimeoutOnProgress: true,
-          },
-        );
+        let result: Record<string, unknown>;
+        try {
+          result = (await client.getClient().callTool(
+            {
+              name: originalToolName,
+              arguments: toolArgs,
+            },
+            undefined,
+            {
+              timeout: 60 * 60 * 1000, // 60 minutes
+              resetTimeoutOnProgress: true,
+            },
+          )) as Record<string, unknown>;
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          const authRecovery = getAuthRecoveryManager();
+          if (authRecovery.isLikelyAuthError(message)) {
+            authRecovery.registerAuthFailure({
+              serverId,
+              serverName,
+              toolName: originalToolName,
+              clientId,
+              errorMessage: message,
+            });
+
+            throw new McpError(
+              ErrorCode.InvalidRequest,
+              `Authentication required or expired for server '${serverName}'. Open/re-auth the provider, then retry. You can inspect auth state via router_auth_status.`,
+            );
+          }
+          throw error;
+        }
 
         // Record token usage for this tool call
         const resTokens = estimateResponseTokens(result as object);
@@ -1039,6 +1060,7 @@ export class RequestHandlers extends RequestHandlerBase {
           reqTokens,
           resTokens,
         );
+        getAuthRecoveryManager().markRecovered(serverId);
 
         // Detect and register task handles in the response
         let finalResult = result as Record<string, unknown>;

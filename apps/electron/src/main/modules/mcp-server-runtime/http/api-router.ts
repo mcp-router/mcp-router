@@ -15,6 +15,7 @@ const SERVER_SCOPED_EVENT_TYPES = new Set([
   "tool_list_changed",
   "resource_list_changed",
   "config_changed",
+  "auth_challenge",
 ]);
 
 function getRouteParam(value: string | string[] | undefined): string | null {
