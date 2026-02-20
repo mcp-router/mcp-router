@@ -3,7 +3,13 @@ import { shouldAutoRecoverInvalidStreamableSession } from "../session-recovery-p
 
 describe("streamable session recovery policy", () => {
   it("recovers stale sessions for POST in compatibility mode", () => {
-    expect(shouldAutoRecoverInvalidStreamableSession("POST", true)).toBe(true);
+    expect(
+      shouldAutoRecoverInvalidStreamableSession("POST", true, {
+        jsonrpc: "2.0",
+        method: "initialize",
+        id: 1,
+      }),
+    ).toBe(true);
   });
 
   it("recovers stale sessions for GET in compatibility mode", () => {
@@ -20,5 +26,15 @@ describe("streamable session recovery policy", () => {
     expect(shouldAutoRecoverInvalidStreamableSession("POST", false)).toBe(
       false,
     );
+  });
+
+  it("does not recover stale POST sessions for non-initialize calls", () => {
+    expect(
+      shouldAutoRecoverInvalidStreamableSession("POST", true, {
+        jsonrpc: "2.0",
+        method: "tools/list",
+        id: 1,
+      }),
+    ).toBe(false);
   });
 });

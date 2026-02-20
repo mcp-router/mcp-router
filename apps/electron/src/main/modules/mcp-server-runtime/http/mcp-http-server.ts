@@ -223,6 +223,7 @@ export class MCPHttpServer {
   private async resolveStreamableTransport(
     req: express.Request,
     res: express.Response,
+    payload?: unknown,
   ): Promise<{
     transport: import("@modelcontextprotocol/sdk/server/streamableHttp").StreamableHTTPServerTransport;
   } | null> {
@@ -238,6 +239,7 @@ export class MCPHttpServer {
       const shouldRecover = shouldAutoRecoverInvalidStreamableSession(
         req.method,
         autoCreateSessionOnInvalidId,
+        payload,
       );
 
       if (shouldRecover) {
@@ -253,11 +255,12 @@ export class MCPHttpServer {
 
       // Session not found or expired -- 404 per MCP spec.
       if (!res.headersSent) {
+        res.setHeader("x-mcp-router-reinitialize-required", "true");
         res.status(404).json({
           jsonrpc: "2.0",
           error: {
             code: -32000,
-            message: "Session not found or expired",
+            message: "Session not found or expired; reinitialize required",
           },
           id: null,
         });
@@ -353,7 +356,11 @@ export class MCPHttpServer {
           token,
         );
 
-        const result = await this.resolveStreamableTransport(req, res);
+        const result = await this.resolveStreamableTransport(
+          req,
+          res,
+          modifiedBody,
+        );
         if (!result) return; // error response already sent
         const sessionId =
           (req.headers["mcp-session-id"] as string | undefined) ||
