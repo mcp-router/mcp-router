@@ -51,6 +51,7 @@ export class AggregatorServer {
 
   /** Configurable session TTL in milliseconds. */
   private sessionTtlMs: number;
+  private compatibilityTransport: StreamableHTTPServerTransport | null = null;
 
   /** Periodic timer for cleaning up expired sessions. */
   private cleanupTimer: ReturnType<typeof setInterval> | null = null;
@@ -217,6 +218,31 @@ export class AggregatorServer {
   /** Number of active sessions (useful for diagnostics). */
   public get activeSessionCount(): number {
     return this.sessions.size;
+  }
+
+  /**
+   * Get or create a stateless compatibility transport.
+   *
+   * This transport is used only for stale-session recovery paths when a client
+   * sends non-initialize POST requests after restart and cannot self-reinitialize.
+   */
+  public async getCompatibilityTransport(): Promise<StreamableHTTPServerTransport> {
+    if (this.compatibilityTransport) {
+      return this.compatibilityTransport;
+    }
+
+    const server = this.createConfiguredServer();
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: undefined,
+    });
+
+    transport.onclose = () => {
+      this.compatibilityTransport = null;
+    };
+
+    await server.connect(transport);
+    this.compatibilityTransport = transport;
+    return transport;
   }
 
   /**
@@ -427,6 +453,17 @@ export class AggregatorServer {
       );
     }
     this.sessions.clear();
+    if (this.compatibilityTransport) {
+      closePromises.push(
+        this.compatibilityTransport.close().catch((err) => {
+          safeConsoleError(
+            "[MCP Session] Error closing compatibility transport during shutdown:",
+            err,
+          );
+        }),
+      );
+      this.compatibilityTransport = null;
+    }
     await Promise.all(closePromises);
   }
 }

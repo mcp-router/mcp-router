@@ -3,17 +3,12 @@ import {
   createReinitializeRequiredJsonRpcError,
   REINITIALIZE_REQUIRED_HEADER,
   shouldAutoRecoverInvalidStreamableSession,
+  shouldUseStatelessRecoveryTransport,
 } from "../session-recovery-policy";
 
 describe("streamable session recovery policy", () => {
   it("recovers stale sessions for POST in compatibility mode", () => {
-    expect(
-      shouldAutoRecoverInvalidStreamableSession("POST", true, {
-        jsonrpc: "2.0",
-        method: "initialize",
-        id: 1,
-      }),
-    ).toBe(true);
+    expect(shouldAutoRecoverInvalidStreamableSession("POST", true)).toBe(true);
   });
 
   it("recovers stale sessions for GET in compatibility mode", () => {
@@ -32,31 +27,41 @@ describe("streamable session recovery policy", () => {
     );
   });
 
-  it("does not recover stale POST sessions for non-initialize calls", () => {
+  it("routes stale non-initialize POST calls through stateless compatibility transport", () => {
     expect(
-      shouldAutoRecoverInvalidStreamableSession("POST", true, {
+      shouldUseStatelessRecoveryTransport("POST", {
         jsonrpc: "2.0",
         method: "tools/list",
+        id: 1,
+      }),
+    ).toBe(true);
+  });
+
+  it("does not use stateless compatibility transport for initialize payloads", () => {
+    expect(
+      shouldUseStatelessRecoveryTransport("POST", {
+        jsonrpc: "2.0",
+        method: "initialize",
         id: 1,
       }),
     ).toBe(false);
   });
 
-  it("does not recover stale POST sessions for malformed initialize payloads", () => {
+  it("uses stateless compatibility transport for malformed initialize payloads", () => {
     expect(
-      shouldAutoRecoverInvalidStreamableSession("POST", true, {
+      shouldUseStatelessRecoveryTransport("POST", {
         method: "initialize",
         id: 1,
       }),
-    ).toBe(false);
+    ).toBe(true);
 
     expect(
-      shouldAutoRecoverInvalidStreamableSession("POST", true, {
+      shouldUseStatelessRecoveryTransport("POST", {
         jsonrpc: "1.0",
         method: "initialize",
         id: 1,
       }),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("defines a stable reinitialize-required response contract", () => {

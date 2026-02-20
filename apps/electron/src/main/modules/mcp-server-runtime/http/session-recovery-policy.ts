@@ -15,7 +15,6 @@ export function createReinitializeRequiredJsonRpcError() {
 export function shouldAutoRecoverInvalidStreamableSession(
   method: string,
   autoCreateSessionOnInvalidId: boolean,
-  payload?: unknown,
 ): boolean {
   // Never create new sessions during delete/termination semantics.
   if (method.toUpperCase() === "DELETE") {
@@ -24,14 +23,19 @@ export function shouldAutoRecoverInvalidStreamableSession(
   if (!autoCreateSessionOnInvalidId) {
     return false;
   }
-
-  // POST requests must be initialize requests to safely recover into
-  // a brand-new streamable session. Otherwise the server is uninitialized.
-  if (method.toUpperCase() === "POST") {
-    return isInitializeRequest(payload);
-  }
-
   return true;
+}
+
+/**
+ * Non-initialize POST calls cannot bootstrap a fresh stateful session because
+ * the MCP transport requires initialize first. Route these through the
+ * stateless compatibility transport instead.
+ */
+export function shouldUseStatelessRecoveryTransport(
+  method: string,
+  payload?: unknown,
+): boolean {
+  return method.toUpperCase() === "POST" && !isInitializeRequest(payload);
 }
 
 function isJsonRpcRequest(

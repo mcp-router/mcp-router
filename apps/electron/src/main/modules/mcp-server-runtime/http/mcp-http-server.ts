@@ -17,6 +17,7 @@ import {
   createReinitializeRequiredJsonRpcError,
   REINITIALIZE_REQUIRED_HEADER,
   shouldAutoRecoverInvalidStreamableSession,
+  shouldUseStatelessRecoveryTransport,
 } from "./session-recovery-policy";
 
 /**
@@ -243,15 +244,25 @@ export class MCPHttpServer {
       const shouldRecover = shouldAutoRecoverInvalidStreamableSession(
         req.method,
         autoCreateSessionOnInvalidId,
-        payload,
       );
 
       if (shouldRecover) {
-        const recovered = await this.createNewStreamableTransport(req, res);
+        const useStatelessRecoveryTransport = shouldUseStatelessRecoveryTransport(
+          req.method,
+          payload,
+        );
+        const recovered = useStatelessRecoveryTransport
+          ? await this.createStatelessCompatibilityTransport()
+          : await this.createNewStreamableTransport(req, res);
         if (recovered) {
           // Let clients/agents detect that recovery happened this request.
           res.setHeader("x-mcp-router-session-recovered", "true");
-          res.setHeader("x-mcp-router-recovery-mode", "compatibility");
+          res.setHeader(
+            "x-mcp-router-recovery-mode",
+            useStatelessRecoveryTransport
+              ? "compatibility-stateless"
+              : "compatibility",
+          );
           return recovered;
         }
         return null;
@@ -304,6 +315,13 @@ export class MCPHttpServer {
       }
       throw error;
     }
+  }
+
+  private async createStatelessCompatibilityTransport(): Promise<{
+    transport: import("@modelcontextprotocol/sdk/server/streamableHttp").StreamableHTTPServerTransport;
+  }> {
+    const transport = await this.aggregatorServer.getCompatibilityTransport();
+    return { transport };
   }
 
   /**
