@@ -37,17 +37,21 @@ export class MCPClient {
           );
         }
 
+        const headers: Record<string, string> = {
+          ...(server.headers || {}),
+        };
+
+        if (server.bearerToken) {
+          headers.authorization = `Bearer ${server.bearerToken}`;
+        }
+
         // Use StreamableHTTP transport for remote-streamable servers
         const transport = new StreamableHTTPClientTransport(
           new URL(server.remoteUrl),
           {
             sessionId: undefined,
             requestInit: {
-              headers: {
-                authorization: server.bearerToken
-                  ? `Bearer ${server.bearerToken}`
-                  : "",
-              },
+              headers,
             },
           },
         );
@@ -62,11 +66,12 @@ export class MCPClient {
 
         // Use SSE transport for remote servers
         const headers: Record<string, string> = {
+          ...(server.headers || {}),
           Accept: "text/event-stream",
         };
 
         if (server.bearerToken) {
-          headers["authorization"] = `Bearer ${server.bearerToken}`;
+          headers.authorization = `Bearer ${server.bearerToken}`;
         }
 
         const transport = new SSEClientTransport(new URL(server.remoteUrl), {

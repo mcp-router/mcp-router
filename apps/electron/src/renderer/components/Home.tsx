@@ -1022,6 +1022,7 @@ const Home: React.FC = () => {
                 editedCommand,
                 editedArgs,
                 editedBearerToken,
+                headerPairs,
                 editedAutoStart,
                 envPairs,
               } = useServerEditingStore.getState();
@@ -1030,6 +1031,13 @@ const Home: React.FC = () => {
               envPairs.forEach((pair) => {
                 if (pair.key.trim()) {
                   envObj[pair.key.trim()] = pair.value;
+                }
+              });
+
+              const headersObj: Record<string, string> = {};
+              headerPairs.forEach((pair) => {
+                if (pair.key.trim()) {
+                  headersObj[pair.key.trim()] = pair.value;
                 }
               });
 
@@ -1063,6 +1071,7 @@ const Home: React.FC = () => {
 
               if (advancedSettingsServer.serverType !== "local") {
                 updatedConfig.bearerToken = editedBearerToken;
+                updatedConfig.headers = headersObj;
               }
 
               await updateServerConfig(

@@ -46,6 +46,7 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     editedCommand,
     editedArgs,
     editedBearerToken,
+    headerPairs,
     editedAutoStart,
     envPairs,
     editedToolPermissions,
@@ -59,6 +60,9 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     updateArg,
     removeArg,
     addArg,
+    updateHeaderPair,
+    removeHeaderPair,
+    addHeaderPair,
     updateEnvPair,
     removeEnvPair,
     addEnvPair,
@@ -357,6 +361,10 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
       addArg={addArg}
       editedBearerToken={editedBearerToken}
       setEditedBearerToken={setEditedBearerToken}
+      headerPairs={headerPairs}
+      updateHeaderPair={updateHeaderPair}
+      removeHeaderPair={removeHeaderPair}
+      addHeaderPair={addHeaderPair}
       editedAutoStart={editedAutoStart}
       setEditedAutoStart={setEditedAutoStart}
       envPairs={envPairs}

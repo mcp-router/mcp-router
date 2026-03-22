@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@mcp_router/ui";
 import FinalCommandDisplay from "./FinalCommandDisplay";
+import ServerDetailsHeaders from "./ServerDetailsHeaders";
 import ServerDetailsRemote from "./ServerDetailsRemote";
 import ServerDetailsEnvironment from "./ServerDetailsEnvironment";
 import ServerDetailsAutoStart from "./ServerDetailsAutoStart";
@@ -45,6 +46,14 @@ interface ServerDetailsGeneralSettingsProps {
   // Bearer Token (remote server)
   editedBearerToken: string;
   setEditedBearerToken: (token: string) => void;
+  headerPairs: EnvPair[];
+  updateHeaderPair: (
+    index: number,
+    field: "key" | "value",
+    value: string,
+  ) => void;
+  removeHeaderPair: (index: number) => void;
+  addHeaderPair: () => void;
   // Auto Start
   editedAutoStart: boolean;
   setEditedAutoStart: (autoStart: boolean) => void;
@@ -77,6 +86,10 @@ const ServerDetailsGeneralSettings: React.FC<
   addArg,
   editedBearerToken,
   setEditedBearerToken,
+  headerPairs,
+  updateHeaderPair,
+  removeHeaderPair,
+  addHeaderPair,
   editedAutoStart,
   setEditedAutoStart,
   envPairs,
@@ -233,12 +246,22 @@ const ServerDetailsGeneralSettings: React.FC<
           </div>
         </>
       ) : (
-        <ServerDetailsRemote
-          server={server}
-          isEditing={true}
-          editedBearerToken={editedBearerToken}
-          setEditedBearerToken={setEditedBearerToken}
-        />
+        <>
+          <ServerDetailsRemote
+            server={server}
+            isEditing={true}
+            editedBearerToken={editedBearerToken}
+            setEditedBearerToken={setEditedBearerToken}
+          />
+          <ServerDetailsHeaders
+            server={server}
+            isEditing={true}
+            headerPairs={headerPairs}
+            updateHeaderPair={updateHeaderPair}
+            removeHeaderPair={removeHeaderPair}
+            addHeaderPair={addHeaderPair}
+          />
+        </>
       )}
 
       {/* Auto Start Configuration (common for both server types) */}
@@ -275,7 +298,10 @@ const ServerDetailsGeneralSettings: React.FC<
             editedArgs={editedArgs}
           />
         ) : (
-          <ServerDetailsRemote server={server} isEditing={false} />
+          <div className="space-y-6">
+            <ServerDetailsRemote server={server} isEditing={false} />
+            <ServerDetailsHeaders server={server} isEditing={false} />
+          </div>
         )}
       </div>
     </div>

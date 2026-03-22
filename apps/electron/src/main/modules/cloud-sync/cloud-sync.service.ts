@@ -368,6 +368,7 @@ export class CloudSyncService {
       command: server.command,
       args: server.args,
       env: server.env ?? {},
+      headers: server.headers ?? {},
       remoteUrl: server.remoteUrl,
       bearerToken: server.bearerToken,
       autoStart: server.autoStart,

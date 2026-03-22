@@ -29,6 +29,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
       server_type TEXT NOT NULL DEFAULT 'local',
       remote_url TEXT,
       bearer_token TEXT,
+      headers TEXT,
       input_params TEXT,
       description TEXT,
       version TEXT,
@@ -153,6 +154,11 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         "入力パラメータ",
         undefined,
       );
+      const headers = this.safeParseJSON<Record<string, string>>(
+        row.headers,
+        "ヘッダー",
+        {},
+      );
       const args = this.safeParseJSON<any[]>(row.args, "引数", []);
       const remoteUrl = row.remote_url;
       const toolPermissions = this.safeParseJSON<Record<string, boolean>>(
@@ -173,6 +179,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         serverType: row.server_type || "local",
         remoteUrl: remoteUrl || undefined,
         bearerToken: bearerToken || undefined,
+        headers,
         inputParams: inputParams,
         description: row.description || undefined,
         version: row.version || undefined,
@@ -198,6 +205,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
   private serializeEntityData(entity: MCPServer) {
     return {
       bearerToken: entity.bearerToken || null,
+      headers: entity.headers ? JSON.stringify(entity.headers) : null,
       env: JSON.stringify(entity.env || {}),
       inputParams: entity.inputParams
         ? JSON.stringify(entity.inputParams)
@@ -221,6 +229,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
       // データをシリアライズ
       const {
         bearerToken,
+        headers,
         env,
         inputParams,
         command,
@@ -242,6 +251,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         server_type: entity.serverType,
         remote_url: remoteUrl,
         bearer_token: bearerToken,
+        headers,
         input_params: inputParams,
         project_id: entity.projectId ?? null,
         tool_permissions: toolPermissions,
@@ -328,6 +338,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
       // データをシリアライズ
       const {
         bearerToken,
+        headers,
         env,
         inputParams,
         command,
@@ -349,6 +360,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         server_type: entity.serverType,
         remote_url: remoteUrl,
         bearer_token: bearerToken,
+        headers,
         input_params: inputParams,
         project_id: entity.projectId ?? null,
         tool_permissions: toolPermissions,

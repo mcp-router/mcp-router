@@ -42,6 +42,12 @@ export class MainDatabaseMigration {
     });
 
     this.migrations.push({
+      id: "20260322_add_headers_column",
+      description: "Add headers column to servers table",
+      execute: (db) => this.migrateAddHeadersColumn(db),
+    });
+
+    this.migrations.push({
       id: "20250604_add_input_params_column",
       description: "Add input_params column to servers table",
       execute: (db) => this.migrateAddInputParamsColumn(db),
@@ -266,6 +272,37 @@ export class MainDatabaseMigration {
       }
     } catch (error) {
       console.error("Error while adding bearer_token column:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * headers列を追加するマイグレーション
+   */
+  private migrateAddHeadersColumn(db: SqliteManager): void {
+    try {
+      const tableExists = db.get(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'servers'",
+        {},
+      );
+
+      if (!tableExists) {
+        console.log("servers table does not exist, skipping this migration");
+        return;
+      }
+
+      const tableInfo = db.all("PRAGMA table_info(servers)");
+      const columnNames = tableInfo.map((col: any) => col.name);
+
+      if (!columnNames.includes("headers")) {
+        console.log("Adding headers column to servers");
+        db.execute("ALTER TABLE servers ADD COLUMN headers TEXT");
+        console.log("headers column added");
+      } else {
+        console.log("headers column already exists, skipping");
+      }
+    } catch (error) {
+      console.error("Error while adding headers column:", error);
       throw error;
     }
   }
