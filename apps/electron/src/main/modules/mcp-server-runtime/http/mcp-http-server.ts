@@ -171,6 +171,21 @@ export class MCPHttpServer {
    * Configure direct MCP route without versioning
    */
   private configureMcpRoute(): void {
+    // GET /mcp - Return 405 to signal that SSE streaming is not supported on this endpoint.
+    // StreamableHTTPClientTransport (SDK >=1.25) sends a GET to open a server-to-client SSE
+    // stream. Responding with 405 causes the client to fall back to POST-only (JSON response)
+    // mode, which this server fully supports.
+    this.app.get("/mcp", (_req, res) => {
+      res.status(405).set("Allow", "POST").json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32000,
+          message: "GET not supported on /mcp. Use POST.",
+        },
+        id: null,
+      });
+    });
+
     // POST /mcp - Handle MCP requests (direct route without versioning)
     this.app.post("/mcp", async (req, res) => {
       // オリジナルのリクエストボディをコピー

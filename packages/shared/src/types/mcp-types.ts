@@ -14,6 +14,7 @@ export interface MCPServerConfig {
   id: string;
   name: string;
   env: Record<string, string>;
+  headers?: Record<string, string>;
   autoStart?: boolean;
   disabled?: boolean;
   description?: string;

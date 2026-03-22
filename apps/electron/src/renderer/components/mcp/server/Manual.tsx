@@ -43,6 +43,11 @@ interface EnvVariable {
   value: string;
 }
 
+interface HeaderVariable {
+  key: string;
+  value: string;
+}
+
 // ---- Small presentational helpers -----------------------------------------
 const TabIntro: React.FC<{
   right?: React.ReactNode;
@@ -103,6 +108,7 @@ const Manual: React.FC = () => {
   const [remoteServerName, setRemoteServerName] = useState("");
   const [remoteServerUrl, setRemoteServerUrl] = useState("");
   const [bearerToken, setBearerToken] = useState("");
+  const [headerVars, setHeaderVars] = useState<HeaderVariable[]>([]);
   const [isLoadingRemote, setIsLoadingRemote] = useState(false);
   const [remoteServerType, setRemoteServerType] = useState<
     "remote" | "remote-streamable"
@@ -127,6 +133,26 @@ const Manual: React.FC = () => {
     const newEnvVars = [...envVars];
     newEnvVars.splice(index, 1);
     setEnvVars(newEnvVars);
+  };
+
+  const addHeaderVar = () => {
+    setHeaderVars([...headerVars, { key: "", value: "" }]);
+  };
+
+  const removeHeaderVar = (index: number) => {
+    const newHeaderVars = [...headerVars];
+    newHeaderVars.splice(index, 1);
+    setHeaderVars(newHeaderVars);
+  };
+
+  const updateHeaderVar = (
+    index: number,
+    field: "key" | "value",
+    value: string,
+  ) => {
+    const newHeaderVars = [...headerVars];
+    newHeaderVars[index][field] = value;
+    setHeaderVars(newHeaderVars);
   };
 
   const updateEnvVar = (
@@ -278,6 +304,7 @@ const Manual: React.FC = () => {
     setRemoteServerName("");
     setRemoteServerUrl("");
     setBearerToken("");
+    setHeaderVars([]);
     setRemoteValidationErrors({});
     setRemoteServerType("remote");
     setAutoStart(false);
@@ -377,10 +404,18 @@ const Manual: React.FC = () => {
     if (!validateRemoteForm()) return;
     setIsLoadingRemote(true);
     try {
+      const headers: Record<string, string> = {};
+      for (const headerVar of headerVars) {
+        if (headerVar.key && headerVar.value) {
+          headers[headerVar.key] = headerVar.value;
+        }
+      }
+
       const config: MCPServerConfig = {
         id: uuidv4(),
         name: remoteServerName,
         env: {},
+        headers,
         serverType: remoteServerType,
         remoteUrl: remoteServerUrl,
         bearerToken,
@@ -888,6 +923,59 @@ const Manual: React.FC = () => {
                 placeholder="sk-xxxxxxxxxxxxxxxx"
               />
             </Row>
+
+            <div className="mt-2">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Label>{t("serverDetails.headers")}</Label>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addHeaderVar}
+                  className="h-8"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-2" />
+                  {t("serverDetails.addHeader")}
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {headerVars.map((headerVar, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Input
+                      className="flex-1"
+                      placeholder={t("serverDetails.key")}
+                      value={headerVar.key}
+                      onChange={(e) =>
+                        updateHeaderVar(index, "key", e.target.value)
+                      }
+                    />
+                    <Input
+                      className="flex-1"
+                      placeholder={t("serverDetails.value")}
+                      value={headerVar.value}
+                      onChange={(e) =>
+                        updateHeaderVar(index, "value", e.target.value)
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeHeaderVar(index)}
+                      className="h-9 w-9"
+                      aria-label={t("common.remove")}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              {headerVars.length === 0 && (
+                <FieldNote>{t("serverDetails.noHeaders")}</FieldNote>
+              )}
+            </div>
 
             <Row>
               <Label className="text-right">

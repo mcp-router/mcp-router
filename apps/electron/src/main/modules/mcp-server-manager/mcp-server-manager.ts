@@ -495,6 +495,7 @@ export class MCPServerManager {
             : undefined,
           remoteUrl: server.remoteUrl,
           bearerToken: server.bearerToken,
+          headers: server.headers,
           env: server.env,
           inputParams: server.inputParams,
         },
