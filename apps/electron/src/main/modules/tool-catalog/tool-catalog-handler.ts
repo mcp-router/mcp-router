@@ -5,6 +5,7 @@ import {
   AGGREGATOR_SERVER_NAME,
   MCPServer,
   MCPTool,
+  normalizeProxiedToolResult,
   UNASSIGNED_PROJECT_ID,
 } from "@mcp_router/shared";
 import { TokenValidator } from "@/main/modules/mcp-server-runtime/token-validator";
@@ -331,7 +332,7 @@ export class ToolCatalogHandler extends RequestHandlerBase {
       serverName,
       "ToolExecute",
       async () => {
-        return await client.callTool(
+        const result = await client.callTool(
           {
             name: toolName,
             arguments: toolArguments,
@@ -342,6 +343,10 @@ export class ToolCatalogHandler extends RequestHandlerBase {
             resetTimeoutOnProgress: true,
           },
         );
+        return normalizeProxiedToolResult(toolName, result, {
+          serverId,
+          serverName,
+        });
       },
       { serverId },
     );

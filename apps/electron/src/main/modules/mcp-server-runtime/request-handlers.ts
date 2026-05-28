@@ -1,6 +1,10 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { MCPServer, UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
+import {
+  MCPServer,
+  normalizeProxiedToolResult,
+  UNASSIGNED_PROJECT_ID,
+} from "@mcp_router/shared";
 import {
   parseResourceUri,
   createResourceUri,
@@ -728,7 +732,7 @@ export class RequestHandlers extends RequestHandlerBase {
       serverName,
       "CallTool",
       async () => {
-        return await client.callTool(
+        const result = await client.callTool(
           {
             name: originalToolName,
             arguments: request.params.arguments || {},
@@ -739,6 +743,10 @@ export class RequestHandlers extends RequestHandlerBase {
             resetTimeoutOnProgress: true,
           },
         );
+        return normalizeProxiedToolResult(originalToolName, result, {
+          serverId,
+          serverName,
+        });
       },
       { serverId },
     );

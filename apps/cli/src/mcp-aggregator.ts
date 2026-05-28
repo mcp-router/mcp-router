@@ -11,7 +11,10 @@ import {
   GetPromptRequestSchema,
   ListPromptsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import type { ServerClient } from "@mcp_router/shared";
+import {
+  normalizeProxiedToolResult,
+  type ServerClient,
+} from "@mcp_router/shared";
 
 /**
  * Pure MCP Aggregator that combines capabilities from multiple MCP servers
@@ -184,7 +187,7 @@ export class MCPAggregator {
     }
 
     try {
-      return await serverClient.client.callTool(
+      const result = await serverClient.client.callTool(
         {
           name,
           arguments: args || {},
@@ -195,6 +198,10 @@ export class MCPAggregator {
           resetTimeoutOnProgress: true,
         },
       );
+      return normalizeProxiedToolResult(name, result, {
+        serverId,
+        serverName: serverClient.name,
+      });
     } catch (error) {
       console.error(`Failed to call tool ${name}:`, error);
       throw error;

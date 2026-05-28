@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc --build --force",
     "dev": "tsc --watch",
+    "test": "pnpm run build && node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.js",
     "lint:fix": "eslint . --ext .ts,.js --fix",
