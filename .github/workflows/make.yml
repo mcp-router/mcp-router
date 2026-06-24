@@ -17,7 +17,7 @@ jobs:
         include:
           - os: macos-latest
             label: macOS
-          - os: windows-latest
+          - os: windows-2022
             label: Windows
     env:
       CI: true
