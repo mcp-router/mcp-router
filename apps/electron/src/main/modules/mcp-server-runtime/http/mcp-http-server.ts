@@ -12,6 +12,7 @@ import { PROJECT_HEADER, UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
 const MAX_AUTHORIZATION_HEADER_LENGTH = 512;
 const MAX_PROJECT_HEADER_LENGTH = 128;
 const BEARER_TOKEN_PATTERN = /^Bearer ([A-Za-z0-9._~+/-]+=*)$/;
+const DEFAULT_HTTP_HOST = "127.0.0.1";
 
 function hasHttpHeaderControlChars(value: string): boolean {
   for (const char of value) {
@@ -30,6 +31,7 @@ export class MCPHttpServer {
   private app: express.Application;
   private server: http.Server | null = null;
   private port: number;
+  private host: string;
   private aggregatorServer: AggregatorServer;
   private tokenValidator: TokenValidator;
   // SSEセッション用のマップ
@@ -40,10 +42,12 @@ export class MCPHttpServer {
     serverManager: MCPServerManager,
     port: number,
     aggregatorServer?: AggregatorServer,
+    host = DEFAULT_HTTP_HOST,
   ) {
     this.aggregatorServer =
       aggregatorServer || new AggregatorServer(serverManager);
     this.port = port;
+    this.host = host;
     this.app = express();
     // TokenValidatorはサーバー名とIDのマッピングが必要
     this.tokenValidator = new TokenValidator(new Map());
@@ -453,7 +457,7 @@ export class MCPHttpServer {
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        this.server = this.app.listen(this.port, () => {
+        this.server = this.app.listen(this.port, this.host, () => {
           resolve();
         });
 
