@@ -5,6 +5,10 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { getUserShellEnv } from "@/main/utils/env-utils";
 import { logError, logInfo } from "@/main/utils/logger";
 import {
+  secureRemoteMcpFetch,
+  validateRemoteMcpUrl,
+} from "@/main/utils/remote-url-security";
+import {
   MCPServerConfig,
   MCPConnectionResult,
   MCPInputParam,
@@ -37,20 +41,20 @@ export class MCPClient {
           );
         }
 
+        const remoteUrl = await validateRemoteMcpUrl(server.remoteUrl);
+
         // Use StreamableHTTP transport for remote-streamable servers
-        const transport = new StreamableHTTPClientTransport(
-          new URL(server.remoteUrl),
-          {
-            sessionId: undefined,
-            requestInit: {
-              headers: {
-                authorization: server.bearerToken
-                  ? `Bearer ${server.bearerToken}`
-                  : "",
-              },
+        const transport = new StreamableHTTPClientTransport(remoteUrl, {
+          sessionId: undefined,
+          requestInit: {
+            headers: {
+              authorization: server.bearerToken
+                ? `Bearer ${server.bearerToken}`
+                : "",
             },
           },
-        );
+          fetch: secureRemoteMcpFetch,
+        });
         await client.connect(transport);
       } else if (server.serverType === "remote") {
         // Check if remoteUrl is provided for remote servers
@@ -59,6 +63,8 @@ export class MCPClient {
             "Server configuration error: remoteUrl must be provided for remote servers",
           );
         }
+
+        const remoteUrl = await validateRemoteMcpUrl(server.remoteUrl);
 
         // Use SSE transport for remote servers
         const headers: Record<string, string> = {
@@ -69,13 +75,15 @@ export class MCPClient {
           headers["authorization"] = `Bearer ${server.bearerToken}`;
         }
 
-        const transport = new SSEClientTransport(new URL(server.remoteUrl), {
+        const transport = new SSEClientTransport(remoteUrl, {
           eventSourceInit: {
-            fetch: (url, init) => fetch(url, { ...init, headers }),
+            fetch: (url, init) =>
+              secureRemoteMcpFetch(url, { ...init, headers }),
           },
           requestInit: {
             headers,
           },
+          fetch: secureRemoteMcpFetch,
         });
         await client.connect(transport);
       } else if (server.serverType === "local") {

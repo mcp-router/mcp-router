@@ -86,7 +86,7 @@ export interface ISharedConfigManager {
 
   /**
    * ワークスペースのサーバーリストとトークンを同期
-   * 新しいサーバーがあれば自動的にトークンに追加
+   * 存在しないサーバーIDのみ削除し、新規サーバーは明示的な許可まで追加しない
    */
   syncTokensWithWorkspaceServers(serverList: string[]): void;
 }

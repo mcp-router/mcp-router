@@ -9,6 +9,20 @@ import { TokenValidator } from "../token-validator";
 import { ProjectRepository } from "../../projects/projects.repository";
 import { PROJECT_HEADER, UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
 
+const MAX_AUTHORIZATION_HEADER_LENGTH = 512;
+const MAX_PROJECT_HEADER_LENGTH = 128;
+const BEARER_TOKEN_PATTERN = /^Bearer ([A-Za-z0-9._~+/-]+=*)$/;
+
+function hasHttpHeaderControlChars(value: string): boolean {
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (code <= 0x1f || code === 0x7f) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
  * HTTP server that exposes MCP functionality through REST endpoints
  */
@@ -53,17 +67,11 @@ export class MCPHttpServer {
       res: express.Response,
       next: express.NextFunction,
     ) => {
-      const token = req.headers["authorization"];
-      // Bearers token format
-      if (token && token.startsWith("Bearer ")) {
-        // Remove 'Bearer ' prefix
-        req.headers["authorization"] = token.substring(7);
-      }
-
       // Log the request without sensitive token information
       // console.log(`[HTTP] ${req.method} ${req.url}${clientName ? ` (Client: ${clientName})` : ''}, Body = ${JSON.stringify(req.body)}`);
       // Token validation middleware
-      if (!token) {
+      const tokenId = this.extractBearerToken(req.headers["authorization"]);
+      if (!tokenId) {
         // No token provided
         res.status(401).json({
           error: "Authentication required. Please provide a valid token.",
@@ -71,13 +79,9 @@ export class MCPHttpServer {
         return;
       }
 
+      req.headers["authorization"] = tokenId;
+
       // Validate the token
-      const tokenId =
-        typeof token === "string"
-          ? token.startsWith("Bearer ")
-            ? token.substring(7)
-            : token
-          : "";
       const validation = this.tokenValidator.validateToken(tokenId);
 
       if (!validation.isValid) {
@@ -99,6 +103,57 @@ export class MCPHttpServer {
     this.app.use("/mcp/sse", authMiddleware);
   }
 
+  private extractBearerToken(
+    headerValue: string | string[] | undefined,
+  ): string | null {
+    if (Array.isArray(headerValue) || typeof headerValue !== "string") {
+      return null;
+    }
+
+    if (
+      headerValue.length > MAX_AUTHORIZATION_HEADER_LENGTH ||
+      hasHttpHeaderControlChars(headerValue)
+    ) {
+      return null;
+    }
+
+    const match = BEARER_TOKEN_PATTERN.exec(headerValue);
+    if (!match) {
+      return null;
+    }
+
+    return match[1];
+  }
+
+  private getSingleHeaderValue(
+    headerValue: string | string[] | undefined,
+  ): string | undefined {
+    if (Array.isArray(headerValue)) {
+      if (headerValue.length !== 1) {
+        return undefined;
+      }
+      return headerValue[0];
+    }
+
+    return headerValue;
+  }
+
+  private sanitizeProjectHeader(value: string): string | null {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return "";
+    }
+
+    if (
+      trimmed.length > MAX_PROJECT_HEADER_LENGTH ||
+      hasHttpHeaderControlChars(trimmed)
+    ) {
+      return null;
+    }
+
+    return trimmed;
+  }
+
   /**
    * Configure API routes
    */
@@ -116,8 +171,19 @@ export class MCPHttpServer {
       return { projectId: null, provided: false };
     }
 
-    const rawValue = Array.isArray(headerValue) ? headerValue[0] : headerValue;
-    const value = rawValue?.trim();
+    const rawValue = this.getSingleHeaderValue(headerValue);
+    if (rawValue === undefined) {
+      const error = new Error("Invalid project header");
+      (error as any).status = 400;
+      throw error;
+    }
+
+    const value = this.sanitizeProjectHeader(rawValue);
+    if (value === null) {
+      const error = new Error("Invalid project header");
+      (error as any).status = 400;
+      throw error;
+    }
 
     if (!value) {
       return { projectId: null, provided: true };

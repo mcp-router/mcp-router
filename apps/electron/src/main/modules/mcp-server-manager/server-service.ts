@@ -2,7 +2,6 @@ import { SingletonService } from "@/main/modules/singleton-service";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
 import { logInfo } from "@/main/utils/logger";
 import { McpServerManagerRepository } from "./mcp-server-manager.repository";
-import { TokenManager } from "@/main/modules/mcp-apps-manager/token-manager";
 
 /**
  * Service class for managing server information
@@ -47,32 +46,7 @@ export class ServerService extends SingletonService<
    */
   public addServer(serverConfig: MCPServerConfig): MCPServer {
     try {
-      const server =
-        McpServerManagerRepository.getInstance().addServer(serverConfig);
-
-      // Give all MCP clients access to this new server
-      try {
-        const tokenManager = new TokenManager();
-        const allTokens = tokenManager.listTokens();
-
-        // For each token, add this server's ID to its access list
-        allTokens.forEach((token) => {
-          const serverAccess = token.serverAccess || {};
-          // Add the new server when it doesn't exist in the access map
-          if (!(server.id in serverAccess)) {
-            const updatedServerAccess = {
-              ...serverAccess,
-              [server.id]: true,
-            };
-            tokenManager.updateTokenServerAccess(token.id, updatedServerAccess);
-          }
-        });
-      } catch (error) {
-        // Log error but don't interrupt the server creation process
-        console.error("Error updating tokens for new server access:", error);
-      }
-
-      return server;
+      return McpServerManagerRepository.getInstance().addServer(serverConfig);
     } catch (error) {
       return this.handleError("追加", error);
     }

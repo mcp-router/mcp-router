@@ -1,5 +1,18 @@
 # 検出事項の詳細
 
+## 2026-06-24 セキュリティ底上げPRの対応範囲
+
+このPRでは、即時リリースに載せる優先修正として以下を実装済みです。
+
+- CLI HTTP サーバーは既定で `127.0.0.1` のみに bind し、外部公開する場合は `--token` を必須化。
+- Remote MCP URL は `https`、FQDN、DNS 解決結果、リダイレクト先を検証し、localhost/private/reserved IP への接続を拒否。
+- MCP サーバー bearer token とデスクトップ認証 token は Electron `safeStorage` が利用可能な環境で暗号化保存。
+- 共有 token に 30 日の有効期限を付与し、期限切れ token と malformed token を拒否。
+- 新規サーバー追加や sync 時に、既存 token へサーバーアクセスを自動付与しない。
+- HTTP authorization/project headers は単一値・長さ・制御文字を検証してから使用。
+- Skill ディレクトリ操作は保存ディレクトリ内に閉じ、インポート時の symlink を拒否。
+- Workflow は循環グラフを保存/有効化前に拒否し、Hook context と実行結果から token/API key/password 系の値を redaction。
+
 ## 1. OAuth および認証トークンセキュリティの脆弱性 (深刻度: 緊急)
 
 ### 対象の機能

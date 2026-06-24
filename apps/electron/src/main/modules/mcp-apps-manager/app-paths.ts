@@ -8,6 +8,17 @@ import os from "os";
 export class AppPaths {
   private HOME = os.homedir();
 
+  private isPathInside(basePath: string, targetPath: string): boolean {
+    const relative = path.relative(
+      path.resolve(basePath),
+      path.resolve(targetPath),
+    );
+    return (
+      relative === "" ||
+      (!relative.startsWith("..") && !path.isAbsolute(relative))
+    );
+  }
+
   private vscodeGlobalStorageDir(): string {
     switch (process.platform) {
       case "win32":
@@ -65,7 +76,13 @@ export class AppPaths {
     // プロジェクト固有ファイルが優先
     if (projectDir != "") {
       const projectPath = path.join(projectDir, ".cursor", "mcp.json");
-      if (fs.existsSync(projectPath)) return projectPath;
+      if (fs.existsSync(projectPath)) {
+        const realProjectDir = fs.realpathSync(projectDir);
+        const realProjectPath = fs.realpathSync(projectPath);
+        if (this.isPathInside(realProjectDir, realProjectPath)) {
+          return projectPath;
+        }
+      }
     }
     // グローバル設定
     return path.join(this.HOME, ".cursor", "mcp.json");

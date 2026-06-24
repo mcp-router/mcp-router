@@ -3,7 +3,10 @@ import {
   SqliteManager,
   getSqliteManager,
 } from "../../infrastructure/database/sqlite-manager";
+import { normalizeRemoteMcpUrl } from "@/main/utils/remote-url-security";
+import { decryptSecret, secretToStorage } from "@/main/utils/secret-storage";
 import { MCPServer, MCPServerConfig } from "@mcp_router/shared";
+import { safeStorage } from "electron";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -147,7 +150,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         ? JSON.parse(row.required_params)
         : [];
       const command = row.command;
-      const bearerToken = row.bearer_token;
+      const bearerToken = decryptSecret(row.bearer_token, safeStorage);
       const inputParams = this.safeParseJSON<any>(
         row.input_params,
         "入力パラメータ",
@@ -196,8 +199,13 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
    * @returns JSON文字列化されたデータのオブジェクト
    */
   private serializeEntityData(entity: MCPServer) {
+    const remoteUrl =
+      entity.serverType === "local" || !entity.remoteUrl
+        ? entity.remoteUrl || null
+        : normalizeRemoteMcpUrl(entity.remoteUrl).toString();
+
     return {
-      bearerToken: entity.bearerToken || null,
+      bearerToken: secretToStorage(entity.bearerToken, safeStorage),
       env: JSON.stringify(entity.env || {}),
       inputParams: entity.inputParams
         ? JSON.stringify(entity.inputParams)
@@ -207,7 +215,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         : null,
       command: entity.command || null,
       args: JSON.stringify(entity.args || []),
-      remoteUrl: entity.remoteUrl || null,
+      remoteUrl,
     };
   }
 

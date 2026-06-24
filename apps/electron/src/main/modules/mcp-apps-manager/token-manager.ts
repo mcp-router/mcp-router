@@ -7,15 +7,27 @@ import {
   TokenServerAccess,
 } from "@mcp_router/shared";
 
+const DEFAULT_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
+
 /**
  * トークン管理機能を提供するクラス
  */
 export class TokenManager {
+  private getExpiresAt(token: Token): number {
+    return token.expiresAt ?? token.issuedAt + DEFAULT_TOKEN_TTL_SECONDS;
+  }
+
+  private isExpired(token: Token): boolean {
+    const now = Math.floor(Date.now() / 1000);
+    return !Number.isFinite(token.issuedAt) || this.getExpiresAt(token) <= now;
+  }
+
   /**
    * 新しいトークンを生成
    */
   public generateToken(options: TokenGenerateOptions): Token {
     const now = Math.floor(Date.now() / 1000);
+    const ttl = options.expiresIn ?? DEFAULT_TOKEN_TTL_SECONDS;
     const clientId = options.clientId;
 
     // 同じクライアントIDのトークンが存在する場合は削除
@@ -37,6 +49,7 @@ export class TokenManager {
       id: "mcpr_" + randomBytes,
       clientId,
       issuedAt: now,
+      expiresAt: now + ttl,
       serverAccess: options.serverAccess || {},
     };
 
@@ -55,6 +68,13 @@ export class TokenManager {
       return {
         isValid: false,
         error: "Token not found",
+      };
+    }
+
+    if (this.isExpired(token)) {
+      return {
+        isValid: false,
+        error: "Token expired",
       };
     }
 
@@ -98,7 +118,7 @@ export class TokenManager {
    */
   public hasServerAccess(tokenId: string, serverId: string): boolean {
     const token = McpAppsManagerRepository.getInstance().getToken(tokenId);
-    if (!token) {
+    if (!token || this.isExpired(token)) {
       return false;
     }
     return !!token.serverAccess?.[serverId];

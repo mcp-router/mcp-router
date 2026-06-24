@@ -1,10 +1,11 @@
 import { getSettingsService } from "@/main/modules/settings/settings.service";
 import { API_BASE_URL, mainWindow } from "../../../main";
 import crypto from "crypto";
-import { shell } from "electron";
+import { safeStorage, shell } from "electron";
 import { fetchWithToken } from "@/main/utils/fetch-utils";
 import { machineIdSync } from "node-machine-id";
 import { PKCEAuthState } from "@mcp_router/shared";
+import { decryptSecret, encryptSecret } from "@/main/utils/secret-storage";
 
 // Store the current authentication state
 let currentAuthState: PKCEAuthState | null = null;
@@ -155,7 +156,7 @@ async function exchangeCodeForToken(
 
       // Get current settings and update with the new token
       const settings = settingsService.getSettings();
-      settings.authToken = tokenData.accessToken;
+      settings.authToken = encryptSecret(tokenData.accessToken, safeStorage);
       settings.loggedInAt = new Date().toISOString();
 
       settingsService.saveSettings(settings);
@@ -230,8 +231,7 @@ export async function getDecryptedAuthToken(): Promise<string | null> {
     // Get current settings
     const settings = settingsService.getSettings();
 
-    // Return the auth token directly
-    return settings.authToken || null;
+    return decryptSecret(settings.authToken, safeStorage);
   } catch (error) {
     console.error("Error getting auth token:", error);
     return null;

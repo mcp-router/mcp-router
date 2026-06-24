@@ -10,7 +10,6 @@ If you're new to MCP Router:
 2. Start the MCP Router application and ensure it's running properly
 3. Then, usually this cli is installed as part of the MCP Router installation, but if you want to install it separately, you can do so using npm
 
-
 ## Usage
 
 ### Connect Command (Stdio → HTTP)
@@ -28,6 +27,7 @@ npx @mcp_router/cli connect --url https://example.com:8080/mcp
 # Display help
 npx @mcp_router/cli --help
 ```
+
 The `--url` flag accepts a full URL (including http/https, port, and optional path). If no path is provided, `/mcp` is assumed.
 
 ### Serve Command (HTTP → Stdio)
@@ -35,11 +35,14 @@ The `--url` flag accepts a full URL (including http/https, port, and optional pa
 The `serve` command creates an HTTP server that forwards requests to a stdio-based MCP server:
 
 ```bash
-# Start an HTTP server on default port 3283 that forwards to a stdio MCP server
+# Start a local-only HTTP server on default port 3283 that forwards to a stdio MCP server
 npx @mcp_router/cli serve npx @modelcontextprotocol/server-filesystem /path/to/dir
 
 # Use a custom port
 npx @mcp_router/cli serve --port 8080 python my-mcp-server.py
+
+# Listen on a network interface. A token is required for non-localhost hosts.
+npx @mcp_router/cli serve --host 0.0.0.0 --token secret123 python my-mcp-server.py
 
 # Enable authentication with a Bearer token
 npx @mcp_router/cli serve --token secret123 python my-mcp-server.py
@@ -47,5 +50,7 @@ npx @mcp_router/cli serve --token secret123 python my-mcp-server.py
 # Pass arguments to the MCP server
 npx @mcp_router/cli serve -- node my-server.js --config config.json
 ```
+
+By default, `serve` listens on `127.0.0.1` only. To expose it to other machines, pass `--host` with a network interface and provide `--token`.
 
 This is useful when you have a stdio-based MCP server that you want to expose via HTTP.
