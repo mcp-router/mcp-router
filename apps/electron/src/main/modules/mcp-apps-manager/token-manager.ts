@@ -13,15 +13,6 @@ const DEFAULT_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
  * トークン管理機能を提供するクラス
  */
 export class TokenManager {
-  private getExpiresAt(token: Token): number {
-    return token.expiresAt ?? token.issuedAt + DEFAULT_TOKEN_TTL_SECONDS;
-  }
-
-  private isExpired(token: Token): boolean {
-    const now = Math.floor(Date.now() / 1000);
-    return !Number.isFinite(token.issuedAt) || this.getExpiresAt(token) <= now;
-  }
-
   /**
    * 新しいトークンを生成
    */
@@ -71,13 +62,6 @@ export class TokenManager {
       };
     }
 
-    if (this.isExpired(token)) {
-      return {
-        isValid: false,
-        error: "Token expired",
-      };
-    }
-
     return {
       isValid: true,
       clientId: token.clientId,
@@ -118,7 +102,7 @@ export class TokenManager {
    */
   public hasServerAccess(tokenId: string, serverId: string): boolean {
     const token = McpAppsManagerRepository.getInstance().getToken(tokenId);
-    if (!token || this.isExpired(token)) {
+    if (!token) {
       return false;
     }
     return !!token.serverAccess?.[serverId];

@@ -7,9 +7,9 @@
 - CLI HTTP サーバーは既定で `127.0.0.1` のみに bind し、外部公開する場合は `--token` を必須化。
 - Remote MCP URL は `https`、FQDN、DNS 解決結果、リダイレクト先を検証し、localhost/private/reserved IP への接続を拒否。
 - MCP サーバー bearer token とデスクトップ認証 token は Electron `safeStorage` が利用可能な環境で暗号化保存。
-- 共有 token に 30 日の有効期限を付与し、期限切れ token と malformed token を拒否。
+- 共有 token に `expiresAt` を保存しつつ、既存 MCP クライアント互換性のため認証・server access では期限切れ拒否しない。無効化は明示的な revoke / 再生成で行う。
 - 新規サーバー追加や sync 時に、既存 token へサーバーアクセスを自動付与しない。
-- HTTP authorization/project headers は単一値・長さ・制御文字を検証してから使用。
+- HTTP authorization/project headers は単一値・長さ・制御文字を検証してから使用。Authorization は raw token と `Bearer <token>` の表記揺れを受け付ける。
 - Skill ディレクトリ操作は保存ディレクトリ内に閉じ、インポート時の symlink を拒否。
 - Workflow は循環グラフを保存/有効化前に拒否し、Hook context と実行結果から token/API key/password 系の値を redaction。
 

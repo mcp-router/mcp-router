@@ -9,9 +9,9 @@ import { TokenValidator } from "../token-validator";
 import { ProjectRepository } from "../../projects/projects.repository";
 import { PROJECT_HEADER, UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
 
-const MAX_AUTHORIZATION_HEADER_LENGTH = 512;
+const MAX_AUTHORIZATION_HEADER_LENGTH = 4096;
 const MAX_PROJECT_HEADER_LENGTH = 128;
-const BEARER_TOKEN_PATTERN = /^Bearer ([A-Za-z0-9._~+/-]+=*)$/;
+const BEARER_TOKEN_PREFIX_PATTERN = /^Bearer\s+/i;
 const DEFAULT_HTTP_HOST = "127.0.0.1";
 
 function hasHttpHeaderControlChars(value: string): boolean {
@@ -121,12 +121,23 @@ export class MCPHttpServer {
       return null;
     }
 
-    const match = BEARER_TOKEN_PATTERN.exec(headerValue);
-    if (!match) {
+    let token = headerValue.trim();
+    while (BEARER_TOKEN_PREFIX_PATTERN.test(token)) {
+      token = token.replace(BEARER_TOKEN_PREFIX_PATTERN, "").trim();
+    }
+
+    if (
+      (token.startsWith('"') && token.endsWith('"')) ||
+      (token.startsWith("'") && token.endsWith("'"))
+    ) {
+      token = token.slice(1, -1).trim();
+    }
+
+    if (!token) {
       return null;
     }
 
-    return match[1];
+    return token;
   }
 
   private getSingleHeaderValue(
