@@ -38,6 +38,14 @@
       "dependsOn": ["build"],
       "cache": false
     },
+    "package:x64": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "make:x64": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
     "publish": {
       "dependsOn": ["build"],
       "cache": false
