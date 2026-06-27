@@ -9,6 +9,21 @@ import { TokenValidator } from "../token-validator";
 import { ProjectRepository } from "../../projects/projects.repository";
 import { PROJECT_HEADER, UNASSIGNED_PROJECT_ID } from "@mcp_router/shared";
 
+const MAX_AUTHORIZATION_HEADER_LENGTH = 4096;
+const MAX_PROJECT_HEADER_LENGTH = 128;
+const BEARER_TOKEN_PREFIX_PATTERN = /^Bearer\s+/i;
+const DEFAULT_HTTP_HOST = "127.0.0.1";
+
+function hasHttpHeaderControlChars(value: string): boolean {
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (code <= 0x1f || code === 0x7f) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
  * HTTP server that exposes MCP functionality through REST endpoints
  */
@@ -16,6 +31,7 @@ export class MCPHttpServer {
   private app: express.Application;
   private server: http.Server | null = null;
   private port: number;
+  private host: string;
   private aggregatorServer: AggregatorServer;
   private tokenValidator: TokenValidator;
   // SSEセッション用のマップ
@@ -26,10 +42,12 @@ export class MCPHttpServer {
     serverManager: MCPServerManager,
     port: number,
     aggregatorServer?: AggregatorServer,
+    host = DEFAULT_HTTP_HOST,
   ) {
     this.aggregatorServer =
       aggregatorServer || new AggregatorServer(serverManager);
     this.port = port;
+    this.host = host;
     this.app = express();
     // TokenValidatorはサーバー名とIDのマッピングが必要
     this.tokenValidator = new TokenValidator(new Map());
@@ -53,17 +71,11 @@ export class MCPHttpServer {
       res: express.Response,
       next: express.NextFunction,
     ) => {
-      const token = req.headers["authorization"];
-      // Bearers token format
-      if (token && token.startsWith("Bearer ")) {
-        // Remove 'Bearer ' prefix
-        req.headers["authorization"] = token.substring(7);
-      }
-
       // Log the request without sensitive token information
       // console.log(`[HTTP] ${req.method} ${req.url}${clientName ? ` (Client: ${clientName})` : ''}, Body = ${JSON.stringify(req.body)}`);
       // Token validation middleware
-      if (!token) {
+      const tokenId = this.extractBearerToken(req.headers["authorization"]);
+      if (!tokenId) {
         // No token provided
         res.status(401).json({
           error: "Authentication required. Please provide a valid token.",
@@ -71,13 +83,9 @@ export class MCPHttpServer {
         return;
       }
 
+      req.headers["authorization"] = tokenId;
+
       // Validate the token
-      const tokenId =
-        typeof token === "string"
-          ? token.startsWith("Bearer ")
-            ? token.substring(7)
-            : token
-          : "";
       const validation = this.tokenValidator.validateToken(tokenId);
 
       if (!validation.isValid) {
@@ -99,6 +107,68 @@ export class MCPHttpServer {
     this.app.use("/mcp/sse", authMiddleware);
   }
 
+  private extractBearerToken(
+    headerValue: string | string[] | undefined,
+  ): string | null {
+    if (Array.isArray(headerValue) || typeof headerValue !== "string") {
+      return null;
+    }
+
+    if (
+      headerValue.length > MAX_AUTHORIZATION_HEADER_LENGTH ||
+      hasHttpHeaderControlChars(headerValue)
+    ) {
+      return null;
+    }
+
+    let token = headerValue.trim();
+    while (BEARER_TOKEN_PREFIX_PATTERN.test(token)) {
+      token = token.replace(BEARER_TOKEN_PREFIX_PATTERN, "").trim();
+    }
+
+    if (
+      (token.startsWith('"') && token.endsWith('"')) ||
+      (token.startsWith("'") && token.endsWith("'"))
+    ) {
+      token = token.slice(1, -1).trim();
+    }
+
+    if (!token) {
+      return null;
+    }
+
+    return token;
+  }
+
+  private getSingleHeaderValue(
+    headerValue: string | string[] | undefined,
+  ): string | undefined {
+    if (Array.isArray(headerValue)) {
+      if (headerValue.length !== 1) {
+        return undefined;
+      }
+      return headerValue[0];
+    }
+
+    return headerValue;
+  }
+
+  private sanitizeProjectHeader(value: string): string | null {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return "";
+    }
+
+    if (
+      trimmed.length > MAX_PROJECT_HEADER_LENGTH ||
+      hasHttpHeaderControlChars(trimmed)
+    ) {
+      return null;
+    }
+
+    return trimmed;
+  }
+
   /**
    * Configure API routes
    */
@@ -116,8 +186,19 @@ export class MCPHttpServer {
       return { projectId: null, provided: false };
     }
 
-    const rawValue = Array.isArray(headerValue) ? headerValue[0] : headerValue;
-    const value = rawValue?.trim();
+    const rawValue = this.getSingleHeaderValue(headerValue);
+    if (rawValue === undefined) {
+      const error = new Error("Invalid project header");
+      (error as any).status = 400;
+      throw error;
+    }
+
+    const value = this.sanitizeProjectHeader(rawValue);
+    if (value === null) {
+      const error = new Error("Invalid project header");
+      (error as any).status = 400;
+      throw error;
+    }
 
     if (!value) {
       return { projectId: null, provided: true };
@@ -387,7 +468,7 @@ export class MCPHttpServer {
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        this.server = this.app.listen(this.port, () => {
+        this.server = this.app.listen(this.port, this.host, () => {
           resolve();
         });
 

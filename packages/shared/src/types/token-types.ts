@@ -14,6 +14,7 @@ export interface Token {
   id: string; // トークンの一意のID
   clientId: string; // 関連付けられたクライアントID
   issuedAt: number; // トークン発行時のUNIXタイムスタンプ
+  expiresAt?: number; // トークン失効時刻のUNIXタイムスタンプ
   serverAccess: TokenServerAccess; // サーバーごとのアクセス権（true=許可、false=拒否）
 }
 
@@ -23,7 +24,7 @@ export interface Token {
 export interface TokenGenerateOptions {
   clientId: string; // クライアントID
   serverAccess: TokenServerAccess; // アクセスを許可するサーバIDマップ
-  expiresIn?: number; // トークンの有効期間（秒）、デフォルトは24時間
+  expiresIn?: number; // トークンの有効期間（秒）、デフォルトは30日
 }
 
 /**

@@ -70,6 +70,7 @@ export class SharedConfigManager implements ISharedConfigManager {
               id: token.id,
               clientId: token.clientId || token.client_id,
               issuedAt: token.issuedAt || token.issued_at,
+              expiresAt: token.expiresAt || token.expires_at,
               serverAccess: {},
             };
 
@@ -190,6 +191,7 @@ export class SharedConfigManager implements ISharedConfigManager {
           id: row.id,
           clientId: row.client_id || row.clientId,
           issuedAt: row.issued_at || row.issuedAt,
+          expiresAt: row.expires_at || row.expiresAt,
           serverAccess: {},
         };
 
@@ -321,28 +323,23 @@ export class SharedConfigManager implements ISharedConfigManager {
 
   /**
    * ワークスペースのサーバーリストとトークンを同期
-   * 新しいサーバーがあれば自動的にトークンに追加
+   * 存在しないサーバーIDのみ削除し、新規サーバーは明示的な許可まで追加しない
    */
   syncTokensWithWorkspaceServers(serverList: string[]): void {
     let updated = false;
+    const serverIds = new Set(serverList);
 
     this.config.mcpApps.tokens.forEach((token) => {
       const map = token.serverAccess || {};
-      const initialSize = Object.keys(map).length;
-      const nextAccess = { ...map };
-      serverList.forEach((id) => {
-        if (!(id in nextAccess)) {
-          nextAccess[id] = true;
-        }
-      });
-      const nextSize = Object.keys(nextAccess).length;
+      const nextAccess = Object.fromEntries(
+        Object.entries(map).filter(([serverId]) => serverIds.has(serverId)),
+      );
 
-      // 新しいサーバーIDが追加された場合のみ更新
-      if (nextSize > initialSize) {
+      if (Object.keys(nextAccess).length !== Object.keys(map).length) {
         token.serverAccess = nextAccess;
         updated = true;
         console.log(
-          `[SharedConfigManager] Updated token ${token.id} with ${nextSize - initialSize} new server(s)`,
+          `[SharedConfigManager] Removed stale server access from token ${token.id}`,
         );
       }
     });

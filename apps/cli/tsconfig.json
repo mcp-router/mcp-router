@@ -12,6 +12,10 @@
       "@mcp_router/shared/*": ["../../packages/shared/src/*"]
     }
   },
+  "ts-node": {
+    "esm": true,
+    "transpileOnly": true
+  },
   "references": [{ "path": "../../packages/shared" }],
   "include": ["src"]
 }

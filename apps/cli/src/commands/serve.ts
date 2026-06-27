@@ -10,7 +10,7 @@ import type { ServeServerConfig } from "@mcp_router/shared";
  * Streamable HTTP MCP requests and forwards them to a stdio-based MCP server.
  */
 export async function executeServe(args: string[] = []): Promise<void> {
-  const options = parseArgs(args);
+  const options = parseServeArgs(args);
 
   // Create and start the Stdio MCP Bridge Server
   const bridgeServer = new StdioMcpBridgeServer(options);
@@ -23,16 +23,14 @@ export async function executeServe(args: string[] = []): Promise<void> {
   });
 }
 
+const DEFAULT_HOST = "127.0.0.1";
+
 /**
  * Parse command line arguments
  */
-function parseArgs(args: string[]): {
-  port: number;
-  servers: ServeServerConfig[];
-  verbose?: boolean;
-  token?: string;
-} {
+export function parseServeArgs(args: string[]) {
   const options = {
+    host: DEFAULT_HOST,
     port: 3283,
     servers: [] as ServeServerConfig[],
     verbose: false,
@@ -43,6 +41,9 @@ function parseArgs(args: string[]): {
   while (i < args.length) {
     if (args[i] === "--port" && i + 1 < args.length) {
       options.port = parseInt(args[i + 1], 10);
+      i += 2;
+    } else if (args[i] === "--host" && i + 1 < args.length) {
+      options.host = args[i + 1];
       i += 2;
     } else if (args[i] === "--token" && i + 1 < args.length) {
       options.token = args[i + 1];
@@ -95,12 +96,28 @@ function parseArgs(args: string[]): {
   if (options.servers.length === 0) {
     throw new Error(
       "No servers specified. Usage:\n" +
-        "  Single server: mcpr-cli serve [--port <port>] [--token <token>] [--verbose] <command> [args...]\n" +
-        "  Multiple servers: mcpr-cli serve [--port <port>] [--token <token>] [--verbose] --server <id> <name> <command> [args...] [--server ...]",
+        "  Single server: mcpr-cli serve [--host <host>] [--port <port>] [--token <token>] [--verbose] <command> [args...]\n" +
+        "  Multiple servers: mcpr-cli serve [--host <host>] [--port <port>] [--token <token>] [--verbose] --server <id> <name> <command> [args...] [--server ...]",
+    );
+  }
+
+  if (!isLoopbackHost(options.host) && !options.token) {
+    throw new Error(
+      "--token is required when --host is not localhost. " +
+        "Use --host 127.0.0.1 for local-only access or provide --token for network access.",
     );
   }
 
   return options;
+}
+
+function isLoopbackHost(host: string): boolean {
+  const normalizedHost = host.toLowerCase();
+  return (
+    normalizedHost === "localhost" ||
+    normalizedHost === "::1" ||
+    normalizedHost.startsWith("127.")
+  );
 }
 
 /**
@@ -117,6 +134,7 @@ class StdioMcpBridgeServer {
 
   constructor(
     private options: {
+      host: string;
       port: number;
       servers: ServeServerConfig[];
       verbose?: boolean;
@@ -195,10 +213,9 @@ class StdioMcpBridgeServer {
       await transport.handleRequest(req, res);
     });
 
-    // Start listening on all network interfaces (0.0.0.0)
-    this.httpServer.listen(this.options.port, "0.0.0.0", () => {
+    this.httpServer.listen(this.options.port, this.options.host, () => {
       console.error(
-        `HTTP MCP Aggregator Server listening on 0.0.0.0:${this.options.port}`,
+        `HTTP MCP Aggregator Server listening on ${this.options.host}:${this.options.port}`,
       );
       if (this.options.token) {
         console.error(`Authentication enabled with Bearer token`);

@@ -3,6 +3,7 @@ import {
   getWorkflowRepository,
   WorkflowRepository,
 } from "./workflow.repository";
+import { WorkflowExecutor } from "./workflow-executor";
 
 /**
  * Workflowドメインサービス
@@ -193,6 +194,16 @@ export class WorkflowService {
     const hasEndNode = workflow.nodes.some((node: any) => node.type === "end");
     if (!hasEndNode) {
       throw new Error("Workflow must have an end node");
+    }
+
+    if (
+      workflow.nodes &&
+      workflow.edges &&
+      !WorkflowExecutor.isValidWorkflow(workflow as WorkflowDefinition)
+    ) {
+      throw new Error(
+        "Workflow must be acyclic and include a valid Start -> MCP Call -> End path",
+      );
     }
   }
 }

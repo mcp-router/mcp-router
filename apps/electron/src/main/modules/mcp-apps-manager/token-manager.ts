@@ -7,6 +7,8 @@ import {
   TokenServerAccess,
 } from "@mcp_router/shared";
 
+const DEFAULT_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
+
 /**
  * トークン管理機能を提供するクラス
  */
@@ -16,6 +18,7 @@ export class TokenManager {
    */
   public generateToken(options: TokenGenerateOptions): Token {
     const now = Math.floor(Date.now() / 1000);
+    const ttl = options.expiresIn ?? DEFAULT_TOKEN_TTL_SECONDS;
     const clientId = options.clientId;
 
     // 同じクライアントIDのトークンが存在する場合は削除
@@ -37,6 +40,7 @@ export class TokenManager {
       id: "mcpr_" + randomBytes,
       clientId,
       issuedAt: now,
+      expiresAt: now + ttl,
       serverAccess: options.serverAccess || {},
     };
 

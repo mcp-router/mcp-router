@@ -2,8 +2,6 @@ import fs from "fs";
 import path from "path";
 import { app, shell } from "electron";
 
-type SymlinkStatus = "active" | "broken" | "pending";
-
 /**
  * Skills file system operations manager
  */
@@ -31,11 +29,53 @@ export class SkillsFileManager {
     }
   }
 
+  private validateSkillName(name: string): string {
+    const normalized = (name ?? "").trim();
+    if (!/^[a-zA-Z0-9_-]+$/.test(normalized)) {
+      throw new Error("Invalid skill name");
+    }
+    return normalized;
+  }
+
+  private assertPathInside(basePath: string, targetPath: string): string {
+    const base = path.resolve(basePath);
+    const target = path.resolve(targetPath);
+    const relative = path.relative(base, target);
+    if (
+      relative === "" ||
+      (!relative.startsWith("..") && !path.isAbsolute(relative))
+    ) {
+      return target;
+    }
+    throw new Error(`Path escapes allowed directory: ${targetPath}`);
+  }
+
+  private assertExistingPathInside(
+    basePath: string,
+    targetPath: string,
+  ): string {
+    const containedPath = this.assertPathInside(basePath, targetPath);
+    if (!fs.existsSync(containedPath)) {
+      return containedPath;
+    }
+
+    const realBase = fs.realpathSync(basePath);
+    const realTarget = fs.realpathSync(containedPath);
+    return this.assertPathInside(realBase, realTarget);
+  }
+
+  private getSafeSkillPath(name: string): string {
+    return this.assertPathInside(
+      this.skillsDir,
+      path.join(this.skillsDir, this.validateSkillName(name)),
+    );
+  }
+
   /**
    * Create a skill directory with SKILL.md template
    */
   createSkillDirectory(name: string): string {
-    const skillPath = path.join(this.skillsDir, name);
+    const skillPath = this.getSafeSkillPath(name);
 
     if (fs.existsSync(skillPath)) {
       throw new Error(`Skill directory already exists: ${name}`);
@@ -120,7 +160,7 @@ export class SkillsFileManager {
   /**
    * Verify symlink status
    */
-  verifySymlink(symlinkPath: string): SymlinkStatus {
+  verifySymlink(symlinkPath: string): "active" | "broken" | "pending" {
     try {
       const lstats = fs.lstatSync(symlinkPath);
       if (!lstats.isSymbolicLink()) {
@@ -144,8 +184,12 @@ export class SkillsFileManager {
    */
   deleteSkillDirectory(skillPath: string): boolean {
     try {
-      if (fs.existsSync(skillPath)) {
-        fs.rmSync(skillPath, { recursive: true, force: true });
+      const safeSkillPath = this.assertExistingPathInside(
+        this.skillsDir,
+        skillPath,
+      );
+      if (fs.existsSync(safeSkillPath)) {
+        fs.rmSync(safeSkillPath, { recursive: true, force: true });
       }
       return true;
     } catch (error) {
@@ -159,11 +203,15 @@ export class SkillsFileManager {
    */
   renameSkillDirectory(oldPath: string, newName: string): string | null {
     try {
-      const newPath = path.join(this.skillsDir, newName);
+      const safeOldPath = this.assertExistingPathInside(
+        this.skillsDir,
+        oldPath,
+      );
+      const newPath = this.getSafeSkillPath(newName);
       if (fs.existsSync(newPath)) {
         throw new Error(`Skill directory already exists: ${newName}`);
       }
-      fs.renameSync(oldPath, newPath);
+      fs.renameSync(safeOldPath, newPath);
       return newPath;
     } catch (error) {
       console.error(
@@ -185,21 +233,28 @@ export class SkillsFileManager {
    * Check if a skill directory exists
    */
   skillExists(name: string): boolean {
-    return fs.existsSync(path.join(this.skillsDir, name));
+    return fs.existsSync(this.getSafeSkillPath(name));
   }
 
   /**
    * Get skill folder path
    */
   getSkillPath(name: string): string {
-    return path.join(this.skillsDir, name);
+    return this.getSafeSkillPath(name);
   }
 
   /**
    * Read SKILL.md content
    */
   readSkillMd(skillPath: string): string | null {
-    const skillMdPath = path.join(skillPath, "SKILL.md");
+    const safeSkillPath = this.assertExistingPathInside(
+      this.skillsDir,
+      skillPath,
+    );
+    const skillMdPath = this.assertExistingPathInside(
+      this.skillsDir,
+      path.join(safeSkillPath, "SKILL.md"),
+    );
     if (!fs.existsSync(skillMdPath)) {
       return null;
     }
@@ -210,7 +265,14 @@ export class SkillsFileManager {
    * Write SKILL.md content
    */
   writeSkillMd(skillPath: string, content: string): void {
-    const skillMdPath = path.join(skillPath, "SKILL.md");
+    const safeSkillPath = this.assertExistingPathInside(
+      this.skillsDir,
+      skillPath,
+    );
+    const skillMdPath = this.assertPathInside(
+      this.skillsDir,
+      path.join(safeSkillPath, "SKILL.md"),
+    );
     fs.writeFileSync(skillMdPath, content, "utf-8");
   }
 
@@ -225,7 +287,7 @@ export class SkillsFileManager {
    * Copy an external folder to skills directory
    */
   copyFolderToSkills(sourcePath: string, name: string): string {
-    const destPath = path.join(this.skillsDir, name);
+    const destPath = this.getSafeSkillPath(name);
 
     if (fs.existsSync(destPath)) {
       throw new Error(`Skill directory already exists: ${name}`);
@@ -249,7 +311,11 @@ export class SkillsFileManager {
       const srcPath = path.join(source, entry.name);
       const destPath = path.join(destination, entry.name);
 
-      if (entry.isDirectory()) {
+      if (entry.isSymbolicLink()) {
+        throw new Error(
+          `Symbolic links are not allowed in skill folders: ${entry.name}`,
+        );
+      } else if (entry.isDirectory()) {
         this.copyDirectoryRecursive(srcPath, destPath);
       } else {
         fs.copyFileSync(srcPath, destPath);

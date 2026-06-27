@@ -5,6 +5,7 @@ import {
   WorkflowHook,
 } from "@mcp_router/shared";
 import { getHookService } from "./hook.service";
+import { sanitizeForSecurityBoundary } from "@/main/utils/sensitive-data";
 
 /**
  * WorkflowExecutor
@@ -36,6 +37,11 @@ export class WorkflowExecutor {
       console.warn(
         `Workflow ${workflow.name} is missing required nodes: start=${!!startNode}, mcp-call=${!!mcpCallNode}, end=${!!endNode}`,
       );
+      return false;
+    }
+
+    if (WorkflowExecutor.hasCycle(nodes, edges)) {
+      console.warn(`Workflow ${workflow.name} contains a cycle`);
       return false;
     }
 
@@ -104,6 +110,47 @@ export class WorkflowExecutor {
     return false;
   }
 
+  private static hasCycle(
+    nodes: WorkflowNode[],
+    edges: WorkflowEdge[],
+  ): boolean {
+    const adjacencyList: Record<string, string[]> = {};
+    const inDegree: Record<string, number> = {};
+
+    nodes.forEach((node) => {
+      adjacencyList[node.id] = [];
+      inDegree[node.id] = 0;
+    });
+
+    edges.forEach((edge) => {
+      if (!adjacencyList[edge.source] || inDegree[edge.target] === undefined) {
+        return;
+      }
+
+      adjacencyList[edge.source].push(edge.target);
+      inDegree[edge.target]++;
+    });
+
+    const queue = Object.entries(inDegree)
+      .filter(([, degree]) => degree === 0)
+      .map(([nodeId]) => nodeId);
+    let visitedCount = 0;
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      visitedCount++;
+
+      for (const neighbor of adjacencyList[current] || []) {
+        inDegree[neighbor]--;
+        if (inDegree[neighbor] === 0) {
+          queue.push(neighbor);
+        }
+      }
+    }
+
+    return visitedCount !== nodes.length;
+  }
+
   /**
    * Workflowを実行
    * @param context 実行コンテキスト（MCPリクエストの情報など）
@@ -142,9 +189,9 @@ export class WorkflowExecutor {
         workflowName: this.workflow.name,
         status: "completed",
         executedAt: Date.now(),
-        context,
-        results,
-        mcpResult, // MCPリクエストの結果を含める
+        context: sanitizeForSecurityBoundary(context),
+        results: sanitizeForSecurityBoundary(results),
+        mcpResult: sanitizeForSecurityBoundary(mcpResult), // MCPリクエストの結果を含める
       };
     } catch (error) {
       console.error(`Error executing workflow ${this.workflow.id}:`, error);
@@ -153,9 +200,9 @@ export class WorkflowExecutor {
         workflowName: this.workflow.name,
         status: "error",
         executedAt: Date.now(),
-        context,
-        results,
-        mcpResult,
+        context: sanitizeForSecurityBoundary(context),
+        results: sanitizeForSecurityBoundary(results),
+        mcpResult: sanitizeForSecurityBoundary(mcpResult),
         error: error instanceof Error ? error.message : String(error),
       };
     }
@@ -257,7 +304,7 @@ export class WorkflowExecutor {
   private async executeMcpCallNode(
     node: WorkflowNode,
     context: any,
-    previousResults: Record<string, any>,
+    _previousResults: Record<string, any>,
   ): Promise<any> {
     console.log(`Executing MCP call node: ${node.id}`);
 
@@ -311,14 +358,14 @@ export class WorkflowExecutor {
     }
 
     // Hook実行用のコンテキストを構築
-    const hookContext = {
+    const hookContext = sanitizeForSecurityBoundary({
       ...context,
       workflowId: this.workflow.id,
       workflowName: this.workflow.name,
       nodeId: node.id,
       nodeName: node.data?.label || node.id,
       previousResults,
-    };
+    }) as Record<string, unknown>;
 
     try {
       let scriptToExecute: string | undefined;
@@ -382,7 +429,7 @@ export class WorkflowExecutor {
     const results = [];
     for (const node of preHookNodes) {
       const result = await this.executeHookNode(node, context, {});
-      results.push(result);
+      results.push(sanitizeForSecurityBoundary(result));
     }
 
     return results;
@@ -400,7 +447,7 @@ export class WorkflowExecutor {
     const results = [];
     for (const node of postHookNodes) {
       const result = await this.executeHookNode(node, hookContext, {});
-      results.push(result);
+      results.push(sanitizeForSecurityBoundary(result));
     }
 
     return results;
