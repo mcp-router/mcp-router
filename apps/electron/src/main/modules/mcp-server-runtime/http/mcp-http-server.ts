@@ -286,9 +286,7 @@ export class MCPHttpServer {
         const token = req.headers["authorization"];
         this.attachRequestMetadata(modifiedBody, token, projectFilter);
         // For local workspaces, use local aggregator
-        await this.aggregatorServer
-          .getTransport()
-          .handleRequest(req, res, modifiedBody);
+        await this.aggregatorServer.handleRequest(req, res, modifiedBody);
       } catch (error) {
         console.error("Error handling MCP request:", error);
         if (!res.headersSent) {
