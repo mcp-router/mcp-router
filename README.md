@@ -1,3 +1,5 @@
+[![MCP Toplist](https://mcptoplist.com/badge/mcp.so%2Fmcp-router%2Fmcp-router.svg)](https://mcptoplist.com/server/mcp.so%2Fmcp-router%2Fmcp-router)
+
 <h1 align="center">MCP Router</h1>
 <h3 align="center">A Unified MCP Server Management App</h3>
 
