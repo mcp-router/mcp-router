@@ -92,7 +92,7 @@ Join our community to get help, share ideas, and stay updated:
 - 🐦 [Follow us on X (Twitter)](https://x.com/mcp_router)
 - ⭐ [Star us on GitHub](https://github.com/mcp-router/mcp-router)
 
-[![Star History Chart](https://api.star-history.com/svg?repos=mcp-router/mcp-router&type=date&legend=top-left)](https://www.star-history.com/#mcp-router/mcp-router&type=date&legend=top-left)
+[![Star History Chart](https://star-history.dera.page/svg?repos=mcp-router/mcp-router&type=date&legend=top-left)](https://star-history.dera.page/#mcp-router/mcp-router&type=date&legend=top-left)
 
 ## 📝 License
 
