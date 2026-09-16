@@ -375,6 +375,8 @@ function extractServersFromConfig(
         name: serverName,
         serverType: "local",
         command: serverConfig.command,
+        cwd:
+          typeof serverConfig.cwd === "string" ? serverConfig.cwd : undefined,
         args: Array.isArray(serverConfig.args) ? serverConfig.args : [],
         env: serverConfig.env || {},
         disabled: false,
@@ -517,6 +519,8 @@ function extractVSCodeServerConfigs(
         name: serverName,
         serverType: "local",
         command: serverConfig.command,
+        cwd:
+          typeof serverConfig.cwd === "string" ? serverConfig.cwd : undefined,
         args: Array.isArray(serverConfig.args) ? serverConfig.args : [],
         env: serverConfig.env || {},
         disabled: false,
@@ -551,6 +555,8 @@ function extractStandardServerConfigs(
         name: serverName,
         serverType: "local",
         command: serverConfig.command,
+        cwd:
+          typeof serverConfig.cwd === "string" ? serverConfig.cwd : undefined,
         args: Array.isArray(serverConfig.args) ? serverConfig.args : [],
         env: serverConfig.env || {},
         disabled: false,

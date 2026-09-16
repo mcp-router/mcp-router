@@ -37,6 +37,8 @@ interface ServerDetailsGeneralSettingsProps {
   setEditedName: (name: string) => void;
   // Command & Args (local server)
   editedCommand: string;
+  editedCwd: string;
+  setEditedCwd: (cwd: string) => void;
   setEditedCommand: (command: string) => void;
   editedArgs: string[];
   updateArg: (index: number, value: string) => void;
@@ -70,6 +72,8 @@ const ServerDetailsGeneralSettings: React.FC<
   editedName,
   setEditedName,
   editedCommand,
+  editedCwd,
+  setEditedCwd,
   setEditedCommand,
   editedArgs,
   updateArg,
@@ -176,6 +180,23 @@ const ServerDetailsGeneralSettings: React.FC<
               placeholder={t("serverDetails.commandPlaceholder")}
               className="font-mono"
             />
+          </div>
+
+          <div className="space-y-3">
+            <Label htmlFor="server-cwd">
+              {t("serverDetails.workingDirectory")}
+            </Label>
+            <Input
+              id="server-cwd"
+              value={editedCwd}
+              onChange={(e) => setEditedCwd(e.target.value)}
+              placeholder="~"
+              aria-describedby="server-cwd-help"
+              className="font-mono"
+            />
+            <p id="server-cwd-help" className="text-sm text-muted-foreground">
+              {t("serverDetails.workingDirectoryHelp")}
+            </p>
           </div>
 
           {/* Arguments */}

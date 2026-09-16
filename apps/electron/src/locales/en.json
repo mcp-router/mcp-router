@@ -160,6 +160,8 @@
     "deleteFailed": "Failed to delete app"
   },
   "serverDetails": {
+    "workingDirectory": "Working directory",
+    "workingDirectoryHelp": "Optional. Defaults to your home directory. Supports ~ and paths relative to your home directory.",
     "serverName": "Server Name",
     "finalCommand": "Execution Command",
     "noInputParams": "No input parameters",

@@ -15,7 +15,7 @@
     "start": "node dist/mcpr.js",
     "dev": "tsc --build && node dist/mcpr.js",
     "clean": "rm -rf dist",
-    "test": "node --loader ts-node/esm --test tests/*.test.mjs",
+    "test": "pnpm run build && node --loader ts-node/esm --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",

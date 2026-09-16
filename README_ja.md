@@ -80,6 +80,14 @@ Claude、Cline、Windsurf、Cursorなどの人気AIツールやカスタムク�
 - 🐦 [X (Twitter) でフォロー](https://x.com/mcp_router)
 - ⭐ [GitHubでスター](https://github.com/mcp-router/mcp-router)
 
+## サーバの作業ディレクトリ
+
+ローカル stdio サーバは既定でホームディレクトリから起動します。詳細設定またはインポートする JSON の任意項目 `cwd` で変更できます。`~` はホームディレクトリに展開され、相対パスもホームディレクトリを基準に解決されます。コマンドやスクリプトには絶対パスを指定するか、選択した作業ディレクトリに配置してください。
+
+```json
+{"mcpServers":{"example":{"command":"node","args":["server.js"],"cwd":"~/projects/example"}}}
+```
+
 ## 📝 ライセンス
 
 このプロジェクトはSustainable Use Licenseの下でライセンスされています。詳細は[LICENSE.md](LICENSE.md)ファイルをご覧ください。

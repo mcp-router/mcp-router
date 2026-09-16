@@ -24,6 +24,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
       name TEXT NOT NULL,
       command TEXT,
       args TEXT,
+      cwd TEXT,
       env TEXT,
       auto_start INTEGER NOT NULL,
       disabled INTEGER NOT NULL,
@@ -170,6 +171,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         name: row.name,
         command: command || "",
         args: args,
+        cwd: row.cwd || undefined,
         env: env,
         autoStart: !!row.auto_start,
         disabled: !!row.disabled,
@@ -244,6 +246,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         // For remote servers, command can be null
         command: command,
         args: args,
+        cwd: entity.cwd || null,
         env: env,
         auto_start: entity.autoStart ? 1 : 0,
         disabled: entity.disabled ? 1 : 0,
@@ -351,6 +354,7 @@ export class McpServerManagerRepository extends BaseRepository<MCPServer> {
         // For remote servers, command can be null
         command: command,
         args: args,
+        cwd: entity.cwd || null,
         env: env,
         auto_start: entity.autoStart ? 1 : 0,
         disabled: entity.disabled ? 1 : 0,

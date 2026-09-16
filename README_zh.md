@@ -72,6 +72,14 @@
 - 🐦 [在 X (Twitter) 关注我们](https://x.com/mcp_router)
 - ⭐ [在 GitHub 上为我们加星](https://github.com/mcp-router/mcp-router)
 
+## 服务器工作目录
+
+本地 stdio 服务器默认从用户主目录启动。可在服务器高级设置或导入 JSON 的可选字段 `cwd` 中指定目录。`~` 展开为用户主目录，相对路径也以用户主目录为基准。命令或脚本可使用绝对路径，或放在所选工作目录下。
+
+```json
+{"mcpServers":{"example":{"command":"node","args":["server.js"],"cwd":"~/projects/example"}}}
+```
+
 ## 📝 许可证
 
 本项目采用 Sustainable Use License 授权，详情请参阅 [LICENSE.md](LICENSE.md)。

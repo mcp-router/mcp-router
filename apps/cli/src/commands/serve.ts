@@ -1,3 +1,4 @@
+import { resolveServerCwd } from "../utils/server-cwd.js";
 import { createServer } from "http";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -37,9 +38,14 @@ export function parseServeArgs(args: string[]) {
     token: undefined as string | undefined,
   };
 
+  let cwd: string | undefined;
   let i = 0;
   while (i < args.length) {
-    if (args[i] === "--port" && i + 1 < args.length) {
+    if (args[i] === "--cwd") {
+      if (i + 1 >= args.length) throw new Error("--cwd requires a directory");
+      cwd = args[i + 1];
+      i += 2;
+    } else if (args[i] === "--port" && i + 1 < args.length) {
       options.port = parseInt(args[i + 1], 10);
       i += 2;
     } else if (args[i] === "--host" && i + 1 < args.length) {
@@ -52,11 +58,17 @@ export function parseServeArgs(args: string[]) {
       options.verbose = true;
       i++;
     } else if (args[i] === "--server" && i + 3 < args.length) {
-      // --server <id> <name> <command> [args...]
+      // --server <id> <name> [--cwd <directory>] <command> [args...]
       const id = args[i + 1];
       const name = args[i + 2];
-      const command = args[i + 3];
-      i += 4;
+      i += 3;
+      if (args[i] === "--cwd") {
+        if (i + 2 >= args.length)
+          throw new Error("--cwd requires a directory and server command");
+        cwd = args[i + 1];
+        i += 2;
+      }
+      const command = args[i++];
 
       // Collect args until next --server flag or end
       const serverArgs: string[] = [];
@@ -65,7 +77,8 @@ export function parseServeArgs(args: string[]) {
         i++;
       }
 
-      options.servers.push({ id, name, command, args: serverArgs });
+      options.servers.push({ id, name, command, args: serverArgs, cwd });
+      cwd = undefined;
     } else if (args[i] === "--") {
       // Legacy single server mode: everything after -- is the command and its arguments
       const command = args[i + 1];
@@ -75,6 +88,7 @@ export function parseServeArgs(args: string[]) {
         name: "default",
         command,
         args: serverArgs,
+        cwd,
       });
       break;
     } else if (!options.servers.length) {
@@ -86,6 +100,7 @@ export function parseServeArgs(args: string[]) {
         name: "default",
         command,
         args: serverArgs,
+        cwd,
       });
       break;
     } else {
@@ -96,8 +111,8 @@ export function parseServeArgs(args: string[]) {
   if (options.servers.length === 0) {
     throw new Error(
       "No servers specified. Usage:\n" +
-        "  Single server: mcpr-cli serve [--host <host>] [--port <port>] [--token <token>] [--verbose] <command> [args...]\n" +
-        "  Multiple servers: mcpr-cli serve [--host <host>] [--port <port>] [--token <token>] [--verbose] --server <id> <name> <command> [args...] [--server ...]",
+        "  Single server: mcpr-cli serve [--host <host>] [--port <port>] [--token <token>] [--verbose] [--cwd <directory>] <command> [args...]\n" +
+        "  Multiple servers: mcpr-cli serve [--host <host>] [--port <port>] [--token <token>] [--verbose] --server <id> <name> [--cwd <directory>] <command> [args...] [--server ...]",
     );
   }
 
@@ -273,6 +288,7 @@ class StdioMcpBridgeServer {
         const transport = new StdioClientTransport({
           command: serverConfig.command,
           args: serverConfig.args,
+          cwd: resolveServerCwd(serverConfig.cwd),
         });
 
         // Create MCP client

@@ -8,6 +8,7 @@ interface ServerEditingState {
   // Edited values
   editedName: string;
   editedCommand: string;
+  editedCwd: string;
   editedArgs: string[];
   editedBearerToken: string;
   editedAutoStart: boolean;
@@ -19,6 +20,7 @@ interface ServerEditingState {
   setIsLoading: (isLoading: boolean) => void;
   setEditedName: (name: string) => void;
   setEditedCommand: (command: string) => void;
+  setEditedCwd: (cwd: string) => void;
   setEditedArgs: (args: string[]) => void;
   setEditedBearerToken: (token: string) => void;
   setEditedAutoStart: (autoStart: boolean) => void;
@@ -42,6 +44,7 @@ interface ServerEditingState {
   initializeFromServer: (server: {
     name?: string;
     command?: string;
+    cwd?: string;
     args?: string[];
     bearerToken?: string;
     autoStart?: boolean;
@@ -59,6 +62,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
   isLoading: false,
   editedName: "",
   editedCommand: "",
+  editedCwd: "",
   editedArgs: [],
   editedBearerToken: "",
   editedAutoStart: false,
@@ -70,6 +74,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
   setIsLoading: (isLoading) => set({ isLoading }),
   setEditedName: (editedName) => set({ editedName }),
   setEditedCommand: (editedCommand) => set({ editedCommand }),
+  setEditedCwd: (editedCwd) => set({ editedCwd }),
   setEditedArgs: (editedArgs) => set({ editedArgs }),
   setEditedBearerToken: (editedBearerToken) => set({ editedBearerToken }),
   setEditedAutoStart: (editedAutoStart) => set({ editedAutoStart }),
@@ -122,6 +127,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
     set({
       editedName: server.name || "",
       editedCommand: server.command || "",
+      editedCwd: server.cwd || "",
       editedArgs: server.args || [],
       editedBearerToken: server.bearerToken || "",
       editedAutoStart: server.autoStart || false,
@@ -140,6 +146,7 @@ export const useServerEditingStore = create<ServerEditingState>((set) => ({
       isLoading: false,
       editedName: "",
       editedCommand: "",
+      editedCwd: "",
       editedArgs: [],
       editedBearerToken: "",
       editedAutoStart: false,

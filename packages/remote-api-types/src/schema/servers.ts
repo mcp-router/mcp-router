@@ -13,6 +13,7 @@ export const mcpServerConfigSchema = z.object({
   serverType: z.enum(["local", "remote", "remote-streamable"]),
   command: z.string().optional(),
   args: z.array(z.string()).optional(),
+  cwd: z.string().optional(),
   remoteUrl: z.string().optional(),
   bearerToken: z.string().optional(),
   projectId: z.string().nullable().optional(),

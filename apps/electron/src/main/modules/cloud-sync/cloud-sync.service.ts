@@ -366,6 +366,7 @@ export class CloudSyncService {
       name: server.name,
       serverType: server.serverType,
       command: server.command,
+      cwd: server.cwd,
       args: server.args,
       env: server.env ?? {},
       remoteUrl: server.remoteUrl,

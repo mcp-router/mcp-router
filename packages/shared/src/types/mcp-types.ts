@@ -20,6 +20,7 @@ export interface MCPServerConfig {
   serverType: "local" | "remote" | "remote-streamable";
   command?: string;
   args?: string[];
+  cwd?: string;
   remoteUrl?: string;
   bearerToken?: string;
   // Project grouping
@@ -96,6 +97,7 @@ export interface LocalMCPServer {
   updatedAt: number;
   command?: string;
   args?: string[];
+  cwd?: string;
   envs?: Record<string, string>;
   iconUrl?: string;
   tags?: string[];

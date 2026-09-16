@@ -1,3 +1,4 @@
+import { resolveServerCwd } from "@/main/utils/server-cwd";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
@@ -119,6 +120,7 @@ export class MCPClient {
           command: server.command,
           args: server.args,
           env: mergedEnv,
+          cwd: resolveServerCwd(server.cwd),
         });
         await client.connect(transport);
       } else {

@@ -127,6 +127,8 @@
     "deleteFailed": "应用删除失败"
   },
   "serverDetails": {
+    "workingDirectory": "工作目录",
+    "workingDirectoryHelp": "可选，默认使用用户主目录。支持 ~ 和相对于用户主目录的路径。",
     "serverName": "服务器名称",
     "finalCommand": "执行命令",
     "noInputParams": "无输入参数",

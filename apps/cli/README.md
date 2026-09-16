@@ -54,3 +54,20 @@ npx @mcp_router/cli serve -- node my-server.js --config config.json
 By default, `serve` listens on `127.0.0.1` only. To expose it to other machines, pass `--host` with a network interface and provide `--token`.
 
 This is useful when you have a stdio-based MCP server that you want to expose via HTTP.
+
+### Server working directory
+
+Each stdio server defaults to the current user's home directory. `~` expands to
+that directory; relative paths are resolved from it. Absolute paths are used as
+specified. The directory must exist. Relative script paths use that directory.
+
+For a single server, put `--cwd` before the command (or before `--`). For multiple
+servers, put it after the server ID and name, before its command. Each server has
+its own setting; omitted settings use the home directory.
+
+```bash
+npx @mcp_router/cli serve --cwd ~/projects/example node server.js
+npx @mcp_router/cli serve --server one One --cwd ~/projects/one node server.js --server two Two --cwd ~/projects/two node server.js
+```
+
+Arguments after the child command, including `--cwd`, are passed to the child.
