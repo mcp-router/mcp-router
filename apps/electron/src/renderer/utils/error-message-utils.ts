@@ -1,4 +1,4 @@
-import { ParsedPaymentError } from "@mcp_router/shared";
+import { ParsedPaymentError, SERVICE_RETIRED } from "@mcp_router/shared";
 
 /**
  * Error message parsing utilities for better user experience
@@ -19,10 +19,11 @@ export function parseErrorMessage(errorMessage: string): ParsedPaymentError {
     const parsed = JSON.parse(errorMessage);
 
     if (parsed.code === "insufficient_credits") {
-      result.isPaymentError = true;
+      result.isPaymentError = !SERVICE_RETIRED;
       result.code = parsed.code;
       result.displayMessage = parsed.message || "クレジットが不足しています";
-      result.purchaseUrl = "https://mcp-router.net/profile";
+      if (!SERVICE_RETIRED)
+        result.purchaseUrl = "https://mcp-router.net/profile";
       return result;
     }
 
@@ -37,9 +38,10 @@ export function parseErrorMessage(errorMessage: string): ParsedPaymentError {
       errorMessage.includes("402") ||
       errorMessage.toLowerCase().includes("payment required")
     ) {
-      result.isPaymentError = true;
+      result.isPaymentError = !SERVICE_RETIRED;
       result.displayMessage = "クレジットが不足しています";
-      result.purchaseUrl = "https://mcp-router.net/profile";
+      if (!SERVICE_RETIRED)
+        result.purchaseUrl = "https://mcp-router.net/profile";
     }
   }
 

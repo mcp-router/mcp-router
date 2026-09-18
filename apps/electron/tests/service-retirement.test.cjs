@@ -109,3 +109,20 @@ test("feedback IPC does not send requests", async () => {
     /Service retired/,
   );
 });
+
+test("legacy payment errors do not offer credit purchases", () => {
+  const { parseErrorMessage } = load(
+    "../src/renderer/utils/error-message-utils.ts",
+  );
+  for (const message of [
+    "HTTP 402 Payment Required",
+    JSON.stringify({
+      code: "insufficient_credits",
+      message: "old billing error",
+    }),
+  ]) {
+    const parsed = parseErrorMessage(message);
+    assert.equal(parsed.isPaymentError, false);
+    assert.equal(parsed.purchaseUrl, undefined);
+  }
+});
