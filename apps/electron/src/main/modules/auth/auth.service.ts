@@ -1,3 +1,4 @@
+import { SERVICE_RETIRED, SERVICE_RETIRED_MESSAGE } from "@mcp_router/shared";
 import { getSettingsService } from "@/main/modules/settings/settings.service";
 import { API_BASE_URL, mainWindow } from "../../../main";
 import crypto from "crypto";
@@ -58,6 +59,7 @@ function generateState(idp?: string): string {
 }
 
 export function startAuthFlow(idp?: string) {
+  if (SERVICE_RETIRED) throw new Error(SERVICE_RETIRED_MESSAGE);
   // Generate PKCE code verifier and challenge
   const codeVerifier = generateRandomString(64);
   const codeChallenge = generateCodeChallenge(codeVerifier);
@@ -93,6 +95,7 @@ export function startAuthFlow(idp?: string) {
 
 // Handle the auth token received from the website
 export function handleAuthToken(token: string, state?: string) {
+  if (SERVICE_RETIRED) return;
   try {
     // Validate state parameter if provided
     if (state && currentAuthState) {
@@ -224,6 +227,7 @@ export function logout(): boolean {
  * @returns The authentication token or null if not available
  */
 export async function getDecryptedAuthToken(): Promise<string | null> {
+  if (SERVICE_RETIRED) return null;
   try {
     // Get the settings service
     const settingsService = getSettingsService();
@@ -260,6 +264,7 @@ export async function status(forceRefresh = false): Promise<{
   user?: any;
   token?: string;
 }> {
+  if (SERVICE_RETIRED) return { authenticated: false };
   try {
     const settingsService = getSettingsService();
     const settings = settingsService.getSettings();

@@ -1,3 +1,4 @@
+import { SERVICE_RETIRED, SERVICE_RETIRED_MESSAGE } from "@mcp_router/shared";
 import { ipcMain, app, autoUpdater } from "electron";
 import { commandExists } from "@/main/utils/env-utils";
 import { API_BASE_URL, mainWindow } from "@/main";
@@ -28,6 +29,7 @@ export function setupSystemHandlers(): void {
 
   // Feedback submission
   ipcMain.handle("system:submitFeedback", async (_, feedback: string) => {
+    if (SERVICE_RETIRED) throw new Error(SERVICE_RETIRED_MESSAGE);
     try {
       const response = await fetch(`${API_BASE_URL}/feedback`, {
         method: "POST",

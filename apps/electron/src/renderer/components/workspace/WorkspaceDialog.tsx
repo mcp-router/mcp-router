@@ -1,3 +1,4 @@
+import { SERVICE_RETIRED } from "@mcp_router/shared";
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -167,7 +168,11 @@ export function WorkspaceDialog({ workspace, onClose }: WorkspaceDialogProps) {
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="remote" id="remote" />
+                    <RadioGroupItem
+                      value="remote"
+                      id="remote"
+                      disabled={SERVICE_RETIRED}
+                    />
                     <Label htmlFor="remote" className="font-normal">
                       Remote workspace (Connect to team API)
                     </Label>

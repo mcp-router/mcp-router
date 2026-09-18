@@ -31,3 +31,6 @@ jobs:
         
       - name: Run typecheck
         run: pnpm run typecheck
+
+      - name: Verify service retirement
+        run: node --test apps/electron/tests/service-retirement.test.cjs

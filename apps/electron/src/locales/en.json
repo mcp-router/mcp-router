@@ -12,13 +12,7 @@
     "close": "Close",
     "remove": "Remove",
     "search": "Search",
-    "update": "Update",
-    "send": "Send"
-  },
-  "feedback": {
-    "placeholder": "Feedback or suggestions?",
-    "sent": "Thank you! Feedback sent successfully",
-    "failed": "Failed to send feedback"
+    "update": "Update"
   },
   "locale": "en-US",
   "login": {
@@ -95,41 +89,13 @@
     "requiredParamsNotSet": "Required parameters are not configured"
   },
   "settings": {
-    "accountAndPlan": "Account & Plan",
-    "proFeatures": "Pro Features",
     "preferences": "Preferences",
     "theme": "Theme",
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "System",
-    "loginOptionalDescription": "Login is optional. You can use MCP Router without an account, though some features may be limited.",
-    "login": "Login",
-    "loggingIn": "Logging in...",
-    "logout": "Logout",
-    "loggingOut": "Logging out...",
-    "planNameUnknown": "Not set",
-    "notSubscribed": "Not subscribed",
-    "getPro": "Get Pro",
-    "cloudSync": "Cloud Sync",
-    "cloudSyncDescription": "Sync your workspaces and servers across devices with end-to-end encryption.",
-    "proOnly": "Pro only",
-    "passphraseSet": "Encryption passphrase is set",
-    "setPassphraseDescription": "Set a passphrase to encrypt your data. This passphrase is required to decrypt your data on other devices.",
-    "passphraseWarning": "Remember this passphrase! There is no way to recover it.",
-    "passphraseError": "Incorrect passphrase. Failed to decrypt existing data.",
-    "passphrasePlaceholder": "Enter encryption passphrase",
-    "enableCloudSync": "Enable",
-    "lastSynced": "Last synced",
-    "community": "Community",
-    "communityDescription": "Join our Discord community to get support, share feedback, and connect with other users.",
-    "joinDiscord": "Join Discord Community",
-    "feedbackDescription": "Have feedback or suggestions? Let us know!",
     "loadExternalMCPConfigs": "Load MCP configurations from external applications",
     "loadExternalMCPConfigsDescription": "Allow MCP Router to import server configurations from other applications like Claude for Desktop",
-    "analytics": "Send usage analytics",
-    "analyticsDescription": "Send anonymous usage data to help improve the app",
-    "autoUpdate": "Enable automatic updates",
-    "autoUpdateDescription": "Automatically download and install app updates",
     "showWindowOnStartup": "Show main window at system startup",
     "showWindowOnStartupDescription": "Display MCP Router when your computer boots. Disable to start in the background."
   },
@@ -348,5 +314,13 @@
         "description": "Add an AI agent's skills folder to sync your skills"
       }
     }
+  },
+  "retirement": {
+    "title": "MCP Router has reached end of support",
+    "summary": "Development, support and security updates ended on September 18, 2026. Cloud services and billing have ended.",
+    "local": "Your local MCP servers and saved settings remain available. Sign-in, cloud sync and feedback submission are no longer available.",
+    "export": "Before migrating, select each local workspace and use Export on the Servers screen. Keep exported files private: they may contain credentials.",
+    "continue": "Continue using local features",
+    "details": "End-of-support and migration guide"
   }
 }

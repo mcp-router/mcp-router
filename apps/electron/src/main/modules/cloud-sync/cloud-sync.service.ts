@@ -1,3 +1,4 @@
+import { SERVICE_RETIRED, SERVICE_RETIRED_MESSAGE } from "@mcp_router/shared";
 import { safeStorage } from "electron";
 import crypto from "crypto";
 import argon2 from "argon2";
@@ -57,6 +58,10 @@ export class CloudSyncService {
 
   public initialize(getServerManager: () => MCPServerManager): void {
     this.serverManagerProvider = getServerManager;
+    if (SERVICE_RETIRED) {
+      this.stopPolling();
+      return;
+    }
 
     // Start polling if cloud sync is already enabled and user has active subscription
     const state = this.getSyncState();
@@ -73,15 +78,16 @@ export class CloudSyncService {
   public async getStatus(): Promise<CloudSyncStatus> {
     const state = this.getSyncState();
     return {
-      enabled: state.enabled,
+      enabled: SERVICE_RETIRED ? false : state.enabled,
       lastSyncedAt: state.lastSyncedAt,
-      lastError: state.lastError,
+      lastError: SERVICE_RETIRED ? SERVICE_RETIRED_MESSAGE : state.lastError,
       hasPassphrase: this.hasPassphrase(),
       encryptionAvailable: safeStorage.isEncryptionAvailable(),
     };
   }
 
   public async setEnabled(enabled: boolean): Promise<CloudSyncStatus> {
+    if (SERVICE_RETIRED && enabled) throw new Error(SERVICE_RETIRED_MESSAGE);
     const next = this.saveSyncState({
       enabled,
       lastError: undefined,
@@ -105,6 +111,7 @@ export class CloudSyncService {
   }
 
   public async setPassphrase(passphrase: string): Promise<void> {
+    if (SERVICE_RETIRED) throw new Error(SERVICE_RETIRED_MESSAGE);
     if (!safeStorage.isEncryptionAvailable()) {
       throw new Error("Secure storage is not available");
     }
@@ -133,6 +140,7 @@ export class CloudSyncService {
   }
 
   private async syncNow(): Promise<void> {
+    if (SERVICE_RETIRED) return;
     const state = this.getSyncState();
     if (!state.enabled) {
       return;

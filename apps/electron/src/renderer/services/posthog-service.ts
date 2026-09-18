@@ -1,3 +1,4 @@
+import { SERVICE_RETIRED } from "@mcp_router/shared";
 import posthog from "posthog-js/dist/module.full.no-external";
 
 const POSTHOG_API_KEY = "phc_IT78Ct3BMiUYBZLgAXEKUHKVjfAtVL5urGBk17WpWiI";
@@ -12,6 +13,7 @@ class PostHogService {
   private initialized = false;
 
   initialize(config: PostHogConfig): void {
+    if (SERVICE_RETIRED) return;
     if (this.initialized) {
       return;
     }
@@ -36,6 +38,7 @@ class PostHogService {
   }
 
   updateConfig(config: PostHogConfig): void {
+    if (SERVICE_RETIRED) return;
     if (config.analyticsEnabled) {
       if (!this.initialized) {
         this.initialize(config);

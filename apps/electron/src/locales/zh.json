@@ -12,13 +12,7 @@
     "close": "关闭",
     "remove": "移除",
     "search": "搜索",
-    "update": "更新",
-    "send": "发送"
-  },
-  "feedback": {
-    "placeholder": "反馈或建议？",
-    "sent": "谢谢！反馈发送成功",
-    "failed": "反馈发送失败"
+    "update": "更新"
   },
   "locale": "zh-CN",
   "login": {
@@ -62,43 +56,15 @@
     "requiredParamsNotSet": "未设置必需参数"
   },
   "settings": {
-    "accountAndPlan": "账户与套餐",
-    "proFeatures": "Pro 功能",
     "preferences": "偏好设置",
     "theme": "主题",
     "themeLight": "浅色",
     "themeDark": "深色",
     "themeSystem": "系统",
-    "loginOptionalDescription": "登录是可选的。您可以在没有账户的情况下使用 MCP Router，但某些功能可能会受到限制。",
-    "login": "登录",
-    "loggingIn": "登录中...",
-    "logout": "登出",
-    "loggingOut": "登出中...",
-    "planNameUnknown": "未设置",
-    "notSubscribed": "未订阅",
-    "getPro": "获取 Pro",
-    "cloudSync": "云同步",
-    "cloudSyncDescription": "通过端到端加密在设备间同步您的工作空间和服务器。",
-    "proOnly": "仅限 Pro",
-    "passphraseSet": "加密密码已设置",
-    "setPassphraseDescription": "设置用于加密数据的密码。在其他设备上解密数据时需要此密码。",
-    "passphraseWarning": "请务必牢记此密码！无法恢复。",
-    "passphraseError": "密码不正确。无法解密现有数据。",
-    "passphrasePlaceholder": "输入加密密码",
-    "enableCloudSync": "启用",
-    "lastSynced": "最后同步",
-    "community": "社区",
-    "communityDescription": "加入我们的 Discord 社区获取支持、分享反馈并与其他用户交流。",
-    "joinDiscord": "加入 Discord 社区",
-    "feedbackDescription": "有反馈或建议？请告诉我们！",
-    "autoUpdate": "启用自动更新",
-    "autoUpdateDescription": "自动下载并安装应用更新",
     "showWindowOnStartup": "系统启动时显示主窗口",
     "showWindowOnStartupDescription": "当电脑启动时显示 MCP Router 主窗口。关闭后将在后台启动。",
     "loadExternalMCPConfigs": "从外部应用程序加载 MCP 配置",
-    "loadExternalMCPConfigsDescription": "允许 MCP Router 从其他应用程序（如 Claude for Desktop）导入服务器配置",
-    "analytics": "发送使用情况分析",
-    "analyticsDescription": "发送匿名使用数据以帮助改进应用"
+    "loadExternalMCPConfigsDescription": "允许 MCP Router 从其他应用程序（如 Claude for Desktop）导入服务器配置"
   },
   "mcpApps": {
     "title": "MCP 应用集成",
@@ -294,5 +260,13 @@
       "title": "创建新技能",
       "description": "输入新技能的名称"
     }
+  },
+  "retirement": {
+    "title": "MCP Router 已结束支持",
+    "summary": "开发、支持和安全更新已于 2026 年 9 月 18 日结束。云服务和计费也已停止。",
+    "local": "本地 MCP 服务器和已保存的设置仍可使用。登录、云同步和反馈提交已停止。",
+    "export": "迁移前，请逐一选择本地工作区，并在服务器页面使用 Export 保存设置。导出文件可能包含凭据，请私密保存。",
+    "continue": "继续使用本地功能",
+    "details": "支持结束与迁移指南"
   }
 }

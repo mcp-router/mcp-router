@@ -1,3 +1,4 @@
+import { SERVICE_RETIRED } from "@mcp_router/shared";
 import { app } from "electron";
 import type { IUpdateElectronAppOptions } from "update-electron-app";
 import { getSettingsService } from "@/main/modules/settings/settings.service";
@@ -17,6 +18,7 @@ const DEFAULT_AUTO_UPDATE_OPTIONS: IUpdateElectronAppOptions = {
  * Errors are swallowed to avoid crashing on environments (e.g., unsigned macOS builds)
  */
 export function resolveAutoUpdateConfig(): AutoUpdateConfig {
+  if (SERVICE_RETIRED) return { enabled: false };
   try {
     const settingsService = getSettingsService();
     const settings = settingsService.getSettings();

@@ -31,7 +31,6 @@ import { toast } from "sonner";
 import {
   useServerStore,
   useWorkspaceStore,
-  useAuthStore,
   useViewPreferencesStore,
   useProjectStore,
   UNASSIGNED_PROJECT_ID,
@@ -53,7 +52,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@mcp_router/ui";
-import { LoginScreen } from "@/renderer/components/auth/LoginScreen";
+
 import ServerDetailsAdvancedSheet from "@/renderer/components/mcp/server/server-details/ServerDetailsAdvancedSheet";
 import { useServerEditingStore } from "@/renderer/stores";
 import ProjectSettingsModal from "@/renderer/components/mcp/server/ProjectSettingsModal";
@@ -109,7 +108,6 @@ const Home: React.FC = () => {
 
   // Get workspace and auth state
   const { currentWorkspace } = useWorkspaceStore();
-  const { isAuthenticated, login } = useAuthStore();
   const { serverViewMode, setServerViewMode } = useViewPreferencesStore();
   const {
     projects,
@@ -258,8 +256,8 @@ const Home: React.FC = () => {
   );
 
   // Show login screen for remote workspaces if not authenticated
-  if (currentWorkspace?.type === "remote" && !isAuthenticated) {
-    return <LoginScreen onLogin={login} />;
+  if (currentWorkspace?.type === "remote") {
+    return <p className="p-6">{t("retirement.local")}</p>;
   }
 
   return (

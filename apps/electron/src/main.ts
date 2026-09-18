@@ -1,3 +1,4 @@
+import { SERVICE_RETIRED } from "@mcp_router/shared";
 import { app, BrowserWindow, session, shell, nativeTheme } from "electron";
 import path from "node:path";
 import { MCPServerManager } from "@/main/modules/mcp-server-manager/mcp-server-manager";
@@ -237,7 +238,10 @@ async function initDatabase(): Promise<void> {
 
     // アクティブなワークスペースを取得
     const activeWorkspace = await workspaceService.getActiveWorkspace();
-    if (!activeWorkspace) {
+    if (
+      !activeWorkspace ||
+      (SERVICE_RETIRED && activeWorkspace.type === "remote")
+    ) {
       // デフォルトワークスペースがない場合は作成
       await workspaceService.switchWorkspace("local-default");
     }

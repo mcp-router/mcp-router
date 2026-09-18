@@ -1,3 +1,4 @@
+import { SERVICE_RETIRED } from "@mcp_router/shared";
 import React, { useState, useMemo } from "react";
 import {
   DropdownMenu,
@@ -93,6 +94,7 @@ export function WorkspaceSwitcher() {
             return (
               <DropdownMenuItem
                 key={workspace.id}
+                disabled={SERVICE_RETIRED && workspace.type === "remote"}
                 onClick={() => handleWorkspaceSwitch(workspace.id)}
                 className="cursor-pointer"
               >

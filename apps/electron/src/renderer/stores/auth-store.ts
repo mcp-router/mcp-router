@@ -1,3 +1,4 @@
+import { SERVICE_RETIRED } from "@mcp_router/shared";
 import { create, StoreApi, UseBoundStore } from "zustand";
 import {
   AppSettings,
@@ -199,6 +200,10 @@ export const createAuthStore = (
     },
 
     initializeFromSettings: async (settings) => {
+      if (SERVICE_RETIRED) {
+        get().clearStore();
+        return;
+      }
       const { setAuthenticated, setUserData } = get();
 
       const isAuthenticated = !!(settings.authToken && settings.userId);

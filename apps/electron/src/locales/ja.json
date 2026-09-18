@@ -15,13 +15,7 @@
     "close": "閉じる",
     "remove": "削除",
     "search": "検索",
-    "update": "アップデート",
-    "send": "送信"
-  },
-  "feedback": {
-    "placeholder": "フィードバックやご提案などをお聞かせください",
-    "sent": "ありがとうございます！フィードバックが正常に送信されました",
-    "failed": "フィードバックの送信に失敗しました"
+    "update": "アップデート"
   },
   "login": {
     "title": "MCP Routerにログイン",
@@ -94,41 +88,13 @@
     "requiredParamsNotSet": "必須パラメータが設定されていません"
   },
   "settings": {
-    "accountAndPlan": "アカウントとプラン",
-    "proFeatures": "Pro機能",
     "preferences": "設定",
     "theme": "テーマ",
     "themeLight": "ライト",
     "themeDark": "ダーク",
     "themeSystem": "システム",
-    "loginOptionalDescription": "ログインは任意です。アカウントなしでもMCP Routerを使用できますが、一部の機能に制限がある場合があります。",
-    "login": "ログイン",
-    "loggingIn": "ログイン中...",
-    "logout": "ログアウト",
-    "loggingOut": "ログアウト中...",
-    "planNameUnknown": "未設定",
-    "notSubscribed": "未契約",
-    "getPro": "Proを購入",
-    "cloudSync": "クラウド同期",
-    "cloudSyncDescription": "エンドツーエンド暗号化でワークスペースとサーバーをデバイス間で同期します。",
-    "proOnly": "Pro限定",
-    "passphraseSet": "暗号化パスフレーズが設定されています",
-    "setPassphraseDescription": "データを暗号化するパスフレーズを設定してください。他のデバイスでデータを復号化するために必要です。",
-    "passphraseWarning": "このパスフレーズは絶対に忘れないでください。復旧する方法はありません。",
-    "passphraseError": "パスフレーズが正しくありません。既存のデータを復号化できませんでした。",
-    "passphrasePlaceholder": "暗号化パスフレーズを入力",
-    "enableCloudSync": "有効化",
-    "lastSynced": "最終同期",
-    "community": "コミュニティ",
-    "communityDescription": "Discordコミュニティに参加して、サポートを受けたり、フィードバックを共有したり、他のユーザーとつながりましょう。",
-    "joinDiscord": "Discordコミュニティに参加",
-    "feedbackDescription": "フィードバックやご提案がありましたら、お聞かせください。",
     "loadExternalMCPConfigs": "外部アプリケーションからMCP設定を読み込む",
     "loadExternalMCPConfigsDescription": "Claude for Desktopなどの他のアプリケーションからサーバー設定をインポートできるようにします",
-    "analytics": "使用状況の送信",
-    "analyticsDescription": "アプリの改善のため、匿名の使用状況データを送信します",
-    "autoUpdate": "自動アップデート",
-    "autoUpdateDescription": "アプリのアップデートを自動でダウンロード・インストールします",
     "showWindowOnStartup": "OS起動時にウィンドウを表示",
     "showWindowOnStartupDescription": "コンピューター起動時にMCP Routerのウィンドウを表示します。無効にするとバックグラウンドで起動します。"
   },
@@ -348,5 +314,13 @@
         "description": "スキルのシンボリックリンク先となるフォルダを追加します"
       }
     }
+  },
+  "retirement": {
+    "title": "MCP Router はサポートを終了しました",
+    "summary": "2026年9月18日をもって開発・サポート・セキュリティ更新を終了しました。クラウドサービスと課金も終了しています。",
+    "local": "ローカルの MCP サーバーと保存済み設定は引き続き利用できます。ログイン・クラウド同期・フィードバック送信は利用できません。",
+    "export": "移行前に各ローカルワークスペースを選び、サーバー画面の Export から設定を保存してください。出力ファイルには認証情報が含まれる場合があるため、非公開で保管してください。",
+    "continue": "ローカル機能を使い続ける",
+    "details": "サポート終了・移行ガイド"
   }
 }

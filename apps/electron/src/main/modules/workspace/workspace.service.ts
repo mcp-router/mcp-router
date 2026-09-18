@@ -1,3 +1,4 @@
+import { SERVICE_RETIRED, SERVICE_RETIRED_MESSAGE } from "@mcp_router/shared";
 import { SingletonService } from "@/main/modules/singleton-service";
 import { SqliteManager } from "../../infrastructure/database/sqlite-manager";
 import { session, app } from "electron";
@@ -477,6 +478,10 @@ export class WorkspaceService extends SingletonService<
       const workspace = await this.findById(workspaceId);
       if (!workspace) {
         throw new Error("Workspace not found");
+      }
+
+      if (SERVICE_RETIRED && workspace.type === "remote") {
+        throw new Error(SERVICE_RETIRED_MESSAGE);
       }
 
       // 現在のDBをクローズ
