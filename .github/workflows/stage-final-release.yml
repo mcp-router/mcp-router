@@ -1,0 +1,64 @@
+name: Stage Final Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      BUILD_RUN: "35351912785"
+      BUILD_SHA: "712ee6822392cc342e0a5b3d4bc2779f0479ac5d"
+    steps:
+      - name: Verify the final build and draft
+        shell: bash
+        run: |
+          gh api "repos/$GH_REPO/actions/runs/$BUILD_RUN" > /tmp/build.json
+          gh release view v0.6.4 --json isDraft > /tmp/release.json
+          python3 - <<'PY'
+          import json, os
+          build = json.load(open('/tmp/build.json'))
+          assert build['conclusion'] == 'success'
+          assert build['name'] == 'Make Build'
+          assert build['head_sha'] == os.environ['BUILD_SHA']
+          assert build['repository']['full_name'] == os.environ['GH_REPO']
+          assert json.load(open('/tmp/release.json'))['isDraft'] is True
+          PY
+
+      - name: Download verified build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: "35351912785"
+          path: artifacts
+
+      - name: Upload final binaries and checksums to draft
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, pathlib, subprocess
+          files = sorted(p for p in pathlib.Path('artifacts').rglob('*') if p.is_file())
+          assert {p.parts[1] for p in files} == {'make-macOS', 'make-Windows'}
+          assert any(p.suffix == '.dmg' for p in files)
+          assert any(p.suffix == '.exe' for p in files)
+          assert any(p.suffix == '.nupkg' for p in files)
+          assert any(p.name == 'RELEASES' for p in files)
+          assert len({p.name.replace(' ', '.') for p in files}) == len(files)
+          sums = []
+          for p in files:
+              # Use stable asset names; GitHub normalizes spaces to dots.
+              name = p.name.replace(' ', '.')
+              renamed = p.with_name(name)
+              if renamed != p:
+                  p.rename(renamed)
+              sums.append(hashlib.file_digest(renamed.open('rb'), 'sha256').hexdigest() + '  ' + name)
+              subprocess.run(['gh', 'release', 'upload', 'v0.6.4', str(renamed), '--clobber'], check=True)
+          pathlib.Path('SHA256SUMS').write_text('\n'.join(sums) + '\n')
+          subprocess.run(['gh', 'release', 'upload', 'v0.6.4', 'SHA256SUMS', '--clobber'], check=True)
+          PY
