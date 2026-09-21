@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=MCP Router
+Comment=Manage Model Context Protocol servers
+Exec=mcp-router %U
+Icon=mcp-router
+Terminal=false
+Categories=Utility;Development;
+StartupWMClass=MCP Router
