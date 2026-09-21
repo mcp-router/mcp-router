@@ -48,6 +48,13 @@ export function validateMcpServerJson(jsonInput: string | object): {
         };
       }
 
+      if (server.cwd !== undefined && typeof server.cwd !== "string") {
+        return {
+          valid: false,
+          error: `Working directory must be a string for server '${serverName}'`,
+        };
+      }
+
       if (server.args !== undefined && !Array.isArray(server.args)) {
         return {
           valid: false,
@@ -123,7 +130,7 @@ export function processMcpServerConfigs(
       currentNames.add(uniqueName);
 
       // Extract command, args, and env from the configuration
-      const { command, args, env } = serverConfig;
+      const { command, args, env, cwd } = serverConfig;
 
       // Create MCPServerConfig object
       const mcpServerConfig = {
@@ -132,6 +139,7 @@ export function processMcpServerConfigs(
         command: command || "",
         args: args || [],
         env: env || {},
+        cwd,
         autoStart: false,
         disabled: false,
         serverType: "local" as const,

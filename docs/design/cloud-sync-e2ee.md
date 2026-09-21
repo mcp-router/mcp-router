@@ -94,6 +94,7 @@
       {
         command: string;
         args: string[];
+        cwd?: string; // 起動先のホームディレクトリを基準に解決
         env: Record<string, string>;
       }
     >;

@@ -112,12 +112,29 @@ export class MainDatabaseMigration {
       execute: (db) => this.migrateAddProjectOptimizationColumn(db),
     });
 
+    this.migrations.push({
+      id: "20260916_add_server_cwd_column",
+      description: "Add cwd column to servers table",
+      execute: (db) => this.migrateAddServerCwdColumn(db),
+    });
+
     // Agent paths テーブルを追加
     this.migrations.push({
       id: "20260124_add_agent_paths_table",
       description: "Add agent_paths table for custom symlink targets",
       execute: (db) => this.migrateAddAgentPathsTable(db),
     });
+  }
+
+  private migrateAddServerCwdColumn(db: SqliteManager): void {
+    const table = db.get(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='servers'",
+    );
+    if (!table) return;
+    const columns = db.all<{ name: string }>("PRAGMA table_info(servers)");
+    if (!columns.some((column) => column.name === "cwd")) {
+      db.execute("ALTER TABLE servers ADD COLUMN cwd TEXT");
+    }
   }
 
   /**

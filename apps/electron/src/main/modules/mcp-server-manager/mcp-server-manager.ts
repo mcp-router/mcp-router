@@ -486,6 +486,7 @@ export class MCPServerManager {
           name: server.name,
           serverType: server.serverType,
           command: server.command,
+          cwd: server.cwd,
           args: server.args
             ? substituteArgsParameters(
                 server.args,

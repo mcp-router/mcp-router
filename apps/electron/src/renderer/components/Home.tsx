@@ -205,6 +205,7 @@ const Home: React.FC = () => {
     servers.forEach((server) => {
       mcpServers[server.name] = {
         command: server.command,
+        cwd: server.cwd,
         args: server.args || [],
         env: server.env || {},
       };
@@ -1018,6 +1019,7 @@ const Home: React.FC = () => {
             try {
               const {
                 editedCommand,
+                editedCwd,
                 editedArgs,
                 editedBearerToken,
                 editedAutoStart,
@@ -1053,6 +1055,7 @@ const Home: React.FC = () => {
               const updatedConfig: any = {
                 name: editedName || advancedSettingsServer.name,
                 command: editedCommand,
+                cwd: editedCwd,
                 args: editedArgs,
                 env: envObj,
                 autoStart: editedAutoStart,

@@ -125,6 +125,8 @@
     "deleteFailed": "カスタムアプリの削除に失敗しました"
   },
   "serverDetails": {
+    "workingDirectory": "作業ディレクトリ",
+    "workingDirectoryHelp": "省略時はホームディレクトリを使用します。~ とホームディレクトリからの相対パスに対応しています。",
     "serverName": "サーバー名",
     "finalCommand": "実行コマンド",
     "noInputParams": "入力パラメータがありません",

@@ -44,6 +44,8 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
     isLoading,
     editedName,
     editedCommand,
+    editedCwd,
+    setEditedCwd,
     editedArgs,
     editedBearerToken,
     editedAutoStart,
@@ -349,6 +351,8 @@ const ServerDetailsAdvancedSheet: React.FC<ServerDetailsAdvancedSheetProps> = ({
       server={server}
       editedName={editedName}
       setEditedName={setEditedName}
+      editedCwd={editedCwd}
+      setEditedCwd={setEditedCwd}
       editedCommand={editedCommand}
       setEditedCommand={setEditedCommand}
       editedArgs={editedArgs}
