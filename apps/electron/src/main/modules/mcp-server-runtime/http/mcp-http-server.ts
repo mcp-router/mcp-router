@@ -252,6 +252,20 @@ export class MCPHttpServer {
    * Configure direct MCP route without versioning
    */
   private configureMcpRoute(): void {
+    // GET /mcp and DELETE /mcp - not supported in stateless mode
+    const methodNotAllowed = (_req: express.Request, res: express.Response) => {
+      res.status(405).json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32000,
+          message: "Method not allowed. This server runs in stateless mode.",
+        },
+        id: null,
+      });
+    };
+    this.app.get("/mcp", methodNotAllowed);
+    this.app.delete("/mcp", methodNotAllowed);
+
     // POST /mcp - Handle MCP requests (direct route without versioning)
     this.app.post("/mcp", async (req, res) => {
       // オリジナルのリクエストボディをコピー
@@ -285,10 +299,23 @@ export class MCPHttpServer {
         // Append metadata for downstream handlers
         const token = req.headers["authorization"];
         this.attachRequestMetadata(modifiedBody, token, projectFilter);
+
+        // Stateless mode: the SDK transport is a per-connection object, so
+        // create a fresh Server + transport pair for every request instead of
+        // reusing a shared process-wide instance.
+        const { server, transport } =
+          await this.aggregatorServer.createSessionTransport();
+
+        // Release resources once the response is finished
+        // (server.close() also closes the attached transport)
+        res.on("close", () => {
+          server.close().catch((error) => {
+            console.error("Error closing MCP session:", error);
+          });
+        });
+
         // For local workspaces, use local aggregator
-        await this.aggregatorServer
-          .getTransport()
-          .handleRequest(req, res, modifiedBody);
+        await transport.handleRequest(req, res, modifiedBody);
       } catch (error) {
         console.error("Error handling MCP request:", error);
         if (!res.headersSent) {

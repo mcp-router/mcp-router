@@ -19,7 +19,6 @@ import type { ToolCatalogService } from "@/main/modules/tool-catalog/tool-catalo
  */
 export class AggregatorServer {
   private aggregatorServer!: Server;
-  private transport!: StreamableHTTPServerTransport;
   private requestHandlers: RequestHandlers;
 
   constructor(
@@ -36,53 +35,71 @@ export class AggregatorServer {
   /**
    * Initialize the MCP aggregator server
    */
-  private async initAggregatorServer(): Promise<void> {
+  private initAggregatorServer(): void {
     try {
-      // Initialize the MCP server
-      this.aggregatorServer = new Server(
-        {
-          name: "mcp-aggregator",
-          version: "1.0.0",
-        },
-        {
-          capabilities: {
-            resources: {},
-            tools: {},
-            prompts: {},
-          },
-        },
-      );
-
-      // Set up request handlers
-      this.setupRequestHandlers();
-
-      // Error handling
-      this.aggregatorServer.onerror = (error) => {
-        console.error("[MCP Aggregator Error]", error);
-        // Log server errors
-        getLogService().recordMcpRequestLog({
-          timestamp: new Date().toISOString(),
-          requestType: "ServerError",
-          params: {},
-          result: "error",
-          errorMessage: error.message || "Unknown server error",
-          duration: 0,
-          clientId: "mcp-router-system",
-        });
-      };
-
-      // Start the aggregator server
-      await this.startAggregator();
+      this.aggregatorServer = this.createServerInstance();
     } catch (error) {
       console.error("Failed to initialize MCP Aggregator Server:", error);
     }
   }
 
   /**
-   * Get the transport
+   * Create a new aggregator Server instance with all request handlers registered.
+   * StreamableHTTP transports are per-request objects, so each request gets its
+   * own Server + transport pair instead of sharing one process-wide instance.
    */
-  public getTransport(): StreamableHTTPServerTransport {
-    return this.transport;
+  private createServerInstance(): Server {
+    const server = new Server(
+      {
+        name: "mcp-aggregator",
+        version: "1.0.0",
+      },
+      {
+        capabilities: {
+          resources: {},
+          tools: {},
+          prompts: {},
+        },
+      },
+    );
+
+    // Set up request handlers
+    this.setupRequestHandlers(server);
+
+    // Error handling
+    server.onerror = (error) => {
+      console.error("[MCP Aggregator Error]", error);
+      // Log server errors
+      getLogService().recordMcpRequestLog({
+        timestamp: new Date().toISOString(),
+        requestType: "ServerError",
+        params: {},
+        result: "error",
+        errorMessage: error.message || "Unknown server error",
+        duration: 0,
+        clientId: "mcp-router-system",
+      });
+    };
+
+    return server;
+  }
+
+  /**
+   * Create a fresh Server + StreamableHTTPServerTransport pair for a single
+   * HTTP request (stateless mode, sessionIdGenerator: undefined).
+   * The caller is responsible for closing the server after the response ends.
+   */
+  public async createSessionTransport(): Promise<{
+    server: Server;
+    transport: StreamableHTTPServerTransport;
+  }> {
+    const server = this.createServerInstance();
+    const transport = new StreamableHTTPServerTransport({
+      // Stateless server
+      sessionIdGenerator: undefined,
+    });
+    await server.connect(transport);
+    return { server, transport };
   }
 
   /**
@@ -93,58 +110,30 @@ export class AggregatorServer {
   }
 
   /**
-   * Start the aggregator server
+   * Set up request handlers for the given aggregator server
    */
-  private async startAggregator(): Promise<void> {
-    try {
-      // StreamableHTTP transport
-      this.transport = new StreamableHTTPServerTransport({
-        // Stateless server
-        sessionIdGenerator: undefined,
-      });
-
-      // Connect server with transport
-      await this.aggregatorServer.connect(this.transport);
-    } catch (error) {
-      console.error("Failed to initialize transports:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Set up request handlers for the aggregator server
-   */
-  private setupRequestHandlers(): void {
+  private setupRequestHandlers(server: Server): void {
     // List Tools
-    this.aggregatorServer.setRequestHandler(
-      ListToolsRequestSchema,
-      async (request) => {
-        const token = request.params?._meta?.token as string | undefined;
-        const projectId = request.params?._meta?.projectId;
-        return await this.requestHandlers.handleListTools(token, projectId);
-      },
-    );
+    server.setRequestHandler(ListToolsRequestSchema, async (request) => {
+      const token = request.params?._meta?.token as string | undefined;
+      const projectId = request.params?._meta?.projectId;
+      return await this.requestHandlers.handleListTools(token, projectId);
+    });
 
     // Call Tool
-    this.aggregatorServer.setRequestHandler(
-      CallToolRequestSchema,
-      async (request) => {
-        return await this.requestHandlers.handleCallTool(request);
-      },
-    );
+    server.setRequestHandler(CallToolRequestSchema, async (request) => {
+      return await this.requestHandlers.handleCallTool(request);
+    });
 
     // List Resources
-    this.aggregatorServer.setRequestHandler(
-      ListResourcesRequestSchema,
-      async (request) => {
-        const token = request.params?._meta?.token as string | undefined;
-        const projectId = request.params?._meta?.projectId;
-        return await this.requestHandlers.handleListResources(token, projectId);
-      },
-    );
+    server.setRequestHandler(ListResourcesRequestSchema, async (request) => {
+      const token = request.params?._meta?.token as string | undefined;
+      const projectId = request.params?._meta?.projectId;
+      return await this.requestHandlers.handleListResources(token, projectId);
+    });
 
     // List Resource Templates
-    this.aggregatorServer.setRequestHandler(
+    server.setRequestHandler(
       ListResourceTemplatesRequestSchema,
       async (request) => {
         const token = request.params?._meta?.token as string | undefined;
@@ -157,49 +146,40 @@ export class AggregatorServer {
     );
 
     // Read Resource
-    this.aggregatorServer.setRequestHandler(
-      ReadResourceRequestSchema,
-      async (request) => {
-        const uri = request.params.uri;
-        const token = request.params?._meta?.token as string | undefined;
-        const projectId = request.params?._meta?.projectId;
-        return await this.requestHandlers.readResourceByUri(
-          uri,
-          token,
-          projectId,
-        );
-      },
-    );
+    server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+      const uri = request.params.uri;
+      const token = request.params?._meta?.token as string | undefined;
+      const projectId = request.params?._meta?.projectId;
+      return await this.requestHandlers.readResourceByUri(
+        uri,
+        token,
+        projectId,
+      );
+    });
 
     // List Prompts
-    this.aggregatorServer.setRequestHandler(
-      ListPromptsRequestSchema,
-      async (request) => {
-        const token = request.params?._meta?.token as string | undefined;
-        const projectId = request.params?._meta?.projectId;
-        const allPrompts = await this.requestHandlers.getAllPromptsInternal(
-          token,
-          projectId,
-        );
-        return { prompts: allPrompts };
-      },
-    );
+    server.setRequestHandler(ListPromptsRequestSchema, async (request) => {
+      const token = request.params?._meta?.token as string | undefined;
+      const projectId = request.params?._meta?.projectId;
+      const allPrompts = await this.requestHandlers.getAllPromptsInternal(
+        token,
+        projectId,
+      );
+      return { prompts: allPrompts };
+    });
 
     // Get Prompt
-    this.aggregatorServer.setRequestHandler(
-      GetPromptRequestSchema,
-      async (request) => {
-        const promptName = request.params.name;
-        const token = request.params?._meta?.token as string | undefined;
-        const projectId = request.params?._meta?.projectId;
-        return await this.requestHandlers.getPromptByName(
-          promptName,
-          request.params.arguments,
-          token,
-          projectId,
-        );
-      },
-    );
+    server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+      const promptName = request.params.name;
+      const token = request.params?._meta?.token as string | undefined;
+      const projectId = request.params?._meta?.projectId;
+      return await this.requestHandlers.getPromptByName(
+        promptName,
+        request.params.arguments,
+        token,
+        projectId,
+      );
+    });
   }
 
   /**

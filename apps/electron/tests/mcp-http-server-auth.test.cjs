@@ -65,12 +65,18 @@ describe("MCPHttpServer Authorization compatibility", () => {
   it("accepts Bearer headers with casing, spacing, and quoted token variations", () => {
     assert.equal(extractBearerToken("bearer mcpr_lower"), "mcpr_lower");
     assert.equal(extractBearerToken("Bearer   mcpr_spaced"), "mcpr_spaced");
-    assert.equal(extractBearerToken("Bearer Bearer mcpr_nested"), "mcpr_nested");
+    assert.equal(
+      extractBearerToken("Bearer Bearer mcpr_nested"),
+      "mcpr_nested",
+    );
     assert.equal(extractBearerToken('Bearer "mcpr_quoted"'), "mcpr_quoted");
   });
 
   it("rejects ambiguous or unsafe Authorization headers", () => {
-    assert.equal(extractBearerToken(["Bearer mcpr_one", "Bearer mcpr_two"]), null);
+    assert.equal(
+      extractBearerToken(["Bearer mcpr_one", "Bearer mcpr_two"]),
+      null,
+    );
     assert.equal(extractBearerToken("Bearer mcpr_bad\nnext"), null);
     assert.equal(extractBearerToken(""), null);
   });
