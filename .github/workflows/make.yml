@@ -17,8 +17,13 @@ jobs:
         include:
           - os: macos-latest
             label: macOS
+            command: make
+          - os: macos-latest
+            label: macOS Intel
+            command: make:x64
           - os: windows-latest
             label: Windows
+            command: make
     env:
       CI: true
 
@@ -41,7 +46,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run make
-        run: pnpm run make
+        run: pnpm run ${{ matrix.command }}
 
       - name: Upload make artifacts
         uses: actions/upload-artifact@v4
